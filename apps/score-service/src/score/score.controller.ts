@@ -1,15 +1,19 @@
-import { Controller, Get } from "@nestjs/common";
-import type { internalScore } from "@hybrid-index/contracts";
+import { Body, Controller, Get, Post } from "@nestjs/common";
+import { internalScore } from "@hybrid-index/contracts";
+import { ZodValidationPipe } from "../common/zod-validation.pipe";
 import { ScoringVersionService } from "./scoring-version.service";
+import { ScoringService } from "./scoring.service";
 
 /**
  * Contrat INTERNE versionné (api -> score-service), préfixe /v1/score.
- * Incrément 0 : santé + version active. Les endpoints de calcul (sous-score, index,
- * recompute) arrivent à l'incrément 1.
+ * Le score-service n'est jamais exposé publiquement (cf. docker-compose).
  */
 @Controller("v1/score")
 export class ScoreController {
-  constructor(private readonly versions: ScoringVersionService) {}
+  constructor(
+    private readonly versions: ScoringVersionService,
+    private readonly scoring: ScoringService,
+  ) {}
 
   @Get("health")
   health(): internalScore.ScoreServiceHealth {
@@ -23,5 +27,21 @@ export class ScoreController {
   @Get("version")
   version(): internalScore.ScoringVersionInfo {
     return this.versions.getActiveVersion();
+  }
+
+  @Post("sub-score")
+  subScore(
+    @Body(new ZodValidationPipe(internalScore.ComputeSubScoreRequest))
+    body: internalScore.ComputeSubScoreRequest,
+  ): internalScore.ComputeSubScoreResponse {
+    return this.scoring.computeSubScore(body);
+  }
+
+  @Post("index")
+  index(
+    @Body(new ZodValidationPipe(internalScore.ComputeIndexRequest))
+    body: internalScore.ComputeIndexRequest,
+  ): internalScore.ComputeIndexResponse {
+    return this.scoring.computeIndex(body);
   }
 }

@@ -69,6 +69,9 @@ importers:
       '@hybrid-index/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@hybrid-index/scoring-core':
+        specifier: workspace:*
+        version: link:../../packages/scoring-core
       '@nestjs/common':
         specifier: ^10.4.4
         version: 10.4.22(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -84,6 +87,9 @@ importers:
       rxjs:
         specifier: ^7.8.1
         version: 7.8.2
+      zod:
+        specifier: ^3.23.8
+        version: 3.25.76
     devDependencies:
       '@nestjs/testing':
         specifier: ^10.4.4

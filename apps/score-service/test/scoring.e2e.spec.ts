@@ -1,0 +1,78 @@
+import "reflect-metadata";
+import { Test } from "@nestjs/testing";
+import type { INestApplication } from "@nestjs/common";
+import request from "supertest";
+import { AppModule } from "../src/app.module";
+
+describe("score-service — calcul (e2e)", () => {
+  let app: INestApplication;
+
+  beforeAll(async () => {
+    const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
+    app = moduleRef.createNestApplication();
+    await app.init();
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  describe("POST /v1/score/sub-score", () => {
+    it("calcule le sous-score d'un WOD de référence (5 km H, 24:00 → ~884)", async () => {
+      const res = await request(app.getHttpServer())
+        .post("/v1/score/sub-score")
+        .send({ wodId: "run_5k", sex: "male", scoreType: "time", rawResult: 1440 })
+        .expect(201);
+      expect(res.body.subScore).toBeGreaterThanOrEqual(880);
+      expect(res.body.subScore).toBeLessThanOrEqual(888);
+      expect(res.body.attributesAffected).toContain("engine");
+      expect(res.body.scoringVersionId).toBe("scoring-v1");
+    });
+
+    it("rejette un résultat hors bornes physiologiques (422)", async () => {
+      const res = await request(app.getHttpServer())
+        .post("/v1/score/sub-score")
+        .send({ wodId: "run_5k", sex: "male", scoreType: "time", rawResult: 60 })
+        .expect(422);
+      expect(res.body.code).toBe("PHYSIOLOGICAL_BOUNDS");
+    });
+
+    it("rejette un WOD inconnu (404)", async () => {
+      await request(app.getHttpServer())
+        .post("/v1/score/sub-score")
+        .send({ wodId: "inconnu", sex: "male", scoreType: "time", rawResult: 1440 })
+        .expect(404);
+    });
+
+    it("rejette une entrée invalide (400)", async () => {
+      const res = await request(app.getHttpServer())
+        .post("/v1/score/sub-score")
+        .send({ wodId: "run_5k", sex: "martian", scoreType: "time", rawResult: 1440 })
+        .expect(400);
+      expect(res.body.code).toBe("VALIDATION_ERROR");
+    });
+  });
+
+  describe("POST /v1/score/index", () => {
+    it("agrège l'Index (worked example B, HYROX → ~775)", async () => {
+      const res = await request(app.getHttpServer())
+        .post("/v1/score/index")
+        .send({
+          sex: "female",
+          goal: "hyrox",
+          attributeScores: [
+            { attribute: "engine", score: 825, isEstimated: false },
+            { attribute: "strength", score: 871, isEstimated: true },
+            { attribute: "muscular_endurance", score: 871, isEstimated: false },
+            { attribute: "hybrid", score: 597, isEstimated: false },
+          ],
+        })
+        .expect(201);
+      expect(res.body.value).toBe(775);
+      expect(res.body.isEstimated).toBe(true);
+      expect(res.body.radarCoverage).toBe(4);
+      expect(res.body.isProvisional).toBe(false);
+      expect(res.body.scoringVersionId).toBe("scoring-v1");
+    });
+  });
+});
