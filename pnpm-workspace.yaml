@@ -1,0 +1,6 @@
+# Le dossier apps/mobile (Flutter/Dart) est volontairement HORS du workspace pnpm :
+# il est géré par `pub` (cf. docs/architecture.md §1.1).
+packages:
+  - "apps/api"
+  - "apps/score-service"
+  - "packages/*"

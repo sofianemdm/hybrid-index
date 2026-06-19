@@ -1,0 +1,27 @@
+{
+  "name": "@hybrid-index/contracts",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Contrats partagés HYBRID INDEX : enums métier, DTO (Zod), contrats internes, codes d'erreur. Source de vérité.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "lint": "echo \"(lint contracts: TODO eslint)\""
+  },
+  "dependencies": {
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.2",
+    "vitest": "^2.1.1"
+  }
+}
