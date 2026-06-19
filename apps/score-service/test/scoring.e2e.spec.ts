@@ -103,4 +103,27 @@ describe("score-service — calcul (e2e)", () => {
       expect(res.body.radarCoverage).toBe(0);
     });
   });
+
+  describe("POST /v1/score/profile (efforts bruts → radar + Index)", () => {
+    it("worked example A : Homme 'Partout', 3 efforts → ~498 (OR), Force réelle non estimée", async () => {
+      const res = await request(app.getHttpServer())
+        .post("/v1/score/profile")
+        .send({
+          sex: "male",
+          goal: "all_round",
+          efforts: [
+            { wodId: "grace", rawResult: 270 },
+            { wodId: "run_5k", rawResult: 1440 },
+            { wodId: "max_pushups", rawResult: 40 },
+          ],
+        })
+        .expect(201);
+      expect(res.body.index.value).toBeGreaterThanOrEqual(496);
+      expect(res.body.index.value).toBeLessThanOrEqual(500);
+      expect(res.body.index.radarCoverage).toBe(4);
+      expect(res.body.index.isProvisional).toBe(false);
+      const strength = res.body.radar.find((a: { attribute: string }) => a.attribute === "strength");
+      expect(strength.isEstimated).toBe(false); // Grace (test chargé) fait autorité sur le proxy
+    });
+  });
 });

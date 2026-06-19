@@ -8,13 +8,13 @@ describe("rankFromIndex", () => {
     expect(rankFromIndex(149)).toBe("rookie");
     expect(rankFromIndex(150)).toBe("bronze");
     expect(rankFromIndex(299)).toBe("bronze");
-    expect(rankFromIndex(300)).toBe("argent");
-    expect(rankFromIndex(450)).toBe("or");
-    expect(rankFromIndex(499)).toBe("or"); // exemple A après correctif D2
-    expect(rankFromIndex(600)).toBe("platine");
-    expect(rankFromIndex(719)).toBe("platine");
-    expect(rankFromIndex(750)).toBe("diamant");
-    expect(rankFromIndex(775)).toBe("diamant"); // exemple B
+    expect(rankFromIndex(300)).toBe("silver");
+    expect(rankFromIndex(450)).toBe("gold");
+    expect(rankFromIndex(499)).toBe("gold"); // exemple A après correctif D2
+    expect(rankFromIndex(600)).toBe("platinum");
+    expect(rankFromIndex(719)).toBe("platinum");
+    expect(rankFromIndex(750)).toBe("diamond");
+    expect(rankFromIndex(775)).toBe("diamond"); // exemple B
     expect(rankFromIndex(900)).toBe("elite");
     expect(rankFromIndex(1000)).toBe("elite");
   });
@@ -48,8 +48,8 @@ describe("rankFromIndex", () => {
 describe("rankProgress", () => {
   it("calcule les points avant le prochain rang", () => {
     const p = rankProgress(553); // en Or [450,600)
-    expect(p.current).toBe("or");
-    expect(p.next).toBe("platine");
+    expect(p.current).toBe("gold");
+    expect(p.next).toBe("platinum");
     expect(p.pointsToNext).toBe(47); // « Encore 47 pts avant PLATINE » (cahier §4.3)
     expect(p.progress).toBeCloseTo((553 - 450) / 150, 5);
   });
@@ -63,6 +63,6 @@ describe("rankProgress", () => {
   });
 
   it("renvoie le bon band complet", () => {
-    expect(rankBandFromIndex(600)).toEqual({ rank: "platine", min: 600, max: 750 });
+    expect(rankBandFromIndex(600)).toEqual({ rank: "platinum", min: 600, max: 750 });
   });
 });

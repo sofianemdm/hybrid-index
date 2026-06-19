@@ -65,6 +65,7 @@ Les identifiants techniques des enums métier sont en **anglais snake_case**, so
 - `AttributeKey` : `engine, speed, strength, power, muscular_endurance, hybrid`
 - `WodType` : `for_time, amrap, emom, chipper, strength, interval`
 - `Goal` : `hyrox, crossfit_strength, all_round`
+- `Rank` : `rookie, bronze, silver, gold, platinum, diamond, elite` (libellés FR Rookie/Bronze/Argent/Or/Platine/Diamant/Élite via i18n)
 - (`ScoreType, Sex, EquipmentPref, Visibility, ResultSource, DistributionSource` déjà neutres.)
 Les **libellés utilisateur restent en français** via i18n. Les docs `sport-science-scoring.md` /
 `gamification.md` peuvent garder les termes FR en prose ; la correspondance FR↔clé est documentée

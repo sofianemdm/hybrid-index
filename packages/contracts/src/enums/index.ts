@@ -69,10 +69,10 @@ export type DistributionSource = z.infer<typeof DistributionSource>;
 export const Rank = z.enum([
   "rookie",
   "bronze",
-  "argent",
-  "or",
-  "platine",
-  "diamant",
+  "silver",
+  "gold",
+  "platinum",
+  "diamond",
   "elite",
 ]);
 export type Rank = z.infer<typeof Rank>;
@@ -88,10 +88,10 @@ export interface RankBand {
 export const RANK_BANDS: readonly RankBand[] = [
   { rank: "rookie", min: 0, max: 150 },
   { rank: "bronze", min: 150, max: 300 },
-  { rank: "argent", min: 300, max: 450 },
-  { rank: "or", min: 450, max: 600 },
-  { rank: "platine", min: 600, max: 750 },
-  { rank: "diamant", min: 750, max: 900 },
+  { rank: "silver", min: 300, max: 450 },
+  { rank: "gold", min: 450, max: 600 },
+  { rank: "platinum", min: 600, max: 750 },
+  { rank: "diamond", min: 750, max: 900 },
   { rank: "elite", min: 900, max: 1000 },
 ] as const;
 

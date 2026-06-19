@@ -44,4 +44,12 @@ export class ScoreController {
   ): internalScore.ComputeIndexResponse {
     return this.scoring.computeIndex(body);
   }
+
+  @Post("profile")
+  profile(
+    @Body(new ZodValidationPipe(internalScore.ComputeProfileRequest))
+    body: internalScore.ComputeProfileRequest,
+  ): internalScore.ComputeProfileResponse {
+    return this.scoring.computeProfile(body);
+  }
 }

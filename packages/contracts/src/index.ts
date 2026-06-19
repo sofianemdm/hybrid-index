@@ -6,3 +6,4 @@ export * from "./enums";
 export * from "./errors";
 export * from "./scoring/rank";
 export * as internalScore from "./internal/score";
+export * as onboardingDto from "./dto/onboarding";

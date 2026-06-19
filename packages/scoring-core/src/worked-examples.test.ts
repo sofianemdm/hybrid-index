@@ -67,7 +67,7 @@ describe("Worked example A — Homme, objectif 'Partout', 3 efforts → ~499 (OR
     expect(index.value).toBeLessThanOrEqual(500);
     expect(index.radarCoverage).toBe(4);
     expect(index.isProvisional).toBe(false);
-    expect(rankFromIndex(index.value)).toBe("or");
+    expect(rankFromIndex(index.value)).toBe("gold");
   });
 });
 
@@ -99,6 +99,6 @@ describe("Worked example B — Femme, objectif 'HYROX', 3 efforts → ~775 (DIAM
     expect(index.value).toBeGreaterThanOrEqual(772);
     expect(index.value).toBeLessThanOrEqual(778);
     expect(index.isEstimated).toBe(true);
-    expect(rankFromIndex(index.value)).toBe("diamant");
+    expect(rankFromIndex(index.value)).toBe("diamond");
   });
 });

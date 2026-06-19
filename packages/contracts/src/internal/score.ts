@@ -66,3 +66,35 @@ export const ComputeIndexResponse = z.object({
   scoringVersionId: z.string(),
 });
 export type ComputeIndexResponse = z.infer<typeof ComputeIndexResponse>;
+
+/** Un effort à noter (utilisé pour calculer le profil complet à partir de résultats bruts). */
+export const EffortInput = z.object({
+  wodId: z.string(),
+  rawResult: z.number(),
+  /** Âge de l'effort en semaines (0 = aujourd'hui). */
+  ageWeeks: z.number().min(0).default(0),
+});
+export type EffortInput = z.infer<typeof EffortInput>;
+
+/** Calcule le radar + l'Index à partir d'une liste d'efforts bruts (onboarding, re-calcul). */
+export const ComputeProfileRequest = z.object({
+  sex: Sex,
+  goal: Goal,
+  efforts: z.array(EffortInput),
+});
+export type ComputeProfileRequest = z.infer<typeof ComputeProfileRequest>;
+
+export const RadarAttribute = z.object({
+  attribute: AttributeKey,
+  score: z.number().min(0).max(1000),
+  unlocked: z.boolean(),
+  isEstimated: z.boolean(),
+  isStale: z.boolean(),
+});
+export type RadarAttribute = z.infer<typeof RadarAttribute>;
+
+export const ComputeProfileResponse = z.object({
+  index: ComputeIndexResponse,
+  radar: z.array(RadarAttribute),
+});
+export type ComputeProfileResponse = z.infer<typeof ComputeProfileResponse>;
