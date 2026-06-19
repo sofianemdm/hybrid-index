@@ -10,7 +10,8 @@ import { AttributeKey, Goal, ScoreType, Sex } from "../enums";
 /** Métadonnées d'une version de scoring (courbe f + poids). */
 export const ScoringVersionInfo = z.object({
   id: z.string(), // ex. "scoring-v1"
-  status: z.enum(["draft", "active", "deprecated"]),
+  // Aligné sur le modèle de données (architecture.md §3.1 — scoring.scoring_version).
+  status: z.enum(["draft", "active", "superseded"]),
   curve: z.string(), // ex. "sigmoid-v1"
   createdAt: z.string(), // ISO 8601
 });
