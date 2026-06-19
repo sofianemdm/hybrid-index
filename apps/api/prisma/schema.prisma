@@ -1,0 +1,473 @@
+// HYBRID INDEX — schéma de données (cf. docs/architecture.md §3).
+// Deux schémas Postgres : `app.*` (propriété api) et `scoring.*` (propriété score-service).
+// Les liens vers scoring.* sont des champs uuid logiques (pas de FK cross-schema stricte, §3.3).
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["app", "scoring"]
+}
+
+// ----------------------------- Enums -----------------------------
+
+enum Sex {
+  male
+  female
+
+  @@schema("app")
+}
+
+enum EquipmentPref {
+  none
+  equipped
+  both
+
+  @@schema("app")
+}
+
+enum Goal {
+  hyrox
+  crossfit_strength
+  all_round
+
+  @@schema("app")
+}
+
+enum AttributeKey {
+  engine
+  speed
+  strength
+  power
+  muscular_endurance
+  hybrid
+
+  @@schema("app")
+}
+
+enum WodType {
+  for_time
+  amrap
+  emom
+  chipper
+  strength
+  interval
+
+  @@schema("app")
+}
+
+enum ScoreType {
+  time
+  reps
+  load
+  distance
+
+  @@schema("app")
+}
+
+enum ResultSource {
+  declared
+  verified
+
+  @@schema("app")
+}
+
+enum Visibility {
+  public
+  private
+
+  @@schema("app")
+}
+
+enum Rank {
+  rookie
+  bronze
+  silver
+  gold
+  platinum
+  diamond
+  elite
+
+  @@schema("app")
+}
+
+enum DistributionSource {
+  public
+  community
+
+  @@schema("app")
+}
+
+enum ChallengeStatus {
+  pending
+  accepted
+  completed
+  expired
+  declined
+
+  @@schema("app")
+}
+
+enum ReactionTarget {
+  wod_result
+  badge
+  rank_up
+
+  @@schema("app")
+}
+
+enum BadgeCategory {
+  progression
+  collection
+  performance
+  consistency
+  social
+
+  @@schema("app")
+}
+
+enum ResultReview {
+  ok
+  pending_review
+  rejected
+
+  @@schema("app")
+}
+
+enum ScoringStatus {
+  draft
+  active
+  superseded
+
+  @@schema("scoring")
+}
+
+// ----------------------------- app.* -----------------------------
+
+model User {
+  id                  String    @id @default(uuid()) @db.Uuid
+  email               String?   @unique
+  passwordHash        String?   @map("password_hash")
+  dateOfBirth         DateTime  @map("date_of_birth") @db.Date
+  ageVerified         Boolean   @default(false) @map("age_verified")
+  consents            Json
+  status              String    @default("active")
+  deletionRequestedAt DateTime? @map("deletion_requested_at") @db.Timestamptz(6)
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  identities        AuthIdentity[]
+  avatar            Avatar?
+  profile           Profile?
+  hybridIndex       HybridIndex?
+  attributeScores   AttributeScore[]
+  wodResults        WodResult[]
+  rival             Rival?            @relation("UserRival")
+  rivalOf           Rival[]           @relation("RivalTarget")
+  streak            Streak?
+  notificationPrefs NotificationPrefs?
+  userBadges        UserBadge[]
+  following         Follow[]          @relation("Follower")
+  followers         Follow[]          @relation("Followee")
+
+  @@map("user")
+  @@schema("app")
+}
+
+model AuthIdentity {
+  id              String   @id @default(uuid()) @db.Uuid
+  userId          String   @map("user_id") @db.Uuid
+  provider        String
+  providerSubject String   @map("provider_subject")
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerSubject])
+  @@index([userId])
+  @@map("auth_identity")
+  @@schema("app")
+}
+
+model Avatar {
+  userId            String   @id @map("user_id") @db.Uuid
+  skinTone          Int      @map("skin_tone") @db.SmallInt
+  hairStyle         Int      @map("hair_style") @db.SmallInt
+  hairColor         Int      @map("hair_color") @db.SmallInt
+  beardStyle        Int?     @map("beard_style") @db.SmallInt
+  equippedCosmetics Json     @map("equipped_cosmetics")
+  unlockedCosmetics Json     @map("unlocked_cosmetics")
+  updatedAt         DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("avatar")
+  @@schema("app")
+}
+
+model Profile {
+  userId        String        @id @map("user_id") @db.Uuid
+  displayName   String        @unique @map("display_name")
+  sex           Sex
+  goal          Goal
+  equipmentPref EquipmentPref @map("equipment_pref")
+  rank          Rank          @default(rookie)
+  visibility    Visibility    @default(public)
+  city          String?
+  createdAt     DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([sex])
+  @@index([rank])
+  @@map("profile")
+  @@schema("app")
+}
+
+model HybridIndex {
+  userId           String   @id @map("user_id") @db.Uuid
+  value            Int
+  percentile       Decimal  @db.Decimal(5, 4)
+  isProvisional    Boolean  @map("is_provisional")
+  isEstimated      Boolean  @map("is_estimated")
+  radarCoverage    Int      @map("radar_coverage") @db.SmallInt
+  projectedValue   Int?     @map("projected_value")
+  confidenceLevel  String   @map("confidence_level")
+  scoringVersionId String   @map("scoring_version_id") @db.Uuid
+  computedAt       DateTime @default(now()) @map("computed_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([value(sort: Desc)])
+  @@map("hybrid_index")
+  @@schema("app")
+}
+
+model AttributeScore {
+  userId           String       @map("user_id") @db.Uuid
+  attribute        AttributeKey
+  score            Int
+  percentile       Decimal      @db.Decimal(5, 4)
+  unlocked         Boolean
+  isEstimated      Boolean      @map("is_estimated")
+  isStale          Boolean      @map("is_stale")
+  bestResultId     String?      @map("best_result_id") @db.Uuid
+  scoringVersionId String       @map("scoring_version_id") @db.Uuid
+  lastUpdated      DateTime     @updatedAt @map("last_updated") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, attribute])
+  @@index([attribute, score(sort: Desc)])
+  @@map("attribute_score")
+  @@schema("app")
+}
+
+model Wod {
+  id                String         @id
+  name              String
+  isBenchmark       Boolean        @map("is_benchmark")
+  isCustom          Boolean        @default(false) @map("is_custom")
+  type              WodType
+  requiresEquipment Boolean        @map("requires_equipment")
+  targetAttributes  AttributeKey[] @map("target_attributes")
+  scoreType         ScoreType      @map("score_type")
+  movements         Json
+  createdAt         DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  results WodResult[]
+
+  @@index([requiresEquipment])
+  @@map("wod")
+  @@schema("app")
+}
+
+model WodResult {
+  id                 String         @id @default(uuid()) @db.Uuid
+  userId             String         @map("user_id") @db.Uuid
+  wodId              String         @map("wod_id")
+  sex                Sex
+  rawResult          Decimal        @map("raw_result")
+  subScore           Int?           @map("sub_score")
+  percentile         Decimal?       @db.Decimal(5, 4)
+  attributesAffected AttributeKey[] @map("attributes_affected")
+  source             ResultSource   @default(declared)
+  review             ResultReview   @default(ok)
+  scoringVersionId   String?        @map("scoring_version_id") @db.Uuid
+  idempotencyKey     String?        @map("idempotency_key")
+  visibility         Visibility     @default(public)
+  performedAt        DateTime       @map("performed_at") @db.Timestamptz(6)
+  createdAt          DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  wod  Wod  @relation(fields: [wodId], references: [id])
+
+  @@unique([userId, idempotencyKey])
+  @@index([wodId, sex, subScore(sort: Desc)])
+  @@index([userId, wodId, performedAt(sort: Desc)])
+  @@index([userId, performedAt(sort: Desc)])
+  @@map("wod_result")
+  @@schema("app")
+}
+
+model League {
+  id    String @id
+  sex   Sex
+  label String
+
+  @@map("league")
+  @@schema("app")
+}
+
+model Rival {
+  userId          String   @id @map("user_id") @db.Uuid
+  rivalUserId     String?  @map("rival_user_id") @db.Uuid
+  rivalIndexValue Int?     @map("rival_index_value")
+  state           String
+  recomputedAt    DateTime @default(now()) @map("recomputed_at") @db.Timestamptz(6)
+
+  user  User  @relation("UserRival", fields: [userId], references: [id], onDelete: Cascade)
+  rival User? @relation("RivalTarget", fields: [rivalUserId], references: [id], onDelete: SetNull)
+
+  @@map("rival")
+  @@schema("app")
+}
+
+model Streak {
+  userId                 String    @id @map("user_id") @db.Uuid
+  current                Int       @default(0)
+  best                   Int       @default(0)
+  weeklyGoal             Int       @default(3) @map("weekly_goal")
+  freezeTokens           Int       @default(1) @map("freeze_tokens")
+  freezeTokensRefreshedAt DateTime? @map("freeze_tokens_refreshed_at") @db.Timestamptz(6)
+  plannedRest            Boolean   @default(false) @map("planned_rest")
+  lastWeekEvaluated      String?   @map("last_week_evaluated")
+  updatedAt              DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("streak")
+  @@schema("app")
+}
+
+model NotificationPrefs {
+  userId     String   @id @map("user_id") @db.Uuid
+  prefs      Json
+  quietHours Json     @map("quiet_hours")
+  dailyCap   Int      @default(2) @map("daily_cap")
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notification_prefs")
+  @@schema("app")
+}
+
+model Follow {
+  followerId String   @map("follower_id") @db.Uuid
+  followeeId String   @map("followee_id") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  follower User @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
+  followee User @relation("Followee", fields: [followeeId], references: [id], onDelete: Cascade)
+
+  @@id([followerId, followeeId])
+  @@index([followeeId])
+  @@index([followerId, createdAt])
+  @@map("follow")
+  @@schema("app")
+}
+
+model Badge {
+  id             String        @id
+  category       BadgeCategory
+  condition      String
+  rarity         String
+  cosmeticUnlock String?       @map("cosmetic_unlock")
+  createdAt      DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  userBadges UserBadge[]
+
+  @@map("badge")
+  @@schema("app")
+}
+
+model UserBadge {
+  userId     String   @map("user_id") @db.Uuid
+  badgeId    String   @map("badge_id")
+  unlockedAt DateTime @default(now()) @map("unlocked_at") @db.Timestamptz(6)
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge Badge @relation(fields: [badgeId], references: [id])
+
+  @@id([userId, badgeId])
+  @@map("user_badge")
+  @@schema("app")
+}
+
+// --------------------------- scoring.* ---------------------------
+// Propriété du score-service, VERSIONNÉ. Liens depuis app.* via uuid logiques.
+
+model ScoringVersion {
+  id               String        @id @default(uuid()) @db.Uuid
+  semver           String
+  status           ScoringStatus
+  fParams          Json          @map("f_params")
+  attributeWeights Json          @map("attribute_weights")
+  freshnessWeeks   Int           @default(26) @map("freshness_weeks") @db.SmallInt
+  notes            String?
+  activatedAt      DateTime?     @map("activated_at") @db.Timestamptz(6)
+  createdAt        DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@map("scoring_version")
+  @@schema("scoring")
+}
+
+model ReferenceDistribution {
+  id               String             @id @default(uuid()) @db.Uuid
+  wodId            String             @map("wod_id")
+  sex              Sex
+  source           DistributionSource
+  n                Int
+  percentileCurve  Json               @map("percentile_curve")
+  proReference     Decimal            @map("pro_reference")
+  scoringVersionId String             @map("scoring_version_id") @db.Uuid
+  computedAt       DateTime           @default(now()) @map("computed_at") @db.Timestamptz(6)
+
+  @@unique([wodId, sex, scoringVersionId])
+  @@map("reference_distribution")
+  @@schema("scoring")
+}
+
+model HybridIndexHistory {
+  id               String   @id @default(uuid()) @db.Uuid
+  userId           String   @map("user_id") @db.Uuid
+  value            Int
+  percentile       Decimal  @db.Decimal(5, 4)
+  scoringVersionId String   @map("scoring_version_id") @db.Uuid
+  reason           String
+  computedAt       DateTime @default(now()) @map("computed_at") @db.Timestamptz(6)
+
+  @@index([userId, computedAt])
+  @@map("hybrid_index_history")
+  @@schema("scoring")
+}
+
+model RecomputeJob {
+  id          String    @id @default(uuid()) @db.Uuid
+  fromVersion String    @map("from_version") @db.Uuid
+  toVersion   String    @map("to_version") @db.Uuid
+  status      String
+  totalUsers  Int       @map("total_users")
+  processed   Int       @default(0)
+  startedAt   DateTime? @map("started_at") @db.Timestamptz(6)
+  finishedAt  DateTime? @map("finished_at") @db.Timestamptz(6)
+
+  @@map("recompute_job")
+  @@schema("scoring")
+}
