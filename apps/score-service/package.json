@@ -10,7 +10,7 @@
     "dev": "node --watch dist/main.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "jest",
-    "lint": "echo \"(lint score-service: TODO eslint)\""
+    "lint": "eslint src test"
   },
   "dependencies": {
     "@hybrid-index/contracts": "workspace:*",

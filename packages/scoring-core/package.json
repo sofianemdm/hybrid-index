@@ -15,7 +15,7 @@
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
-    "lint": "echo \"(lint scoring-core: TODO eslint)\""
+    "lint": "eslint src"
   },
   "dependencies": {
     "@hybrid-index/contracts": "workspace:*"
