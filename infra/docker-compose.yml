@@ -1,0 +1,64 @@
+# Dev local HYBRID INDEX (cf. docs/architecture.md §1.1 / §2).
+# Lancement : depuis la racine du repo → `docker compose -f infra/docker-compose.yml up --build`
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: hybrid
+      POSTGRES_PASSWORD: hybrid
+      POSTGRES_DB: hybrid_index
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hybrid -d hybrid_index"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  score-service:
+    build:
+      context: ..
+      dockerfile: infra/docker/Dockerfile.score-service
+    environment:
+      SCORE_SERVICE_PORT: 3001
+      DATABASE_URL: postgres://hybrid:hybrid@postgres:5432/hybrid_index
+    depends_on:
+      postgres:
+        condition: service_healthy
+    # Service interne : pas de port exposé à l'hôte (seul l'api l'appelle).
+    expose:
+      - "3001"
+
+  api:
+    build:
+      context: ..
+      dockerfile: infra/docker/Dockerfile.api
+    environment:
+      API_PORT: 3000
+      DATABASE_URL: postgres://hybrid:hybrid@postgres:5432/hybrid_index
+      REDIS_URL: redis://redis:6379
+      SCORE_SERVICE_URL: http://score-service:3001
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      score-service:
+        condition: service_started
+
+volumes:
+  pgdata:

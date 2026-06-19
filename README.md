@@ -32,6 +32,29 @@ hybrid-index/
 5. **Valide les specs** produites par les agents, puis le **plan du MVP**, puis construis
    **incrément par incrément** (chaque incrément relu par `reviewer`).
 
+## Développement du monorepo (backend TS)
+
+Prérequis : **Node ≥ 22**, **pnpm 10**. *(Si erreur de certificat TLS derrière un proxy
+d'entreprise : préfixer les commandes par `NODE_OPTIONS=--use-system-ca`.)*
+
+```bash
+pnpm install          # installe le workspace (apps/api, apps/score-service, packages/*)
+pnpm build            # build incrémental (turbo)
+pnpm test             # tests (logique de score = couverture élevée, bloquant en CI)
+pnpm typecheck        # vérification de types
+```
+
+Services (dev local complet via Docker — Postgres + Redis + api + score-service) :
+
+```bash
+docker compose -f infra/docker-compose.yml up --build
+# api → http://localhost:3000/health   (score-service est interne, non exposé)
+```
+
+Structure : `apps/api` (BFF NestJS) · `apps/score-service` (microservice Score versionné) ·
+`apps/mobile` (Flutter, hors workspace pnpm — voir `apps/mobile/README.md`) ·
+`packages/contracts` (enums/DTO Zod = source de vérité). Détails : `docs/architecture.md`.
+
 ## Principe directeur
 La qualité vient de la **discipline**, pas du nombre d'agents :
 spec = source de vérité → plan avant code → petits incréments → revue systématique → portes

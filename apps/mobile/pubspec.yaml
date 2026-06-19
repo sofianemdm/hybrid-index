@@ -1,0 +1,25 @@
+name: hybrid_index
+description: HYBRID INDEX — app mobile (iOS + Android, base unique).
+publish_to: "none"
+version: 0.0.1+1
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+  flutter: ">=3.22.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # Ajoutés au fil des incréments (cf. docs/architecture.md §1.2) :
+  # dio (http), drift + sqlite3 (cache + outbox offline), riverpod (state),
+  # go_router (navigation), client API généré depuis openapi.json.
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+  # assets:
+  #   - assets/sprites/   # avatars 2D en couches (incrément 2)
