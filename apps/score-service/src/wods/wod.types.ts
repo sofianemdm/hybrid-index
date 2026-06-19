@@ -24,5 +24,5 @@ export interface WodDefinition {
   requiresEquipment: boolean;
   isBenchmark: boolean;
   targetAttributes: ReadonlyArray<WodAttributeTag>;
-  byaSex: Record<Sex, WodSexReference>;
+  bySex: Record<Sex, WodSexReference>;
 }

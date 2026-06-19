@@ -41,7 +41,7 @@ export const WODS: ReadonlyArray<WodDefinition> = [
       { attribute: "power", estimated: false },
       { attribute: "hybrid", estimated: false },
     ],
-    byaSex: {
+    bySex: {
       male: { model: lognormalFromMedian(5100, 0.18), hardMin: 840, hardMax: 3600, proReference: 3300 },
       female: { model: lognormalFromMedian(5700, 0.18), hardMin: 960, hardMax: 4200, proReference: 3660 },
     },
@@ -56,7 +56,7 @@ export const WODS: ReadonlyArray<WodDefinition> = [
       { attribute: "muscular_endurance", estimated: false },
       { attribute: "power", estimated: false },
     ],
-    byaSex: {
+    bySex: {
       male: { model: lognormalFromMedian(345, 0.3), hardMin: 105, hardMax: 1500, proReference: 135 },
       female: { model: lognormalFromMedian(390, 0.3), hardMin: 135, hardMax: 1800, proReference: 165 },
     },
@@ -71,7 +71,7 @@ export const WODS: ReadonlyArray<WodDefinition> = [
       { attribute: "power", estimated: false },
       { attribute: "strength", estimated: false },
     ],
-    byaSex: {
+    bySex: {
       male: { model: lnArithMean(203, 0.43), hardMin: 55, hardMax: 1200, proReference: 90 },
       female: { model: lnArithMean(236, 0.39), hardMin: 80, hardMax: 1500, proReference: 120 },
     },
@@ -88,7 +88,7 @@ export const WODS: ReadonlyArray<WodDefinition> = [
       { attribute: "power", estimated: false },
       { attribute: "strength", estimated: false },
     ],
-    byaSex: {
+    bySex: {
       male: {
         model: points([
           [0.1, 780],
@@ -124,7 +124,7 @@ export const WODS: ReadonlyArray<WodDefinition> = [
     requiresEquipment: true,
     isBenchmark: true,
     targetAttributes: [{ attribute: "engine", estimated: false }],
-    byaSex: {
+    bySex: {
       male: { model: lognormalFromMedian(450, 0.085), hardMin: 330, hardMax: 720, proReference: 370 },
       female: { model: lognormalFromMedian(510, 0.085), hardMin: 390, hardMax: 810, proReference: 435 },
     },
@@ -140,7 +140,7 @@ export const WODS: ReadonlyArray<WodDefinition> = [
       { attribute: "muscular_endurance", estimated: false },
       { attribute: "hybrid", estimated: false },
     ],
-    byaSex: {
+    bySex: {
       male: { model: lognormalFromMedian(590, 0.16), hardMin: 390, hardMax: 1320, proReference: 433 },
       female: { model: lognormalFromMedian(674, 0.16), hardMin: 450, hardMax: 1500, proReference: 510 },
     },
@@ -155,7 +155,7 @@ export const WODS: ReadonlyArray<WodDefinition> = [
       { attribute: "power", estimated: false },
       { attribute: "muscular_endurance", estimated: false },
     ],
-    byaSex: {
+    bySex: {
       male: {
         model: points([
           [0.1, 840],
@@ -194,7 +194,7 @@ export const WODS: ReadonlyArray<WodDefinition> = [
       { attribute: "muscular_endurance", estimated: false },
       { attribute: "engine", estimated: false },
     ],
-    byaSex: {
+    bySex: {
       male: { model: normal(16, 4.0), hardMin: 3, hardMax: 32, proReference: 23 },
       female: { model: normal(13, 3.5), hardMin: 2, hardMax: 28, proReference: 20 },
     },
@@ -212,7 +212,7 @@ export const WODS: ReadonlyArray<WodDefinition> = [
       { attribute: "muscular_endurance", estimated: false },
       { attribute: "hybrid", estimated: false },
     ],
-    byaSex: {
+    bySex: {
       male: {
         model: points([
           [0.1, 1200],
@@ -248,7 +248,7 @@ export const WODS: ReadonlyArray<WodDefinition> = [
     requiresEquipment: false,
     isBenchmark: true,
     targetAttributes: [{ attribute: "engine", estimated: false }],
-    byaSex: {
+    bySex: {
       male: {
         model: points([
           [0.1, 3202],
@@ -283,7 +283,7 @@ export const WODS: ReadonlyArray<WodDefinition> = [
       { attribute: "speed", estimated: false },
       { attribute: "engine", estimated: false },
     ],
-    byaSex: {
+    bySex: {
       male: { model: lognormalFromMedian(300, 0.22), hardMin: 145, hardMax: 720, proReference: 180 },
       female: { model: lognormalFromMedian(360, 0.22), hardMin: 165, hardMax: 840, proReference: 210 },
     },
@@ -299,7 +299,7 @@ export const WODS: ReadonlyArray<WodDefinition> = [
       { attribute: "strength", estimated: true },
       { attribute: "muscular_endurance", estimated: false },
     ],
-    byaSex: {
+    bySex: {
       male: { model: normal(25, 11), hardMin: 0, hardMax: 110, proReference: 60 },
       female: { model: normal(12, 7), hardMin: 0, hardMax: 80, proReference: 35 },
     },
@@ -314,7 +314,7 @@ export const WODS: ReadonlyArray<WodDefinition> = [
       { attribute: "muscular_endurance", estimated: false },
       { attribute: "power", estimated: false },
     ],
-    byaSex: {
+    bySex: {
       male: { model: normal(50, 12), hardMin: 10, hardMax: 130, proReference: 85 },
       female: { model: normal(45, 11), hardMin: 10, hardMax: 125, proReference: 80 },
     },
@@ -331,7 +331,7 @@ export const WODS: ReadonlyArray<WodDefinition> = [
       { attribute: "power", estimated: false },
       { attribute: "hybrid", estimated: false },
     ],
-    byaSex: {
+    bySex: {
       male: { model: normal(70, 18), hardMin: 15, hardMax: 160, proReference: 125 },
       female: { model: normal(60, 16), hardMin: 12, hardMax: 145, proReference: 110 },
     },
@@ -343,7 +343,7 @@ export const WODS: ReadonlyArray<WodDefinition> = [
     requiresEquipment: false,
     isBenchmark: true,
     targetAttributes: [{ attribute: "muscular_endurance", estimated: false }],
-    byaSex: {
+    bySex: {
       male: { model: normal(50, 11), hardMin: 10, hardMax: 105, proReference: 80 },
       female: { model: normal(45, 11), hardMin: 10, hardMax: 105, proReference: 80 },
     },

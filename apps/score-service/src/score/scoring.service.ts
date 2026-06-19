@@ -1,4 +1,4 @@
-import { Injectable, UnprocessableEntityException } from "@nestjs/common";
+import { BadRequestException, Injectable, UnprocessableEntityException } from "@nestjs/common";
 import type { internalScore } from "@hybrid-index/contracts";
 import {
   type AttributeResult,
@@ -23,16 +23,19 @@ export class ScoringService {
   /** Sous-score d'un effort sur un WOD de référence (R brut → percentile → courbe f). */
   computeSubScore(req: internalScore.ComputeSubScoreRequest): internalScore.ComputeSubScoreResponse {
     const wod = this.wods.getOrThrow(req.wodId);
-    const ref = wod.byaSex[req.sex];
+    const ref = wod.bySex[req.sex];
 
     if (wod.scoreType !== req.scoreType) {
-      throw new UnprocessableEntityException({
+      throw new BadRequestException({
         code: "VALIDATION_ERROR",
         message: `scoreType '${req.scoreType}' incompatible avec le WOD ${wod.id} ('${wod.scoreType}')`,
+        details: { field: "scoreType", expected: wod.scoreType },
       });
     }
 
     // Anti-triche §5.5 : hors bornes physiologiques ⇒ refusé (exclu des classements).
+    // NB : la détection d'ANOMALIE (saut > +30 % en 7 j → WOD_RESULT_ANOMALY) est STATEFULL
+    // (inter-efforts) et relève de l'`api` (historique en base), pas du score-service pur.
     if (req.rawResult < ref.hardMin || req.rawResult > ref.hardMax) {
       throw new UnprocessableEntityException({
         code: "WOD_RESULT_OUT_OF_BOUNDS",
@@ -50,7 +53,11 @@ export class ScoringService {
     };
   }
 
-  /** Agrège l'Index à partir de scores d'attributs déjà calculés (cf. contrat interne). */
+  /**
+   * Agrège l'Index à partir de scores d'attributs déjà calculés (cf. contrat interne).
+   * NB : `req.sex` est reçu mais pas encore utilisé — la distribution d'Index est sex-agnostique
+   * au démarrage (N(450,140), §6.4) ; le champ est conservé pour le futur percentile par sexe.
+   */
   computeIndex(req: internalScore.ComputeIndexRequest): internalScore.ComputeIndexResponse {
     const radar: AttributeResult[] = req.attributeScores.map((a) => ({
       attribute: a.attribute,

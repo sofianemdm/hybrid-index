@@ -77,6 +77,14 @@ La table illustrative §4.3 de `sport-science-scoring.md` contenait des valeurs 
 correctement. Table corrigée + implémentation `@hybrid-index/scoring-core` testée sur les valeurs exactes.
 *(Découvert en codant l'incrément 1.)*
 
+### D9 — Un test chargé réel fait autorité même périmé (précise D2 + D3)
+Cas limite : seul test de Force chargé (Grace) **hors fenêtre 26 sem** + proxy pompes **frais**.
+Décision : la **mesure réelle fait autorité même périmée** — le proxy ne peut jamais la surclasser
+(D2). On conserve la valeur réelle (no-drop, D3) et on marque `isStale` (invitation au re-test).
+On ne retombe sur une estimation que s'il n'existe **aucune** mesure réelle. Implémenté dans
+`scoring-core/attribute.ts` + testé. **Seuil `isStale` (M4)** : la spec dit « ~8–12 sem » ; on retient
+**10 semaines** (`STALE_WEEKS`).
+
 ---
 
 ### Points importants encore ouverts (non bloquants — à trancher avant lancement public)

@@ -39,6 +39,22 @@ describe("score-service — calcul (e2e)", () => {
       expect(res.body.error.details).toEqual({ field: "rawResult", min: 810, max: 4200 });
     });
 
+    it("rejette un résultat au-dessus de la borne haute (422)", async () => {
+      const res = await request(app.getHttpServer())
+        .post("/v1/score/sub-score")
+        .send({ wodId: "max_pushups", sex: "male", scoreType: "reps", rawResult: 999 })
+        .expect(422);
+      expect(res.body.error.code).toBe("WOD_RESULT_OUT_OF_BOUNDS");
+    });
+
+    it("rejette un scoreType incompatible avec le WOD (400)", async () => {
+      const res = await request(app.getHttpServer())
+        .post("/v1/score/sub-score")
+        .send({ wodId: "run_5k", sex: "male", scoreType: "reps", rawResult: 1440 })
+        .expect(400);
+      expect(res.body.error.code).toBe("VALIDATION_ERROR");
+    });
+
     it("rejette un WOD inconnu (404)", async () => {
       await request(app.getHttpServer())
         .post("/v1/score/sub-score")
@@ -75,6 +91,16 @@ describe("score-service — calcul (e2e)", () => {
       expect(res.body.radarCoverage).toBe(4);
       expect(res.body.isProvisional).toBe(false);
       expect(res.body.scoringVersionId).toBe("scoring-v1");
+    });
+
+    it("Index provisoire quand aucun attribut n'est débloqué (value 0)", async () => {
+      const res = await request(app.getHttpServer())
+        .post("/v1/score/index")
+        .send({ sex: "male", goal: "all_round", attributeScores: [] })
+        .expect(201);
+      expect(res.body.value).toBe(0);
+      expect(res.body.isProvisional).toBe(true);
+      expect(res.body.radarCoverage).toBe(0);
     });
   });
 });

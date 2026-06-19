@@ -52,22 +52,24 @@ export function attributeScore(
     return { attribute, score: 0, unlocked: false, isEstimated: false, isStale: false, bestAgeWeeks: null };
   }
 
-  const inWindow = contributions.filter((c) => c.ageWeeks <= FRESHNESS_WEEKS);
-  // D3 : si rien dans la fenêtre, on garde quand même la dernière valeur connue (no-drop).
-  const pool = inWindow.length > 0 ? inWindow : contributions;
+  // D2 (décision D9) : une mesure RÉELLE fait autorité MÊME si elle est périmée — une estimation
+  // (proxy) ne peut jamais la surclasser. On ne retombe sur les estimées que s'il n'existe AUCUNE
+  // mesure réelle. D3 : à l'intérieur du pool retenu, on prend le max (no-drop) et, hors fenêtre,
+  // on conserve la dernière valeur connue (jamais d'effacement).
+  const real = contributions.filter((c) => !c.estimated);
+  const isEstimated = real.length === 0;
+  const pool = isEstimated ? contributions : real;
 
-  // D2 : une mesure réelle (non estimée) fait autorité ; sinon on retombe sur les estimées.
-  const real = pool.filter((c) => !c.estimated);
-  const authoritative = real.length > 0 ? real : pool;
-  const best = authoritative.reduce((a, b) => (b.subScore > a.subScore ? b : a));
+  const inWindow = pool.filter((c) => c.ageWeeks <= FRESHNESS_WEEKS);
+  const chosen = inWindow.length > 0 ? inWindow : pool;
+  const best = chosen.reduce((a, b) => (b.subScore > a.subScore ? b : a));
 
-  const outOfWindow = inWindow.length === 0;
   return {
     attribute,
     score: best.subScore,
     unlocked: true,
-    isEstimated: real.length === 0,
-    isStale: outOfWindow || best.ageWeeks >= STALE_WEEKS,
+    isEstimated,
+    isStale: inWindow.length === 0 || best.ageWeeks >= STALE_WEEKS,
     bestAgeWeeks: best.ageWeeks,
   };
 }

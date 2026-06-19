@@ -59,6 +59,17 @@ describe("attributeScore — proxy Force (D2)", () => {
     expect(r.isEstimated).toBe(false);
   });
 
+  it("un test chargé PÉRIMÉ fait toujours autorité sur un proxy frais (D9)", () => {
+    // Grace il y a 40 sem (76, réel) + pompes fraîches (958, proxy) → strength = 76, estimé=false, stale.
+    const r = attributeScore("strength", [
+      eff(76, 40, [{ attribute: "strength", estimated: false }]),
+      eff(958, 1, [{ attribute: "strength", estimated: true }]),
+    ]);
+    expect(r.score).toBe(76);
+    expect(r.isEstimated).toBe(false);
+    expect(r.isStale).toBe(true);
+  });
+
   it("sans test chargé, le proxy est utilisé et l'attribut est estimé", () => {
     const r = attributeScore("strength", [eff(871, 1, [{ attribute: "strength", estimated: true }])]);
     expect(r.score).toBe(871);

@@ -17,7 +17,7 @@ describe("Registre des WODs (intégrité)", () => {
   it("chaque WOD a une référence pour les deux sexes avec bornes valides", () => {
     for (const wod of WODS) {
       for (const sex of ["male", "female"] as const) {
-        const ref = wod.byaSex[sex];
+        const ref = wod.bySex[sex];
         expect(ref.hardMin).toBeLessThan(ref.hardMax);
         expect(ref.proReference).toBeGreaterThanOrEqual(ref.hardMin);
         expect(ref.proReference).toBeLessThanOrEqual(ref.hardMax);
@@ -36,7 +36,7 @@ describe("Registre des WODs (intégrité)", () => {
   it("le pro reference donne un percentile très élevé (cible élite)", () => {
     for (const wod of WODS) {
       for (const sex of ["male", "female"] as const) {
-        const ref = wod.byaSex[sex];
+        const ref = wod.bySex[sex];
         const p = percentile(ref.proReference, ref.model);
         expect(p).toBeGreaterThan(0.8); // l'élite bat >80 % de la population
       }

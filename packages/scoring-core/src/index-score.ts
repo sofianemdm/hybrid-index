@@ -50,6 +50,10 @@ export function hybridIndex(
     num += w * a.score;
     den += w;
   }
+  // Robustesse : impossible avec weights-v1 (min 0.7), mais protège des futures versions de poids.
+  if (den <= 0) {
+    return { value: 0, percentile: indexPercentile(0), isProvisional: true, isEstimated: false, radarCoverage: coverage };
+  }
   const value = Math.round(num / den);
 
   const isProvisional = !(coverage >= PROVISIONAL_MIN_ATTRIBUTES || totalValidEfforts >= PROVISIONAL_MIN_EFFORTS);
@@ -61,6 +65,8 @@ export function hybridIndex(
 /**
  * Index projeté (cf. sport-science §6 / cahier §4.3) : Index simulé si l'attribut `target`
  * atteignait `targetScore`. Honnête : c'est une simulation, jamais l'Index réel.
+ * Déviation intentionnelle de la formule littérale : on applique `max(score actuel, cible)` pour
+ * que la projection ne descende jamais sous l'Index réel (cohérent avec l'esprit no-drop / D3).
  */
 export function projectedIndex(
   radar: ReadonlyArray<AttributeResult>,
