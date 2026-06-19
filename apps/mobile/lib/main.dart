@@ -1,44 +1,38 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'core/env.dart';
+import 'app.dart';
+import 'data/session.dart';
+import 'theme/app_theme.dart';
 
 void main() {
-  runApp(const HybridIndexApp());
+  runApp(const ProviderScope(child: HybridIndexApp()));
 }
 
-/// Squelette de l'app (incrément 0). Le design system (thème sombre « feel jeu »,
-/// tokens) et les features (onboarding, home, wod, radar...) arrivent aux incréments suivants
-/// — cf. docs/design-system.md et docs/architecture.md §1.2.
-class HybridIndexApp extends StatelessWidget {
+/// App HYBRID INDEX (iOS + Android, ici aussi Web pour la démo navigateur).
+/// Le design system « feel jeu » sombre est défini dans theme/ ; l'app n'appelle que l'`api`.
+class HybridIndexApp extends ConsumerStatefulWidget {
   const HybridIndexApp({super.key});
+
+  @override
+  ConsumerState<HybridIndexApp> createState() => _HybridIndexAppState();
+}
+
+class _HybridIndexAppState extends ConsumerState<HybridIndexApp> {
+  @override
+  void initState() {
+    super.initState();
+    // Restaure la session (token persisté) au démarrage.
+    Future.microtask(() => ref.read(sessionProvider.notifier).bootstrap());
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'HYBRID INDEX',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData.dark(useMaterial3: true),
-      home: const _BootstrapScreen(),
-    );
-  }
-}
-
-class _BootstrapScreen extends StatelessWidget {
-  const _BootstrapScreen();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text('HYBRID INDEX', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Text('api: ${Env.apiBaseUrl}', style: Theme.of(context).textTheme.bodySmall),
-          ],
-        ),
-      ),
+      theme: buildHiTheme(),
+      home: const AuthGate(),
     );
   }
 }
