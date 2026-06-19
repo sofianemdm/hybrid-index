@@ -301,14 +301,19 @@ Calcul : `raw(0)=1/(1+e^{3.3})=0.0356` ; `raw(1)=1/(1+e^{−2.7})=0.9370` ; dén
 
 | P | raw(P) | f(P) = (raw−0.0356)/0.9014 | sous-score |
 |------|--------|------------|-----------|
-| 0.01 | 0.0337 | −0.0021 → clamp 0 | ~0 |
-| 0.10 | 0.0556 | 0.0222 | **22** |
-| 0.25 | 0.1393 | 0.1151 | **115** |
+| 0.01 | 0.0377 | 0.0023 | **2** |
+| 0.10 | 0.0630 | 0.0304 | **30** |
+| 0.25 | 0.1419 | 0.1179 | **118** |
 | 0.50 | 0.4256 | 0.4327 | **433** |
 | 0.55 | 0.5000 | 0.5152 | **515** |
 | 0.75 | 0.7685 | 0.8131 | **813** |
-| 0.90 | 0.9089 | 0.9690 | **969** |
-| 0.99 | 0.9698 | 0.9966 | **997** |
+| 0.90 | 0.8909 | 0.9488 | **949** |
+| 0.99 | 0.9334 | 0.9960 | **996** |
+
+> **Erratum (corrigé le 2026-06-19, décision D8).** Cette table contenait des valeurs `raw`/sous-score
+> erronées (0.10→22, 0.25→115, 0.90→969…). Les valeurs ci-dessus sont recalculées depuis la **formule**
+> (source de vérité, déterministe et versionnée). Le worked example A §9, lui, applique déjà la formule
+> correctement. L'implémentation `@hybrid-index/scoring-core` teste ces valeurs exactes.
 
 > Médiane (P=0.50) → **433** ≈ cible 450 (réglable via `P0` ; baisser `P0` à 0.53 remonte la médiane à ~470).
 > Pente raide en 0.5–0.75 (de 433 à 813) = la zone « dopamine » de progression visible. Extrêmes aplatis.

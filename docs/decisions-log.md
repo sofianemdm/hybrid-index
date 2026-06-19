@@ -70,6 +70,13 @@ Les **libellés utilisateur restent en français** via i18n. Les docs `sport-sci
 `gamification.md` peuvent garder les termes FR en prose ; la correspondance FR↔clé est documentée
 dans `packages/contracts/src/enums/index.ts`. *(Résout l'alerte I1 de la revue de l'incrément 0.)*
 
+### D8 — Erratum table §4.3 (courbe f) : la formule fait foi
+La table illustrative §4.3 de `sport-science-scoring.md` contenait des valeurs erronées
+(P=0.10→22 au lieu de 30 ; 0.25→115 au lieu de 118 ; 0.90→969 au lieu de 949 ; etc.). La **formule**
+`f(P)` (sigmoid-v1) est la source de vérité (déterministe, versionnée) ; le worked example A l'applique
+correctement. Table corrigée + implémentation `@hybrid-index/scoring-core` testée sur les valeurs exactes.
+*(Découvert en codant l'incrément 1.)*
+
 ---
 
 ### Points importants encore ouverts (non bloquants — à trancher avant lancement public)
