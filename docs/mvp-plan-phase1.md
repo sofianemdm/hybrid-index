@@ -12,7 +12,7 @@
 |---|---|---|---|
 | 0 | Fondations monorepo | ✅ **Terminé** (revu) | build + typecheck + test verts, CI présente |
 | 1 | Service Score (isolé, testé à fond) | ✅ **Terminé** (revu, 75 tests) | worked examples A/B reproduits, D2/D3, bornes, provisoire |
-| 2 | Auth + onboarding + REVEAL | 🟡 schéma Prisma validé (reste : auth/onboarding/reveal, nécessite Postgres) | e2e : nouvel inscrit → Index provisoire révélé < 60 s |
+| 2 | Auth + onboarding + REVEAL | 🟡 **REVEAL fait & testé en vrai** (api↔score, sans BD) + schéma Prisma + age-gating D4 testé. Reste : création de compte/persistance (Postgres) | e2e : nouvel inscrit → Index provisoire révélé < 60 s |
 | 3 | Notation d'un WOD + conséquences | — | logger Benchmark Zéro/PFT → score+radar+Index ; idempotence ; sync offline |
 | 4 | Radar + détail Index + ciblage d'axe (+ ~60 séances) | — | cibler un axe → Index projeté ; reco respecte matériel/niveau |
 | 5 | Ligues H/F + Rival | — | ordre du classement + `computeRival` (cas limites) |
