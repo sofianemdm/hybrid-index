@@ -1,12 +1,12 @@
 import { Module } from "@nestjs/common";
 import { ScoreClientModule } from "../../infra/score-client/score-client.module";
 import { ProfileModule } from "../profile/profile.module";
-import { OnboardingController } from "./onboarding.controller";
-import { OnboardingService } from "./onboarding.service";
+import { ResultsController } from "./results.controller";
+import { ResultsService } from "./results.service";
 
 @Module({
   imports: [ScoreClientModule, ProfileModule],
-  controllers: [OnboardingController],
-  providers: [OnboardingService],
+  controllers: [ResultsController],
+  providers: [ResultsService],
 })
-export class OnboardingModule {}
+export class ResultsModule {}

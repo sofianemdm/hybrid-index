@@ -1,9 +1,25 @@
 import { Module } from "@nestjs/common";
 import { HealthController } from "./health/health.controller";
+import { PrismaModule } from "./infra/prisma/prisma.module";
+import { RedisModule } from "./infra/redis/redis.module";
+import { AuthModule } from "./modules/auth/auth.module";
+import { ProfileModule } from "./modules/profile/profile.module";
+import { MeModule } from "./modules/me/me.module";
 import { OnboardingModule } from "./modules/onboarding/onboarding.module";
+import { ResultsModule } from "./modules/results/results.module";
+import { LeaderboardModule } from "./modules/leaderboard/leaderboard.module";
 
 @Module({
-  imports: [OnboardingModule],
+  imports: [
+    PrismaModule,
+    RedisModule,
+    AuthModule,
+    ProfileModule,
+    MeModule,
+    OnboardingModule,
+    ResultsModule,
+    LeaderboardModule,
+  ],
   controllers: [HealthController],
 })
 export class AppModule {}
