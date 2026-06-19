@@ -1,0 +1,10 @@
+# Normalise les fins de ligne en LF dans le dépôt (repo Flutter + Node multi-OS).
+* text=auto eol=lf
+
+# Binaires (sprites avatar, etc.) : pas de normalisation.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ttf binary
+*.otf binary
