@@ -1,29 +1,31 @@
 import { HttpException, Inject, Injectable, ServiceUnavailableException } from "@nestjs/common";
-import type { internalScore } from "@hybrid-index/contracts";
+import { internalScore } from "@hybrid-index/contracts";
+import type { ZodSchema } from "zod";
 
 export const SCORE_SERVICE_URL = Symbol("SCORE_SERVICE_URL");
 
 /**
  * Client HTTP de l'`api` vers le microservice Score (contrat interne /v1/score/*).
  * L'app mobile ne connaît JAMAIS le score-service : seul l'`api` l'appelle (frontière §1.2).
+ * La réponse est revalidée contre le schéma du contrat (défense de la frontière interne).
  */
 @Injectable()
 export class ScoreClient {
   constructor(@Inject(SCORE_SERVICE_URL) private readonly baseUrl: string) {}
 
   computeProfile(req: internalScore.ComputeProfileRequest): Promise<internalScore.ComputeProfileResponse> {
-    return this.post("/v1/score/profile", req);
+    return this.post("/v1/score/profile", req, internalScore.ComputeProfileResponse);
   }
 
   computeSubScore(req: internalScore.ComputeSubScoreRequest): Promise<internalScore.ComputeSubScoreResponse> {
-    return this.post("/v1/score/sub-score", req);
+    return this.post("/v1/score/sub-score", req, internalScore.ComputeSubScoreResponse);
   }
 
   computeIndex(req: internalScore.ComputeIndexRequest): Promise<internalScore.ComputeIndexResponse> {
-    return this.post("/v1/score/index", req);
+    return this.post("/v1/score/index", req, internalScore.ComputeIndexResponse);
   }
 
-  private async post<T>(path: string, body: unknown): Promise<T> {
+  private async post<T>(path: string, body: unknown, schema: ZodSchema<T>): Promise<T> {
     let res: Response;
     try {
       res = await fetch(`${this.baseUrl}${path}`, {
@@ -51,6 +53,14 @@ export class ScoreClient {
       });
     }
 
-    return (await res.json()) as T;
+    const parsed = schema.safeParse(await res.json());
+    if (!parsed.success) {
+      // Le score-service a renvoyé un corps non conforme au contrat → on ne propage pas de donnée corrompue.
+      throw new ServiceUnavailableException({
+        code: "SCORE_SERVICE_UNAVAILABLE",
+        message: "Réponse du service de score non conforme au contrat.",
+      });
+    }
+    return parsed.data;
   }
 }

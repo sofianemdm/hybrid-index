@@ -86,6 +86,16 @@ On ne retombe sur une estimation que s'il n'existe **aucune** mesure réelle. Im
 `scoring-core/attribute.ts` + testé. **Seuil `isStale` (M4)** : la spec dit « ~8–12 sem » ; on retient
 **10 semaines** (`STALE_WEEKS`).
 
+### D10 — Onboarding « reveal » : périmètre thin-slice
+Le calcul du reveal (`POST /v1/onboarding/estimate`) est implémenté **sans persistance** (calcul pur
+api → score-service) pour garantir le « waouh < 60 s ». Réductions assumées vs cahier §8, à compléter :
+- **5bis** : on capte `estimatedPushups` (+ `course` optionnelle). « Niveau de course estimé » et
+  « expérience » (les 2 autres taps du 5bis) ne sont **pas encore** dans `OnboardingEstimateRequest`.
+- **Course** : seuls `run_1k`/`run_5k` existent au registre ; **`run_10k` à ajouter** (le cahier §8
+  évoque 1/5/10 km).
+- La **création de compte** (User/Profile/Avatar + age-gating 13 + consentement) reste à faire
+  (incrément 2 suite, nécessite Postgres).
+
 ---
 
 ### Points importants encore ouverts (non bloquants — à trancher avant lancement public)

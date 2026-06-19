@@ -7,10 +7,11 @@ import { AttributeKey, EquipmentPref, Goal, Rank, Sex } from "../enums";
  * La persistance (inscription) est un endpoint séparé (nécessite la base de données).
  */
 
-/** Un effort de course saisi à l'onboarding (écran 5 « temps de course conseillé »). */
+/** Un effort de course saisi à l'onboarding (écran 5 « temps de course conseillé »).
+ *  Le cahier §8 évoque 1/5/10 km ; seul `run_1k`/`run_5k` existent au registre MVP
+ *  (`run_10k` à ajouter plus tard — cf. decisions-log D10). */
 export const OnboardingCourse = z.object({
-  /** WOD de course : `run_5k`, `run_1k`. */
-  wodId: z.string(),
+  wodId: z.enum(["run_1k", "run_5k"]),
   /** Temps en secondes. */
   timeSeconds: z.number().positive(),
 });
