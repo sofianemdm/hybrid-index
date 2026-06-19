@@ -44,20 +44,25 @@ export class ResultsService {
     });
 
     const performedAt = req.performedAt ?? new Date();
-    const created = await this.prisma.wodResult.create({
-      data: {
-        userId,
-        wodId: req.wodId,
-        sex: profile.sex,
-        rawResult: req.rawResult,
-        subScore: scored.subScore,
-        percentile: scored.percentile,
-        attributesAffected: scored.attributesAffected,
-        source: "declared",
-        scoringVersionId: SCORING_VERSION_UUID,
-        performedAt,
-      },
-    });
+    const data = {
+      wodId: req.wodId,
+      sex: profile.sex,
+      rawResult: req.rawResult,
+      subScore: scored.subScore,
+      percentile: scored.percentile,
+      attributesAffected: scored.attributesAffected,
+      source: "declared" as const,
+      scoringVersionId: SCORING_VERSION_UUID,
+      performedAt,
+    };
+    // Idempotent si une clé est fournie (retry réseau mobile) ; sinon création simple (historique).
+    const created = req.idempotencyKey
+      ? await this.prisma.wodResult.upsert({
+          where: { userId_idempotencyKey: { userId, idempotencyKey: req.idempotencyKey } },
+          create: { userId, idempotencyKey: req.idempotencyKey, ...data },
+          update: data,
+        })
+      : await this.prisma.wodResult.create({ data: { userId, ...data } });
 
     const recomputed = await this.profileScoring.recomputeForUser(userId);
     if (!recomputed) throw new NotFoundException({ code: "NOT_FOUND", message: "Recalcul impossible." });

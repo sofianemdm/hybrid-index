@@ -9,11 +9,21 @@ import { OptionalJwtAuthGuard } from "./optional-jwt-auth.guard";
  * Auth email + mot de passe (bcrypt) + JWT. OAuth Apple/Google différé (credentials externes).
  * Global pour que JwtModule/JwtAuthGuard soient injectables par les modules protégés.
  */
+/** Secret JWT : obligatoire en production (refus de démarrer avec un secret par défaut public). */
+function resolveJwtSecret(): string {
+  const secret = process.env.JWT_SECRET;
+  if (secret) return secret;
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("JWT_SECRET est obligatoire en production.");
+  }
+  return "dev-secret-hybrid-index-not-for-prod";
+}
+
 @Global()
 @Module({
   imports: [
     JwtModule.register({
-      secret: process.env.JWT_SECRET ?? "dev-secret-hybrid-index-not-for-prod",
+      secret: resolveJwtSecret(),
       signOptions: { expiresIn: "30d" },
     }),
   ],

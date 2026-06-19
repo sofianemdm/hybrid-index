@@ -104,7 +104,10 @@ export class ProfileScoringService {
             userId,
             attribute: a.attribute,
             score: a.score,
-            percentile: 0,
+            // Le contrat radar ne porte pas (encore) de percentile par attribut : on stocke une
+            // approximation monotone (score/1000) plutôt qu'un 0 trompeur. À remplacer quand le
+            // score-service exposera le percentile par attribut.
+            percentile: a.score / 1000,
             unlocked: a.unlocked,
             isEstimated: a.isEstimated,
             isStale: a.isStale,
@@ -112,6 +115,7 @@ export class ProfileScoringService {
           },
           update: {
             score: a.score,
+            percentile: a.score / 1000,
             unlocked: a.unlocked,
             isEstimated: a.isEstimated,
             isStale: a.isStale,

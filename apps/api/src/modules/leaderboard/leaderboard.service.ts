@@ -73,17 +73,16 @@ export class LeaderboardService {
     if (myPos === null) return { state: "none", gap: null, rival: null };
     if (myPos.position <= 1) return { state: "leader", gap: null, rival: null };
 
-    // L'athlète juste au-dessus (position - 1, soit l'index 0-based myPos.position - 2).
-    let above = (await this.redis.range(sex, myPos.position - 2, myPos.position - 2))[0];
-    if (!above) {
-      const pg = await this.prisma.hybridIndex.findFirst({
-        where: { value: { gt: myIndex.value }, user: { profile: { sex: sex as Sex } } },
-        orderBy: { value: "asc" },
-        select: { userId: true, value: true },
-      });
-      if (pg) above = { userId: pg.userId, value: pg.value };
-    }
-    if (!above) return { state: "leader", gap: null, rival: null };
+    // L'athlète juste au-dessus : déterminé via Postgres (autoritatif — la jointure profil ne
+    // renvoie que de vrais utilisateurs, ce qui évite toute entrée Redis orpheline / divergence
+    // et donc une référence rival_user_id vers un compte supprimé).
+    const pg = await this.prisma.hybridIndex.findFirst({
+      where: { value: { gt: myIndex.value }, user: { profile: { sex: sex as Sex } } },
+      orderBy: { value: "asc" },
+      select: { userId: true, value: true },
+    });
+    if (!pg) return { state: "leader", gap: null, rival: null };
+    const above = { userId: pg.userId, value: pg.value };
 
     const names = await this.namesFor([above.userId]);
     const rivalProfile = names.get(above.userId);

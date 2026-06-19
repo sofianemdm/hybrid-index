@@ -5,7 +5,11 @@ import { HttpExceptionFilter } from "./common/http-exception.filter";
 export function configureApp(app: INestApplication): INestApplication {
   app.useGlobalFilters(new HttpExceptionFilter());
   // CORS : nécessaire pour l'app Flutter Web (navigateur). `*` en dev ; restreindre en prod.
-  const origins = process.env.CORS_ORIGINS ?? "*";
+  const configured = process.env.CORS_ORIGINS;
+  if (!configured && process.env.NODE_ENV === "production") {
+    throw new Error("CORS_ORIGINS est obligatoire en production (ne pas exposer * par défaut).");
+  }
+  const origins = configured ?? "*";
   app.enableCors({
     origin: origins === "*" ? true : origins.split(",").map((o) => o.trim()),
     methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],

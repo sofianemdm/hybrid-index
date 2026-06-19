@@ -27,11 +27,12 @@ export class AuthService {
     }
 
     const email = req.email.toLowerCase().trim();
+    const displayName = req.displayName.trim();
     const existing = await this.prisma.user.findUnique({ where: { email } });
     if (existing) {
       throw new ConflictException({ code: "CONFLICT", message: "Cet email est déjà utilisé." });
     }
-    const nameTaken = await this.prisma.profile.findUnique({ where: { displayName: req.displayName } });
+    const nameTaken = await this.prisma.profile.findUnique({ where: { displayName } });
     if (nameTaken) {
       throw new ConflictException({ code: "CONFLICT", message: "Ce pseudo est déjà pris." });
     }
@@ -48,7 +49,7 @@ export class AuthService {
         identities: { create: { provider: "email", providerSubject: email } },
         profile: {
           create: {
-            displayName: req.displayName,
+            displayName,
             sex: req.sex,
             goal: req.goal,
             equipmentPref: req.equipmentPref,
@@ -57,7 +58,7 @@ export class AuthService {
       },
     });
 
-    return this.sign(user.id, email, req.displayName);
+    return this.sign(user.id, email, displayName);
   }
 
   async login(req: LoginRequest): Promise<AuthResponse> {

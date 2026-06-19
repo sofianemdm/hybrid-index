@@ -1,4 +1,4 @@
-import { type ArgumentsHost, Catch, type ExceptionFilter, HttpException, HttpStatus } from "@nestjs/common";
+import { type ArgumentsHost, Catch, type ExceptionFilter, HttpException, HttpStatus, Logger } from "@nestjs/common";
 import type { ErrorCode } from "@hybrid-index/contracts";
 
 /** Type structurel minimal de la réponse HTTP (évite la dépendance aux types express). */
@@ -21,8 +21,18 @@ const STATUS_TO_CODE: Record<number, ErrorCode> = {
 /** Enveloppe standard `{ error: { code, message, details, traceId } }` (architecture.md §4.1). */
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
+  private readonly logger = new Logger(HttpExceptionFilter.name);
+
   catch(exception: unknown, host: ArgumentsHost): void {
     const res = host.switchToHttp().getResponse<HttpResponse>();
+
+    // Les exceptions inattendues (non HttpException) deviennent des 500 : on les logge pour ne
+    // pas perdre la cause (sinon le client ne voit qu'« Erreur interne »).
+    if (!(exception instanceof HttpException)) {
+      this.logger.error(
+        exception instanceof Error ? exception.stack ?? exception.message : String(exception),
+      );
+    }
 
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let code: ErrorCode = "INTERNAL";
