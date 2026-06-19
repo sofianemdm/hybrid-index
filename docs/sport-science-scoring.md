@@ -342,8 +342,10 @@ attribute_score(A) = max( subScore(e) pour e ∈ efforts taguant A, age(e) ≤ 2
   **proxy bodyweight** : WOD 12 (max pompes strictes) tague `force` avec `isEstimated = true`.
 - `attribute_score(force)` issu uniquement du proxy ⇒ l'attribut porte `isEstimated = true`,
   affiché « estimé » dans le radar et dans la `confidence` de l'Index.
-- Dès qu'un WOD avec charge (Grace, Jackie) est logué, il **remplace** le proxy s'il donne un
-  sous-score Force, et `isEstimated` repasse à `false`. (Le proxy ne fait jamais baisser un Force réel : règle `max` + priorité au non-estimé en cas d'égalité de fraîcheur.)
+- Dès qu'un WOD avec charge (Grace, Jackie) est logué, **le test chargé fait autorité** : il
+  définit `force` et le **proxy pompes ne peut jamais le surclasser** (proxy plafonné au niveau du
+  test chargé, ou ignoré pour `force` dès qu'un test chargé existe). `isEstimated = true` **ssi la
+  valeur retenue** provient du proxy. *(Décision **D2** — voir `decisions-log.md`.)*
 
 ---
 
@@ -449,17 +451,18 @@ endMusc(12,13,15) · hybride(9,14). **Les 6 sont couverts des deux côtés.**
    Tague `force`(proxy, isEstimated), `enduranceMusculaire`.
 
 **Attributs** (max par tag, fenêtre fraîche) :
-- engine = 884 (5 km) · puissance = 76 (Grace) · force = max(76 Grace réel, 958 pompes proxy).
-  Grace est un test **avec charge** → prioritaire/non-estimé. Mais ici Grace donne 76 < 958 proxy.
-  Règle : on prend le **max** = 958, mais `isEstimated` reste `false` car un test charge existe
-  (le proxy ne « surclasse » pas en estimant : on garde le max numérique et on lève `isEstimated`
-  car un effort Force réel est présent). → **force = 958, isEstimated=false** (alerte : voir §10).
-- enduranceMusculaire = 958 (pompes).
+- engine = 884 (5 km) · puissance = 76 (Grace).
+- **force = 76** : Grace est un test **avec charge** → il **fait autorité** (décision **D2**). Le
+  proxy pompes (958) **ne peut pas le surclasser** et est plafonné/ignoré pour `force`.
+  → **force = 76, isEstimated = false** (la valeur retenue vient d'un test chargé réel).
+- enduranceMusculaire = 958 (pompes — mesure légitime d'endurance au poids de corps, non estimée).
 - Débloqués : engine, force, puissance, enduranceMusculaire = **4/6** → couverture OK, **non provisoire**.
 
 **Index « Partout »** (poids 1) sur 4 attributs débloqués :
-`(884 + 958 + 76 + 958)/4 = 2876/4 = 719` → **HYBRID INDEX ≈ 719 (PLATINE)**.
-Percentile Index (N(450,140)) : `z=(719−450)/140=1.92` → `Φ=0.973` → « meilleur que 97 % des hommes ».
+`(884 + 76 + 76 + 958)/4 = 1994/4 = 499` → **HYBRID INDEX ≈ 499 (OR)**.
+Percentile Index (N(450,140)) : `z=(499−450)/140=0.35` → `Φ=0.637` → « meilleur que 64 % des hommes ».
+> Sans le correctif **D2**, le proxy pompes aurait gonflé l'Index à **719 (Platine)** : la règle
+> « le test chargé fait autorité » préserve la crédibilité du score (dopamine honnête).
 
 ### Exemple B — Femme, objectif « HYROX », 3 efforts
 
@@ -509,7 +512,8 @@ Percentile (N(450,140)) : `z=(775−450)/140=2.32` → « meilleure que 99 % des
 - **Multi-tag** : un effort alimente tous ses attributs.
 - **Fraîcheur** : effort > 26 sem ⇒ `isStale`, mais score conservé (jamais effacé) ; < 8 sem ⇒ frais.
 - **Unlocked** : attribut sans effort ⇒ `unlocked=false`, exclu de l'Index (pas compté 0).
-- **Proxy Force** : pompes seules ⇒ `force.isEstimated=true` ; ajout Grace/Jackie ⇒ `isEstimated=false`.
+- **Proxy Force (D2)** : pompes seules ⇒ `force.isEstimated=true` ; ajout d'un test chargé (Grace/
+  Jackie) ⇒ `force` prend la valeur du test chargé (proxy **plafonné, jamais surclassé**), `isEstimated=false`.
 
 ### HYBRID INDEX
 - **Pondération** : 3 jeux de poids donnent 3 Index différents sur les mêmes sous-scores.
@@ -547,11 +551,9 @@ Force `isEstimated`.
    ralenties vs le classement brut ; à raffiner via la pagination complète ou Held et al.
 4. **PFT HYROX** est un format propriétaire (≠ HYROX officiel) : les distributions HYROX réelles
    ne s'appliquent qu'approximativement → recalibrer si distances/charges divergent.
-5. **Incohérence à trancher (Force proxy, cf. Exemple A)** : quand un test Force réel (Grace) donne
-   un sous-score INFÉRIEUR au proxy pompes, la règle « max » fait remonter le proxy. J'ai posé
-   `isEstimated=false` dès qu'un test charge existe, mais la valeur numérique reste celle du proxy.
-   **À valider avec l'humain** : faut-il (a) plafonner le proxy au niveau du test charge réel, ou
-   (b) garder le max comme actuellement ? Recommandation sport-science : **option (a)** (le proxy ne
-   doit pas surévaluer la Force lourde) — à arbitrer.
+5. **Force proxy — TRANCHÉ (décision D2, `decisions-log.md`)** : quand un test Force réel (Grace/
+   Jackie) existe, il **fait autorité** ; le proxy pompes ne peut pas le surclasser (plafonné/ignoré
+   pour `force`). `isEstimated = true` **ssi** la valeur retenue vient du proxy. Option (a) retenue
+   (le proxy ne doit pas surévaluer la Force lourde). Exemple A mis à jour en conséquence (Index 499).
 6. `µ_idx/σ_idx` de la distribution d'Index (450/140) sont des valeurs de départ par construction de
    `f` ; à remplacer par la distribution empirique dès la communauté constituée.
