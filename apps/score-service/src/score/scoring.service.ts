@@ -35,8 +35,9 @@ export class ScoringService {
     // Anti-triche §5.5 : hors bornes physiologiques ⇒ refusé (exclu des classements).
     if (req.rawResult < ref.hardMin || req.rawResult > ref.hardMax) {
       throw new UnprocessableEntityException({
-        code: "PHYSIOLOGICAL_BOUNDS",
+        code: "WOD_RESULT_OUT_OF_BOUNDS",
         message: `Résultat ${req.rawResult} hors bornes plausibles [${ref.hardMin}, ${ref.hardMax}] pour ${wod.id}/${req.sex}`,
+        details: { field: "rawResult", min: ref.hardMin, max: ref.hardMax },
       });
     }
 

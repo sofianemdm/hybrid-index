@@ -3,13 +3,14 @@ import { Test } from "@nestjs/testing";
 import type { INestApplication } from "@nestjs/common";
 import request from "supertest";
 import { AppModule } from "../src/app.module";
+import { configureApp } from "../src/app.config";
 
 describe("score-service — calcul (e2e)", () => {
   let app: INestApplication;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
-    app = moduleRef.createNestApplication();
+    app = configureApp(moduleRef.createNestApplication());
     await app.init();
   });
 
@@ -34,7 +35,8 @@ describe("score-service — calcul (e2e)", () => {
         .post("/v1/score/sub-score")
         .send({ wodId: "run_5k", sex: "male", scoreType: "time", rawResult: 60 })
         .expect(422);
-      expect(res.body.code).toBe("PHYSIOLOGICAL_BOUNDS");
+      expect(res.body.error.code).toBe("WOD_RESULT_OUT_OF_BOUNDS");
+      expect(res.body.error.details).toEqual({ field: "rawResult", min: 810, max: 4200 });
     });
 
     it("rejette un WOD inconnu (404)", async () => {
@@ -49,7 +51,7 @@ describe("score-service — calcul (e2e)", () => {
         .post("/v1/score/sub-score")
         .send({ wodId: "run_5k", sex: "martian", scoreType: "time", rawResult: 1440 })
         .expect(400);
-      expect(res.body.code).toBe("VALIDATION_ERROR");
+      expect(res.body.error.code).toBe("VALIDATION_ERROR");
     });
   });
 
