@@ -9,14 +9,19 @@ import { z } from "zod";
 export const Sex = z.enum(["male", "female"]);
 export type Sex = z.infer<typeof Sex>;
 
-/** Les 6 attributs du radar. Ordre canonique (cf. sport-science §6.2). */
+/**
+ * Les 6 attributs du radar. Ordre canonique (cf. sport-science §6.2).
+ * Identifiants en anglais (décision D7) ; libellés FR via i18n côté affichage.
+ * Correspondance FR : engine=Engine · speed=Vitesse · strength=Force · power=Puissance ·
+ * muscular_endurance=Endurance musculaire · hybrid=Hybride.
+ */
 export const AttributeKey = z.enum([
   "engine",
-  "vitesse",
-  "force",
-  "puissance",
-  "enduranceMusculaire",
-  "hybride",
+  "speed",
+  "strength",
+  "power",
+  "muscular_endurance",
+  "hybrid",
 ]);
 export type AttributeKey = z.infer<typeof AttributeKey>;
 
@@ -24,11 +29,11 @@ export const ATTRIBUTE_KEYS = AttributeKey.options;
 
 /** Type d'un WOD (cf. §6.1). */
 export const WodType = z.enum([
-  "forTime",
+  "for_time",
   "amrap",
   "emom",
   "chipper",
-  "force",
+  "strength",
   "interval",
 ]);
 export type WodType = z.infer<typeof WodType>;
@@ -42,7 +47,7 @@ export const EquipmentPref = z.enum(["none", "equipped", "both"]);
 export type EquipmentPref = z.infer<typeof EquipmentPref>;
 
 /** Objectif de l'athlète → jeu de poids w_A de l'Index (cf. sport-science §6.2). */
-export const Goal = z.enum(["hyrox", "forceCrossfit", "partout"]);
+export const Goal = z.enum(["hyrox", "crossfit_strength", "all_round"]);
 export type Goal = z.infer<typeof Goal>;
 
 /** Visibilité d'un profil. "public" verrouillé au MVP ; champ prévu pour l'avenir. */

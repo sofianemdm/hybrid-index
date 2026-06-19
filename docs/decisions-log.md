@@ -59,6 +59,19 @@ streak étant **MVP** (incrément 8), ajouter la table `app.streak` (+ préciser
 
 ---
 
+### D7 — Vocabulaire des enums : anglais (snake_case)
+Les identifiants techniques des enums métier sont en **anglais snake_case**, source de vérité dans
+`packages/contracts` et alignés sur `architecture.md §3.1` (→ OpenAPI → client Dart → enums Postgres) :
+- `AttributeKey` : `engine, speed, strength, power, muscular_endurance, hybrid`
+- `WodType` : `for_time, amrap, emom, chipper, strength, interval`
+- `Goal` : `hyrox, crossfit_strength, all_round`
+- (`ScoreType, Sex, EquipmentPref, Visibility, ResultSource, DistributionSource` déjà neutres.)
+Les **libellés utilisateur restent en français** via i18n. Les docs `sport-science-scoring.md` /
+`gamification.md` peuvent garder les termes FR en prose ; la correspondance FR↔clé est documentée
+dans `packages/contracts/src/enums/index.ts`. *(Résout l'alerte I1 de la revue de l'incrément 0.)*
+
+---
+
 ### Points importants encore ouverts (non bloquants — à trancher avant lancement public)
 - **Streak — wording :** mécanique hebdomadaire vs libellés badges « 7/30/100 jours » (decision designer/produit).
 - **No-drop dur au recalcul de version (`f`/poids) :** `max(ancien, nouveau)` peut figer des Index
