@@ -105,3 +105,34 @@ api → score-service) pour garantir le « waouh < 60 s ». Réductions assumée
 - **`sex` verrouillé après onboarding :** interdiction stricte ou recalcul complet ? (sensible).
 - **Indicateur de confiance obligatoire** sur les 3 WODs à données estimées (Benchmark Zéro,
   burpees 7 min, air squats 2 min) — dont le benchmark signature sans matériel.
+
+---
+
+## Nuit du 19→20 juin 2026 — boucle complète persistée + app Flutter Web
+
+### D11 — Auth MVP : email + mot de passe + JWT (OAuth différé)
+La stack verrouillée prévoit email **+ Apple + Google**. Apple/Google exigent des identifiants
+externes (client IDs, clés) impossibles à configurer en autonomie. On implémente donc **email +
+mot de passe (bcrypt) + JWT** — déjà dans la stack, donc **additif et non contradictoire**. OAuth à
+brancher avec l'humain. `JWT_SECRET` **obligatoire en production** (refus de démarrer avec le secret
+de dev). Age-gating 13+ (D4) appliqué à l'inscription.
+
+### D12 — Classement via Redis sorted sets, Postgres source de vérité
+Conforme à la décision verrouillée « classements via sorted sets ». Le rang/position passe par un
+**ZSET Redis** (`leaderboard:{sex}`), avec **repli Postgres** si Redis indisponible. La détermination
+de l'**athlète au-dessus (rival)** est faite **via Postgres** (jointure profil = uniquement de vrais
+comptes) pour éviter toute divergence Redis/Postgres (entrée orpheline → référence vers compte
+supprimé). Resync Redis←Postgres disponible en script.
+
+### D13 — Persistance de score : autorité = score-service, recalcul no-drop côté API interdit
+L'`api` ne recalcule **jamais** un score à la main : à chaque log de WOD, elle renvoie **tous** les
+efforts persistés au score-service (`computeProfile`) qui applique le no-drop (D3). L'`api` ne fait
+que **persister** le résultat (`HybridIndex` + `AttributeScore`, version `scoring-v1` = UUID seedé).
+**Limite connue** : le contrat radar ne porte pas encore de percentile par attribut → stocké comme
+approximation `score/1000` (au lieu de 0), à remplacer quand le contrat l'exposera.
+
+### D14 — Démo navigateur : app Flutter lancée en Web
+Pour être **essayable demain matin sans téléphone/émulateur**, l'app Flutter est lancée en **Web**
+(`flutter run -d chrome`). C'est **le vrai code produit** (base unique iOS+Android) ; le Web est une
+cible de démo. Écrans livrés : auth, onboarding (aperçu live), révélation animée, accueil (Index +
+radar + rival), classement H/F, log WOD. CORS activé côté api (obligatoire pour le navigateur).
