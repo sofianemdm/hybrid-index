@@ -86,17 +86,45 @@ class SocialProof {
   }
 }
 
+/// Gain de compétence sur un attribut au dernier log.
+class AttributeGain {
+  final String attribute;
+  final int delta;
+  const AttributeGain({required this.attribute, required this.delta});
+
+  factory AttributeGain.fromJson(Map<String, dynamic> j) => AttributeGain(
+        attribute: j['attribute'] as String,
+        delta: (j['delta'] as num).toInt(),
+      );
+}
+
 class Profile {
   final IndexSummary index;
   final List<RadarAttribute> radar;
   final SocialProof? socialProof;
+  /// Attributs ayant progressé au dernier log (no-drop ⇒ delta > 0). Vide sur un simple GET.
+  final List<AttributeGain> gains;
+  /// Attribut le plus faible débloqué (point faible à cibler).
+  final String? weakest;
   /// Renseigné quand le dernier recalcul a fait MONTER de bande population (déclenche la célébration).
   final List<String>? bandCelebration; // [from, to] où from peut être '' (null)
-  const Profile({required this.index, required this.radar, this.socialProof, this.bandCelebration});
+  const Profile({
+    required this.index,
+    required this.radar,
+    this.socialProof,
+    this.gains = const [],
+    this.weakest,
+    this.bandCelebration,
+  });
 
   factory Profile.fromJson(Map<String, dynamic> j) {
     final celeb = j['bandCelebration'] as Map<String, dynamic>?;
     return Profile(
+      gains: (j['gains'] as List<dynamic>?)
+              ?.map((e) => AttributeGain.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
+      weakest: j['weakest'] as String?,
       index: IndexSummary.fromJson(j['index'] as Map<String, dynamic>),
       radar: (j['radar'] as List<dynamic>)
           .map((e) => RadarAttribute.fromJson(e as Map<String, dynamic>))

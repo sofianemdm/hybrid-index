@@ -132,6 +132,11 @@ describe("api — boucle complète persistée (e2e réel)", () => {
     expect(res.body.profile.index.radarCoverage).toBeGreaterThanOrEqual(coverageBefore);
     const power = res.body.profile.radar.find((a: { attribute: string }) => a.attribute === "power");
     expect(power.unlocked).toBe(true);
+    // H1 : feedback de compétence — Fran débloque/améliore des attributs ⇒ gains non vides + point faible.
+    expect(Array.isArray(res.body.profile.gains)).toBe(true);
+    expect(res.body.profile.gains.length).toBeGreaterThan(0);
+    expect(res.body.profile.gains.every((g: { delta: number }) => g.delta > 0)).toBe(true);
+    expect(typeof res.body.profile.weakest).toBe("string");
   });
 
   it("rejette un résultat hors bornes (422)", async () => {

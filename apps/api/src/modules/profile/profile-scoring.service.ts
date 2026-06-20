@@ -33,6 +33,10 @@ export interface PersistedProfile {
   };
   radar: Array<{ attribute: string; score: number; unlocked: boolean; isEstimated: boolean }>;
   socialProof: SocialProof;
+  /** Attributs ayant PROGRESSÉ au dernier recalcul (no-drop ⇒ delta > 0). Vide sur un simple GET. */
+  gains: Array<{ attribute: string; delta: number }>;
+  /** Attribut débloqué le plus faible (= point faible à cibler), ou null si aucun débloqué. */
+  weakest: string | null;
   /** Renseigné après un recalcul qui fait MONTER de bande population (déclenche la célébration UI). */
   bandCelebration?: { from: string | null; to: string } | null;
 }
@@ -80,6 +84,13 @@ export class ProfileScoringService {
       },
     });
     if (results.length === 0) return null;
+
+    // Snapshot du radar AVANT recalcul → feedback de compétence « +X sur l'attribut » (H1).
+    const before = await this.prisma.attributeScore.findMany({
+      where: { userId },
+      select: { attribute: true, score: true },
+    });
+    const beforeScore = new Map(before.map((s) => [s.attribute as string, s.score]));
 
     // 1) WODs officiels (connus du registre score-service) → radar no-drop (autorité).
     const officialEfforts: internalScore.EffortInput[] = results
@@ -142,6 +153,14 @@ export class ProfileScoringService {
     const socialProof = await this.buildSocialProof(profile.sex, profile.goal, mergedRadar, index.percentile);
     await this.persist(userId, profile.sex, computedProfile, socialProof.population);
     const result = toPersistedProfile(computedProfile, socialProof);
+
+    // Gains de compétence (no-drop ⇒ delta ≥ 0) + point faible courant.
+    result.gains = mergedRadar
+      .filter((a) => a.unlocked)
+      .map((a) => ({ attribute: a.attribute, delta: a.score - (beforeScore.get(a.attribute) ?? 0) }))
+      .filter((g) => g.delta > 0);
+    result.weakest = weakestOf(mergedRadar);
+
     // Célébration : uniquement quand on MONTE de bande population (jamais à la descente).
     result.bandCelebration = bandImproved(previousBand, socialProof.population.band)
       ? { from: previousBand, to: socialProof.population.band }
@@ -290,6 +309,8 @@ export class ProfileScoringService {
       },
       radar,
       socialProof,
+      gains: [], // pas de delta sur un simple GET (pas d'état « avant »)
+      weakest: weakestOf(radar),
     };
   }
 }
@@ -326,5 +347,14 @@ function toPersistedProfile(
       isEstimated: a.isEstimated,
     })),
     socialProof,
+    gains: [],
+    weakest: weakestOf(computed.radar),
   };
+}
+
+/** Attribut débloqué au score le plus bas (= point faible), cohérent avec le coach. */
+function weakestOf(radar: ReadonlyArray<{ attribute: string; score: number; unlocked: boolean }>): string | null {
+  const unlocked = radar.filter((a) => a.unlocked);
+  if (unlocked.length === 0) return null;
+  return unlocked.reduce((min, a) => (a.score < min.score ? a : min)).attribute;
 }

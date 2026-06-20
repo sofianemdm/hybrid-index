@@ -7,6 +7,7 @@ import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../data/wod_catalog.dart';
 import '../../theme/tokens.dart';
+import '../../widgets/attribute_gains.dart';
 import '../../widgets/hi_button.dart';
 
 /// Log d'un WOD : choisir un WOD + saisir le résultat → l'Index se recalcule.
@@ -111,6 +112,8 @@ class _LogWodScreenState extends ConsumerState<LogWodScreen> {
                 style: const TextStyle(color: HiColors.brandPrimary, fontSize: 44, fontWeight: FontWeight.w800)),
             Text('${p.index.radarCoverage}/6 attributs débloqués',
                 style: const TextStyle(color: HiColors.textTertiary, fontSize: 12)),
+            const SizedBox(height: HiSpace.md),
+            AttributeGains(gains: p.gains, weakest: p.weakest),
             if (newBadges.isNotEmpty) ...[
               const SizedBox(height: HiSpace.md),
               Container(

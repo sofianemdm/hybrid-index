@@ -1,0 +1,57 @@
+import 'package:flutter/material.dart';
+
+import '../data/models.dart';
+import '../theme/tokens.dart';
+
+/// Feedback de compétence : « +X sur tel attribut », avec mise en avant du point faible.
+/// Le levier le mieux établi (compétence + feedback) ; honnête : deltas réels (no-drop ⇒ ≥ 0).
+class AttributeGains extends StatelessWidget {
+  final List<AttributeGain> gains;
+  final String? weakest;
+  const AttributeGains({super.key, required this.gains, this.weakest});
+
+  @override
+  Widget build(BuildContext context) {
+    if (gains.isEmpty) {
+      return const Text(
+        'Pas de nouveau record cette fois — mais chaque séance compte pour ta régularité.',
+        textAlign: TextAlign.center,
+        style: TextStyle(color: HiColors.textTertiary, fontSize: 13),
+      );
+    }
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: gains.map((g) {
+        final isWeak = g.attribute == weakest;
+        final color = HiColors.attribute(g.attribute);
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 3),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.trending_up, color: color, size: 18),
+              const SizedBox(width: 6),
+              Text('+${g.delta}',
+                  style: TextStyle(color: color, fontWeight: FontWeight.w800, fontSize: 15)),
+              const SizedBox(width: 6),
+              Text(HiLabels.attribute(g.attribute),
+                  style: const TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w600)),
+              if (isWeak) ...[
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(HiRadius.pill),
+                  ),
+                  child: Text('🎯 ton point faible',
+                      style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w700)),
+                ),
+              ],
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+}

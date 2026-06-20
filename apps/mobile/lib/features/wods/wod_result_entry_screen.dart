@@ -6,6 +6,7 @@ import '../../app.dart';
 import '../../data/api_client.dart';
 import '../../data/session.dart';
 import '../../theme/tokens.dart';
+import '../../widgets/attribute_gains.dart';
 import '../../widgets/hi_button.dart';
 
 /// Saisie d'un résultat sur un WOD (officiel ou custom) — note via le moteur si custom.
@@ -67,6 +68,8 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
               const SizedBox(height: 8),
               Text('${profile.index.value}',
                   style: const TextStyle(color: HiColors.brandPrimary, fontSize: 44, fontWeight: FontWeight.w800)),
+              const SizedBox(height: 12),
+              AttributeGains(gains: profile.gains, weakest: profile.weakest),
               if (_bandUpText(profile.bandCelebration) != null) ...[
                 const SizedBox(height: 12),
                 Text(_bandUpText(profile.bandCelebration)!,
