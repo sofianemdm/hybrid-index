@@ -8,6 +8,7 @@ import '../../theme/tokens.dart';
 import '../../widgets/index_ring.dart';
 import '../../widgets/radar_view.dart';
 import '../../widgets/rank_badge.dart';
+import '../settings/settings_screen.dart';
 
 /// Accueil : Index courant, rang, carte rival, radar. Tire-pour-rafraîchir.
 class HomeScreen extends ConsumerWidget {
@@ -37,9 +38,11 @@ class HomeScreen extends ConsumerWidget {
                   ),
                 ),
                 IconButton(
-                  tooltip: 'Déconnexion',
-                  icon: const Icon(Icons.logout, color: HiColors.textTertiary),
-                  onPressed: () => ref.read(sessionProvider.notifier).logout(),
+                  tooltip: 'Paramètres',
+                  icon: const Icon(Icons.settings_outlined, color: HiColors.textTertiary),
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                  ),
                 ),
               ],
             ),

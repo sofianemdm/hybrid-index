@@ -89,6 +89,21 @@ class SessionNotifier extends StateNotifier<SessionState> {
     );
   }
 
+  /// Re-fetch /me après une modification de profil (objectif, pseudo…).
+  Future<void> refreshMe() async {
+    if (state.status != AuthStatus.loggedIn || state.user == null) return;
+    final me = await _api.me();
+    state = state.copyWith(
+      user: AuthUser(
+        id: state.user!.id,
+        email: state.user!.email,
+        displayName: me['displayName'] as String? ?? state.user!.displayName,
+      ),
+      sex: me['sex'] as String?,
+      goal: me['goal'] as String?,
+    );
+  }
+
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_kToken);

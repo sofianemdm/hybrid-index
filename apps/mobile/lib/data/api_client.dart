@@ -39,6 +39,9 @@ class ApiClient {
         case 'POST':
           res = await _client.post(uri, headers: _headers, body: jsonEncode(body));
           break;
+        case 'PATCH':
+          res = await _client.patch(uri, headers: _headers, body: jsonEncode(body));
+          break;
         case 'GET':
         default:
           res = await _client.get(uri, headers: _headers);
@@ -73,6 +76,8 @@ class ApiClient {
   }
 
   Future<Map<String, dynamic>> me() async => await _send('GET', '/v1/me') as Map<String, dynamic>;
+
+  Future<void> updateMe(Map<String, dynamic> payload) async => await _send('PATCH', '/v1/me', payload);
 
   // --- Onboarding ---
   Future<Profile> onboardingEstimate(Map<String, dynamic> payload) async {

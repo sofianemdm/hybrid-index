@@ -1,8 +1,11 @@
-import { Controller, Get, NotFoundException, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, NotFoundException, Patch, UseGuards } from "@nestjs/common";
 import { CurrentUser } from "../auth/current-user.decorator";
 import { JwtAuthGuard, type AuthenticatedUser } from "../auth/jwt-auth.guard";
+import { ZodValidationPipe } from "../../common/zod-validation.pipe";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { ProfileScoringService, type PersistedProfile } from "../profile/profile-scoring.service";
+import { MeService } from "./me.service";
+import { UpdateMeRequest } from "./me.dto";
 
 @Controller("v1/me")
 @UseGuards(JwtAuthGuard)
@@ -10,6 +13,7 @@ export class MeController {
   constructor(
     private readonly prisma: PrismaService,
     private readonly profileScoring: ProfileScoringService,
+    private readonly meService: MeService,
   ) {}
 
   /** Identité + profil de base de l'utilisateur connecté. */
@@ -26,6 +30,15 @@ export class MeController {
       equipmentPref: profile.equipmentPref,
       rank: profile.rank,
     };
+  }
+
+  /** Met à jour le profil (pseudo / objectif / matériel). Objectif modifié → Index recalculé. */
+  @Patch()
+  update(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body(new ZodValidationPipe(UpdateMeRequest)) body: UpdateMeRequest,
+  ): Promise<unknown> {
+    return this.meService.update(user.userId, body);
   }
 
   /** HYBRID INDEX + radar persistés (état vide tant qu'aucun effort loggé). */
