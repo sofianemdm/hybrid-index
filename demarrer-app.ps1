@@ -37,6 +37,7 @@ if (-not $ok) {
 }
 else { Write-Host "    Services OK." -ForegroundColor Green }
 
-Write-Host "==> 4/4  App Flutter dans Chrome (laisse cette fenêtre ouverte)..." -ForegroundColor Cyan
+Write-Host "==> 4/4  App Flutter dans Chrome (port 8080, laisse cette fenêtre ouverte)..." -ForegroundColor Cyan
 Set-Location "$root\apps\mobile"
-& $flutter run -d chrome
+# Port fixe 8080 : requis pour la connexion Google (origine JavaScript autorisée).
+& $flutter run -d chrome --web-port 8080

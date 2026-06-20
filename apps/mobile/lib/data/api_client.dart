@@ -4,12 +4,13 @@ import 'package:http/http.dart' as http;
 import '../core/env.dart';
 import 'models.dart';
 
-/// Erreur API normalisée (envelope { error: { code, message } }).
+/// Erreur API normalisée (envelope { error: { code, message, details } }).
 class ApiException implements Exception {
   final String code;
   final String message;
   final int status;
-  ApiException(this.code, this.message, this.status);
+  final Map<String, dynamic>? details;
+  ApiException(this.code, this.message, this.status, {this.details});
   @override
   String toString() => message;
 }
@@ -64,6 +65,7 @@ class ApiClient {
       err?['code']?.toString() ?? 'ERROR',
       err?['message']?.toString() ?? 'Une erreur est survenue (${res.statusCode}).',
       res.statusCode,
+      details: err?['details'] is Map ? Map<String, dynamic>.from(err!['details'] as Map) : null,
     );
   }
 
@@ -75,6 +77,13 @@ class ApiClient {
 
   Future<({String token, AuthUser user})> login(String email, String password) async {
     final j = await _send('POST', '/v1/auth/login', {'email': email, 'password': password}) as Map<String, dynamic>;
+    return (token: j['token'] as String, user: AuthUser.fromJson(j['user'] as Map<String, dynamic>));
+  }
+
+  /// Connexion Google : `profile` requis seulement à la première connexion.
+  Future<({String token, AuthUser user})> googleAuth(String idToken, Map<String, dynamic>? profile) async {
+    final body = <String, dynamic>{'idToken': idToken, if (profile != null) 'profile': profile};
+    final j = await _send('POST', '/v1/auth/google', body) as Map<String, dynamic>;
     return (token: j['token'] as String, user: AuthUser.fromJson(j['user'] as Map<String, dynamic>));
   }
 

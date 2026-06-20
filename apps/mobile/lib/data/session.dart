@@ -77,6 +77,19 @@ class SessionNotifier extends StateNotifier<SessionState> {
     );
   }
 
+  /// Connexion via Google. `profile` requis seulement à la première connexion (age-gate).
+  Future<void> loginWithGoogle(String idToken, {Map<String, dynamic>? profile}) async {
+    final res = await _api.googleAuth(idToken, profile);
+    await _persist(res.token);
+    final me = await _api.me();
+    state = SessionState(
+      status: AuthStatus.loggedIn,
+      user: res.user,
+      sex: me['sex'] as String?,
+      goal: me['goal'] as String?,
+    );
+  }
+
   Future<void> login(String email, String password) async {
     final res = await _api.login(email, password);
     await _persist(res.token);

@@ -8,4 +8,13 @@ class Env {
     'API_BASE_URL',
     defaultValue: 'http://localhost:3000',
   );
+
+  /// ID client Google OAuth (public). Surchargeable via --dart-define=GOOGLE_CLIENT_ID=...
+  /// Vide = bouton Google désactivé.
+  static const String googleClientId = String.fromEnvironment(
+    'GOOGLE_CLIENT_ID',
+    defaultValue: '963703387600-v3hj9b93pmldhr3tfs866vi14bcim5v1.apps.googleusercontent.com',
+  );
+
+  static bool get googleEnabled => googleClientId.isNotEmpty;
 }

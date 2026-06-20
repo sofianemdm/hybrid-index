@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/env.dart';
 import '../../data/api_client.dart';
 import '../../data/session.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/hi_button.dart';
+import 'google_button.dart';
+import 'google_profile_screen.dart';
 
 /// Connexion / inscription. L'inscription pose l'age-gate (13+) et le profil de base.
 class AuthScreen extends ConsumerStatefulWidget {
@@ -71,21 +74,20 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m)));
   }
 
-  void _googleInfo() {
-    showDialog<void>(
-      context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: HiColors.bgElevated,
-        title: const Text('Connexion Google', style: TextStyle(color: HiColors.textPrimary)),
-        content: const Text(
-          'Le serveur est prêt (endpoint /v1/auth/google + age-gate). '
-          'Pour l’activer, renseigne un GOOGLE_CLIENT_ID (Google Cloud Console) côté serveur '
-          'et dans l’app. En attendant, utilise l’email + mot de passe.',
-          style: TextStyle(color: HiColors.textSecondary),
-        ),
-        actions: [TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Compris'))],
-      ),
-    );
+  Future<void> _handleGoogle(String idToken) async {
+    try {
+      await ref.read(sessionProvider.notifier).loginWithGoogle(idToken);
+      // AuthGate prend le relais (onboarding ou home).
+    } on ApiException catch (e) {
+      if (e.details?['needsProfile'] == true) {
+        if (!mounted) return;
+        Navigator.of(context).push(MaterialPageRoute(builder: (_) => GoogleProfileScreen(idToken: idToken)));
+      } else {
+        _toast(e.code == 'AGE_RESTRICTED' ? 'Tu dois avoir au moins 13 ans.' : e.message);
+      }
+    } catch (e) {
+      _toast('$e');
+    }
   }
 
   Future<void> _pickDob() async {
@@ -187,17 +189,21 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     onPressed: _submit,
                   ),
                   const SizedBox(height: HiSpace.md),
-                  OutlinedButton.icon(
-                    style: OutlinedButton.styleFrom(
-                      minimumSize: const Size.fromHeight(48),
-                      side: const BorderSide(color: HiColors.strokeStrong),
-                      foregroundColor: HiColors.textPrimary,
+                  if (Env.googleEnabled) ...[
+                    const Row(children: [
+                      Expanded(child: Divider(color: HiColors.strokeSubtle)),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 12),
+                        child: Text('ou', style: TextStyle(color: HiColors.textTertiary)),
+                      ),
+                      Expanded(child: Divider(color: HiColors.strokeSubtle)),
+                    ]),
+                    const SizedBox(height: HiSpace.md),
+                    Center(
+                      child: GoogleSignInButton(onToken: _handleGoogle, onError: _toast),
                     ),
-                    icon: const Icon(Icons.account_circle_outlined),
-                    label: const Text('Continuer avec Google'),
-                    onPressed: _googleInfo,
-                  ),
-                  const SizedBox(height: HiSpace.md),
+                    const SizedBox(height: HiSpace.md),
+                  ],
                 ],
               ),
             ),
