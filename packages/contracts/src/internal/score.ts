@@ -126,3 +126,17 @@ export const ComputeProjectionResponse = z.object({
   targetScore: z.number().min(0).max(1000),
 });
 export type ComputeProjectionResponse = z.infer<typeof ComputeProjectionResponse>;
+
+/** Grand Chelem (endgame) : combien des 15 WODs de référence battent le temps/score « pro ». */
+export const ComputeGrandSlamRequest = z.object({
+  sex: Sex,
+  bests: z.array(z.object({ wodId: z.string(), rawResult: z.number() })),
+});
+export type ComputeGrandSlamRequest = z.infer<typeof ComputeGrandSlamRequest>;
+
+export const ComputeGrandSlamResponse = z.object({
+  beaten: z.number().int().min(0),
+  total: z.number().int().min(0),
+  remaining: z.array(z.string()),
+});
+export type ComputeGrandSlamResponse = z.infer<typeof ComputeGrandSlamResponse>;

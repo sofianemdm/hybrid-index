@@ -253,6 +253,26 @@ describe("api — boucle complète persistée (e2e réel)", () => {
     }
   });
 
+  it("streak : réglage de l'objectif hebdo", async () => {
+    const res = await request(api.getHttpServer())
+      .patch("/v1/me/streak")
+      .set("authorization", `Bearer ${token}`)
+      .send({ weeklyGoal: 4 })
+      .expect(200);
+    expect(res.body.weeklyGoal).toBe(4);
+  });
+
+  it("endgame : Grand Chelem + rang mondial cohérents", async () => {
+    const res = await request(api.getHttpServer())
+      .get("/v1/me/endgame")
+      .set("authorization", `Bearer ${token}`)
+      .expect(200);
+    expect(res.body.grandSlam.total).toBe(15);
+    expect(res.body.grandSlam.beaten).toBeGreaterThanOrEqual(0);
+    expect(res.body.grandSlam.beaten).toBeLessThanOrEqual(15);
+    expect(res.body.globalRank).toBeGreaterThanOrEqual(1);
+  });
+
   it("RGPD : suppression de compte (effacement) — DOIT être le dernier test", async () => {
     const res = await request(api.getHttpServer())
       .delete("/v1/me")

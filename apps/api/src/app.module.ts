@@ -11,6 +11,7 @@ import { LeaderboardModule } from "./modules/leaderboard/leaderboard.module";
 import { ProfilesModule } from "./modules/profiles/profiles.module";
 import { CoachModule } from "./modules/coach/coach.module";
 import { EngagementModule } from "./modules/engagement/engagement.module";
+import { EndgameModule } from "./modules/endgame/endgame.module";
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { EngagementModule } from "./modules/engagement/engagement.module";
     ProfilesModule,
     CoachModule,
     EngagementModule,
+    EndgameModule,
   ],
   controllers: [HealthController],
 })

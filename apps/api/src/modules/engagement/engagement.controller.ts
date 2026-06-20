@@ -7,6 +7,13 @@ import { StreakService, type StreakState } from "./streak.service";
 import { BadgesService, type BadgeView } from "./badges.service";
 import { EngagementService, type FeedItem } from "./engagement.service";
 
+const UpdateStreakRequest = z
+  .object({
+    weeklyGoal: z.number().int().min(2).max(5).optional(),
+    plannedRest: z.boolean().optional(),
+  })
+  .refine((v) => v.weeklyGoal !== undefined || v.plannedRest !== undefined, { message: "Aucun champ." });
+
 const UpdateNotificationsRequest = z.object({
   prefs: z.record(z.boolean()).optional(),
   quietHours: z.object({ start: z.string(), end: z.string() }).optional(),
@@ -26,6 +33,15 @@ export class EngagementController {
   @Get("streak")
   getStreak(@CurrentUser() user: AuthenticatedUser): Promise<StreakState> {
     return this.streak.evaluateAndGet(user.userId);
+  }
+
+  /** Réglages de la série : objectif hebdo (2–5), repos planifié de la semaine. */
+  @Patch("streak")
+  updateStreak(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body(new ZodValidationPipe(UpdateStreakRequest)) body: z.infer<typeof UpdateStreakRequest>,
+  ): Promise<StreakState> {
+    return this.streak.updateSettings(user.userId, body);
   }
 
   /** Badges (débloqués + verrouillés). */

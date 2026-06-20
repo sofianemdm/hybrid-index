@@ -38,7 +38,7 @@ class HiAvatar extends StatelessWidget {
     return SizedBox(
       width: size,
       height: size,
-      child: CustomPaint(painter: _AvatarPainter(config, HiColors.rank(rank), showRing)),
+      child: CustomPaint(painter: _AvatarPainter(config, HiColors.rank(rank), rank, showRing)),
     );
   }
 }
@@ -46,8 +46,9 @@ class HiAvatar extends StatelessWidget {
 class _AvatarPainter extends CustomPainter {
   final AvatarConfig c;
   final Color rankColor;
+  final String rank;
   final bool showRing;
-  _AvatarPainter(this.c, this.rankColor, this.showRing);
+  _AvatarPainter(this.c, this.rankColor, this.rank, this.showRing);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -56,6 +57,17 @@ class _AvatarPainter extends CustomPainter {
     final skin = AvatarPalettes.skin[c.skinTone % AvatarPalettes.skin.length];
     final hair = AvatarPalettes.hair[c.hairColor % AvatarPalettes.hair.length];
 
+    // Aura cosmétique selon le rang (l'avatar évolue avec la progression).
+    if (rank == 'diamond' || rank == 'elite') {
+      canvas.drawCircle(
+        Offset(cx, cx),
+        s * 0.49,
+        Paint()
+          ..color = rankColor.withValues(alpha: rank == 'elite' ? 0.45 : 0.3)
+          ..maskFilter = MaskFilter.blur(BlurStyle.normal, s * 0.05),
+      );
+    }
+
     // Fond + cadre de rang.
     final bg = Paint()..color = HiColors.bgElevated2;
     canvas.drawCircle(Offset(cx, cx), s * 0.48, bg);
@@ -63,7 +75,7 @@ class _AvatarPainter extends CustomPainter {
       final ring = Paint()
         ..color = rankColor
         ..style = PaintingStyle.stroke
-        ..strokeWidth = s * 0.04;
+        ..strokeWidth = s * (rank == 'elite' ? 0.05 : 0.04);
       canvas.drawCircle(Offset(cx, cx), s * 0.46, ring);
     }
 
@@ -88,6 +100,23 @@ class _AvatarPainter extends CustomPainter {
 
     // Cheveux (selon le style).
     _drawHair(canvas, cx, headCy, headR, hair);
+
+    // Couronne Élite (cosmétique du plus haut rang).
+    if (rank == 'elite') {
+      final gold = Paint()..color = const Color(0xFFF3C13A);
+      final topY = headCy - headR * (c.hairStyle == 0 ? 1.05 : 1.25);
+      final w = headR * 0.9;
+      final crown = Path()
+        ..moveTo(cx - w, topY + headR * 0.28)
+        ..lineTo(cx - w, topY)
+        ..lineTo(cx - w * 0.5, topY + headR * 0.16)
+        ..lineTo(cx, topY - headR * 0.08)
+        ..lineTo(cx + w * 0.5, topY + headR * 0.16)
+        ..lineTo(cx + w, topY)
+        ..lineTo(cx + w, topY + headR * 0.28)
+        ..close();
+      canvas.drawPath(crown, gold);
+    }
 
     // Yeux.
     final eye = Paint()..color = const Color(0xFF1A1A1A);
@@ -174,5 +203,6 @@ class _AvatarPainter extends CustomPainter {
       old.c.hairStyle != c.hairStyle ||
       old.c.hairColor != c.hairColor ||
       old.c.beardStyle != c.beardStyle ||
+      old.rank != rank ||
       old.rankColor != rankColor;
 }

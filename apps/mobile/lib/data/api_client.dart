@@ -113,9 +113,13 @@ class ApiClient {
     }
   }
 
-  Future<Profile> logResult(Map<String, dynamic> payload) async {
+  Future<({Profile profile, List<String> newBadges})> logResult(Map<String, dynamic> payload) async {
     final j = await _send('POST', '/v1/results', payload) as Map<String, dynamic>;
-    return Profile.fromJson(j['profile'] as Map<String, dynamic>);
+    final badges = ((j['unlockedBadges'] as List?) ?? [])
+        .map((e) => (e as Map<String, dynamic>)['name']?.toString() ?? '')
+        .where((s) => s.isNotEmpty)
+        .toList();
+    return (profile: Profile.fromJson(j['profile'] as Map<String, dynamic>), newBadges: badges);
   }
 
   Future<List<WodResultItem>> results() async {
@@ -157,6 +161,15 @@ class ApiClient {
     return j.map((e) => BadgeModel.fromJson(e as Map<String, dynamic>)).toList();
   }
 
+  Future<StreakState> updateStreak({int? weeklyGoal, bool? plannedRest}) async {
+    final body = <String, dynamic>{
+      if (weeklyGoal != null) 'weeklyGoal': weeklyGoal,
+      if (plannedRest != null) 'plannedRest': plannedRest,
+    };
+    final j = await _send('PATCH', '/v1/me/streak', body) as Map<String, dynamic>;
+    return StreakState.fromJson(j);
+  }
+
   Future<List<FeedItem>> notificationsFeed() async {
     final j = await _send('GET', '/v1/me/notifications/feed') as List<dynamic>;
     return j.map((e) => FeedItem.fromJson(e as Map<String, dynamic>)).toList();
@@ -167,6 +180,11 @@ class ApiClient {
 
   Future<void> updateNotificationPrefs(Map<String, dynamic> payload) async =>
       _send('PATCH', '/v1/me/notifications', payload);
+
+  Future<EndgameInfo> endgame() async {
+    final j = await _send('GET', '/v1/me/endgame') as Map<String, dynamic>;
+    return EndgameInfo.fromJson(j);
+  }
 
   Future<dynamic> exportData() async => _send('GET', '/v1/me/export');
 

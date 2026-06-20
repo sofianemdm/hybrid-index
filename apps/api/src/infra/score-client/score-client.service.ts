@@ -29,6 +29,10 @@ export class ScoreClient {
     return this.post("/v1/score/project", req, internalScore.ComputeProjectionResponse);
   }
 
+  computeGrandSlam(req: internalScore.ComputeGrandSlamRequest): Promise<internalScore.ComputeGrandSlamResponse> {
+    return this.post("/v1/score/grand-slam", req, internalScore.ComputeGrandSlamResponse);
+  }
+
   private async post<T>(path: string, body: unknown, schema: ZodSchema<T>): Promise<T> {
     let res: Response;
     try {

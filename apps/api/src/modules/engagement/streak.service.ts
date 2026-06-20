@@ -23,6 +23,19 @@ const MAX_CATCHUP_WEEKS = 12;
 export class StreakService {
   constructor(private readonly prisma: PrismaService) {}
 
+  /** Réglages de la série : objectif hebdo (2–5) et/ou repos planifié de la semaine en cours. */
+  async updateSettings(
+    userId: string,
+    opts: { weeklyGoal?: number; plannedRest?: boolean },
+  ): Promise<StreakState> {
+    await this.evaluateAndGet(userId); // garantit l'existence de la ligne + évalue le passé
+    const data: { weeklyGoal?: number; plannedRest?: boolean } = {};
+    if (opts.weeklyGoal !== undefined) data.weeklyGoal = Math.min(5, Math.max(2, opts.weeklyGoal));
+    if (opts.plannedRest !== undefined) data.plannedRest = opts.plannedRest;
+    await this.prisma.streak.update({ where: { userId }, data });
+    return this.evaluateAndGet(userId);
+  }
+
   private async wodCountInWeek(userId: string, monday: Date): Promise<number> {
     return this.prisma.wodResult.count({
       where: { userId, performedAt: { gte: monday, lt: addWeeks(monday, 1) } },

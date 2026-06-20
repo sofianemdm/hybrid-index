@@ -26,6 +26,12 @@ const FREE_RUN_MAX_M = 42_200;
 const PACE_FLOOR_S_PER_KM: Record<"male" | "female", number> = { male: 156, female: 171 };
 const PACE_CEILING_S_PER_KM = 720;
 
+/** Les 15 WODs de référence pour le Grand Chelem (endgame) — hors course libre / air squats 1 série. */
+const GRAND_SLAM_WODS = [
+  "pft_hyrox", "fran", "grace", "jackie", "row_2k", "helen", "karen", "cindy",
+  "benchmark_zero", "run_5k", "run_1k", "max_pushups", "max_air_squats_2min", "burpees_7min", "max_situps_2min",
+];
+
 type EffortTag = { attribute: internalScore.RadarAttribute["attribute"]; estimated: boolean };
 
 @Injectable()
@@ -224,6 +230,29 @@ export class ScoringService {
       targetAttribute: req.targetAttribute,
       targetScore,
     };
+  }
+
+  /** Grand Chelem : compte les WODs de référence où le meilleur effort bat la référence pro. */
+  computeGrandSlam(req: internalScore.ComputeGrandSlamRequest): internalScore.ComputeGrandSlamResponse {
+    const byWod = new Map<string, number[]>();
+    for (const b of req.bests) {
+      const arr = byWod.get(b.wodId) ?? [];
+      arr.push(b.rawResult);
+      byWod.set(b.wodId, arr);
+    }
+    let beaten = 0;
+    const remaining: string[] = [];
+    for (const id of GRAND_SLAM_WODS) {
+      const wod = this.wods.getOrThrow(id);
+      const ref = wod.bySex[req.sex];
+      const dir = ref.model.dir;
+      const results = byWod.get(id) ?? [];
+      // dir -1 (temps : plus bas = mieux) ; dir +1 (reps/charge : plus haut = mieux).
+      const beats = results.some((r) => (dir === -1 ? r <= ref.proReference : r >= ref.proReference));
+      if (beats) beaten += 1;
+      else remaining.push(wod.name);
+    }
+    return { beaten, total: GRAND_SLAM_WODS.length, remaining };
   }
 
   private toIndexResponse(result: {

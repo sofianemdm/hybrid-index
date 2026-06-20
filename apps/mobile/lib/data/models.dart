@@ -354,6 +354,41 @@ class WodResultItem {
       );
 }
 
+class EndgameInfo {
+  final int beaten;
+  final int total;
+  final bool grandSlamComplete;
+  final List<String> remaining;
+  final int? globalRank;
+  final int globalTotal;
+  final bool isTop100;
+  final bool ambassador;
+  const EndgameInfo({
+    required this.beaten,
+    required this.total,
+    required this.grandSlamComplete,
+    required this.remaining,
+    required this.globalRank,
+    required this.globalTotal,
+    required this.isTop100,
+    required this.ambassador,
+  });
+
+  factory EndgameInfo.fromJson(Map<String, dynamic> j) {
+    final gs = j['grandSlam'] as Map<String, dynamic>;
+    return EndgameInfo(
+      beaten: (gs['beaten'] as num).toInt(),
+      total: (gs['total'] as num).toInt(),
+      grandSlamComplete: gs['complete'] as bool? ?? false,
+      remaining: ((gs['remaining'] as List?) ?? []).map((e) => e.toString()).toList(),
+      globalRank: (j['globalRank'] as num?)?.toInt(),
+      globalTotal: (j['globalTotal'] as num?)?.toInt() ?? 0,
+      isTop100: j['isTop100'] as bool? ?? false,
+      ambassador: j['ambassador'] as bool? ?? false,
+    );
+  }
+}
+
 /// WOD du catalogue (sous-ensemble utile au log).
 class WodCatalogItem {
   final String id;

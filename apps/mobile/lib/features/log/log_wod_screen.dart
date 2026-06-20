@@ -64,13 +64,13 @@ class _LogWodScreenState extends ConsumerState<LogWodScreen> {
     }
     setState(() => _loading = true);
     try {
-      final profile = await ref.read(apiClientProvider).logResult({
+      final res = await ref.read(apiClientProvider).logResult({
         'wodId': _wod.id,
         'scoreType': _wod.scoreType,
         'rawResult': raw,
       });
       if (!mounted) return;
-      await _showResult(profile);
+      await _showResult(res.profile, res.newBadges);
       if (mounted) Navigator.of(context).pop(true);
     } on ApiException catch (e) {
       if (e.code == 'WOD_RESULT_OUT_OF_BOUNDS') {
@@ -85,7 +85,7 @@ class _LogWodScreenState extends ConsumerState<LogWodScreen> {
     }
   }
 
-  Future<void> _showResult(Profile p) async {
+  Future<void> _showResult(Profile p, List<String> newBadges) async {
     await showDialog<void>(
       context: context,
       builder: (_) => AlertDialog(
@@ -100,6 +100,25 @@ class _LogWodScreenState extends ConsumerState<LogWodScreen> {
                 style: const TextStyle(color: HiColors.brandPrimary, fontSize: 44, fontWeight: FontWeight.w800)),
             Text('${p.index.radarCoverage}/6 attributs débloqués',
                 style: const TextStyle(color: HiColors.textTertiary, fontSize: 12)),
+            if (newBadges.isNotEmpty) ...[
+              const SizedBox(height: HiSpace.md),
+              Container(
+                padding: const EdgeInsets.all(HiSpace.md),
+                decoration: BoxDecoration(
+                  color: HiColors.success.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(HiRadius.md),
+                ),
+                child: Column(
+                  children: [
+                    const Text('🎉 Badge(s) débloqué(s) !',
+                        style: TextStyle(color: HiColors.success, fontWeight: FontWeight.w700)),
+                    const SizedBox(height: 4),
+                    ...newBadges.map((b) => Text(b,
+                        textAlign: TextAlign.center, style: const TextStyle(color: HiColors.textPrimary))),
+                  ],
+                ),
+              ),
+            ],
           ],
         ),
         actions: [

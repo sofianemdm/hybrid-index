@@ -60,4 +60,12 @@ export class ScoreController {
   ): internalScore.ComputeProjectionResponse {
     return this.scoring.computeProjection(body);
   }
+
+  @Post("grand-slam")
+  grandSlam(
+    @Body(new ZodValidationPipe(internalScore.ComputeGrandSlamRequest))
+    body: internalScore.ComputeGrandSlamRequest,
+  ): internalScore.ComputeGrandSlamResponse {
+    return this.scoring.computeGrandSlam(body);
+  }
 }
