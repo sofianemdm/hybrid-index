@@ -78,6 +78,59 @@ export class EngagementService {
       }
     }
 
+    // « Quelqu'un t'a dépassé au classement » depuis ton dernier recalcul (regroupé, 1 item max).
+    if (enabled("rank-overtaken") && idx.leaguePosition != null) {
+      const above = await this.prisma.hybridIndex.count({
+        where: { value: { gt: idx.value }, user: { profile: { sex: profile.sex } } },
+      });
+      const current = above + 1;
+      const passedBy = current - idx.leaguePosition;
+      const appPercentile = Number(idx.percentile);
+      // Enjeu réel uniquement : top 30% OU faible écart (jamais anxiogène en milieu de tableau).
+      if (passedBy > 0 && (appPercentile >= 0.7 || passedBy <= 2)) {
+        items.push({
+          key: "rank-overtaken",
+          title: passedBy === 1 ? "Un athlète t'a dépassé" : `${passedBy} athlètes t'ont dépassé`,
+          body: "Reprends ta place au classement 💪",
+          priority: "medium",
+        });
+      }
+    }
+
+    // « Quelqu'un a fait mieux que toi sur un WOD » — limité au cercle suivi (regroupé, 1 item max).
+    if (enabled("wod-overtaken")) {
+      const follows = await this.prisma.follow.findMany({
+        where: { followerId: userId },
+        select: { followeeId: true },
+      });
+      const followeeIds = follows.map((f) => f.followeeId);
+      if (followeeIds.length > 0) {
+        const mine = await this.prisma.wodResult.groupBy({
+          by: ["wodId"],
+          where: { userId, review: "ok", subScore: { not: null } },
+          _max: { subScore: true },
+        });
+        const myWodIds = mine.map((m) => m.wodId);
+        if (myWodIds.length > 0) {
+          const theirs = await this.prisma.wodResult.groupBy({
+            by: ["wodId"],
+            where: { userId: { in: followeeIds }, wodId: { in: myWodIds }, review: "ok", subScore: { not: null } },
+            _max: { subScore: true },
+          });
+          const theirBest = new Map(theirs.map((t) => [t.wodId, t._max.subScore ?? 0]));
+          const overtaken = mine.filter((m) => (theirBest.get(m.wodId) ?? 0) > (m._max.subScore ?? 0));
+          if (overtaken.length > 0) {
+            items.push({
+              key: "wod-overtaken",
+              title: overtaken.length === 1 ? "Un athlète a battu ton temps" : `Battu sur ${overtaken.length} WODs`,
+              body: "Va défendre tes scores 🔥",
+              priority: "medium",
+            });
+          }
+        }
+      }
+    }
+
     return items;
   }
 

@@ -20,4 +20,6 @@ export const NOTIFICATION_TRIGGERS: NotificationTrigger[] = [
   { key: "next-rank-close", trigger: "index_recomputed && pointsToNextRank <= 15", title: "Le prochain rang est tout proche", body: "Un bon WOD et tu y es.", priority: "medium", cooldown: "72h", category: "progression" },
   { key: "gentle-comeback", trigger: "noWodForDays == 3 && !plannedRest", title: "Prêt à reprendre ?", body: "Quand tu veux, on est là. Même 10 minutes comptent.", priority: "low", cooldown: "7d", category: "reengagement" },
   { key: "rest-week-respected", trigger: "streak_evaluated && outcome == rest", title: "Semaine de repos validée", body: "La récup fait partie du jeu. Ta série est intacte.", priority: "low", cooldown: "0", category: "streak" },
+  { key: "rank-overtaken", trigger: "leaguePosition > snapshotPosition", title: "On t'a dépassé au classement", body: "Reprends ta place — un bon WOD peut suffire.", priority: "medium", cooldown: "24h", category: "leaderboard" },
+  { key: "wod-overtaken", trigger: "followee_beats_my_wod", title: "Battu sur un de tes WODs", body: "Un athlète que tu suis a fait mieux. À toi de répondre.", priority: "medium", cooldown: "24h", category: "social" },
 ];

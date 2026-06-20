@@ -25,6 +25,7 @@ describe("api — boucle complète persistée (e2e réel)", () => {
   let token = "";
   let userId = "";
   let customWodId = "";
+  let overtakerUserId = "";
 
   beforeAll(async () => {
     const scoreRef = await Test.createTestingModule({ imports: [ScoreAppModule] }).compile();
@@ -48,6 +49,10 @@ describe("api — boucle complète persistée (e2e réel)", () => {
     if (userId) {
       await prisma.user.deleteMany({ where: { id: userId } }).catch(() => undefined);
       await redis.zrem("leaderboard:male", userId).catch(() => undefined);
+    }
+    if (overtakerUserId) {
+      await prisma.user.deleteMany({ where: { id: overtakerUserId } }).catch(() => undefined);
+      await redis.zrem("leaderboard:male", overtakerUserId).catch(() => undefined);
     }
     if (customWodId) {
       await prisma.wod.deleteMany({ where: { id: customWodId } }).catch(() => undefined);
@@ -417,6 +422,45 @@ describe("api — boucle complète persistée (e2e réel)", () => {
     expect(res.body.socialProof.app.topPercent).toBeNull();
     // Invariant produit : un utilisateur qui s'entraîne est au-dessus de la médiane des humains.
     expect(res.body.socialProof.population.percentile).toBeGreaterThan(0.5);
+  });
+
+  it("notif « dépassé sur un WOD » : un athlète suivi qui bat mon temps déclenche l'alerte", async () => {
+    // 2e athlète qui écrase mon Fran (130 s < 300 s) puis je le suis → notif wod-overtaken.
+    const reg = await request(api.getHttpServer())
+      .post("/v1/auth/register")
+      .send({
+        email: `e2e_overtaker_${stamp}@test.local`,
+        password: "motdepasse123",
+        displayName: `E2EOver${stamp}`,
+        dateOfBirth: "1993-02-02",
+        sex: "male",
+        goal: "crossfit_strength",
+        equipmentPref: "both",
+      })
+      .expect(201);
+    const t2 = reg.body.token as string;
+    overtakerUserId = reg.body.user.id as string;
+    await request(api.getHttpServer())
+      .post("/v1/onboarding/complete")
+      .set("authorization", `Bearer ${t2}`)
+      .send({ course: { distanceMeters: 5000, timeSeconds: 1200 }, estimatedPushups: 40 })
+      .expect(201);
+    await request(api.getHttpServer())
+      .post("/v1/results")
+      .set("authorization", `Bearer ${t2}`)
+      .send({ wodId: "fran", scoreType: "time", rawResult: 130 })
+      .expect(201);
+
+    // Je suis l'athlète, puis je consulte mon flux de notifications.
+    await request(api.getHttpServer())
+      .post(`/v1/follow/${overtakerUserId}`)
+      .set("authorization", `Bearer ${token}`)
+      .expect(201);
+    const feed = await request(api.getHttpServer())
+      .get("/v1/me/notifications/feed")
+      .set("authorization", `Bearer ${token}`)
+      .expect(200);
+    expect(feed.body.some((i: { key: string }) => i.key === "wod-overtaken")).toBe(true);
   });
 
   it("RGPD : suppression de compte (effacement) — DOIT être le dernier test", async () => {
