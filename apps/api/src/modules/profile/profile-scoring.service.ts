@@ -49,13 +49,14 @@ export class ProfileScoringService {
 
     const results = await this.prisma.wodResult.findMany({
       where: { userId },
-      select: { wodId: true, rawResult: true, performedAt: true },
+      select: { wodId: true, rawResult: true, distanceMeters: true, performedAt: true },
     });
     if (results.length === 0) return null;
 
     const efforts: internalScore.EffortInput[] = results.map((r) => ({
       wodId: r.wodId,
       rawResult: Number(r.rawResult),
+      distanceMeters: r.distanceMeters ?? undefined,
       ageWeeks: weeksSince(r.performedAt),
     }));
 

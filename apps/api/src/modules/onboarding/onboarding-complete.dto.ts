@@ -8,10 +8,14 @@ import { z } from "zod";
 export const OnboardingCompleteRequest = z.object({
   course: z
     .object({
-      wodId: z.enum(["run_1k", "run_5k"]),
+      /** Distance parcourue en mètres (l'utilisateur saisit sa propre distance). */
+      distanceMeters: z.number().min(400).max(42200),
       timeSeconds: z.number().positive(),
     })
     .optional(),
+  /** Max de pompes strictes en UNE série. */
   estimatedPushups: z.number().int().min(0).optional(),
+  /** Max de squats à vide en UNE série. */
+  estimatedAirSquats: z.number().int().min(0).optional(),
 });
 export type OnboardingCompleteRequest = z.infer<typeof OnboardingCompleteRequest>;

@@ -93,7 +93,7 @@ describe("api — boucle complète persistée (e2e réel)", () => {
     const res = await request(api.getHttpServer())
       .post("/v1/onboarding/complete")
       .set("authorization", `Bearer ${token}`)
-      .send({ course: { wodId: "run_5k", timeSeconds: 1440 }, estimatedPushups: 30 })
+      .send({ course: { distanceMeters: 5000, timeSeconds: 1440 }, estimatedPushups: 30 })
       .expect(201);
     expect(res.body.index.value).toBeGreaterThan(0);
     const engine = res.body.radar.find((a: { attribute: string }) => a.attribute === "engine");

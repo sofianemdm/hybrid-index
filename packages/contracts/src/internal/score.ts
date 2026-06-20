@@ -32,6 +32,8 @@ export const ComputeSubScoreRequest = z.object({
   scoreType: ScoreType,
   /** Résultat brut, normalisé en nombre (secondes / reps / kg / mètres). */
   rawResult: z.number(),
+  /** Distance parcourue en mètres — requis pour la course à distance libre (`run_free_distance`). */
+  distanceMeters: z.number().positive().optional(),
 });
 export type ComputeSubScoreRequest = z.infer<typeof ComputeSubScoreRequest>;
 
@@ -71,6 +73,8 @@ export type ComputeIndexResponse = z.infer<typeof ComputeIndexResponse>;
 export const EffortInput = z.object({
   wodId: z.string(),
   rawResult: z.number(),
+  /** Distance en mètres — requis pour la course à distance libre (`run_free_distance`). */
+  distanceMeters: z.number().positive().optional(),
   /** Âge de l'effort en semaines (0 = aujourd'hui). */
   ageWeeks: z.number().min(0).default(0),
 });

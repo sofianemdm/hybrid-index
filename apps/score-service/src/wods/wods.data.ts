@@ -348,6 +348,39 @@ export const WODS: ReadonlyArray<WodDefinition> = [
       female: { model: normal(45, 11), hardMin: 10, hardMax: 105, proReference: 80 },
     },
   },
+  {
+    // Course à DISTANCE LIBRE : l'utilisateur saisit (distance_m, time_s). Le score-service
+    // normalise via Riegel (t_5k = time × (5000/distance)^1.06) puis score contre cette
+    // distribution 5 km (sport-science, 20 juin). Bornes réelles dérivées de l'allure et tag
+    // `speed` conditionnel (distance ≤ 1 km) gérés dans la couche de scoring, PAS ici.
+    id: "run_free_distance",
+    name: "Course distance libre",
+    scoreType: "time",
+    requiresEquipment: false,
+    isBenchmark: true,
+    targetAttributes: [{ attribute: "engine", estimated: false }],
+    bySex: {
+      male: { model: lognormalFromMedian(1878, 0.27), hardMin: 780, hardMax: 3600, proReference: 1326 },
+      female: { model: lognormalFromMedian(2184, 0.28), hardMin: 855, hardMax: 3600, proReference: 1516 },
+    },
+  },
+  {
+    // Max squats à vide en UNE série, à l'échec (≠ max_air_squats_2min plafonné). Endurance
+    // musculaire dominante + Force estimée (proxy bodyweight, analogie D2). sport-science 20 juin.
+    id: "max_air_squats",
+    name: "Max air squats (une série, à l'échec)",
+    scoreType: "reps",
+    requiresEquipment: false,
+    isBenchmark: true,
+    targetAttributes: [
+      { attribute: "muscular_endurance", estimated: false },
+      { attribute: "strength", estimated: true },
+    ],
+    bySex: {
+      male: { model: normal(80, 30), hardMin: 15, hardMax: 300, proReference: 150 },
+      female: { model: normal(70, 27), hardMin: 15, hardMax: 280, proReference: 135 },
+    },
+  },
 ];
 
 export const WODS_BY_ID: ReadonlyMap<string, WodDefinition> = new Map(WODS.map((w) => [w.id, w]));

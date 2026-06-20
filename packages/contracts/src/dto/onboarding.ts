@@ -7,11 +7,12 @@ import { AttributeKey, EquipmentPref, Goal, Rank, Sex } from "../enums";
  * La persistance (inscription) est un endpoint séparé (nécessite la base de données).
  */
 
-/** Un effort de course saisi à l'onboarding (écran 5 « temps de course conseillé »).
- *  Le cahier §8 évoque 1/5/10 km ; seul `run_1k`/`run_5k` existent au registre MVP
- *  (`run_10k` à ajouter plus tard — cf. decisions-log D10). */
+/** Un effort de course saisi à l'onboarding : l'utilisateur renseigne LUI-MÊME la distance
+ *  parcourue (n'importe quelle distance) + son temps. Le score-service normalise via Riegel
+ *  (équivalent 5 km) puis calcule le sous-score `engine` (cf. sport-science). Plage 400 m–42,2 km. */
 export const OnboardingCourse = z.object({
-  wodId: z.enum(["run_1k", "run_5k"]),
+  /** Distance parcourue en mètres (ex. 3000 pour 3 km). */
+  distanceMeters: z.number().min(400).max(42200),
   /** Temps en secondes. */
   timeSeconds: z.number().positive(),
 });
@@ -23,8 +24,10 @@ export const OnboardingEstimateRequest = z.object({
   equipmentPref: EquipmentPref.optional(),
   /** Temps de course (conseillé, skippable). */
   course: OnboardingCourse.optional(),
-  /** Auto-évaluation 5bis : max de pompes approximatif (estimé). */
+  /** Auto-évaluation 5bis : max de pompes strictes en UNE série (estimé). */
   estimatedPushups: z.number().int().min(0).optional(),
+  /** Auto-évaluation : max de squats à vide en UNE série (estimé). */
+  estimatedAirSquats: z.number().int().min(0).optional(),
 });
 export type OnboardingEstimateRequest = z.infer<typeof OnboardingEstimateRequest>;
 

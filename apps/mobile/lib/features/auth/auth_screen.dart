@@ -24,7 +24,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   DateTime? _dob;
   String _sex = 'male';
   String _goal = 'hyrox';
-  String _equipment = 'both';
+  String _equipment = 'equipped';
 
   @override
   void dispose() {
@@ -151,14 +151,14 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     const SizedBox(height: HiSpace.md),
                     _ChoiceRow(
                       label: 'Objectif',
-                      options: const {'hyrox': 'HYROX', 'crossfit_strength': 'Force', 'all_round': 'Polyvalent'},
+                      options: const {'hyrox': 'HYROX', 'crossfit_strength': 'CrossFit', 'all_round': 'Condition physique'},
                       value: _goal,
                       onChanged: (v) => setState(() => _goal = v),
                     ),
                     const SizedBox(height: HiSpace.md),
                     _ChoiceRow(
-                      label: 'Matériel',
-                      options: const {'none': 'Sans', 'equipped': 'Équipé', 'both': 'Les deux'},
+                      label: 'Matériel (modifiable plus tard) — « Équipé » donne accès aussi aux WODs sans matériel',
+                      options: const {'none': 'Sans matériel', 'equipped': 'Équipé'},
                       value: _equipment,
                       onChanged: (v) => setState(() => _equipment = v),
                     ),

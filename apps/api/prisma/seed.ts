@@ -29,6 +29,8 @@ const WODS: Array<{
   { id: "max_air_squats_2min", name: "Max air squats en 2 min", scoreType: "reps", requiresEquipment: false, targetAttributes: ["muscular_endurance", "power"] },
   { id: "burpees_7min", name: "Test burpees 7 min", scoreType: "reps", requiresEquipment: false, targetAttributes: ["engine", "muscular_endurance", "power", "hybrid"] },
   { id: "max_situps_2min", name: "Max sit-ups en 2 min", scoreType: "reps", requiresEquipment: false, targetAttributes: ["muscular_endurance"] },
+  { id: "run_free_distance", name: "Course distance libre", scoreType: "time", requiresEquipment: false, targetAttributes: ["engine", "speed"] },
+  { id: "max_air_squats", name: "Max air squats (une série)", scoreType: "reps", requiresEquipment: false, targetAttributes: ["muscular_endurance", "strength"] },
 ];
 
 const ATTRS: AttributeKey[] = ["engine", "speed", "strength", "power", "muscular_endurance", "hybrid"];

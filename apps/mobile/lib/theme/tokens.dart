@@ -108,8 +108,8 @@ class HiLabels {
 
   static const goals = {
     'hyrox': 'HYROX',
-    'crossfit_strength': 'CrossFit / Force',
-    'all_round': 'Polyvalent',
+    'crossfit_strength': 'CrossFit',
+    'all_round': 'Condition physique',
   };
 
   static String attribute(String k) => attributes[k] ?? k;

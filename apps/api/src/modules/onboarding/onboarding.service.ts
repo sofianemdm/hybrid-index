@@ -20,7 +20,7 @@ export class OnboardingService {
   ) {}
 
   async estimate(req: onboardingDto.OnboardingEstimateRequest): Promise<onboardingDto.RevealResponse> {
-    const efforts = this.toEfforts(req.course, req.estimatedPushups);
+    const efforts = this.toEfforts(req.course, req.estimatedPushups, req.estimatedAirSquats);
     if (efforts.length === 0) {
       throw new BadRequestException({
         code: "VALIDATION_ERROR",
@@ -53,11 +53,11 @@ export class OnboardingService {
     const profile = await this.prisma.profile.findUnique({ where: { userId } });
     if (!profile) throw new NotFoundException({ code: "NOT_FOUND", message: "Profil introuvable." });
 
-    const efforts = this.toEfforts(req.course, req.estimatedPushups);
+    const efforts = this.toEfforts(req.course, req.estimatedPushups, req.estimatedAirSquats);
     if (efforts.length === 0) {
       throw new BadRequestException({
         code: "VALIDATION_ERROR",
-        message: "Fournis au moins un temps de course ou une estimation de pompes.",
+        message: "Fournis au moins une course, des pompes ou des squats.",
       });
     }
 
@@ -71,11 +71,12 @@ export class OnboardingService {
             wodId: e.wodId,
             sex: profile.sex,
             rawResult: e.rawResult,
+            distanceMeters: e.distanceMeters ?? null,
             source: "declared",
             idempotencyKey: `onboarding:${e.wodId}`,
             performedAt: now,
           },
-          update: { rawResult: e.rawResult, performedAt: now },
+          update: { rawResult: e.rawResult, distanceMeters: e.distanceMeters ?? null, performedAt: now },
         }),
       ),
     );
@@ -86,15 +87,25 @@ export class OnboardingService {
   }
 
   private toEfforts(
-    course: { wodId: string; timeSeconds: number } | undefined,
+    course: { distanceMeters: number; timeSeconds: number } | undefined,
     estimatedPushups: number | undefined,
+    estimatedAirSquats: number | undefined,
   ): internalScore.EffortInput[] {
     const efforts: internalScore.EffortInput[] = [];
     if (course) {
-      efforts.push({ wodId: course.wodId, rawResult: course.timeSeconds, ageWeeks: 0 });
+      // Course à distance libre : normalisée via Riegel côté score-service.
+      efforts.push({
+        wodId: "run_free_distance",
+        rawResult: course.timeSeconds,
+        distanceMeters: course.distanceMeters,
+        ageWeeks: 0,
+      });
     }
     if (estimatedPushups !== undefined) {
       efforts.push({ wodId: "max_pushups", rawResult: estimatedPushups, ageWeeks: 0 });
+    }
+    if (estimatedAirSquats !== undefined) {
+      efforts.push({ wodId: "max_air_squats", rawResult: estimatedAirSquats, ageWeeks: 0 });
     }
     return efforts;
   }

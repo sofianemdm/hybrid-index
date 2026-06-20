@@ -16,6 +16,18 @@ import { ScoringVersionService } from "./scoring-version.service";
  * Service de calcul du score, adossé à la logique pure `@hybrid-index/scoring-core`.
  * Toute formule vit dans scoring-core ; ici on orchestre (registre WOD, bornes, version).
  */
+/** Identifiant de la course à distance libre (traitement Riegel spécifique). */
+const FREE_RUN_ID = "run_free_distance";
+/** Exposant de la formule de Riegel (sport-science 20 juin) : t2 = t1·(d2/d1)^1.06. */
+const RIEGEL_EXPONENT = 1.06;
+const FREE_RUN_MIN_M = 400;
+const FREE_RUN_MAX_M = 42_200;
+/** Allures plancher (la plus rapide plausible) et plafond (la plus lente) en s/km. */
+const PACE_FLOOR_S_PER_KM: Record<"male" | "female", number> = { male: 156, female: 171 };
+const PACE_CEILING_S_PER_KM = 720;
+
+type EffortTag = { attribute: internalScore.RadarAttribute["attribute"]; estimated: boolean };
+
 @Injectable()
 export class ScoringService {
   constructor(
@@ -25,6 +37,17 @@ export class ScoringService {
 
   /** Sous-score d'un effort sur un WOD de référence (R brut → percentile → courbe f). */
   computeSubScore(req: internalScore.ComputeSubScoreRequest): internalScore.ComputeSubScoreResponse {
+    // Course à distance libre : normalisation Riegel + bornes par allure (cf. scoreFreeRun).
+    if (req.wodId === FREE_RUN_ID) {
+      const { subScore, percentile, tags } = this.scoreFreeRun(req.sex, req.rawResult, req.distanceMeters);
+      return {
+        subScore,
+        percentile,
+        attributesAffected: tags.map((t) => t.attribute),
+        scoringVersionId: this.versions.getActiveVersionId(),
+      };
+    }
+
     const wod = this.wods.getOrThrow(req.wodId);
 
     if (wod.scoreType !== req.scoreType) {
@@ -62,6 +85,49 @@ export class ScoringService {
   }
 
   /**
+   * Course à distance libre : l'utilisateur saisit (distance_m, time_s). On valide les bornes
+   * d'allure (anti-triche, dérivées de la distance), on normalise vers un équivalent 5 km via
+   * Riegel, puis on score contre la distribution 5 km. Tag `speed` ajouté si distance ≤ 1 km.
+   * (Reco sport-science 20 juin.)
+   */
+  private scoreFreeRun(
+    sex: internalScore.ComputeSubScoreRequest["sex"],
+    timeSeconds: number,
+    distanceMeters: number | undefined,
+  ): { subScore: number; percentile: number; tags: EffortTag[] } {
+    if (distanceMeters === undefined) {
+      throw new BadRequestException({
+        code: "VALIDATION_ERROR",
+        message: "distanceMeters est requis pour une course à distance libre.",
+        details: { field: "distanceMeters" },
+      });
+    }
+    if (distanceMeters < FREE_RUN_MIN_M || distanceMeters > FREE_RUN_MAX_M) {
+      throw new UnprocessableEntityException({
+        code: "WOD_RESULT_OUT_OF_BOUNDS",
+        message: `Distance ${distanceMeters} m hors plage supportée [${FREE_RUN_MIN_M}, ${FREE_RUN_MAX_M}].`,
+        details: { field: "distanceMeters", min: FREE_RUN_MIN_M, max: FREE_RUN_MAX_M },
+      });
+    }
+    const km = distanceMeters / 1000;
+    const hardMin = km * PACE_FLOOR_S_PER_KM[sex];
+    const hardMax = km * PACE_CEILING_S_PER_KM;
+    if (timeSeconds < hardMin || timeSeconds > hardMax) {
+      throw new UnprocessableEntityException({
+        code: "WOD_RESULT_OUT_OF_BOUNDS",
+        message: `Temps ${timeSeconds} s hors allure plausible pour ${km} km [${Math.round(hardMin)}, ${Math.round(hardMax)}] s.`,
+        details: { field: "timeSeconds", min: Math.round(hardMin), max: Math.round(hardMax) },
+      });
+    }
+    const t5kEquiv = timeSeconds * Math.pow(5000 / distanceMeters, RIEGEL_EXPONENT);
+    const ref = this.wods.getOrThrow(FREE_RUN_ID).bySex[sex];
+    const p = percentileOf(t5kEquiv, ref.model);
+    const tags: EffortTag[] = [{ attribute: "engine", estimated: false }];
+    if (distanceMeters <= 1000) tags.push({ attribute: "speed", estimated: false });
+    return { subScore: subScoreFromPercentile(p), percentile: p, tags };
+  }
+
+  /**
    * Agrège l'Index à partir de scores d'attributs déjà calculés (cf. contrat interne).
    * NB : `req.sex` est reçu mais pas encore utilisé — la distribution d'Index est sex-agnostique
    * au démarrage (N(450,140), §6.4) ; le champ est conservé pour le futur percentile par sexe.
@@ -85,6 +151,10 @@ export class ScoringService {
    */
   computeProfile(req: internalScore.ComputeProfileRequest): internalScore.ComputeProfileResponse {
     const efforts: ScoredEffort[] = req.efforts.map((e) => {
+      if (e.wodId === FREE_RUN_ID) {
+        const { subScore, tags } = this.scoreFreeRun(req.sex, e.rawResult, e.distanceMeters);
+        return { subScore, ageWeeks: e.ageWeeks, tags };
+      }
       const wod = this.wods.getOrThrow(e.wodId);
       const { subScore } = this.scoreEffort(wod, req.sex, e.rawResult);
       return {

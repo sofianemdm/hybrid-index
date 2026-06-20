@@ -2,16 +2,16 @@ import { WODS, WODS_BY_ID } from "../src/wods/wods.data";
 import { percentile } from "@hybrid-index/scoring-core";
 
 describe("Registre des WODs (intégrité)", () => {
-  it("contient exactement 15 WODs (8 avec matériel + 7 sans)", () => {
-    expect(WODS).toHaveLength(15);
+  it("contient 17 WODs (8 avec matériel + 9 sans, dont course libre & air squats)", () => {
+    expect(WODS).toHaveLength(17);
     expect(WODS.filter((w) => w.requiresEquipment)).toHaveLength(8);
-    expect(WODS.filter((w) => !w.requiresEquipment)).toHaveLength(7);
+    expect(WODS.filter((w) => !w.requiresEquipment)).toHaveLength(9);
   });
 
   it("a des identifiants uniques et un index cohérent", () => {
     const ids = new Set(WODS.map((w) => w.id));
-    expect(ids.size).toBe(15);
-    expect(WODS_BY_ID.size).toBe(15);
+    expect(ids.size).toBe(17);
+    expect(WODS_BY_ID.size).toBe(17);
   });
 
   it("chaque WOD a une référence pour les deux sexes avec bornes valides", () => {
@@ -26,10 +26,11 @@ describe("Registre des WODs (intégrité)", () => {
     }
   });
 
-  it("seul max_pushups porte un attribut estimé (proxy Force)", () => {
+  it("seuls les proxies bodyweight portent un attribut Force estimé (D2)", () => {
+    const proxiesForceEstimee = new Set(["max_pushups", "max_air_squats"]);
     for (const wod of WODS) {
       const hasEstimated = wod.targetAttributes.some((t) => t.estimated);
-      expect(hasEstimated).toBe(wod.id === "max_pushups");
+      expect(hasEstimated).toBe(proxiesForceEstimee.has(wod.id));
     }
   });
 

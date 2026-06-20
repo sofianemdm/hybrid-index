@@ -49,7 +49,7 @@ describe("api — onboarding/estimate (e2e)", () => {
   it("révèle un Index provisoire + rang à partir d'un temps de course", async () => {
     const res = await request(app.getHttpServer())
       .post("/v1/onboarding/estimate")
-      .send({ sex: "male", goal: "all_round", course: { wodId: "run_5k", timeSeconds: 1440 } })
+      .send({ sex: "male", goal: "all_round", course: { distanceMeters: 5000, timeSeconds: 1440 } })
       .expect(201);
     expect(res.body.index.value).toBe(884);
     expect(res.body.index.rank).toBe("diamond"); // 884 ∈ [750,900)
@@ -76,11 +76,11 @@ describe("api — onboarding/estimate (e2e)", () => {
   it("course + pompes combinées → deux efforts transmis", async () => {
     await request(app.getHttpServer())
       .post("/v1/onboarding/estimate")
-      .send({ sex: "male", goal: "all_round", course: { wodId: "run_1k", timeSeconds: 240 }, estimatedPushups: 30 })
+      .send({ sex: "male", goal: "all_round", course: { distanceMeters: 1000, timeSeconds: 240 }, estimatedPushups: 30 })
       .expect(201);
     expect(lastRequest.value).toMatchObject({
       efforts: [
-        { wodId: "run_1k", rawResult: 240 },
+        { wodId: "run_free_distance", rawResult: 240, distanceMeters: 1000 },
         { wodId: "max_pushups", rawResult: 30 },
       ],
     });
@@ -97,7 +97,7 @@ describe("api — onboarding/estimate (e2e)", () => {
   it("rejette une entrée mal formée (400)", async () => {
     const res = await request(app.getHttpServer())
       .post("/v1/onboarding/estimate")
-      .send({ sex: "martian", goal: "all_round", course: { wodId: "run_5k", timeSeconds: 1440 } })
+      .send({ sex: "martian", goal: "all_round", course: { distanceMeters: 5000, timeSeconds: 1440 } })
       .expect(400);
     expect(res.body.error.code).toBe("VALIDATION_ERROR");
   });

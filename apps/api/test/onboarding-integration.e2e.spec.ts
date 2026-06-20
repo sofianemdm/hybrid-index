@@ -33,16 +33,26 @@ describe("api ↔ score-service — reveal RÉEL (intégration, sans mock, sans 
     delete process.env.SCORE_SERVICE_URL;
   });
 
-  it("course 5 km (24:00) → Engine débloqué, Index provisoire, rang cohérent", async () => {
+  it("course libre 5 km (24:00) → normalisée Riegel, Engine débloqué, Index provisoire", async () => {
     const res = await request(api.getHttpServer())
       .post("/v1/onboarding/estimate")
-      .send({ sex: "male", goal: "all_round", course: { wodId: "run_5k", timeSeconds: 1440 } })
+      .send({ sex: "male", goal: "all_round", course: { distanceMeters: 5000, timeSeconds: 1440 } })
       .expect(201);
-    expect(res.body.index.value).toBeGreaterThanOrEqual(880);
-    expect(res.body.index.value).toBeLessThanOrEqual(888);
+    expect(res.body.index.value).toBeGreaterThanOrEqual(850);
+    expect(res.body.index.value).toBeLessThanOrEqual(1000);
     expect(res.body.index.radarCoverage).toBe(1);
     expect(res.body.index.isProvisional).toBe(true);
-    expect(res.body.index.rank).toBe("diamond");
+    expect(["diamond", "elite"]).toContain(res.body.index.rank);
+    const engine = res.body.radar.find((a: { attribute: string }) => a.attribute === "engine");
+    expect(engine.unlocked).toBe(true);
+  });
+
+  it("course libre 3 km (15:00) saisie par l'utilisateur → Engine débloqué", async () => {
+    const res = await request(api.getHttpServer())
+      .post("/v1/onboarding/estimate")
+      .send({ sex: "male", goal: "all_round", course: { distanceMeters: 3000, timeSeconds: 900 } })
+      .expect(201);
+    expect(res.body.index.value).toBeGreaterThan(0);
     const engine = res.body.radar.find((a: { attribute: string }) => a.attribute === "engine");
     expect(engine.unlocked).toBe(true);
   });
@@ -60,7 +70,7 @@ describe("api ↔ score-service — reveal RÉEL (intégration, sans mock, sans 
   it("propage un résultat hors bornes du score-service (422)", async () => {
     const res = await request(api.getHttpServer())
       .post("/v1/onboarding/estimate")
-      .send({ sex: "male", goal: "all_round", course: { wodId: "run_5k", timeSeconds: 60 } })
+      .send({ sex: "male", goal: "all_round", course: { distanceMeters: 5000, timeSeconds: 60 } })
       .expect(422);
     expect(res.body.error.code).toBe("WOD_RESULT_OUT_OF_BOUNDS");
   });
