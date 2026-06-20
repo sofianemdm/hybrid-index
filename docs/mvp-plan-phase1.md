@@ -14,11 +14,12 @@
 | 1 | Service Score (isolé, testé à fond) | ✅ **Terminé** (revu, 75 tests) | worked examples A/B reproduits, D2/D3, bornes, provisoire |
 | 2 | Auth + onboarding + REVEAL | ✅ **Terminé & persisté** (revu) — auth email+JWT, age-gate D4, onboarding/complete persiste Index+radar ; app Flutter Web | e2e : inscrit → Index révélé persisté ; age-gate 403 (tests verts) |
 | 3 | Notation d'un WOD + conséquences | ✅ **Terminé** (revu) — POST /v1/results → recalcul no-drop persisté, idempotence (idempotencyKey) ; bornes 422. Reste : sync offline (Drift) | e2e : log WOD → Index/radar bougent ; idempotent (test vert) |
-| 4 | Radar + détail Index + ciblage d'axe (+ ~60 séances) | — (radar affiché côté app ; ciblage/reco à faire) | cibler un axe → Index projeté ; reco respecte matériel/niveau |
+| 4 | Radar + détail Index + ciblage d'axe (+ séances) | ✅ **Terminé** (revu) — Coach : ciblage d'axe → Index projeté (autorité score-service) + 54 séances filtrées matériel ; écran Coach | cibler un axe → Index projeté ≥ actuel (tests verts) |
 | 5 | Ligues H/F + Rival | ✅ **Terminé** (revu) — classement H/F (Redis ZSET + repli PG), rival via PG, seed 80 athlètes, écran classement | classement trié + rival cohérent (tests verts) |
-| 6 | Profils publics + Explorer + Comparaison | — | voir profil/radar d'un autre athlète |
-| 7 | Cartes partageables (K-factor) | — | générer l'image d'une carte depuis un résultat |
-| 8 | Réglages RGPD + notifs + streak | — | export/suppression compte ; prefs respectées ; streak hebdo |
+| 6 | Profils publics + Explorer + Comparaison | ✅ **Terminé** (revu) — GET /v1/profiles/:id public, écran profil + comparaison ; classement cliquable | voir profil/radar d'un autre athlète (test vert) |
+| 7 | Cartes partageables (K-factor) | ✅ **Terminé** — carte visuelle capturée en PNG, téléchargement Web | générer/exporter l'image de sa carte |
+| 8 | Réglages RGPD + notifs + streak | ✅ **Terminé** (revu) — streak hebdo + 18 badges + RGPD (export/suppression) + prefs notifs (push FCM différé) | export/suppression ; streak hebdo ; badges (tests verts) |
+| + | Paramètres & Avatar évolutif | ✅ **Terminé** — PATCH profil (objectif→recalcul), éditeur d'avatar vectoriel + cadre de rang | modifier profil ; personnaliser l'avatar (tests verts) |
 
 ## État de l'incrément 0 (livré)
 Monorepo pnpm/turbo · `packages/contracts` (enums Zod anglais, `rankFromIndex` testé 7/7) ·

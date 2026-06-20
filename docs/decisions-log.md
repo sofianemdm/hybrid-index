@@ -131,6 +131,31 @@ que **persister** le résultat (`HybridIndex` + `AttributeScore`, version `scori
 **Limite connue** : le contrat radar ne porte pas encore de percentile par attribut → stocké comme
 approximation `score/1000` (au lieu de 0), à remplacer quand le contrat l'exposera.
 
+### D15 — Course à distance libre : normalisation Riegel
+L'utilisateur saisit n'importe quelle distance + son temps. Le score-service normalise via la
+formule de Riegel (exposant **1.06**) vers un équivalent 5 km, puis score `engine` (sport-science
+20 juin). Plage 400 m–42,2 km ; bornes anti-triche par **allure** (156/171 s·km⁻¹ plancher,
+720 plafond) ; tag `speed` ajouté si ≤ 1 km. La distance est persistée (`wod_result.distance_meters`).
+Ajout aussi de `max_air_squats` (une série, à l'échec). Objectifs : HYROX / CrossFit / Condition
+physique. Matériel : Sans / Équipé (Équipé ⊇ Sans).
+
+### D16 — Index projeté (Coach) : simulation via la fonction officielle
+La projection d'Index réutilise `hybridIndex` (autorité, versionnée), en simulant la montée de
+l'attribut ciblé à `min(1000, max(meilleur attribut, score+100))`. Jamais de recalcul parallèle,
+jamais décroissant. 54 séances mappées aux 6 attributs (sport-science), filtrées par matériel.
+
+### D17 — Engagement : streak hebdo + badges + notifications
+Streak ISO-hebdo (semaine validée ≥ weeklyGoal=3, jetons de gel anti double-protection, régen
++1/4 sem actives, repos planifié) ; 18 badges (conditions évaluées serveur ; **Top X% attribués
+seulement si ligue ≥ 100 users** pour rester crédibles) ; 10 déclencheurs de notification (envoi
+**push FCM différé** — credentials externes). RGPD : export (sans hash) + suppression (cascade +
+retrait Redis). 2 champs Streak ajoutés (`last_outcome`, `validated_active_weeks`).
+
+### D18 — Avatar vectoriel (sans assets)
+Faute d'assets sprites, l'avatar est **dessiné en CustomPaint** (peau/cheveux/barbe paramétrables
++ cadre de rang). Indices persistés dans `Avatar`. Les cosmétiques débloqués par badges existent
+en données (`cosmeticUnlock`) mais ne sont pas encore équipables (à brancher avec contrôle d'équité).
+
 ### D14 — Démo navigateur : app Flutter lancée en Web
 Pour être **essayable demain matin sans téléphone/émulateur**, l'app Flutter est lancée en **Web**
 (`flutter run -d chrome`). C'est **le vrai code produit** (base unique iOS+Android) ; le Web est une
