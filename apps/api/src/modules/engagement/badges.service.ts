@@ -1,9 +1,13 @@
-import { Injectable } from "@nestjs/common";
-import type { Sex } from "@prisma/client";
+import { Injectable, Logger } from "@nestjs/common";
+import { Prisma, type Sex } from "@prisma/client";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { LeaderboardService } from "../leaderboard/leaderboard.service";
 import { StreakService } from "./streak.service";
 import { BADGES, type BadgeContext, type BadgeDef, matchesCondition } from "./badges.data";
+
+/** Population minimale d'une ligue pour que les badges « Top X% » aient du sens (cf. décision
+ *  verrouillée : classements crédibles à partir de ~200 users). En dessous, on ne les attribue pas. */
+const MIN_LEAGUE_FOR_PERCENTILE = 100;
 
 export interface BadgeView extends BadgeDef {
   unlocked: boolean;
@@ -12,6 +16,8 @@ export interface BadgeView extends BadgeDef {
 
 @Injectable()
 export class BadgesService {
+  private readonly logger = new Logger(BadgesService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly leaderboard: LeaderboardService,
@@ -28,16 +34,22 @@ export class BadgesService {
       this.prisma.wodResult.findMany({ where: { userId }, distinct: ["wodId"], select: { wodId: true } }),
       this.prisma.wodResult.count({ where: { userId, wod: { requiresEquipment: false } } }),
       this.prisma.attributeScore.count({ where: { userId, unlocked: true } }),
-      this.streak.evaluateAndGet(userId).catch(() => ({ current: 0, best: 0 })),
+      this.streak.evaluateAndGet(userId).catch((e) => {
+        this.logger.warn(`Streak indisponible pour les badges (${userId}) : ${e}`);
+        return { current: 0, best: 0 };
+      }),
     ]);
 
+    // Percentile de ligue : seulement si la population est suffisante (sinon « Top 1% » trivial).
     let percentile = 0;
     if (idx) {
       const total = await this.prisma.hybridIndex.count({ where: { user: { profile: { sex } } } });
-      const above = await this.prisma.hybridIndex.count({
-        where: { value: { gt: idx.value }, user: { profile: { sex } } },
-      });
-      percentile = total > 0 ? (1 - above / total) * 100 : 0;
+      if (total >= MIN_LEAGUE_FOR_PERCENTILE) {
+        const above = await this.prisma.hybridIndex.count({
+          where: { value: { gt: idx.value }, user: { profile: { sex } } },
+        });
+        percentile = (1 - above / total) * 100;
+      }
     }
 
     const rival = await this.leaderboard.rival(userId).catch(() => ({ state: "none" as const }));
@@ -65,9 +77,15 @@ export class BadgesService {
     const newly: BadgeDef[] = [];
     for (const badge of BADGES) {
       if (owned.has(badge.id)) continue;
-      if (matchesCondition(badge.condition, ctx)) {
-        await this.prisma.userBadge.create({ data: { userId, badgeId: badge.id } }).catch(() => undefined);
-        newly.push(badge);
+      if (!matchesCondition(badge.condition, ctx)) continue;
+      try {
+        await this.prisma.userBadge.create({ data: { userId, badgeId: badge.id } });
+        newly.push(badge); // poussé UNIQUEMENT si l'attribution a réussi (anti double-célébration).
+      } catch (e) {
+        // P2002 = déjà attribué par une requête concurrente : on ignore sans le compter comme nouveau.
+        if (!(e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002")) {
+          this.logger.warn(`Attribution badge ${badge.id} échouée (${userId}) : ${e}`);
+        }
       }
     }
     return newly;

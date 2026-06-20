@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { ScoreClient } from "../../infra/score-client/score-client.service";
 import { ProfileScoringService, type PersistedProfile } from "../profile/profile-scoring.service";
@@ -30,6 +30,8 @@ export interface LogResultResponse {
  */
 @Injectable()
 export class ResultsService {
+  private readonly logger = new Logger(ResultsService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly scoreClient: ScoreClient,
@@ -75,8 +77,12 @@ export class ResultsService {
     if (!recomputed) throw new NotFoundException({ code: "NOT_FOUND", message: "Recalcul impossible." });
 
     // Engagement : met à jour la série et attribue les badges nouvellement mérités.
-    await this.streak.evaluateAndGet(userId).catch(() => undefined);
-    const unlockedBadges = await this.badges.evaluate(userId).catch(() => [] as BadgeDef[]);
+    // Best-effort : un échec ne doit pas faire échouer le log, mais on le LOGGE (pas de silence).
+    await this.streak.evaluateAndGet(userId).catch((e) => this.logger.warn(`Streak échouée (${userId}) : ${e}`));
+    const unlockedBadges = await this.badges.evaluate(userId).catch((e) => {
+      this.logger.warn(`Badges échoués (${userId}) : ${e}`);
+      return [] as BadgeDef[];
+    });
 
     return {
       result: {

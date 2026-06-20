@@ -126,4 +126,28 @@ describe("score-service — calcul (e2e)", () => {
       expect(strength.isEstimated).toBe(false); // Grace (test chargé) fait autorité sur le proxy
     });
   });
+
+  describe("POST /v1/score/project (Index projeté)", () => {
+    it("projeté >= actuel et plafonné à 1000", async () => {
+      const res = await request(app.getHttpServer())
+        .post("/v1/score/project")
+        .send({
+          goal: "all_round",
+          targetAttribute: "power",
+          attributeScores: [
+            { attribute: "engine", score: 800, unlocked: true, isEstimated: false },
+            { attribute: "speed", score: 0, unlocked: false, isEstimated: false },
+            { attribute: "strength", score: 600, unlocked: true, isEstimated: false },
+            { attribute: "power", score: 400, unlocked: true, isEstimated: false },
+            { attribute: "muscular_endurance", score: 500, unlocked: true, isEstimated: false },
+            { attribute: "hybrid", score: 0, unlocked: false, isEstimated: false },
+          ],
+        })
+        .expect(201);
+      expect(res.body.projected).toBeGreaterThanOrEqual(res.body.current);
+      expect(res.body.projected).toBeLessThanOrEqual(1000);
+      expect(res.body.delta).toBeGreaterThanOrEqual(0);
+      expect(res.body.targetScore).toBeGreaterThanOrEqual(600); // au moins au niveau du meilleur attribut
+    });
+  });
 });
