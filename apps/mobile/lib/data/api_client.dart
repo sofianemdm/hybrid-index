@@ -146,4 +146,12 @@ class ApiClient {
   Future<dynamic> exportData() async => _send('GET', '/v1/me/export');
 
   Future<void> deleteAccount() async => _send('DELETE', '/v1/me');
+
+  // --- Avatar ---
+  Future<AvatarConfig> getAvatar() async {
+    final j = await _send('GET', '/v1/me/avatar') as Map<String, dynamic>;
+    return AvatarConfig.fromJson(j);
+  }
+
+  Future<void> updateAvatar(AvatarConfig config) async => _send('PATCH', '/v1/me/avatar', config.toJson());
 }

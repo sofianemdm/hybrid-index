@@ -5,9 +5,11 @@ import '../../app.dart';
 import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../theme/tokens.dart';
+import '../../widgets/hi_avatar.dart';
 import '../../widgets/index_ring.dart';
 import '../../widgets/radar_view.dart';
 import '../../widgets/rank_badge.dart';
+import '../avatar/avatar_editor_screen.dart';
 import '../coach/coach_screen.dart';
 import '../settings/settings_screen.dart';
 import '../share/share_card_screen.dart';
@@ -33,6 +35,20 @@ class HomeScreen extends ConsumerWidget {
           children: [
             Row(
               children: [
+                GestureDetector(
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const AvatarEditorScreen()),
+                  ),
+                  child: ref.watch(avatarProvider).maybeWhen(
+                        data: (a) => HiAvatar(
+                          config: a,
+                          rank: profileAsync.value?.index.rank ?? 'rookie',
+                          size: 48,
+                        ),
+                        orElse: () => const SizedBox(width: 48, height: 48),
+                      ),
+                ),
+                const SizedBox(width: HiSpace.sm),
                 Expanded(
                   child: Text(
                     'Salut, ${session.user?.displayName ?? ''}',

@@ -5,7 +5,7 @@ import { ZodValidationPipe } from "../../common/zod-validation.pipe";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { ProfileScoringService, type PersistedProfile } from "../profile/profile-scoring.service";
 import { MeService } from "./me.service";
-import { UpdateMeRequest } from "./me.dto";
+import { UpdateAvatarRequest, UpdateMeRequest } from "./me.dto";
 
 @Controller("v1/me")
 @UseGuards(JwtAuthGuard)
@@ -39,6 +39,20 @@ export class MeController {
     @Body(new ZodValidationPipe(UpdateMeRequest)) body: UpdateMeRequest,
   ): Promise<unknown> {
     return this.meService.update(user.userId, body);
+  }
+
+  /** Avatar (peau / cheveux / barbe). Valeurs par défaut si jamais personnalisé. */
+  @Get("avatar")
+  getAvatar(@CurrentUser() user: AuthenticatedUser): Promise<unknown> {
+    return this.meService.getAvatar(user.userId);
+  }
+
+  @Patch("avatar")
+  updateAvatar(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body(new ZodValidationPipe(UpdateAvatarRequest)) body: UpdateAvatarRequest,
+  ): Promise<unknown> {
+    return this.meService.updateAvatar(user.userId, body);
   }
 
   /** HYBRID INDEX + radar persistés (état vide tant qu'aucun effort loggé). */

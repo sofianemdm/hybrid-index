@@ -10,6 +10,7 @@ import '../../data/session.dart';
 import '../../data/web_download.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/hi_button.dart';
+import '../avatar/avatar_editor_screen.dart';
 
 /// Paramètres : modifier pseudo / objectif / matériel. Un changement d'objectif
 /// recalcule l'Index (pondération par objectif) côté serveur.
@@ -149,6 +150,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ),
                       const SizedBox(height: HiSpace.xl),
                       HiButton(label: 'Enregistrer', loading: _saving, onPressed: _save),
+                      const SizedBox(height: HiSpace.lg),
+                      OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          minimumSize: const Size.fromHeight(48),
+                          side: const BorderSide(color: HiColors.strokeStrong),
+                          foregroundColor: HiColors.textPrimary,
+                        ),
+                        icon: const Icon(Icons.face),
+                        label: const Text('Personnaliser mon avatar'),
+                        onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const AvatarEditorScreen()),
+                        ),
+                      ),
                       const SizedBox(height: HiSpace.xl),
                       const Divider(color: HiColors.strokeSubtle),
                       const SizedBox(height: HiSpace.md),

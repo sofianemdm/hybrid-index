@@ -1,7 +1,9 @@
 import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { ProfileScoringService } from "../profile/profile-scoring.service";
-import type { UpdateMeRequest } from "./me.dto";
+import type { UpdateAvatarRequest, UpdateMeRequest } from "./me.dto";
+
+const DEFAULT_AVATAR = { skinTone: 2, hairStyle: 1, hairColor: 1, beardStyle: null as number | null };
 
 @Injectable()
 export class MeService {
@@ -46,5 +48,31 @@ export class MeService {
       equipmentPref: updated.equipmentPref,
       rank: updated.rank,
     };
+  }
+
+  async getAvatar(userId: string): Promise<unknown> {
+    const avatar = await this.prisma.avatar.findUnique({ where: { userId } });
+    if (!avatar) return DEFAULT_AVATAR;
+    return {
+      skinTone: avatar.skinTone,
+      hairStyle: avatar.hairStyle,
+      hairColor: avatar.hairColor,
+      beardStyle: avatar.beardStyle,
+    };
+  }
+
+  async updateAvatar(userId: string, req: UpdateAvatarRequest): Promise<unknown> {
+    const data = {
+      skinTone: req.skinTone,
+      hairStyle: req.hairStyle,
+      hairColor: req.hairColor,
+      beardStyle: req.beardStyle ?? null,
+    };
+    await this.prisma.avatar.upsert({
+      where: { userId },
+      create: { userId, ...data, equippedCosmetics: {}, unlockedCosmetics: {} },
+      update: data,
+    });
+    return data;
   }
 }

@@ -1,0 +1,178 @@
+import 'dart:math' as math;
+import 'package:flutter/material.dart';
+
+import '../data/models.dart';
+import '../theme/tokens.dart';
+
+/// Palettes de l'avatar (indices stockés côté serveur).
+class AvatarPalettes {
+  AvatarPalettes._();
+  static const skin = <Color>[
+    Color(0xFFFFE0BD), Color(0xFFF5CFA0), Color(0xFFE8B68A), Color(0xFFC68642),
+    Color(0xFF8D5524), Color(0xFF5C3A21), Color(0xFFEFC9B0), Color(0xFF3D2314),
+  ];
+  static const hair = <Color>[
+    Color(0xFF1A1A1A), Color(0xFF4B3621), Color(0xFF8B5A2B), Color(0xFFD4A017),
+    Color(0xFFB22222), Color(0xFFBFBFBF), Color(0xFF6A4E9C), Color(0xFF2E8B57),
+  ];
+  static const hairStyleLabels = ['Chauve', 'Court', 'Mi-long', 'Long', 'Piquant', 'Afro'];
+  static const beardStyleLabels = ['Aucune', 'Barbe naissante', 'Barbe pleine', 'Bouc', 'Moustache'];
+}
+
+/// Avatar stylisé dessiné (peau/cheveux/barbe) avec cadre de rang. Pas d'assets : tout est vectoriel.
+class HiAvatar extends StatelessWidget {
+  final AvatarConfig config;
+  final String rank;
+  final double size;
+  final bool showRing;
+  const HiAvatar({
+    super.key,
+    required this.config,
+    this.rank = 'rookie',
+    this.size = 96,
+    this.showRing = true,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: CustomPaint(painter: _AvatarPainter(config, HiColors.rank(rank), showRing)),
+    );
+  }
+}
+
+class _AvatarPainter extends CustomPainter {
+  final AvatarConfig c;
+  final Color rankColor;
+  final bool showRing;
+  _AvatarPainter(this.c, this.rankColor, this.showRing);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final s = size.width;
+    final cx = s / 2;
+    final skin = AvatarPalettes.skin[c.skinTone % AvatarPalettes.skin.length];
+    final hair = AvatarPalettes.hair[c.hairColor % AvatarPalettes.hair.length];
+
+    // Fond + cadre de rang.
+    final bg = Paint()..color = HiColors.bgElevated2;
+    canvas.drawCircle(Offset(cx, cx), s * 0.48, bg);
+    if (showRing) {
+      final ring = Paint()
+        ..color = rankColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = s * 0.04;
+      canvas.drawCircle(Offset(cx, cx), s * 0.46, ring);
+    }
+
+    final headR = s * 0.22;
+    final headCy = s * 0.44;
+
+    // Épaules / buste (couleur marque sombre).
+    final torso = Paint()..color = HiColors.brandPrimaryDeep;
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(Rect.fromLTWH(cx - s * 0.26, s * 0.66, s * 0.52, s * 0.30), Radius.circular(s * 0.12)),
+      torso,
+    );
+
+    // Afro (derrière la tête).
+    if (c.hairStyle == 5) {
+      canvas.drawCircle(Offset(cx, headCy - headR * 0.2), headR * 1.45, Paint()..color = hair);
+    }
+
+    // Tête.
+    final head = Paint()..color = skin;
+    canvas.drawCircle(Offset(cx, headCy), headR, head);
+
+    // Cheveux (selon le style).
+    _drawHair(canvas, cx, headCy, headR, hair);
+
+    // Yeux.
+    final eye = Paint()..color = const Color(0xFF1A1A1A);
+    canvas.drawCircle(Offset(cx - headR * 0.38, headCy + headR * 0.05), headR * 0.10, eye);
+    canvas.drawCircle(Offset(cx + headR * 0.38, headCy + headR * 0.05), headR * 0.10, eye);
+
+    // Barbe.
+    final beard = c.beardStyle ?? 0;
+    if (beard > 0) {
+      final p = Paint()..color = hair;
+      if (beard == 4) {
+        // Moustache.
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(
+            Rect.fromCenter(center: Offset(cx, headCy + headR * 0.42), width: headR * 0.7, height: headR * 0.18),
+            Radius.circular(headR * 0.1),
+          ),
+          p,
+        );
+      } else {
+        // Barbe (arc bas du visage) ; plus dense selon le style.
+        final rect = Rect.fromCircle(center: Offset(cx, headCy), radius: headR);
+        final sweep = beard == 1 ? 0.7 : (beard == 3 ? 0.5 : 1.0);
+        final start = math.pi / 2 - (math.pi * sweep) / 2;
+        final path = Path()
+          ..addArc(rect, start, math.pi * sweep)
+          ..close();
+        canvas.save();
+        canvas.clipPath(Path()..addOval(rect));
+        canvas.drawPath(path, p..color = hair.withValues(alpha: beard == 1 ? 0.55 : 1.0));
+        canvas.restore();
+      }
+    }
+  }
+
+  void _drawHair(Canvas canvas, double cx, double cy, double r, Color hair) {
+    if (c.hairStyle == 0) return; // chauve
+    final p = Paint()..color = hair;
+    final rect = Rect.fromCircle(center: Offset(cx, cy), radius: r);
+
+    // Casquette de cheveux : arc couvrant le haut de la tête.
+    final coverage = switch (c.hairStyle) {
+      1 => 0.95, // court
+      2 => 1.15, // mi-long
+      3 => 1.25, // long
+      4 => 0.9, // piquant
+      _ => 1.1,
+    };
+    final path = Path()..addArc(rect, math.pi, math.pi);
+    canvas.save();
+    canvas.clipPath(Path()..addOval(rect.inflate(r * 0.04)));
+    canvas.drawArc(Rect.fromCircle(center: Offset(cx, cy - r * (coverage - 1)), radius: r), math.pi, math.pi, false,
+        p..style = PaintingStyle.fill);
+    canvas.restore();
+    path.reset();
+
+    if (c.hairStyle == 3) {
+      // Mèches longues sur les côtés.
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(Rect.fromLTWH(cx - r * 1.02, cy - r * 0.2, r * 0.22, r * 1.2), Radius.circular(r * 0.1)),
+        p,
+      );
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(Rect.fromLTWH(cx + r * 0.80, cy - r * 0.2, r * 0.22, r * 1.2), Radius.circular(r * 0.1)),
+        p,
+      );
+    } else if (c.hairStyle == 4) {
+      // Pointes piquantes.
+      for (var i = -2; i <= 2; i++) {
+        final x = cx + i * r * 0.38;
+        final tri = Path()
+          ..moveTo(x - r * 0.16, cy - r * 0.85)
+          ..lineTo(x + r * 0.16, cy - r * 0.85)
+          ..lineTo(x, cy - r * 1.25)
+          ..close();
+        canvas.drawPath(tri, p);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_AvatarPainter old) =>
+      old.c.skinTone != c.skinTone ||
+      old.c.hairStyle != c.hairStyle ||
+      old.c.hairColor != c.hairColor ||
+      old.c.beardStyle != c.beardStyle ||
+      old.rankColor != rankColor;
+}

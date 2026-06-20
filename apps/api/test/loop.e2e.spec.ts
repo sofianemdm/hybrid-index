@@ -228,6 +228,19 @@ describe("api — boucle complète persistée (e2e réel)", () => {
     expect(res.body.passwordHash).toBeUndefined();
   });
 
+  it("avatar : personnalisation persistée", async () => {
+    await request(api.getHttpServer())
+      .patch("/v1/me/avatar")
+      .set("authorization", `Bearer ${token}`)
+      .send({ skinTone: 4, hairStyle: 3, hairColor: 2, beardStyle: 1 })
+      .expect(200);
+    const res = await request(api.getHttpServer())
+      .get("/v1/me/avatar")
+      .set("authorization", `Bearer ${token}`)
+      .expect(200);
+    expect(res.body).toMatchObject({ skinTone: 4, hairStyle: 3, hairColor: 2, beardStyle: 1 });
+  });
+
   it("RGPD : suppression de compte (effacement) — DOIT être le dernier test", async () => {
     const res = await request(api.getHttpServer())
       .delete("/v1/me")

@@ -21,6 +21,15 @@ final rivalProvider = FutureProvider<Rival>((ref) async {
   return ref.read(apiClientProvider).rival();
 });
 
+/// Avatar de l'utilisateur connecté (valeurs par défaut si jamais personnalisé).
+final avatarProvider = FutureProvider<AvatarConfig>((ref) async {
+  final session = ref.watch(sessionProvider);
+  if (session.status != AuthStatus.loggedIn) {
+    return const AvatarConfig(skinTone: 2, hairStyle: 1, hairColor: 1);
+  }
+  return ref.read(apiClientProvider).getAvatar();
+});
+
 /// Point d'entrée logique : décide quel écran montrer selon l'état d'auth + onboarding.
 class AuthGate extends ConsumerWidget {
   const AuthGate({super.key});

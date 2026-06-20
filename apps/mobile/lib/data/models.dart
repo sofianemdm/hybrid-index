@@ -281,6 +281,41 @@ class BadgeModel {
       );
 }
 
+class AvatarConfig {
+  final int skinTone;
+  final int hairStyle;
+  final int hairColor;
+  final int? beardStyle;
+  const AvatarConfig({
+    required this.skinTone,
+    required this.hairStyle,
+    required this.hairColor,
+    this.beardStyle,
+  });
+
+  factory AvatarConfig.fromJson(Map<String, dynamic> j) => AvatarConfig(
+        skinTone: (j['skinTone'] as num).toInt(),
+        hairStyle: (j['hairStyle'] as num).toInt(),
+        hairColor: (j['hairColor'] as num).toInt(),
+        beardStyle: (j['beardStyle'] as num?)?.toInt(),
+      );
+
+  AvatarConfig copyWith({int? skinTone, int? hairStyle, int? hairColor, int? beardStyle, bool clearBeard = false}) =>
+      AvatarConfig(
+        skinTone: skinTone ?? this.skinTone,
+        hairStyle: hairStyle ?? this.hairStyle,
+        hairColor: hairColor ?? this.hairColor,
+        beardStyle: clearBeard ? null : (beardStyle ?? this.beardStyle),
+      );
+
+  Map<String, dynamic> toJson() => {
+        'skinTone': skinTone,
+        'hairStyle': hairStyle,
+        'hairColor': hairColor,
+        'beardStyle': beardStyle,
+      };
+}
+
 /// WOD du catalogue (sous-ensemble utile au log).
 class WodCatalogItem {
   final String id;
