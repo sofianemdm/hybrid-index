@@ -65,7 +65,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       });
       await ref.read(sessionProvider.notifier).refreshMe();
       ref.invalidate(myProfileProvider);
-      ref.invalidate(rivalProvider);
       if (!mounted) return;
       _toast('Profil mis à jour.');
       Navigator.of(context).pop();

@@ -12,8 +12,6 @@ export interface NotificationTrigger {
 }
 
 export const NOTIFICATION_TRIGGERS: NotificationTrigger[] = [
-  { key: "rival-overtaken", trigger: "rival_resolved && rivalIndex > userIndex", title: "Ton rival vient de te passer", body: "Reprends la tête : un WOD bien placé peut suffire.", priority: "high", cooldown: "24h", category: "rival" },
-  { key: "rival-beaten", trigger: "rival_resolved && userIndex > rivalIndex", title: "Tu as dépassé ton rival 🔥", body: "Index devant. Garde l'avance cette semaine.", priority: "high", cooldown: "24h", category: "rival" },
   { key: "week-almost-complete", trigger: "weekCount == weeklyGoal-1 && daysLeft >= 1", title: "Plus qu'un WOD", body: "Un seul entraînement et ta semaine est validée.", priority: "high", cooldown: "48h", category: "streak" },
   { key: "streak-protected", trigger: "streak_evaluated && outcome == frozen", title: "Ta série est protégée", body: "On a utilisé un jeton de gel. Ta série continue, tranquille.", priority: "medium", cooldown: "0", category: "streak" },
   { key: "new-rank", trigger: "rank_changed && newRank > oldRank", title: "Nouveau rang", body: "Ta progression paie. Continue sur ta lancée.", priority: "high", cooldown: "0", category: "progression" },

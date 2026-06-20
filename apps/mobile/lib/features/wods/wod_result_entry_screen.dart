@@ -55,7 +55,6 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
     try {
       final profile = await ref.read(apiClientProvider).logWodResult(widget.wodId, {'rawResult': raw, 'rxCompliant': _rx});
       ref.invalidate(myProfileProvider);
-      ref.invalidate(rivalProvider);
       if (!mounted) return;
       if (profile != null) {
         await showDialog<void>(

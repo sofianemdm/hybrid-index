@@ -53,7 +53,6 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     final changed = await Navigator.of(context).push<bool>(route);
     if (changed == true || choice == 'build') {
       ref.invalidate(myProfileProvider);
-      ref.invalidate(rivalProvider);
     }
   }
 

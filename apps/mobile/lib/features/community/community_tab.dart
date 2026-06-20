@@ -6,7 +6,6 @@ import '../../data/session.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/rank_badge.dart';
 import '../profile/public_profile_screen.dart';
-import 'challenges_screen.dart';
 import 'explore_screen.dart';
 
 /// Onglet Communauté : feed d'activité (PR, WODs, montées de rang, badges) + kudos.
@@ -83,11 +82,6 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
                         style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: HiColors.textPrimary)),
                   ),
                   IconButton(
-                    tooltip: 'Défis',
-                    icon: const Icon(Icons.sports_kabaddi, color: HiColors.textTertiary),
-                    onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ChallengesScreen())),
-                  ),
-                  IconButton(
                     tooltip: 'Rechercher',
                     icon: const Icon(Icons.search, color: HiColors.textTertiary),
                     onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ExploreScreen())),
@@ -113,8 +107,6 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
         return 'monte au rang ${HiLabels.rank(a.payload['rank']?.toString() ?? '')} 🎖️';
       case 'badge_unlocked':
         return 'badge débloqué : ${a.payload['name'] ?? ''}';
-      case 'challenge_resolved':
-        return 'a résolu un défi ⚔️';
       default:
         return 'nouvelle activité';
     }

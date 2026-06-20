@@ -127,15 +127,10 @@ class ApiClient {
     return j.map((e) => WodResultItem.fromJson(e as Map<String, dynamic>)).toList();
   }
 
-  // --- Classement / rival ---
+  // --- Classement ---
   Future<Leaderboard> leaderboard(String sex, {int limit = 50}) async {
     final j = await _send('GET', '/v1/leaderboard?sex=$sex&limit=$limit') as Map<String, dynamic>;
     return Leaderboard.fromJson(j);
-  }
-
-  Future<Rival> rival() async {
-    final j = await _send('GET', '/v1/me/rival') as Map<String, dynamic>;
-    return Rival.fromJson(j);
   }
 
   // --- Coach / profils publics ---
@@ -211,19 +206,7 @@ class ApiClient {
     return j.map((e) => AthleteSummary.fromJson(e as Map<String, dynamic>)).toList();
   }
 
-  // --- Défis ---
-  Future<List<Challenge>> challenges() async {
-    final j = await _send('GET', '/v1/challenges') as List<dynamic>;
-    return j.map((e) => Challenge.fromJson(e as Map<String, dynamic>)).toList();
-  }
 
-  Future<void> createChallenge({required String wodId, String? toUserId}) async =>
-      _send('POST', '/v1/challenges', {'wodId': wodId, if (toUserId != null) 'toUserId': toUserId});
-
-  Future<void> acceptChallenge(String id) async => _send('POST', '/v1/challenges/$id/accept', {});
-  Future<void> declineChallenge(String id) async => _send('POST', '/v1/challenges/$id/decline', {});
-  Future<Map<String, dynamic>> resolveChallenge(String id) async =>
-      await _send('POST', '/v1/challenges/$id/resolve', {}) as Map<String, dynamic>;
 
   Future<EndgameInfo> endgame() async {
     final j = await _send('GET', '/v1/me/endgame') as Map<String, dynamic>;

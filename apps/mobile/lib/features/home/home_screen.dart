@@ -16,7 +16,7 @@ import '../notifications/notifications_screen.dart';
 import '../settings/settings_screen.dart';
 import '../share/share_card_screen.dart';
 
-/// Accueil : Index courant, rang, carte rival, radar. Tire-pour-rafraîchir.
+/// Accueil : Index courant, rang, radar. Tire-pour-rafraîchir.
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
@@ -29,7 +29,6 @@ class HomeScreen extends ConsumerWidget {
       child: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(myProfileProvider);
-          ref.invalidate(rivalProvider);
           await ref.read(myProfileProvider.future);
         },
         child: ListView(
@@ -95,8 +94,6 @@ class HomeScreen extends ConsumerWidget {
         const SizedBox(height: HiSpace.md),
         Center(child: RankBadge(rank: p.index.rank, fontSize: 15)),
         const SizedBox(height: HiSpace.lg),
-        _RivalCard(),
-        const SizedBox(height: HiSpace.md),
         OutlinedButton.icon(
           style: OutlinedButton.styleFrom(
             minimumSize: const Size.fromHeight(48),
@@ -166,60 +163,3 @@ class HomeScreen extends ConsumerWidget {
   }
 }
 
-/// Carte rival : l'athlète juste au-dessus de moi (levier d'engagement clé).
-class _RivalCard extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final rivalAsync = ref.watch(rivalProvider);
-    return rivalAsync.when(
-      loading: () => const SizedBox.shrink(),
-      error: (_, __) => const SizedBox.shrink(),
-      data: (r) {
-        if (r.state == 'leader') {
-          return _box(
-            icon: Icons.emoji_events,
-            color: HiColors.attrSpeed,
-            title: 'Tu es en tête de ta ligue 👑',
-            subtitle: 'Personne au-dessus. Défends ta place !',
-          );
-        }
-        if (r.state == 'active' && r.displayName != null) {
-          return _box(
-            icon: Icons.local_fire_department,
-            color: HiColors.brandSecondary,
-            title: 'Ton rival : ${r.displayName}',
-            subtitle: 'Index ${r.value} · +${r.gap} pts pour le dépasser',
-          );
-        }
-        return const SizedBox.shrink();
-      },
-    );
-  }
-
-  Widget _box({required IconData icon, required Color color, required String title, required String subtitle}) {
-    return Container(
-      padding: const EdgeInsets.all(HiSpace.md),
-      decoration: BoxDecoration(
-        color: HiColors.bgElevated,
-        borderRadius: BorderRadius.circular(HiRadius.md),
-        border: Border.all(color: color.withValues(alpha: 0.4)),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: color, size: 28),
-          const SizedBox(width: HiSpace.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: const TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
-                const SizedBox(height: 2),
-                Text(subtitle, style: const TextStyle(color: HiColors.textSecondary, fontSize: 13)),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}

@@ -10,7 +10,7 @@ import { configureApp as configureScoreApp } from "@hybrid-index/score-service/d
 
 /**
  * Boucle complète persistée (RÉELLE) : register → age-gate → onboarding/complete → log WOD →
- * classement → rival, contre la vraie base + Redis + le vrai score-service en mémoire.
+ * classement, contre la vraie base + Redis + le vrai score-service en mémoire.
  * Nécessite Docker (Postgres + Redis) up et la base migrée/seedée.
  */
 describe("api — boucle complète persistée (e2e réel)", () => {
@@ -25,8 +25,6 @@ describe("api — boucle complète persistée (e2e réel)", () => {
   let token = "";
   let userId = "";
   let customWodId = "";
-  let challengerUserId = "";
-  let challenger2UserId = "";
 
   beforeAll(async () => {
     const scoreRef = await Test.createTestingModule({ imports: [ScoreAppModule] }).compile();
@@ -50,12 +48,6 @@ describe("api — boucle complète persistée (e2e réel)", () => {
     if (userId) {
       await prisma.user.deleteMany({ where: { id: userId } }).catch(() => undefined);
       await redis.zrem("leaderboard:male", userId).catch(() => undefined);
-    }
-    for (const extra of [challengerUserId, challenger2UserId]) {
-      if (extra) {
-        await prisma.user.deleteMany({ where: { id: extra } }).catch(() => undefined);
-        await redis.zrem("leaderboard:male", extra).catch(() => undefined);
-      }
     }
     if (customWodId) {
       await prisma.wod.deleteMany({ where: { id: customWodId } }).catch(() => undefined);
@@ -165,18 +157,6 @@ describe("api — boucle complète persistée (e2e réel)", () => {
     expect(mine).toBeTruthy();
   });
 
-  it("rival : structure cohérente (leader ou athlète au-dessus)", async () => {
-    const res = await request(api.getHttpServer())
-      .get("/v1/me/rival")
-      .set("authorization", `Bearer ${token}`)
-      .expect(200);
-    expect(["leader", "active", "none"]).toContain(res.body.state);
-    if (res.body.state === "active") {
-      expect(res.body.rival.userId).not.toBe(userId);
-      expect(res.body.gap).toBeGreaterThanOrEqual(0);
-    }
-  });
-
   it("coach : Index projeté >= actuel + séances ciblées", async () => {
     const res = await request(api.getHttpServer())
       .get("/v1/coach?attribute=power")
@@ -213,7 +193,7 @@ describe("api — boucle complète persistée (e2e réel)", () => {
       .set("authorization", `Bearer ${token}`)
       .expect(200);
     expect(Array.isArray(res.body)).toBe(true);
-    expect(res.body.length).toBeGreaterThanOrEqual(17);
+    expect(res.body.length).toBeGreaterThanOrEqual(16);
     expect(res.body.some((b: { unlocked: boolean }) => b.unlocked)).toBe(true);
   });
 
@@ -420,125 +400,6 @@ describe("api — boucle complète persistée (e2e réel)", () => {
       .set("authorization", `Bearer ${token}`)
       .expect(200);
     expect(res.body.some((a: { userId: string }) => a.userId === target.userId)).toBe(true);
-  });
-
-  it("défi : un challenger gèle son score → l'autre accepte, résout et le bat", async () => {
-    // Un 2e athlète (le challenger) crée le défi ; il gèle SON effort comme cible à battre.
-    const reg = await request(api.getHttpServer())
-      .post("/v1/auth/register")
-      .send({
-        email: `e2e_challenger_${stamp}@test.local`,
-        password: "motdepasse123",
-        displayName: `E2EChal${stamp}`,
-        dateOfBirth: "1994-03-03",
-        sex: "male",
-        goal: "crossfit_strength",
-        equipmentPref: "both",
-      })
-      .expect(201);
-    const challengerToken = reg.body.token as string;
-    challengerUserId = reg.body.user.id as string;
-    await request(api.getHttpServer())
-      .post("/v1/onboarding/complete")
-      .set("authorization", `Bearer ${challengerToken}`)
-      .send({ course: { distanceMeters: 5000, timeSeconds: 1500 }, estimatedPushups: 25 })
-      .expect(201);
-    // Le challenger fait Fran en 400 s (effort modeste → battable par notre user A à 300 s).
-    await request(api.getHttpServer())
-      .post("/v1/results")
-      .set("authorization", `Bearer ${challengerToken}`)
-      .send({ wodId: "fran", scoreType: "time", rawResult: 400 })
-      .expect(201);
-
-    // Défi ouvert sur Fran : la cible gelée = meilleur effort du challenger.
-    const create = await request(api.getHttpServer())
-      .post("/v1/challenges")
-      .set("authorization", `Bearer ${challengerToken}`)
-      .send({ wodId: "fran" })
-      .expect(201);
-    const challengeId = create.body.id as string;
-    expect(challengeId).toBeTruthy();
-    expect(create.body.wodName).toBe("Fran");
-    expect(create.body.variant).toBe("rx");
-
-    // Le créateur ne peut pas résoudre son propre défi (avant acceptation).
-    await request(api.getHttpServer())
-      .post(`/v1/challenges/${challengeId}/resolve`)
-      .set("authorization", `Bearer ${challengerToken}`)
-      .expect(400);
-
-    // Notre user A accepte le défi ouvert puis le résout : son Fran (300 s) bat la cible (400 s).
-    const accept = await request(api.getHttpServer())
-      .post(`/v1/challenges/${challengeId}/accept`)
-      .set("authorization", `Bearer ${token}`)
-      .expect(201);
-    expect(accept.body.status).toBe("accepted");
-
-    const list = await request(api.getHttpServer())
-      .get("/v1/challenges")
-      .set("authorization", `Bearer ${token}`)
-      .expect(200);
-    expect(list.body.some((c: { id: string }) => c.id === challengeId)).toBe(true);
-
-    const resolve = await request(api.getHttpServer())
-      .post(`/v1/challenges/${challengeId}/resolve`)
-      .set("authorization", `Bearer ${token}`)
-      .expect(201);
-    expect(resolve.body.beaten).toBe(true);
-    expect(resolve.body.status).toBe("completed");
-  });
-
-  it("défi : le créateur ne peut pas résoudre (403) une fois le défi accepté par un autre", async () => {
-    // Le challenger crée un nouveau défi dirigé vers A ; A l'accepte ; le challenger tente de résoudre → 403.
-    const reg = await request(api.getHttpServer())
-      .post("/v1/auth/register")
-      .send({
-        email: `e2e_chal2_${stamp}@test.local`,
-        password: "motdepasse123",
-        displayName: `E2EChal2_${stamp}`,
-        dateOfBirth: "1992-07-07",
-        sex: "male",
-        goal: "crossfit_strength",
-        equipmentPref: "both",
-      })
-      .expect(201);
-    const t2 = reg.body.token as string;
-    challenger2UserId = reg.body.user.id as string;
-    await request(api.getHttpServer())
-      .post("/v1/onboarding/complete")
-      .set("authorization", `Bearer ${t2}`)
-      .send({ course: { distanceMeters: 5000, timeSeconds: 1500 }, estimatedPushups: 25 })
-      .expect(201);
-    await request(api.getHttpServer())
-      .post("/v1/results")
-      .set("authorization", `Bearer ${t2}`)
-      .send({ wodId: "fran", scoreType: "time", rawResult: 420 })
-      .expect(201);
-    const create = await request(api.getHttpServer())
-      .post("/v1/challenges")
-      .set("authorization", `Bearer ${t2}`)
-      .send({ wodId: "fran", toUserId: userId })
-      .expect(201);
-    const cid = create.body.id as string;
-    await request(api.getHttpServer())
-      .post(`/v1/challenges/${cid}/accept`)
-      .set("authorization", `Bearer ${token}`)
-      .expect(201);
-    // Le créateur (t2) tente de résoudre le défi de A → interdit.
-    await request(api.getHttpServer())
-      .post(`/v1/challenges/${cid}/resolve`)
-      .set("authorization", `Bearer ${t2}`)
-      .expect(403);
-  });
-
-  it("défi : DW4 — un effort Rx ne peut pas servir de cible à un défi Scaled (variantes séparées)", async () => {
-    // L'utilisateur n'a que des résultats Rx sur Fran → aucun meilleur effort Scaled → création refusée.
-    const res = await request(api.getHttpServer())
-      .post("/v1/challenges")
-      .set("authorization", `Bearer ${token}`)
-      .send({ wodId: "fran", rxCompliant: false })
-      .expect(400);
-    expect(res.body.error).toBeDefined();
   });
 
   it("RGPD : suppression de compte (effacement) — DOIT être le dernier test", async () => {

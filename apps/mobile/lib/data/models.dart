@@ -115,26 +115,6 @@ class Leaderboard {
       );
 }
 
-class Rival {
-  final String state; // leader | active | none
-  final int? gap;
-  final String? displayName;
-  final int? value;
-  final int? position;
-  const Rival({required this.state, this.gap, this.displayName, this.value, this.position});
-
-  factory Rival.fromJson(Map<String, dynamic> j) {
-    final r = j['rival'] as Map<String, dynamic>?;
-    return Rival(
-      state: j['state'] as String? ?? 'none',
-      gap: (j['gap'] as num?)?.toInt(),
-      displayName: r?['displayName'] as String?,
-      value: (r?['value'] as num?)?.toInt(),
-      position: (r?['position'] as num?)?.toInt(),
-    );
-  }
-}
-
 class CoachSession {
   final String id;
   final String name;
@@ -457,37 +437,6 @@ class AthleteSummary {
         goal: j['goal'] as String? ?? 'all_round',
         rank: j['rank'] as String? ?? 'rookie',
         index: (j['index'] as num?)?.toInt(),
-      );
-}
-
-class Challenge {
-  final String id;
-  final String wodId;
-  final String wodName;
-  final String status;
-  final String fromName;
-  final String toName;
-  final bool iAmCreator;
-  final bool iAmChallenged;
-  const Challenge({
-    required this.id,
-    required this.wodId,
-    required this.wodName,
-    required this.status,
-    required this.fromName,
-    required this.toName,
-    required this.iAmCreator,
-    required this.iAmChallenged,
-  });
-  factory Challenge.fromJson(Map<String, dynamic> j) => Challenge(
-        id: j['id'] as String,
-        wodId: j['wodId'] as String? ?? '',
-        wodName: j['wodName'] as String? ?? '—',
-        status: j['status'] as String? ?? 'pending',
-        fromName: j['fromName'] as String? ?? '—',
-        toName: j['toName'] as String? ?? '—',
-        iAmCreator: j['iAmCreator'] as bool? ?? false,
-        iAmChallenged: j['iAmChallenged'] as bool? ?? false,
       );
 }
 

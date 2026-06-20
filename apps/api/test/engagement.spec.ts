@@ -35,7 +35,6 @@ describe("matchesCondition (moteur de badges)", () => {
     attributesAllUnlocked: true,
     streakCurrent: 5,
     streakBest: 12,
-    beatRival: true,
   };
 
   it("comparateurs >= sur rang/index/percentile/streak/wods", () => {
@@ -54,8 +53,6 @@ describe("matchesCondition (moteur de badges)", () => {
   it("conditions spéciales et non implémentées", () => {
     expect(matchesCondition("attribute_unlocked:all", base)).toBe(true);
     expect(matchesCondition("attribute_unlocked:all", { ...base, attributesAllUnlocked: false })).toBe(false);
-    expect(matchesCondition("beat_rival", base)).toBe(true);
-    expect(matchesCondition("beat_rival", { ...base, beatRival: false })).toBe(false);
     expect(matchesCondition("pro_gap<=10", base)).toBe(false); // non implémenté → jamais vrai
   });
 });

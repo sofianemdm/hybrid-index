@@ -2,7 +2,6 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 import { RANK_BANDS } from "@hybrid-index/contracts";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { RedisService } from "../../infra/redis/redis.service";
-import { LeaderboardService } from "../leaderboard/leaderboard.service";
 import { StreakService } from "./streak.service";
 import { NOTIFICATION_TRIGGERS } from "./notifications.data";
 
@@ -26,12 +25,11 @@ export class EngagementService {
     private readonly prisma: PrismaService,
     private readonly redis: RedisService,
     private readonly streak: StreakService,
-    private readonly leaderboard: LeaderboardService,
   ) {}
 
   /**
    * Flux de notifications IN-APP : évalue les déclencheurs pertinents contre l'état courant
-   * (série, prochain rang, rival), en respectant l'opt-out par clé. L'envoi push (FCM) reste
+   * (série, prochain rang), en respectant l'opt-out par clé. L'envoi push (FCM) reste
    * différé ; ce flux rend les déclencheurs immédiatement utiles dans l'app.
    */
   async feed(userId: string): Promise<FeedItem[]> {
@@ -78,24 +76,6 @@ export class EngagementService {
           priority: "medium",
         });
       }
-    }
-
-    // Rival.
-    const rival = await this.leaderboard.rival(userId).catch(() => null);
-    if (rival?.state === "active" && rival.rival && enabled("rival-overtaken")) {
-      items.push({
-        key: "rival-overtaken",
-        title: "Ton rival te devance",
-        body: `${rival.rival.displayName} : +${rival.gap} pts. Reprends la tête !`,
-        priority: "high",
-      });
-    } else if (rival?.state === "leader" && enabled("rival-beaten")) {
-      items.push({
-        key: "rival-beaten",
-        title: "Tu es en tête 👑",
-        body: "Personne au-dessus de toi dans ta ligue. Défends ta place.",
-        priority: "high",
-      });
     }
 
     return items;

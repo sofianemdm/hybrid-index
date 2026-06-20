@@ -1,9 +1,9 @@
 import { BadRequestException, Controller, Get, Query, UseGuards } from "@nestjs/common";
 import { Sex } from "@hybrid-index/contracts";
 import { CurrentUser } from "../auth/current-user.decorator";
-import { JwtAuthGuard, type AuthenticatedUser } from "../auth/jwt-auth.guard";
+import { type AuthenticatedUser } from "../auth/jwt-auth.guard";
 import { OptionalJwtAuthGuard } from "../auth/optional-jwt-auth.guard";
-import { LeaderboardService, type LeaderboardResponse, type RivalResponse } from "./leaderboard.service";
+import { LeaderboardService, type LeaderboardResponse } from "./leaderboard.service";
 
 @Controller("v1")
 export class LeaderboardController {
@@ -23,12 +23,5 @@ export class LeaderboardController {
     }
     const limit = Math.min(Math.max(Number(limitParam) || 50, 1), 100);
     return this.leaderboard.leaderboard(sex.data, limit, user?.userId);
-  }
-
-  /** Le rival : l'athlète juste au-dessus de moi dans ma ligue. */
-  @Get("me/rival")
-  @UseGuards(JwtAuthGuard)
-  rival(@CurrentUser() user: AuthenticatedUser): Promise<RivalResponse> {
-    return this.leaderboard.rival(user.userId);
   }
 }

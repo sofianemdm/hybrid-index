@@ -15,12 +15,6 @@ final myProfileProvider = FutureProvider<Profile?>((ref) async {
   return ref.read(apiClientProvider).myProfile();
 });
 
-/// Rival de l'utilisateur connecté.
-final rivalProvider = FutureProvider<Rival>((ref) async {
-  ref.watch(myProfileProvider); // se rafraîchit avec le profil
-  return ref.read(apiClientProvider).rival();
-});
-
 /// Avatar de l'utilisateur connecté (valeurs par défaut si jamais personnalisé).
 final avatarProvider = FutureProvider<AvatarConfig>((ref) async {
   final session = ref.watch(sessionProvider);

@@ -34,8 +34,6 @@ export const BADGES: BadgeDef[] = [
   { id: "streak-4", category: "consistency", name: "Un mois régulier", description: "Tiens une série de 4 semaines.", rarity: "common", condition: "streak>=4", cosmeticUnlock: null },
   { id: "streak-12", category: "consistency", name: "Trimestre solide", description: "Tiens une série de 12 semaines.", rarity: "rare", condition: "streak>=12", cosmeticUnlock: "avatar_badge_consistent" },
   { id: "streak-52", category: "consistency", name: "Une année entière", description: "52 semaines de régularité. Rare et mérité.", rarity: "legendary", condition: "streak_best>=52", cosmeticUnlock: "avatar_halo_year" },
-  // SOCIAL
-  { id: "rival-slayer", category: "social", name: "Rival dépassé", description: "Dépasse l'Index de ton rival.", rarity: "rare", condition: "beat_rival", cosmeticUnlock: null },
 ];
 
 const RANK_ORDER = ["rookie", "bronze", "silver", "gold", "platinum", "diamond", "elite"];
@@ -50,12 +48,10 @@ export interface BadgeContext {
   attributesAllUnlocked: boolean;
   streakCurrent: number;
   streakBest: number;
-  beatRival: boolean;
 }
 
 /** Évalue une condition machine contre le contexte de l'utilisateur. */
 export function matchesCondition(condition: string, ctx: BadgeContext): boolean {
-  if (condition === "beat_rival") return ctx.beatRival;
   if (condition === "attribute_unlocked:all") return ctx.attributesAllUnlocked;
 
   const ge = condition.match(/^(\w+)>=(.+)$/);

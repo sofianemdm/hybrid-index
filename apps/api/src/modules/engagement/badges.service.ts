@@ -1,7 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { Prisma, type Sex } from "@prisma/client";
 import { PrismaService } from "../../infra/prisma/prisma.service";
-import { LeaderboardService } from "../leaderboard/leaderboard.service";
 import { FeedEventsService } from "../social/feed-events.service";
 import { StreakService } from "./streak.service";
 import { BADGES, type BadgeContext, type BadgeDef, matchesCondition } from "./badges.data";
@@ -21,7 +20,6 @@ export class BadgesService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly leaderboard: LeaderboardService,
     private readonly streak: StreakService,
     private readonly feedEvents: FeedEventsService,
   ) {}
@@ -54,8 +52,6 @@ export class BadgesService {
       }
     }
 
-    const rival = await this.leaderboard.rival(userId).catch(() => ({ state: "none" as const }));
-
     return {
       logCount,
       distinctWods: distinct.length,
@@ -66,7 +62,6 @@ export class BadgesService {
       attributesAllUnlocked: unlockedAttrs >= 6,
       streakCurrent: streakState.current,
       streakBest: streakState.best,
-      beatRival: rival.state === "leader",
     };
   }
 

@@ -19,12 +19,6 @@ export interface LeaderboardResponse {
   me: { position: number; value: number } | null;
 }
 
-export interface RivalResponse {
-  state: "leader" | "active" | "none";
-  gap: number | null;
-  rival: { userId: string; displayName: string; value: number; position: number } | null;
-}
-
 /**
  * Classement par ligue (sexe) trié par HYBRID INDEX. Source de rang : sorted set Redis
  * (décision verrouillée) ; repli sur Postgres (source durable) si Redis est indisponible.
@@ -61,49 +55,6 @@ export class LeaderboardService {
     }
 
     return { sex, total, entries, me };
-  }
-
-  async rival(userId: string): Promise<RivalResponse> {
-    const profile = await this.prisma.profile.findUnique({ where: { userId } });
-    const myIndex = await this.prisma.hybridIndex.findUnique({ where: { userId } });
-    if (!profile || !myIndex) return { state: "none", gap: null, rival: null };
-
-    const sex = profile.sex;
-    const myPos = await this.positionOf(sex, userId);
-    if (myPos === null) return { state: "none", gap: null, rival: null };
-    if (myPos.position <= 1) return { state: "leader", gap: null, rival: null };
-
-    // L'athlète juste au-dessus : déterminé via Postgres (autoritatif — la jointure profil ne
-    // renvoie que de vrais utilisateurs, ce qui évite toute entrée Redis orpheline / divergence
-    // et donc une référence rival_user_id vers un compte supprimé).
-    const pg = await this.prisma.hybridIndex.findFirst({
-      where: { value: { gt: myIndex.value }, user: { profile: { sex: sex as Sex } } },
-      orderBy: { value: "asc" },
-      select: { userId: true, value: true },
-    });
-    if (!pg) return { state: "leader", gap: null, rival: null };
-    const above = { userId: pg.userId, value: pg.value };
-
-    const names = await this.namesFor([above.userId]);
-    const rivalProfile = names.get(above.userId);
-
-    // Persiste l'état du rival (recalculé à la volée).
-    await this.prisma.rival.upsert({
-      where: { userId },
-      create: { userId, rivalUserId: above.userId, rivalIndexValue: above.value, state: "active" },
-      update: { rivalUserId: above.userId, rivalIndexValue: above.value, state: "active", recomputedAt: new Date() },
-    });
-
-    return {
-      state: "active",
-      gap: above.value - myIndex.value,
-      rival: {
-        userId: above.userId,
-        displayName: rivalProfile?.displayName ?? "—",
-        value: above.value,
-        position: myPos.position - 1,
-      },
-    };
   }
 
   /** Position 1-indexée + valeur d'un utilisateur, via Redis puis Postgres. */
