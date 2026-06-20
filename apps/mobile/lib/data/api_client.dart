@@ -143,6 +143,11 @@ class ApiClient {
     return j.map((e) => BadgeModel.fromJson(e as Map<String, dynamic>)).toList();
   }
 
+  Future<List<FeedItem>> notificationsFeed() async {
+    final j = await _send('GET', '/v1/me/notifications/feed') as List<dynamic>;
+    return j.map((e) => FeedItem.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
   Future<dynamic> exportData() async => _send('GET', '/v1/me/export');
 
   Future<void> deleteAccount() async => _send('DELETE', '/v1/me');

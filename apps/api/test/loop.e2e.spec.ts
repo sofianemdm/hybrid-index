@@ -241,6 +241,18 @@ describe("api — boucle complète persistée (e2e réel)", () => {
     expect(res.body).toMatchObject({ skinTone: 4, hairStyle: 3, hairColor: 2, beardStyle: 1 });
   });
 
+  it("flux de notifications : tableau d'items cohérents", async () => {
+    const res = await request(api.getHttpServer())
+      .get("/v1/me/notifications/feed")
+      .set("authorization", `Bearer ${token}`)
+      .expect(200);
+    expect(Array.isArray(res.body)).toBe(true);
+    for (const item of res.body) {
+      expect(typeof item.title).toBe("string");
+      expect(["high", "medium", "low"]).toContain(item.priority);
+    }
+  });
+
   it("RGPD : suppression de compte (effacement) — DOIT être le dernier test", async () => {
     const res = await request(api.getHttpServer())
       .delete("/v1/me")

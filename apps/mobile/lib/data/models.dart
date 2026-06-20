@@ -316,6 +316,21 @@ class AvatarConfig {
       };
 }
 
+class FeedItem {
+  final String key;
+  final String title;
+  final String body;
+  final String priority;
+  const FeedItem({required this.key, required this.title, required this.body, required this.priority});
+
+  factory FeedItem.fromJson(Map<String, dynamic> j) => FeedItem(
+        key: j['key'] as String,
+        title: j['title'] as String,
+        body: j['body'] as String,
+        priority: j['priority'] as String? ?? 'medium',
+      );
+}
+
 /// WOD du catalogue (sous-ensemble utile au log).
 class WodCatalogItem {
   final String id;

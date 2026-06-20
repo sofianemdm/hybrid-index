@@ -11,6 +11,7 @@ import '../../widgets/radar_view.dart';
 import '../../widgets/rank_badge.dart';
 import '../avatar/avatar_editor_screen.dart';
 import '../coach/coach_screen.dart';
+import '../notifications/notifications_screen.dart';
 import '../settings/settings_screen.dart';
 import '../share/share_card_screen.dart';
 
@@ -53,6 +54,13 @@ class HomeScreen extends ConsumerWidget {
                   child: Text(
                     'Salut, ${session.user?.displayName ?? ''}',
                     style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: HiColors.textPrimary),
+                  ),
+                ),
+                IconButton(
+                  tooltip: 'Notifications',
+                  icon: const Icon(Icons.notifications_none, color: HiColors.textTertiary),
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const NotificationsScreen()),
                   ),
                 ),
                 IconButton(

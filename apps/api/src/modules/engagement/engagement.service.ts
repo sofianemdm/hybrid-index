@@ -1,7 +1,17 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
+import { RANK_BANDS } from "@hybrid-index/contracts";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { RedisService } from "../../infra/redis/redis.service";
+import { LeaderboardService } from "../leaderboard/leaderboard.service";
+import { StreakService } from "./streak.service";
 import { NOTIFICATION_TRIGGERS } from "./notifications.data";
+
+export interface FeedItem {
+  key: string;
+  title: string;
+  body: string;
+  priority: "high" | "medium" | "low";
+}
 
 const DEFAULT_PREFS = {
   prefs: {} as Record<string, boolean>,
@@ -15,7 +25,81 @@ export class EngagementService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly redis: RedisService,
+    private readonly streak: StreakService,
+    private readonly leaderboard: LeaderboardService,
   ) {}
+
+  /**
+   * Flux de notifications IN-APP : évalue les déclencheurs pertinents contre l'état courant
+   * (série, prochain rang, rival), en respectant l'opt-out par clé. L'envoi push (FCM) reste
+   * différé ; ce flux rend les déclencheurs immédiatement utiles dans l'app.
+   */
+  async feed(userId: string): Promise<FeedItem[]> {
+    const items: FeedItem[] = [];
+    const [profile, idx, prefsRow] = await Promise.all([
+      this.prisma.profile.findUnique({ where: { userId } }),
+      this.prisma.hybridIndex.findUnique({ where: { userId } }),
+      this.prisma.notificationPrefs.findUnique({ where: { userId } }),
+    ]);
+    if (!profile || !idx) return items;
+
+    const prefs = (prefsRow?.prefs as Record<string, boolean> | undefined) ?? {};
+    const enabled = (key: string): boolean => prefs[key] !== false;
+
+    // Série hebdomadaire.
+    const streak = await this.streak.evaluateAndGet(userId).catch(() => null);
+    if (streak) {
+      if (enabled("week-almost-complete") && streak.thisWeekCount === streak.weeklyGoal - 1) {
+        items.push({
+          key: "week-almost-complete",
+          title: "Plus qu'un WOD",
+          body: `Un entraînement et ta semaine est validée (${streak.thisWeekCount}/${streak.weeklyGoal}).`,
+          priority: "high",
+        });
+      } else if (enabled("rest-week-respected") && streak.weekValidated) {
+        items.push({
+          key: "week-validated",
+          title: "Semaine validée ✓",
+          body: `Série en cours : ${streak.current} semaine(s). Continue !`,
+          priority: "low",
+        });
+      }
+    }
+
+    // Prochain rang.
+    const next = RANK_BANDS.find((b) => b.min > idx.value);
+    if (next && enabled("next-rank-close")) {
+      const pts = next.min - idx.value;
+      if (pts <= 40) {
+        items.push({
+          key: "next-rank-close",
+          title: `Le rang ${next.rank} est proche`,
+          body: `Encore ${pts} points. Un bon WOD et tu y es.`,
+          priority: "medium",
+        });
+      }
+    }
+
+    // Rival.
+    const rival = await this.leaderboard.rival(userId).catch(() => null);
+    if (rival?.state === "active" && rival.rival && enabled("rival-overtaken")) {
+      items.push({
+        key: "rival-overtaken",
+        title: "Ton rival te devance",
+        body: `${rival.rival.displayName} : +${rival.gap} pts. Reprends la tête !`,
+        priority: "high",
+      });
+    } else if (rival?.state === "leader" && enabled("rival-beaten")) {
+      items.push({
+        key: "rival-beaten",
+        title: "Tu es en tête 👑",
+        body: "Personne au-dessus de toi dans ta ligue. Défends ta place.",
+        priority: "high",
+      });
+    }
+
+    return items;
+  }
 
   async getNotifications(userId: string): Promise<unknown> {
     const row = await this.prisma.notificationPrefs.findUnique({ where: { userId } });

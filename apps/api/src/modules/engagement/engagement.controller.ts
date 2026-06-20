@@ -5,7 +5,7 @@ import { CurrentUser } from "../auth/current-user.decorator";
 import { JwtAuthGuard, type AuthenticatedUser } from "../auth/jwt-auth.guard";
 import { StreakService, type StreakState } from "./streak.service";
 import { BadgesService, type BadgeView } from "./badges.service";
-import { EngagementService } from "./engagement.service";
+import { EngagementService, type FeedItem } from "./engagement.service";
 
 const UpdateNotificationsRequest = z.object({
   prefs: z.record(z.boolean()).optional(),
@@ -38,6 +38,12 @@ export class EngagementController {
   @Get("notifications")
   getNotifications(@CurrentUser() user: AuthenticatedUser): Promise<unknown> {
     return this.engagement.getNotifications(user.userId);
+  }
+
+  /** Flux de notifications in-app (déclencheurs évalués sur l'état courant). */
+  @Get("notifications/feed")
+  getFeed(@CurrentUser() user: AuthenticatedUser): Promise<FeedItem[]> {
+    return this.engagement.feed(user.userId);
   }
 
   @Patch("notifications")
