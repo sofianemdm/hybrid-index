@@ -19,6 +19,19 @@ qu'ils ne sont pas calibrés sur la communauté (cold-start → distribution ré
 - **Constructeur de WOD** : format (For Time, AMRAP, EMOM, Chipper, Intervalles, Tabata, Strength,
   Distance/Temps) + mouvements depuis une **bibliothèque** (pull-up, push-up, ring muscle-up,
   thruster, wall ball, burpee, run, double-under, deadlift…) + paramètres (time cap, rounds, repos).
+- **Poids Rx (prescrits)** : le créateur définit les **charges Rx par mouvement et par sexe**
+  (standard du WOD), comme en CrossFit (Rx M/F).
+
+### 2.bis Rx vs Scaled (charges & classements séparés)
+- Un autre utilisateur peut **refaire le WOD en Rx** (charges prescrites) **ou le scaler** (changer
+  les poids pour les adapter).
+- Le résultat enregistre les **charges réellement utilisées** + un flag **`rxCompliant`** (vrai si
+  les charges ≥ Rx pour son sexe).
+- **Classements séparés par variante** : le leaderboard d'un WOD est scindé en **Rx** et **Scaled**
+  (et par sexe). Un résultat scalé **n'apparaît pas** dans le classement Rx — comparabilité préservée.
+- **Scoring & Index** : le moteur d'estimation note sur les **charges réellement faites** (un scaled
+  reste noté honnêtement) ; mais seules les perfs **Rx** alimentent les records/percentiles « officiels »
+  du WOD. Étiquetage Rx/Scaled visible partout (fiche, profil, feed, comparaison).
 - **Moteur d'estimation** : pour tout WOD, le score-service estime **3 références par sexe**
   (champion / intermédiaire / occasionnel) → note (sous-score 0–1000) + percentile.
 - **WODs communautaires** : recherchables, « refaire ce WOD » en un tap, présents sur le profil du créateur.
