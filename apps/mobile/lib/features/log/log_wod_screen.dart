@@ -7,6 +7,7 @@ import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../data/wod_catalog.dart';
 import '../../theme/tokens.dart';
+import '../../data/review_prompt.dart';
 import '../../widgets/attribute_gains.dart';
 import '../../widgets/hi_button.dart';
 
@@ -140,6 +141,10 @@ class _LogWodScreenState extends ConsumerState<LogWodScreen> {
         ],
       ),
     );
+    // Réussite (PR ou badge) → demande d'avis natif (OS-plafonné, no-op web), jamais après une erreur.
+    if (p.gains.isNotEmpty || newBadges.isNotEmpty) {
+      await maybeAskForReview();
+    }
   }
 
   void _toast(String m) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m)));

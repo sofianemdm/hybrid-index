@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app.dart';
 import '../../data/api_client.dart';
 import '../../data/session.dart';
+import '../../data/review_prompt.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/attribute_gains.dart';
 import '../../widgets/hi_button.dart';
@@ -80,6 +81,10 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
             actions: [TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Continuer'))],
           ),
         );
+        // Moment de réussite (PR / montée de bande) → demande d'avis natif (OS-plafonné, no-op web).
+        if (profile.gains.isNotEmpty || profile.bandCelebration != null) {
+          maybeAskForReview();
+        }
       }
       if (mounted) Navigator.of(context).pop(true);
     } on ApiException catch (e) {
