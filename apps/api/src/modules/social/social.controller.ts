@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Post, Query, UseGuards } from "@nestjs/common";
 import { z } from "zod";
 import { ZodValidationPipe } from "../../common/zod-validation.pipe";
 import { CurrentUser } from "../auth/current-user.decorator";
@@ -35,6 +35,16 @@ export class SocialController {
   @Get("feed")
   feed(@CurrentUser() user: AuthenticatedUser): Promise<unknown[]> {
     return this.social.feed(user.userId);
+  }
+
+  /** Recherche d'athlètes (filtres sexe / rang / nom). */
+  @Get("explore")
+  explore(
+    @Query("sex") sex?: string,
+    @Query("rank") rank?: string,
+    @Query("q") q?: string,
+  ): Promise<unknown[]> {
+    return this.social.explore({ sex, rank, q });
   }
 
   @Post("reactions")

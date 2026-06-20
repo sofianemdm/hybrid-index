@@ -7,6 +7,7 @@ import '../../data/session.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/index_ring.dart';
 import '../../widgets/radar_view.dart';
+import '../../widgets/overlay_radar.dart';
 import '../../widgets/rank_badge.dart';
 
 /// Bouton Suivre / Suivi (toggle).
@@ -128,10 +129,13 @@ class PublicProfileScreen extends ConsumerWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Son radar',
-                                style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 16)),
+                            Text(mine != null ? 'Comparaison' : 'Son radar',
+                                style: const TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 16)),
                             const SizedBox(height: HiSpace.sm),
-                            RadarView(radar: p.radar),
+                            if (mine != null)
+                              OverlayRadar(mine: mine.radar, other: p.radar)
+                            else
+                              RadarView(radar: p.radar),
                           ],
                         ),
                       ),

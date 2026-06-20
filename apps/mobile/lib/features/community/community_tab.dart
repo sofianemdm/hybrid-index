@@ -6,6 +6,8 @@ import '../../data/session.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/rank_badge.dart';
 import '../profile/public_profile_screen.dart';
+import 'challenges_screen.dart';
+import 'explore_screen.dart';
 
 /// Onglet Communauté : feed d'activité (PR, WODs, montées de rang, badges) + kudos.
 class CommunityTab extends ConsumerStatefulWidget {
@@ -75,9 +77,23 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
             return ListView(
               padding: const EdgeInsets.fromLTRB(HiSpace.lg, HiSpace.lg, HiSpace.lg, 96),
               children: [
-                const Text('Communauté',
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: HiColors.textPrimary)),
-                const SizedBox(height: HiSpace.md),
+                Row(children: [
+                  const Expanded(
+                    child: Text('Communauté',
+                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: HiColors.textPrimary)),
+                  ),
+                  IconButton(
+                    tooltip: 'Défis',
+                    icon: const Icon(Icons.sports_kabaddi, color: HiColors.textTertiary),
+                    onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ChallengesScreen())),
+                  ),
+                  IconButton(
+                    tooltip: 'Rechercher',
+                    icon: const Icon(Icons.search, color: HiColors.textTertiary),
+                    onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ExploreScreen())),
+                  ),
+                ]),
+                const SizedBox(height: HiSpace.sm),
                 ...items.map(_card),
               ],
             );

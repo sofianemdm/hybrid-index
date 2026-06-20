@@ -62,6 +62,30 @@ export class SocialService {
     return { removed: true };
   }
 
+  // --- Recherche d'athlètes ---
+  async explore(filters: { sex?: string; rank?: string; q?: string }): Promise<unknown[]> {
+    const profiles = await this.prisma.profile.findMany({
+      where: {
+        visibility: "public",
+        ...(filters.sex ? { sex: filters.sex as never } : {}),
+        ...(filters.rank ? { rank: filters.rank as never } : {}),
+        ...(filters.q ? { displayName: { contains: filters.q.slice(0, 50), mode: "insensitive" } } : {}),
+      },
+      include: { user: { include: { hybridIndex: { select: { value: true } } } } },
+      take: 50,
+    });
+    return profiles
+      .map((p) => ({
+        userId: p.userId,
+        displayName: p.displayName,
+        sex: p.sex,
+        goal: p.goal,
+        rank: p.rank,
+        index: p.user.hybridIndex?.value ?? null,
+      }))
+      .sort((a, b) => (b.index ?? 0) - (a.index ?? 0));
+  }
+
   // --- Feed ---
   async feed(me: string): Promise<unknown[]> {
     const follows = await this.prisma.follow.findMany({ where: { followerId: me }, select: { followeeId: true } });

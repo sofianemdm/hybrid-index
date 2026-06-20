@@ -460,6 +460,37 @@ class AthleteSummary {
       );
 }
 
+class Challenge {
+  final String id;
+  final String wodId;
+  final String wodName;
+  final String status;
+  final String fromName;
+  final String toName;
+  final bool iAmCreator;
+  final bool iAmChallenged;
+  const Challenge({
+    required this.id,
+    required this.wodId,
+    required this.wodName,
+    required this.status,
+    required this.fromName,
+    required this.toName,
+    required this.iAmCreator,
+    required this.iAmChallenged,
+  });
+  factory Challenge.fromJson(Map<String, dynamic> j) => Challenge(
+        id: j['id'] as String,
+        wodId: j['wodId'] as String? ?? '',
+        wodName: j['wodName'] as String? ?? '—',
+        status: j['status'] as String? ?? 'pending',
+        fromName: j['fromName'] as String? ?? '—',
+        toName: j['toName'] as String? ?? '—',
+        iAmCreator: j['iAmCreator'] as bool? ?? false,
+        iAmChallenged: j['iAmChallenged'] as bool? ?? false,
+      );
+}
+
 class MovementSummary {
   final String id;
   final String name;

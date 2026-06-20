@@ -182,6 +182,8 @@ model User {
   wodsCreated       Wod[]             @relation("WodCreator")
   feedEvents        FeedEvent[]       @relation("FeedActor")
   reactions         Reaction[]        @relation("ReactionAuthor")
+  challengesSent     Challenge[]      @relation("ChallengeFrom")
+  challengesReceived Challenge[]      @relation("ChallengeTo")
   rival             Rival?            @relation("UserRival")
   rivalOf           Rival[]           @relation("RivalTarget")
   streak            Streak?
@@ -303,8 +305,9 @@ model Wod {
   createdAt         DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt         DateTime       @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  creator User?       @relation("WodCreator", fields: [createdById], references: [id], onDelete: SetNull)
-  results WodResult[]
+  creator    User?       @relation("WodCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  results    WodResult[]
+  challenges Challenge[]
 
   @@index([requiresEquipment])
   @@index([isCustom, visibility, createdAt(sort: Desc)])
@@ -437,6 +440,28 @@ model UserBadge {
 
   @@id([userId, badgeId])
   @@map("user_badge")
+  @@schema("app")
+}
+
+model Challenge {
+  id             String          @id @default(uuid()) @db.Uuid
+  fromUserId     String          @map("from_user_id") @db.Uuid
+  toUserId       String?         @map("to_user_id") @db.Uuid
+  wodId          String          @map("wod_id")
+  status         ChallengeStatus @default(pending)
+  targetSubScore Int?            @map("target_sub_score")
+  rxCompliant    Boolean         @default(true) @map("rx_compliant")
+  expiresAt      DateTime?       @map("expires_at") @db.Timestamptz(6)
+  createdAt      DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+  resolvedAt     DateTime?       @map("resolved_at") @db.Timestamptz(6)
+
+  fromUser User  @relation("ChallengeFrom", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUser   User? @relation("ChallengeTo", fields: [toUserId], references: [id], onDelete: SetNull)
+  wod      Wod   @relation(fields: [wodId], references: [id])
+
+  @@index([toUserId, status])
+  @@index([fromUserId, status])
+  @@map("challenge")
   @@schema("app")
 }
 

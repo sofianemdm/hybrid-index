@@ -201,6 +201,30 @@ class ApiClient {
     return j.map((e) => AthleteSummary.fromJson(e as Map<String, dynamic>)).toList();
   }
 
+  Future<List<AthleteSummary>> explore({String? sex, String? rank, String? q}) async {
+    final params = [
+      if (sex != null) 'sex=$sex',
+      if (rank != null) 'rank=$rank',
+      if (q != null && q.isNotEmpty) 'q=${Uri.encodeQueryComponent(q)}',
+    ].join('&');
+    final j = await _send('GET', '/v1/explore${params.isEmpty ? '' : '?$params'}') as List<dynamic>;
+    return j.map((e) => AthleteSummary.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  // --- Défis ---
+  Future<List<Challenge>> challenges() async {
+    final j = await _send('GET', '/v1/challenges') as List<dynamic>;
+    return j.map((e) => Challenge.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  Future<void> createChallenge({required String wodId, String? toUserId}) async =>
+      _send('POST', '/v1/challenges', {'wodId': wodId, if (toUserId != null) 'toUserId': toUserId});
+
+  Future<void> acceptChallenge(String id) async => _send('POST', '/v1/challenges/$id/accept', {});
+  Future<void> declineChallenge(String id) async => _send('POST', '/v1/challenges/$id/decline', {});
+  Future<Map<String, dynamic>> resolveChallenge(String id) async =>
+      await _send('POST', '/v1/challenges/$id/resolve', {}) as Map<String, dynamic>;
+
   Future<EndgameInfo> endgame() async {
     final j = await _send('GET', '/v1/me/endgame') as Map<String, dynamic>;
     return EndgameInfo.fromJson(j);

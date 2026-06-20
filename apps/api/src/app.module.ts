@@ -14,6 +14,7 @@ import { EngagementModule } from "./modules/engagement/engagement.module";
 import { EndgameModule } from "./modules/endgame/endgame.module";
 import { WodsModule } from "./modules/wods/wods.module";
 import { SocialModule } from "./modules/social/social.module";
+import { ChallengesModule } from "./modules/challenges/challenges.module";
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { SocialModule } from "./modules/social/social.module";
     EngagementModule,
     EndgameModule,
     WodsModule,
+    ChallengesModule,
   ],
   controllers: [HealthController],
 })
