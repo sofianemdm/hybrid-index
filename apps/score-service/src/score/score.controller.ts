@@ -52,4 +52,12 @@ export class ScoreController {
   ): internalScore.ComputeProfileResponse {
     return this.scoring.computeProfile(body);
   }
+
+  @Post("project")
+  project(
+    @Body(new ZodValidationPipe(internalScore.ComputeProjectionRequest))
+    body: internalScore.ComputeProjectionRequest,
+  ): internalScore.ComputeProjectionResponse {
+    return this.scoring.computeProjection(body);
+  }
 }

@@ -164,4 +164,24 @@ describe("api — boucle complète persistée (e2e réel)", () => {
       expect(res.body.gap).toBeGreaterThanOrEqual(0);
     }
   });
+
+  it("coach : Index projeté >= actuel + séances ciblées", async () => {
+    const res = await request(api.getHttpServer())
+      .get("/v1/coach?attribute=power")
+      .set("authorization", `Bearer ${token}`)
+      .expect(200);
+    expect(res.body.targetAttribute).toBe("power");
+    expect(res.body.projection.projected).toBeGreaterThanOrEqual(res.body.projection.current);
+    expect(res.body.sessions.length).toBeGreaterThan(0);
+    expect(res.body.sessions[0].primaryAttribute).toBe("power");
+  });
+
+  it("profil public : radar + Index visibles (tout est public)", async () => {
+    const res = await request(api.getHttpServer())
+      .get(`/v1/profiles/${userId}`)
+      .expect(200);
+    expect(res.body.displayName).toBe(displayName);
+    expect(res.body.index.value).toBeGreaterThan(0);
+    expect(res.body.radar.length).toBe(6);
+  });
 });

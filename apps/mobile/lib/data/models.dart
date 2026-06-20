@@ -135,6 +135,100 @@ class Rival {
   }
 }
 
+class CoachSession {
+  final String id;
+  final String name;
+  final String primaryAttribute;
+  final bool requiresEquipment;
+  final int durationMin;
+  final String intensity;
+  final String description;
+  const CoachSession({
+    required this.id,
+    required this.name,
+    required this.primaryAttribute,
+    required this.requiresEquipment,
+    required this.durationMin,
+    required this.intensity,
+    required this.description,
+  });
+
+  factory CoachSession.fromJson(Map<String, dynamic> j) => CoachSession(
+        id: j['id'] as String,
+        name: j['name'] as String,
+        primaryAttribute: j['primaryAttribute'] as String,
+        requiresEquipment: j['requiresEquipment'] as bool? ?? false,
+        durationMin: (j['durationMin'] as num).toInt(),
+        intensity: j['intensity'] as String,
+        description: j['description'] as String,
+      );
+}
+
+class CoachResult {
+  final String targetAttribute;
+  final int current;
+  final int projected;
+  final int delta;
+  final int targetScore;
+  final List<CoachSession> sessions;
+  const CoachResult({
+    required this.targetAttribute,
+    required this.current,
+    required this.projected,
+    required this.delta,
+    required this.targetScore,
+    required this.sessions,
+  });
+
+  factory CoachResult.fromJson(Map<String, dynamic> j) {
+    final p = j['projection'] as Map<String, dynamic>;
+    return CoachResult(
+      targetAttribute: j['targetAttribute'] as String,
+      current: (p['current'] as num).toInt(),
+      projected: (p['projected'] as num).toInt(),
+      delta: (p['delta'] as num).toInt(),
+      targetScore: (p['targetScore'] as num).toInt(),
+      sessions: (j['sessions'] as List<dynamic>)
+          .map((e) => CoachSession.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+}
+
+class PublicProfile {
+  final String userId;
+  final String displayName;
+  final String sex;
+  final String goal;
+  final String rank;
+  final IndexSummary? index;
+  final List<RadarAttribute> radar;
+  final int? position;
+  const PublicProfile({
+    required this.userId,
+    required this.displayName,
+    required this.sex,
+    required this.goal,
+    required this.rank,
+    required this.index,
+    required this.radar,
+    required this.position,
+  });
+
+  factory PublicProfile.fromJson(Map<String, dynamic> j) => PublicProfile(
+        userId: j['userId'] as String,
+        displayName: j['displayName'] as String? ?? '—',
+        sex: j['sex'] as String,
+        goal: j['goal'] as String,
+        rank: j['rank'] as String,
+        index: j['index'] == null ? null : IndexSummary.fromJson(j['index'] as Map<String, dynamic>),
+        radar: (j['radar'] as List<dynamic>? ?? [])
+            .map((e) => RadarAttribute.fromJson(e as Map<String, dynamic>))
+            .toList(),
+        position: (j['position'] as num?)?.toInt(),
+      );
+}
+
 /// WOD du catalogue (sous-ensemble utile au log).
 class WodCatalogItem {
   final String id;

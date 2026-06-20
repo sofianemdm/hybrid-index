@@ -25,6 +25,10 @@ export class ScoreClient {
     return this.post("/v1/score/index", req, internalScore.ComputeIndexResponse);
   }
 
+  computeProjection(req: internalScore.ComputeProjectionRequest): Promise<internalScore.ComputeProjectionResponse> {
+    return this.post("/v1/score/project", req, internalScore.ComputeProjectionResponse);
+  }
+
   private async post<T>(path: string, body: unknown, schema: ZodSchema<T>): Promise<T> {
     let res: Response;
     try {

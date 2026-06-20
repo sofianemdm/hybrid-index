@@ -107,7 +107,7 @@ export class LeaderboardService {
   }
 
   /** Position 1-indexée + valeur d'un utilisateur, via Redis puis Postgres. */
-  private async positionOf(sex: string, userId: string): Promise<{ position: number; value: number } | null> {
+  async positionOf(sex: string, userId: string): Promise<{ position: number; value: number } | null> {
     const idx = await this.prisma.hybridIndex.findUnique({ where: { userId }, select: { value: true } });
     if (!idx) return null;
 

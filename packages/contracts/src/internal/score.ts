@@ -102,3 +102,27 @@ export const ComputeProfileResponse = z.object({
   radar: z.array(RadarAttribute),
 });
 export type ComputeProfileResponse = z.infer<typeof ComputeProfileResponse>;
+
+/** Projection d'Index : « si tu progresses sur cet attribut, ton Index passerait à X ». */
+export const ComputeProjectionRequest = z.object({
+  goal: Goal,
+  targetAttribute: AttributeKey,
+  attributeScores: z.array(
+    z.object({
+      attribute: AttributeKey,
+      score: z.number().min(0).max(1000),
+      unlocked: z.boolean(),
+      isEstimated: z.boolean(),
+    }),
+  ),
+});
+export type ComputeProjectionRequest = z.infer<typeof ComputeProjectionRequest>;
+
+export const ComputeProjectionResponse = z.object({
+  current: z.number().min(0).max(1000),
+  projected: z.number().min(0).max(1000),
+  delta: z.number().min(0),
+  targetAttribute: AttributeKey,
+  targetScore: z.number().min(0).max(1000),
+});
+export type ComputeProjectionResponse = z.infer<typeof ComputeProjectionResponse>;

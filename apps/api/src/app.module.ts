@@ -8,6 +8,8 @@ import { MeModule } from "./modules/me/me.module";
 import { OnboardingModule } from "./modules/onboarding/onboarding.module";
 import { ResultsModule } from "./modules/results/results.module";
 import { LeaderboardModule } from "./modules/leaderboard/leaderboard.module";
+import { ProfilesModule } from "./modules/profiles/profiles.module";
+import { CoachModule } from "./modules/coach/coach.module";
 
 @Module({
   imports: [
@@ -19,6 +21,8 @@ import { LeaderboardModule } from "./modules/leaderboard/leaderboard.module";
     OnboardingModule,
     ResultsModule,
     LeaderboardModule,
+    ProfilesModule,
+    CoachModule,
   ],
   controllers: [HealthController],
 })

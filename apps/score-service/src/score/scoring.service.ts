@@ -178,6 +178,54 @@ export class ScoringService {
     };
   }
 
+  /**
+   * Index PROJETÉ : simule la montée de l'attribut ciblé (à son meilleur attribut, ou +100,
+   * plafonné 1000) et recalcule l'Index via la fonction officielle `hybridIndex` (jamais de
+   * recalcul parallèle ; on ne baisse jamais un score). Reco sport-science 20 juin.
+   */
+  computeProjection(req: internalScore.ComputeProjectionRequest): internalScore.ComputeProjectionResponse {
+    const PROJECTION_STEP = 100;
+    const radar: AttributeResult[] = req.attributeScores.map((a) => ({
+      attribute: a.attribute,
+      score: a.score,
+      unlocked: a.unlocked,
+      isEstimated: a.isEstimated,
+      isStale: false,
+      bestAgeWeeks: null,
+    }));
+    const unlockedCount = radar.filter((a) => a.unlocked).length;
+    const current = hybridIndex(radar, req.goal, unlockedCount).value;
+
+    const bestUnlocked = radar.filter((a) => a.unlocked).reduce((m, a) => Math.max(m, a.score), 0);
+    const cur = radar.find((a) => a.attribute === req.targetAttribute);
+    const currentScore = cur?.score ?? 0;
+    const targetScore = Math.min(1000, Math.max(bestUnlocked, currentScore + PROJECTION_STEP));
+
+    const projectedRadar: AttributeResult[] = radar.map((a) =>
+      a.attribute === req.targetAttribute ? { ...a, score: Math.max(a.score, targetScore), unlocked: true } : a,
+    );
+    if (!cur) {
+      projectedRadar.push({
+        attribute: req.targetAttribute,
+        score: targetScore,
+        unlocked: true,
+        isEstimated: true,
+        isStale: false,
+        bestAgeWeeks: null,
+      });
+    }
+    const projectedCount = projectedRadar.filter((a) => a.unlocked).length;
+    const projected = hybridIndex(projectedRadar, req.goal, projectedCount).value;
+
+    return {
+      current,
+      projected,
+      delta: Math.max(0, projected - current),
+      targetAttribute: req.targetAttribute,
+      targetScore,
+    };
+  }
+
   private toIndexResponse(result: {
     value: number;
     percentile: number;

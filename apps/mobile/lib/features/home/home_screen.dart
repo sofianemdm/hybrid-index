@@ -8,6 +8,7 @@ import '../../theme/tokens.dart';
 import '../../widgets/index_ring.dart';
 import '../../widgets/radar_view.dart';
 import '../../widgets/rank_badge.dart';
+import '../coach/coach_screen.dart';
 import '../settings/settings_screen.dart';
 
 /// Accueil : Index courant, rang, carte rival, radar. Tire-pour-rafraîchir.
@@ -69,6 +70,19 @@ class HomeScreen extends ConsumerWidget {
         Center(child: RankBadge(rank: p.index.rank, fontSize: 15)),
         const SizedBox(height: HiSpace.lg),
         _RivalCard(),
+        const SizedBox(height: HiSpace.md),
+        OutlinedButton.icon(
+          style: OutlinedButton.styleFrom(
+            minimumSize: const Size.fromHeight(48),
+            side: const BorderSide(color: HiColors.strokeStrong),
+            foregroundColor: HiColors.brandPrimary,
+          ),
+          icon: const Icon(Icons.fitness_center),
+          label: const Text('Coach — progresser sur un axe'),
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const CoachScreen()),
+          ),
+        ),
         const SizedBox(height: HiSpace.md),
         Card(
           child: Padding(

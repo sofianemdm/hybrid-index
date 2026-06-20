@@ -116,4 +116,16 @@ class ApiClient {
     final j = await _send('GET', '/v1/me/rival') as Map<String, dynamic>;
     return Rival.fromJson(j);
   }
+
+  // --- Coach / profils publics ---
+  Future<CoachResult> coach({String? attribute}) async {
+    final q = attribute == null ? '' : '?attribute=$attribute';
+    final j = await _send('GET', '/v1/coach$q') as Map<String, dynamic>;
+    return CoachResult.fromJson(j);
+  }
+
+  Future<PublicProfile> publicProfile(String userId) async {
+    final j = await _send('GET', '/v1/profiles/$userId') as Map<String, dynamic>;
+    return PublicProfile.fromJson(j);
+  }
 }

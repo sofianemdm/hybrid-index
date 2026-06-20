@@ -5,6 +5,7 @@ import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/rank_badge.dart';
+import '../profile/public_profile_screen.dart';
 
 /// Classement public par ligue (Hommes / Femmes), trié par HYBRID INDEX.
 class LeaderboardScreen extends ConsumerStatefulWidget {
@@ -121,7 +122,11 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
   }
 
   Widget _row(LeaderboardEntry e) {
-    return Container(
+    return InkWell(
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => PublicProfileScreen(userId: e.userId)),
+      ),
+      child: Container(
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
       color: e.isMe ? HiColors.brandPrimary.withValues(alpha: 0.12) : Colors.transparent,
       child: Row(
@@ -148,6 +153,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
           Text('${e.value}',
               style: const TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w800, fontFeatures: [])),
         ],
+      ),
       ),
     );
   }

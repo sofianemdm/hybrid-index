@@ -1,0 +1,33 @@
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { PrismaService } from "../../infra/prisma/prisma.service";
+import { ProfileScoringService } from "../profile/profile-scoring.service";
+import { LeaderboardService } from "../leaderboard/leaderboard.service";
+
+/** Profil public d'un athlète (tout est public — décision verrouillée). */
+@Injectable()
+export class ProfilesService {
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly profileScoring: ProfileScoringService,
+    private readonly leaderboard: LeaderboardService,
+  ) {}
+
+  async publicProfile(userId: string): Promise<unknown> {
+    const profile = await this.prisma.profile.findUnique({ where: { userId } });
+    if (!profile || profile.visibility !== "public") {
+      throw new NotFoundException({ code: "NOT_FOUND", message: "Profil introuvable ou privé." });
+    }
+    const scoring = await this.profileScoring.getMyProfile(userId);
+    const pos = await this.leaderboard.positionOf(profile.sex, userId);
+    return {
+      userId,
+      displayName: profile.displayName,
+      sex: profile.sex,
+      goal: profile.goal,
+      rank: profile.rank,
+      index: scoring?.index ?? null,
+      radar: scoring?.radar ?? [],
+      position: pos?.position ?? null,
+    };
+  }
+}
