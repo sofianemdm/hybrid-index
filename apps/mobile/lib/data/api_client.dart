@@ -201,9 +201,31 @@ class ApiClient {
     return WodDetail.fromJson(j);
   }
 
-  Future<List<WodLeaderboardEntry>> wodLeaderboard(String id, String sex) async {
-    final j = await _send('GET', '/v1/wods/$id/leaderboard?sex=$sex') as Map<String, dynamic>;
+  Future<List<WodLeaderboardEntry>> wodLeaderboard(String id, String sex, {String variant = 'rx'}) async {
+    final j = await _send('GET', '/v1/wods/$id/leaderboard?sex=$sex&variant=$variant') as Map<String, dynamic>;
     return ((j['entries'] as List?) ?? []).map((e) => WodLeaderboardEntry.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  Future<List<MovementSummary>> movements() async {
+    final j = await _send('GET', '/v1/movements') as List<dynamic>;
+    return j.map((e) => MovementSummary.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  Future<EstimateResult> estimateWod(Map<String, dynamic> payload) async {
+    final j = await _send('POST', '/v1/wods/estimate', payload) as Map<String, dynamic>;
+    return EstimateResult.fromJson(j);
+  }
+
+  Future<String> createWod(Map<String, dynamic> payload) async {
+    final j = await _send('POST', '/v1/wods', payload) as Map<String, dynamic>;
+    return j['id'] as String;
+  }
+
+  /// Logue un résultat sur un WOD (officiel ou custom) → renvoie le profil recalculé.
+  Future<Profile?> logWodResult(String wodId, Map<String, dynamic> payload) async {
+    final j = await _send('POST', '/v1/wods/$wodId/results', payload) as Map<String, dynamic>;
+    final p = j['profile'];
+    return p == null ? null : Profile.fromJson(p as Map<String, dynamic>);
   }
 
   // --- Avatar ---

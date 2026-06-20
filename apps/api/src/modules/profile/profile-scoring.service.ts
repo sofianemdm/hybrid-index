@@ -49,25 +49,75 @@ export class ProfileScoringService {
 
     const results = await this.prisma.wodResult.findMany({
       where: { userId },
-      select: { wodId: true, rawResult: true, distanceMeters: true, performedAt: true },
+      select: {
+        wodId: true,
+        rawResult: true,
+        distanceMeters: true,
+        performedAt: true,
+        subScore: true,
+        attributesAffected: true,
+        wod: { select: { isCustom: true } },
+      },
     });
     if (results.length === 0) return null;
 
-    const efforts: internalScore.EffortInput[] = results.map((r) => ({
-      wodId: r.wodId,
-      rawResult: Number(r.rawResult),
-      distanceMeters: r.distanceMeters ?? undefined,
-      ageWeeks: weeksSince(r.performedAt),
-    }));
+    // 1) WODs officiels (connus du registre score-service) → radar no-drop (autorité).
+    const officialEfforts: internalScore.EffortInput[] = results
+      .filter((r) => !r.wod.isCustom)
+      .map((r) => ({
+        wodId: r.wodId,
+        rawResult: Number(r.rawResult),
+        distanceMeters: r.distanceMeters ?? undefined,
+        ageWeeks: weeksSince(r.performedAt),
+      }));
 
-    const computed = await this.scoreClient.computeProfile({
-      sex: profile.sex,
-      goal: profile.goal,
-      efforts,
-    });
+    let radar: internalScore.RadarAttribute[];
+    if (officialEfforts.length > 0) {
+      const computed = await this.scoreClient.computeProfile({
+        sex: profile.sex,
+        goal: profile.goal,
+        efforts: officialEfforts,
+      });
+      radar = computed.radar.map((a) => ({ ...a }));
+    } else {
+      radar = ATTRIBUTE_KEYS.map((attribute) => ({
+        attribute,
+        score: 0,
+        unlocked: false,
+        isEstimated: false,
+        isStale: false,
+      }));
+    }
 
-    await this.persist(userId, profile.sex, computed);
-    return toPersistedProfile(computed);
+    // 2) WODs custom (notés par estimation) → fusion no-drop (jamais baisser), étiquetés estimés.
+    const radarByAttr = new Map(radar.map((a) => [a.attribute, a]));
+    for (const r of results) {
+      if (!r.wod.isCustom || r.subScore === null) continue;
+      for (const attr of r.attributesAffected) {
+        const cur = radarByAttr.get(attr);
+        if (!cur) continue;
+        if (r.subScore > cur.score || !cur.unlocked) {
+          cur.score = Math.max(cur.score, r.subScore);
+          cur.unlocked = true;
+          cur.isEstimated = true;
+        }
+      }
+    }
+    const mergedRadar = ATTRIBUTE_KEYS.map(
+      (attribute) =>
+        radarByAttr.get(attribute) ?? { attribute, score: 0, unlocked: false, isEstimated: false, isStale: false },
+    );
+
+    // 3) Index recalculé à partir du radar fusionné (autorité : computeIndex).
+    const attributeScores = mergedRadar
+      .filter((a) => a.unlocked)
+      .map((a) => ({ attribute: a.attribute, score: a.score, isEstimated: a.isEstimated }));
+    if (attributeScores.length === 0) return null;
+    const index = await this.scoreClient.computeIndex({ sex: profile.sex, goal: profile.goal, attributeScores });
+
+    const computedProfile: internalScore.ComputeProfileResponse = { index, radar: mergedRadar };
+    await this.persist(userId, profile.sex, computedProfile);
+    return toPersistedProfile(computedProfile);
   }
 
   private async persist(userId: string, sex: string, computed: internalScore.ComputeProfileResponse): Promise<void> {

@@ -7,6 +7,7 @@ import '../leaderboard/leaderboard_screen.dart';
 import '../log/log_wod_screen.dart';
 import '../progression/progression_screen.dart';
 import '../wods/wod_tab.dart';
+import '../wods/wod_builder_screen.dart';
 import 'home_screen.dart';
 
 /// Coquille principale : Accueil / Classement + bouton central « Logger un WOD ».
@@ -21,10 +22,35 @@ class _HomeShellState extends ConsumerState<HomeShell> {
   int _tab = 0;
 
   Future<void> _openLog() async {
-    final changed = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(builder: (_) => const LogWodScreen()),
+    final choice = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: HiColors.bgElevated,
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.build, color: HiColors.brandPrimary),
+              title: const Text('Construire un WOD', style: TextStyle(color: HiColors.textPrimary)),
+              subtitle: const Text('Compose ton propre WOD, estimé automatiquement', style: TextStyle(color: HiColors.textTertiary)),
+              onTap: () => Navigator.of(context).pop('build'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.timer_outlined, color: HiColors.brandPrimary),
+              title: const Text('Logger un WOD rapidement', style: TextStyle(color: HiColors.textPrimary)),
+              subtitle: const Text('Saisis un résultat sur un WOD de référence', style: TextStyle(color: HiColors.textTertiary)),
+              onTap: () => Navigator.of(context).pop('log'),
+            ),
+          ],
+        ),
+      ),
     );
-    if (changed == true) {
+    if (!mounted || choice == null) return;
+    final route = choice == 'build'
+        ? MaterialPageRoute<bool>(builder: (_) => const WodBuilderScreen())
+        : MaterialPageRoute<bool>(builder: (_) => const LogWodScreen());
+    final changed = await Navigator.of(context).push<bool>(route);
+    if (changed == true || choice == 'build') {
       ref.invalidate(myProfileProvider);
       ref.invalidate(rivalProvider);
     }

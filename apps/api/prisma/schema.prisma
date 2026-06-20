@@ -56,6 +56,8 @@ enum WodType {
   chipper
   strength
   interval
+  tabata
+  distance
 
   @@schema("app")
 }
@@ -166,6 +168,7 @@ model User {
   hybridIndex       HybridIndex?
   attributeScores   AttributeScore[]
   wodResults        WodResult[]
+  wodsCreated       Wod[]             @relation("WodCreator")
   rival             Rival?            @relation("UserRival")
   rivalOf           Rival[]           @relation("RivalTarget")
   streak            Streak?
@@ -269,20 +272,30 @@ model AttributeScore {
 }
 
 model Wod {
-  id                String         @id
+  id                String         @id @default(cuid())
   name              String
   isBenchmark       Boolean        @map("is_benchmark")
   isCustom          Boolean        @default(false) @map("is_custom")
+  createdById       String?        @map("created_by_id") @db.Uuid
   type              WodType
   requiresEquipment Boolean        @map("requires_equipment")
   targetAttributes  AttributeKey[] @map("target_attributes")
   scoreType         ScoreType      @map("score_type")
   movements         Json
+  timeCapSec        Int?           @map("time_cap_sec")
+  rounds            Int?
+  visibility        Visibility     @default(public)
+  calibration       String         @default("estimated")
+  resultCount       Int            @default(0) @map("result_count")
   createdAt         DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime       @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
+  creator User?       @relation("WodCreator", fields: [createdById], references: [id], onDelete: SetNull)
   results WodResult[]
 
   @@index([requiresEquipment])
+  @@index([isCustom, visibility, createdAt(sort: Desc)])
+  @@index([createdById])
   @@map("wod")
   @@schema("app")
 }
@@ -294,6 +307,7 @@ model WodResult {
   sex                Sex
   rawResult          Decimal        @map("raw_result")
   distanceMeters     Int?           @map("distance_meters")
+  rxCompliant        Boolean        @default(true) @map("rx_compliant")
   subScore           Int?           @map("sub_score")
   percentile         Decimal?       @db.Decimal(5, 4)
   attributesAffected AttributeKey[] @map("attributes_affected")

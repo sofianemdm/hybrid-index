@@ -389,6 +389,61 @@ class EndgameInfo {
   }
 }
 
+class MovementSummary {
+  final String id;
+  final String name;
+  final String category;
+  final String unit;
+  final bool requiresEquipment;
+  const MovementSummary({
+    required this.id,
+    required this.name,
+    required this.category,
+    required this.unit,
+    required this.requiresEquipment,
+  });
+  factory MovementSummary.fromJson(Map<String, dynamic> j) => MovementSummary(
+        id: j['id'] as String,
+        name: j['name'] as String,
+        category: j['category'] as String,
+        unit: j['unit'] as String,
+        requiresEquipment: j['requiresEquipment'] as bool? ?? false,
+      );
+}
+
+class EstimateRef {
+  final String level;
+  final num rawResult;
+  const EstimateRef({required this.level, required this.rawResult});
+  factory EstimateRef.fromJson(Map<String, dynamic> j) =>
+      EstimateRef(level: j['level'] as String, rawResult: j['rawResult'] as num);
+}
+
+class EstimateResult {
+  final int? subScore;
+  final List<EstimateRef> references;
+  final String confidence;
+  final List<String> attributesAffected;
+  const EstimateResult({
+    required this.subScore,
+    required this.references,
+    required this.confidence,
+    required this.attributesAffected,
+  });
+  factory EstimateResult.fromJson(Map<String, dynamic> j) => EstimateResult(
+        subScore: (j['subScore'] as num?)?.toInt(),
+        references: ((j['references'] as List?) ?? []).map((e) => EstimateRef.fromJson(e as Map<String, dynamic>)).toList(),
+        confidence: j['confidence'] as String? ?? 'estimated',
+        attributesAffected: ((j['attributesAffected'] as List?) ?? []).map((e) => e.toString()).toList(),
+      );
+  EstimateRef? ref(String level) {
+    for (final r in references) {
+      if (r.level == level) return r;
+    }
+    return null;
+  }
+}
+
 class WodCatalogEntry {
   final String id;
   final String name;

@@ -24,6 +24,7 @@ describe("api — boucle complète persistée (e2e réel)", () => {
   const displayName = `E2ELoop${stamp}`;
   let token = "";
   let userId = "";
+  let customWodId = "";
 
   beforeAll(async () => {
     const scoreRef = await Test.createTestingModule({ imports: [ScoreAppModule] }).compile();
@@ -47,6 +48,9 @@ describe("api — boucle complète persistée (e2e réel)", () => {
     if (userId) {
       await prisma.user.deleteMany({ where: { id: userId } }).catch(() => undefined);
       await redis.zrem("leaderboard:male", userId).catch(() => undefined);
+    }
+    if (customWodId) {
+      await prisma.wod.deleteMany({ where: { id: customWodId } }).catch(() => undefined);
     }
     await prisma.$disconnect().catch(() => undefined);
     redis.disconnect();
@@ -320,6 +324,43 @@ describe("api — boucle complète persistée (e2e réel)", () => {
     expect(res.body.references.length).toBe(3);
     expect(res.body.subScore).toBeGreaterThan(0);
     expect(res.body.confidence).toBe("estimated");
+  });
+
+  it("WOD custom : création → log noté par estimation → compte dans l'Index → classement", async () => {
+    const create = await request(api.getHttpServer())
+      .post("/v1/wods")
+      .set("authorization", `Bearer ${token}`)
+      .send({
+        name: `Test WOD ${stamp}`,
+        type: "for_time",
+        scoreType: "time",
+        requiresEquipment: false,
+        blocks: [
+          { movementId: "burpee", reps: 50 },
+          { movementId: "air_squat", reps: 50 },
+        ],
+      })
+      .expect(201);
+    customWodId = create.body.id;
+    expect(create.body.isCustom).toBe(true);
+    expect(create.body.targetAttributes.length).toBeGreaterThan(0);
+
+    const cat = await request(api.getHttpServer()).get("/v1/wods").expect(200);
+    expect(cat.body.some((w: { id: string }) => w.id === customWodId)).toBe(true);
+
+    const log = await request(api.getHttpServer())
+      .post(`/v1/wods/${customWodId}/results`)
+      .set("authorization", `Bearer ${token}`)
+      .send({ rawResult: 360 })
+      .expect(201);
+    expect(log.body.result.subScore).toBeGreaterThan(0);
+    expect(log.body.profile.index.value).toBeGreaterThan(0);
+
+    const lb = await request(api.getHttpServer())
+      .get(`/v1/wods/${customWodId}/leaderboard?sex=male`)
+      .set("authorization", `Bearer ${token}`)
+      .expect(200);
+    expect(lb.body.entries.some((e: { isMe: boolean }) => e.isMe)).toBe(true);
   });
 
   it("RGPD : suppression de compte (effacement) — DOIT être le dernier test", async () => {

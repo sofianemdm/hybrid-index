@@ -4,9 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../theme/tokens.dart';
+import '../../widgets/hi_button.dart';
 import '../../widgets/rank_badge.dart';
-import '../log/log_wod_screen.dart';
 import 'wod_format.dart';
+import 'wod_result_entry_screen.dart';
 
 /// Fiche WOD : paliers de référence (champion/intermédiaire/occasionnel) + classement + « Faire ce WOD ».
 class WodDetailScreen extends ConsumerStatefulWidget {
@@ -35,9 +36,11 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
     _leaderboard = ref.read(apiClientProvider).wodLeaderboard(widget.wodId, _sex);
   }
 
-  Future<void> _doWod() async {
+  Future<void> _doWod(String scoreType) async {
     final changed = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(builder: (_) => LogWodScreen(initialWodId: widget.wodId)),
+      MaterialPageRoute(
+        builder: (_) => WodResultEntryScreen(wodId: widget.wodId, wodName: widget.wodName, scoreType: scoreType),
+      ),
     );
     if (changed == true && mounted) {
       setState(() {
@@ -86,30 +89,11 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
                 const Text('Classement', style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 16)),
                 const SizedBox(height: HiSpace.sm),
                 _leaderboardSection(d.scoreType),
+                const SizedBox(height: HiSpace.lg),
+                HiButton(label: 'Faire ce WOD', onPressed: () => _doWod(d.scoreType)),
               ],
             );
           },
-        ),
-      ),
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(HiSpace.md),
-          child: DecoratedBox(
-            decoration: BoxDecoration(gradient: HiColors.brandGradient, borderRadius: BorderRadius.circular(HiRadius.md)),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(HiRadius.md),
-                onTap: _doWod,
-                child: Container(
-                  height: 52,
-                  alignment: Alignment.center,
-                  child: const Text('Faire ce WOD',
-                      style: TextStyle(color: HiColors.textOnBrand, fontWeight: FontWeight.w700, fontSize: 16)),
-                ),
-              ),
-            ),
-          ),
         ),
       ),
     );
