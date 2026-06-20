@@ -33,6 +33,22 @@ class RadarAttribute {
       );
 }
 
+/// Progression vers le rang suivant (goal-gradient). next null = rang max atteint.
+class RankProgress {
+  final String current;
+  final String? next;
+  final int? pointsToNext;
+  final double progress; // 0..1
+  const RankProgress({required this.current, this.next, this.pointsToNext, required this.progress});
+
+  factory RankProgress.fromJson(Map<String, dynamic> j) => RankProgress(
+        current: j['current'] as String? ?? 'rookie',
+        next: j['next'] as String?,
+        pointsToNext: (j['pointsToNext'] as num?)?.toInt(),
+        progress: (j['progress'] as num?)?.toDouble() ?? 0,
+      );
+}
+
 class IndexSummary {
   final int value;
   final double percentile;
@@ -40,6 +56,7 @@ class IndexSummary {
   final bool isProvisional;
   final bool isEstimated;
   final int radarCoverage;
+  final RankProgress? rankProgress;
   const IndexSummary({
     required this.value,
     required this.percentile,
@@ -47,6 +64,7 @@ class IndexSummary {
     required this.isProvisional,
     required this.isEstimated,
     required this.radarCoverage,
+    this.rankProgress,
   });
 
   factory IndexSummary.fromJson(Map<String, dynamic> j) => IndexSummary(
@@ -56,6 +74,9 @@ class IndexSummary {
         isProvisional: j['isProvisional'] as bool? ?? false,
         isEstimated: j['isEstimated'] as bool? ?? false,
         radarCoverage: (j['radarCoverage'] as num?)?.toInt() ?? 0,
+        rankProgress: j['rankProgress'] == null
+            ? null
+            : RankProgress.fromJson(j['rankProgress'] as Map<String, dynamic>),
       );
 }
 

@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { ATTRIBUTE_KEYS, type AttributeKey, type Goal, type Sex, type internalScore, rankFromIndex } from "@hybrid-index/contracts";
+import { ATTRIBUTE_KEYS, type AttributeKey, type Goal, type Sex, type internalScore, rankFromIndex, rankProgress } from "@hybrid-index/contracts";
 import { type AttributeResult, bandFromP, popPercentileIndex } from "@hybrid-index/scoring-core";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { RedisService } from "../../infra/redis/redis.service";
@@ -30,6 +30,8 @@ export interface PersistedProfile {
     isProvisional: boolean;
     isEstimated: boolean;
     radarCoverage: number;
+    /** Progression vers le rang suivant (goal-gradient). next null = rang max. */
+    rankProgress: { current: string; next: string | null; pointsToNext: number | null; progress: number };
   };
   radar: Array<{ attribute: string; score: number; unlocked: boolean; isEstimated: boolean }>;
   socialProof: SocialProof;
@@ -306,6 +308,7 @@ export class ProfileScoringService {
         isProvisional: index.isProvisional,
         isEstimated: index.isEstimated,
         radarCoverage: index.radarCoverage,
+        rankProgress: rankProgress(index.value),
       },
       radar,
       socialProof,
@@ -339,6 +342,7 @@ function toPersistedProfile(
       isProvisional: computed.index.isProvisional,
       isEstimated: computed.index.isEstimated,
       radarCoverage: computed.index.radarCoverage,
+      rankProgress: rankProgress(computed.index.value),
     },
     radar: computed.radar.map((a) => ({
       attribute: a.attribute,

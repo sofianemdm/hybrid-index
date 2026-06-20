@@ -9,6 +9,7 @@ import '../../widgets/hi_avatar.dart';
 import '../../widgets/index_ring.dart';
 import '../../widgets/radar_view.dart';
 import '../../widgets/rank_badge.dart';
+import '../../widgets/rank_progress_bar.dart';
 import '../../widgets/social_proof_card.dart';
 import '../avatar/avatar_editor_screen.dart';
 import '../coach/coach_screen.dart';
@@ -95,6 +96,10 @@ class HomeScreen extends ConsumerWidget {
         const SizedBox(height: HiSpace.md),
         Center(child: RankBadge(rank: p.index.rank, fontSize: 15)),
         const SizedBox(height: HiSpace.lg),
+        if (p.index.rankProgress != null) ...[
+          RankProgressBar(rp: p.index.rankProgress!),
+          const SizedBox(height: HiSpace.md),
+        ],
         if (p.socialProof != null) ...[
           SocialProofCard(proof: p.socialProof!),
           const SizedBox(height: HiSpace.md),

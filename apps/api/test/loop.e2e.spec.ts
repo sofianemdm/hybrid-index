@@ -427,6 +427,13 @@ describe("api — boucle complète persistée (e2e réel)", () => {
     expect(res.body.socialProof.app.topPercent).toBeNull();
     // Invariant produit : un utilisateur qui s'entraîne est au-dessus de la médiane des humains.
     expect(res.body.socialProof.population.percentile).toBeGreaterThan(0.5);
+    // H2 : progression vers le prochain rang (goal-gradient) exposée et cohérente.
+    const rp = res.body.index.rankProgress;
+    expect(rp).toBeDefined();
+    expect(typeof rp.current).toBe("string");
+    expect(rp.progress).toBeGreaterThanOrEqual(0);
+    expect(rp.progress).toBeLessThanOrEqual(1);
+    if (rp.next !== null) expect(rp.pointsToNext).toBeGreaterThan(0);
   });
 
   it("notif « dépassé sur un WOD » : un athlète suivi qui bat mon temps déclenche l'alerte", async () => {
