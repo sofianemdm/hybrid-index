@@ -8,6 +8,7 @@ import '../../widgets/hi_button.dart';
 import '../../widgets/index_ring.dart';
 import '../../widgets/radar_view.dart';
 import '../../widgets/rank_badge.dart';
+import '../../widgets/social_proof_card.dart';
 
 /// L'écran « waouh » : l'Index se remplit, le rang et le radar apparaissent.
 class RevealScreen extends ConsumerWidget {
@@ -37,6 +38,10 @@ class RevealScreen extends ConsumerWidget {
                     const SizedBox(height: HiSpace.sm),
                     const Text('Index provisoire — affine-le en loggant plus de WODs.',
                         textAlign: TextAlign.center, style: TextStyle(color: HiColors.warn, fontSize: 12)),
+                  ],
+                  if (profile.socialProof != null) ...[
+                    const SizedBox(height: HiSpace.lg),
+                    SocialProofCard(proof: profile.socialProof!),
                   ],
                   const SizedBox(height: HiSpace.xl),
                   Card(

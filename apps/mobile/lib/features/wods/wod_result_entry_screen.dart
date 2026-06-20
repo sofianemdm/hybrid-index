@@ -67,6 +67,12 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
               const SizedBox(height: 8),
               Text('${profile.index.value}',
                   style: const TextStyle(color: HiColors.brandPrimary, fontSize: 44, fontWeight: FontWeight.w800)),
+              if (_bandUpText(profile.bandCelebration) != null) ...[
+                const SizedBox(height: 12),
+                Text(_bandUpText(profile.bandCelebration)!,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: HiColors.brandPrimary, fontWeight: FontWeight.w700)),
+              ],
             ]),
             actions: [TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Continuer'))],
           ),
@@ -80,6 +86,15 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
     } finally {
       if (mounted) setState(() => _loading = false);
     }
+  }
+
+  /// Message de célébration quand on monte de bande population (« pop_top_3 » → « top 3% »).
+  String? _bandUpText(List<String>? celebration) {
+    if (celebration == null || celebration.length < 2) return null;
+    final to = celebration[1];
+    final m = RegExp(r'pop_top_(\d+)').firstMatch(to);
+    if (m == null) return null;
+    return '🚀 Tu entres dans le top ${m.group(1)}% des humains les plus en forme !';
   }
 
   void _toast(String m) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m)));

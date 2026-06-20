@@ -59,17 +59,56 @@ class IndexSummary {
       );
 }
 
+/// Preuve sociale à deux populations (cf. backend SocialProof).
+class SocialProof {
+  /// « Humanité » : toujours présent, toujours valorisant. topPercent null = bande « en construction ».
+  final int? humanityTopPercent;
+  final String populationBand;
+  /// « App » : visible seulement si top 30% ET ligue ≥ 200.
+  final bool appVisible;
+  final int? appTopPercent;
+  const SocialProof({
+    this.humanityTopPercent,
+    required this.populationBand,
+    required this.appVisible,
+    this.appTopPercent,
+  });
+
+  factory SocialProof.fromJson(Map<String, dynamic> j) {
+    final pop = (j['population'] as Map<String, dynamic>?) ?? const {};
+    final app = (j['app'] as Map<String, dynamic>?) ?? const {};
+    return SocialProof(
+      humanityTopPercent: (pop['topPercent'] as num?)?.toInt(),
+      populationBand: pop['band'] as String? ?? 'pop_building',
+      appVisible: app['visible'] as bool? ?? false,
+      appTopPercent: (app['topPercent'] as num?)?.toInt(),
+    );
+  }
+}
+
 class Profile {
   final IndexSummary index;
   final List<RadarAttribute> radar;
-  const Profile({required this.index, required this.radar});
+  final SocialProof? socialProof;
+  /// Renseigné quand le dernier recalcul a fait MONTER de bande population (déclenche la célébration).
+  final List<String>? bandCelebration; // [from, to] où from peut être '' (null)
+  const Profile({required this.index, required this.radar, this.socialProof, this.bandCelebration});
 
-  factory Profile.fromJson(Map<String, dynamic> j) => Profile(
-        index: IndexSummary.fromJson(j['index'] as Map<String, dynamic>),
-        radar: (j['radar'] as List<dynamic>)
-            .map((e) => RadarAttribute.fromJson(e as Map<String, dynamic>))
-            .toList(),
-      );
+  factory Profile.fromJson(Map<String, dynamic> j) {
+    final celeb = j['bandCelebration'] as Map<String, dynamic>?;
+    return Profile(
+      index: IndexSummary.fromJson(j['index'] as Map<String, dynamic>),
+      radar: (j['radar'] as List<dynamic>)
+          .map((e) => RadarAttribute.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      socialProof: j['socialProof'] == null
+          ? null
+          : SocialProof.fromJson(j['socialProof'] as Map<String, dynamic>),
+      bandCelebration: celeb == null
+          ? null
+          : [celeb['from'] as String? ?? '', celeb['to'] as String? ?? ''],
+    );
+  }
 }
 
 class LeaderboardEntry {
