@@ -8,3 +8,4 @@ export * from "./distribution";
 export * from "./weights";
 export * from "./attribute";
 export * from "./index-score";
+export * from "./population-norms";
