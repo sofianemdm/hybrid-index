@@ -8,6 +8,24 @@
 
 ---
 
+> ## ⚠️ Avenant 2026-06-20 — Pivot « preuve sociale honnête »
+>
+> Décision du fondateur (cf. `docs/decisions-log.md`). **Supersède** les sections rival & défis ci-dessous :
+> - **SUPPRIMÉS : le système de rival ET les défis (challenges).** Ne pas réimplémenter.
+> - **REMPLACÉS par une preuve sociale à DEUX populations** (toujours valorisante, honnête) :
+>   1. **% population générale (« humanité »)** — fondé sur des normes scientifiques (`popnorm-v1`,
+>      `docs/population-norms-sources.md`) : *« tu fais partie des X % des humains les plus en forme »*.
+>      **Toujours affiché.** Sous la médiane → message de progression, jamais dévalorisant.
+>   2. **% parmi les utilisateurs de l'app** — affiché **uniquement si top 30 %** (et ligue ≥ 200).
+>      En dessous : **silence total** (on n'enfonce personne).
+> - **Le déclencheur compétitif survit en notification in-app** (pas de feature rival) :
+>   *« quelqu'un t'a dépassé au classement »* et *« un athlète suivi a battu ton temps sur un WOD »*,
+>   regroupées et plafonnées (anti-spam). Push FCM différé.
+> - Les mentions « rival » / « défi » dans le reste du document sont **historiques** ; lire « preuve
+>   sociale + notification de dépassement » à la place.
+
+---
+
 ## 1. Vision, positionnement & avantage défendable
 
 ### Le problème

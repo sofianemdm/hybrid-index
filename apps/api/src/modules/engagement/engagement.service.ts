@@ -94,6 +94,11 @@ export class EngagementService {
           body: "Reprends ta place au classement 💪",
           priority: "medium",
         });
+        // Auto-acquittement : on aligne le snapshot sur la position courante pour ne pas
+        // re-notifier les MÊMES dépassements à chaque ouverture (anti-spam, cf. revue M1).
+        await this.prisma.hybridIndex
+          .update({ where: { userId }, data: { leaguePosition: current } })
+          .catch(() => undefined);
       }
     }
 
@@ -112,9 +117,18 @@ export class EngagementService {
         });
         const myWodIds = mine.map((m) => m.wodId);
         if (myWodIds.length > 0) {
+          // Anti-spam (cf. revue M2) : on ne compte que les efforts d'athlètes suivis postérieurs à
+          // MON dernier recalcul (= depuis ma dernière séance). La fenêtre se réinitialise dès que je
+          // relogue un WOD → pas de notif « fossile » répétée indéfiniment.
           const theirs = await this.prisma.wodResult.groupBy({
             by: ["wodId"],
-            where: { userId: { in: followeeIds }, wodId: { in: myWodIds }, review: "ok", subScore: { not: null } },
+            where: {
+              userId: { in: followeeIds },
+              wodId: { in: myWodIds },
+              review: "ok",
+              subScore: { not: null },
+              performedAt: { gt: idx.computedAt },
+            },
             _max: { subScore: true },
           });
           const theirBest = new Map(theirs.map((t) => [t.wodId, t._max.subScore ?? 0]));

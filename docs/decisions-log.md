@@ -161,3 +161,34 @@ Pour être **essayable demain matin sans téléphone/émulateur**, l'app Flutter
 (`flutter run -d chrome`). C'est **le vrai code produit** (base unique iOS+Android) ; le Web est une
 cible de démo. Écrans livrés : auth, onboarding (aperçu live), révélation animée, accueil (Index +
 radar + rival), classement H/F, log WOD. CORS activé côté api (obligatoire pour le navigateur).
+
+## 2026-06-20 — Pivot « preuve sociale honnête » (incréments G1→G6)
+
+### D19 — Suppression du rival et des défis, remplacés par une preuve sociale à deux populations
+**Contexte.** Le fondateur juge le rival et les défis trop lourds / pas alignés avec l'esprit voulu,
+et préfère un ressort motivationnel **honnête et toujours valorisant**.
+
+**Décision (supersède la mention « système de rival » de la constitution et les sections rival/défis
+du cahier).**
+- **Retirés** : feature *rival* (modèle `Rival`, endpoint `/v1/me/rival`, carte d'accueil, notifs +
+  badge `rival-slayer`) et *défis* (module `challenges`, modèle `Challenge`, écran, events feed).
+  Migration `remove_challenges_rival`. La logique de **position au classement est conservée** (sert
+  aux notifs de dépassement).
+- **Ajouté** : **preuve sociale à deux populations**, jamais mélangées.
+  - **Population générale (« humanité »)** : nouveau moteur `popnorm-v1`
+    (`packages/scoring-core/src/population-norms.ts`, sources dans
+    `docs/population-norms-sources.md`). Fondé sur des **normes publiées** (ACSM/Cooper, OMS,
+    APFT/ACSM, ExRx/NSCA, RunRepeat). Confiance **assumée `estimate`**, étiquetée « estimé », jamais
+    de décimale sous 1 %. **Toujours affichée** ; sous la médiane → message de progression.
+  - **Population app** : affichée **uniquement si top 30 % ET ligue ≥ 200** (cohérent avec la décision
+    verrouillée « box/amis après 200 users »). Sinon **masquée** — on n'affiche jamais un mauvais rang.
+- **Notifications in-app** (le push FCM reste différé) remplaçant le ressort compétitif du rival :
+  `rank-overtaken` (snapshot de position auto-acquitté à la lecture) et `wod-overtaken` (athlète
+  **suivi** qui bat mon effort, fenêtre « depuis ma dernière séance »). Regroupées, plafonnées, ton
+  motivant jamais culpabilisant.
+- **Honnêteté** : le mobile ne reçoit/affiche que des **bandes arrondies** (top 1/2/5/10/20/30/50 %),
+  jamais le percentile brut. Célébration uniquement à la **montée** de bande, jamais à la descente.
+
+**Dette tracée (revue G6, non bloquante)** : `wod-overtaken` peut se réafficher entre deux séances
+(fenêtre temporelle, pas d'acquittement par-vue dédié) ; `bandImproved` non couvert par test unitaire
+dédié (extraire + tester). `attribute_score.percentile = score/1000` reste un placeholder assumé.
