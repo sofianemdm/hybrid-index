@@ -1,9 +1,11 @@
-import { BadRequestException, Controller, Get, Param, Query, UseGuards } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, Param, Post, Query, UseGuards } from "@nestjs/common";
 import { Sex } from "@hybrid-index/contracts";
+import { ZodValidationPipe } from "../../common/zod-validation.pipe";
 import { CurrentUser } from "../auth/current-user.decorator";
 import { OptionalJwtAuthGuard } from "../auth/optional-jwt-auth.guard";
 import type { AuthenticatedUser } from "../auth/jwt-auth.guard";
 import { WodsService } from "./wods.service";
+import { EstimateWodRequest } from "./wod-estimate.dto";
 
 @Controller("v1/wods")
 @UseGuards(OptionalJwtAuthGuard)
@@ -14,6 +16,12 @@ export class WodsController {
   @Get()
   catalog(): Promise<unknown[]> {
     return this.wods.catalog();
+  }
+
+  /** Estimation ad-hoc d'un WOD décomposé (aperçu du builder). */
+  @Post("estimate")
+  estimate(@Body(new ZodValidationPipe(EstimateWodRequest)) body: EstimateWodRequest): Promise<unknown> {
+    return this.wods.estimate(body);
   }
 
   /** Fiche d'un WOD (paliers de référence + ton meilleur effort si connecté). */

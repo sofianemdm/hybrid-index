@@ -61,6 +61,19 @@ export class ScoreController {
     return this.scoring.computeProjection(body);
   }
 
+  @Post("estimate")
+  estimate(
+    @Body(new ZodValidationPipe(internalScore.ComputeEstimateRequest))
+    body: internalScore.ComputeEstimateRequest,
+  ): internalScore.ComputeEstimateResponse {
+    return this.scoring.computeEstimate(body);
+  }
+
+  @Get("movements")
+  movements(): internalScore.MovementSummary[] {
+    return this.scoring.getMovements();
+  }
+
   @Get("wods/:id/levels")
   wodLevels(@Param("id") id: string): internalScore.WodLevelsResponse {
     return this.scoring.getWodLevels(id);

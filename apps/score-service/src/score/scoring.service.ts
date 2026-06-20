@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException, UnprocessableEntityException } from "@nestjs/common";
 import { WOD_LEVELS } from "../wods/wod-levels.data";
+import { MOVEMENTS, MOVEMENTS_BY_ID } from "../wods/movements.data";
 import { ATTRIBUTE_KEYS, type internalScore } from "@hybrid-index/contracts";
 import {
   type AttributeResult,
@@ -231,6 +232,125 @@ export class ScoringService {
       targetAttribute: req.targetAttribute,
       targetScore,
     };
+  }
+
+  /**
+   * Moteur d'estimation (sport-science) : décompose un WOD custom, prédit le temps/reps pour
+   * champion/intermédiaire/occasionnel via la bibliothèque de mouvements (débit × charge × fatigue
+   * × format), construit une distribution synthétique (pointTable) et réutilise la courbe f pour
+   * noter un résultat. Confiance « estimated » tant que non calibré sur la communauté.
+   */
+  computeEstimate(req: internalScore.ComputeEstimateRequest): internalScore.ComputeEstimateResponse {
+    const BW = req.sex === "male" ? 80 : 65;
+    const dir: 1 | -1 = req.scoreType === "time" ? -1 : 1;
+    const levels = ["champion", "intermediate", "occasional"] as const;
+    const predicted: Record<(typeof levels)[number], number> = { champion: 0, intermediate: 0, occasional: 0 };
+    const attrShare = new Map<string, number>();
+    let repsPerRound = 0;
+
+    for (const level of levels) {
+      let roundTime = 0;
+      const lineCosts: Array<{ attrs: { attribute: string; weight: number }[]; cost: number }> = [];
+      for (const block of req.blocks) {
+        const m = MOVEMENTS_BY_ID.get(block.movementId);
+        if (!m) {
+          throw new BadRequestException({ code: "VALIDATION_ERROR", message: `Mouvement inconnu : ${block.movementId}` });
+        }
+        const rate = m.rate[level][req.sex];
+        const amount = block.reps ?? block.distanceMeters ?? block.calories ?? block.durationSec ?? 0;
+        let cost: number;
+        if (m.unit === "second") {
+          cost = amount; // maintien : durée directe
+        } else if (m.unit === "meter" && (m.id === "run" || m.id === "sprint")) {
+          cost = (amount / rate) * Math.pow(Math.max(amount, 1) / 400, 0.06); // Riegel
+        } else {
+          const refLoad = m.loadFactor ? m.loadFactor * BW : 0;
+          const loadMult = block.loadKg && refLoad > 0 ? 1 + 0.6 * Math.max(0, block.loadKg / refLoad - 1) : 1;
+          const fatMult = Math.pow(Math.max(amount, 1) / 15, m.fatigueExponent - 1);
+          cost = (amount / rate) * loadMult * fatMult;
+        }
+        roundTime += cost;
+        lineCosts.push({ attrs: m.attributes, cost });
+        if (level === "champion") repsPerRound += block.reps ?? 0;
+      }
+      roundTime += Math.max(0, req.blocks.length - 1) * 2.5; // transitions
+      const rounds = req.rounds ?? 1;
+      if (req.scoreType === "time") {
+        predicted[level] = roundTime * rounds;
+      } else {
+        const cap = req.timeCapSec ?? 600;
+        predicted[level] = Math.round((cap / Math.max(roundTime, 1)) * Math.max(repsPerRound, 1));
+      }
+      if (level === "intermediate") {
+        const tot = roundTime || 1;
+        for (const { attrs, cost } of lineCosts) {
+          const share = cost / tot;
+          for (const t of attrs) attrShare.set(t.attribute, (attrShare.get(t.attribute) ?? 0) + share * t.weight);
+        }
+      }
+    }
+
+    // Monotonicité stricte requise par la pointTable (cas dégénéré : WOD 100% durée).
+    if (dir === -1) {
+      if (!(predicted.occasional > predicted.intermediate)) predicted.intermediate = predicted.occasional * 0.6;
+      if (!(predicted.intermediate > predicted.champion)) predicted.champion = predicted.intermediate * 0.6;
+    } else {
+      if (!(predicted.champion > predicted.intermediate)) predicted.intermediate = predicted.champion * 0.6;
+      if (!(predicted.intermediate > predicted.occasional)) predicted.occasional = predicted.intermediate * 0.6;
+    }
+
+    const model = {
+      kind: "pointTable" as const,
+      dir,
+      nodes: [
+        { p: 0.15, r: predicted.occasional },
+        { p: 0.5, r: predicted.intermediate },
+        { p: 0.98, r: predicted.champion },
+      ],
+    };
+
+    const totalShare = [...attrShare.values()].reduce((a, b) => a + b, 0) || 1;
+    const attributesAffected = ATTRIBUTE_KEYS.filter((a) => (attrShare.get(a) ?? 0) / totalShare >= 0.12);
+
+    let outOfBounds = false;
+    let subScore: number | null = null;
+    let pct: number | null = null;
+    if (req.userResult !== undefined) {
+      const hardMin = dir === -1 ? predicted.champion * 0.92 : predicted.occasional * 0.3;
+      const hardMax = dir === -1 ? predicted.occasional * 2.5 : predicted.champion * 1.5;
+      let value = req.userResult;
+      if (value < hardMin || value > hardMax) {
+        outOfBounds = true;
+        value = Math.min(hardMax, Math.max(hardMin, value));
+      }
+      pct = percentileOf(value, model);
+      subScore = subScoreFromPercentile(pct);
+    }
+
+    return {
+      subScore,
+      percentile: pct,
+      attributesAffected,
+      references: [
+        { level: "champion", rawResult: predicted.champion },
+        { level: "intermediate", rawResult: predicted.intermediate },
+        { level: "occasional", rawResult: predicted.occasional },
+      ],
+      confidence: "estimated",
+      outOfBounds,
+      scoringVersionId: this.versions.getActiveVersionId(),
+    };
+  }
+
+  /** Catalogue public des mouvements (sans paramètres internes de notation). */
+  getMovements(): internalScore.MovementSummary[] {
+    return MOVEMENTS.map((m) => ({
+      id: m.id,
+      name: m.name,
+      category: m.category,
+      unit: m.unit,
+      requiresEquipment: m.requiresEquipment,
+    }));
   }
 
   /** Paliers de référence (champion/intermédiaire/occasionnel) d'un WOD, par sexe. */

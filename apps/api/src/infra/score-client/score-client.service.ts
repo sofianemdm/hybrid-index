@@ -37,6 +37,14 @@ export class ScoreClient {
     return this.get(`/v1/score/wods/${encodeURIComponent(wodId)}/levels`, internalScore.WodLevelsResponse);
   }
 
+  computeEstimate(req: internalScore.ComputeEstimateRequest): Promise<internalScore.ComputeEstimateResponse> {
+    return this.post("/v1/score/estimate", req, internalScore.ComputeEstimateResponse);
+  }
+
+  getMovements(): Promise<internalScore.MovementSummary[]> {
+    return this.get("/v1/score/movements", internalScore.MovementCatalog);
+  }
+
   private async get<T>(path: string, schema: ZodSchema<T>): Promise<T> {
     let res: Response;
     try {

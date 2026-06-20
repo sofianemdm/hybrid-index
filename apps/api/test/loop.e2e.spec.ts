@@ -297,6 +297,31 @@ describe("api — boucle complète persistée (e2e réel)", () => {
     expect(res.body.entries.some((e: { isMe: boolean }) => e.isMe)).toBe(true);
   });
 
+  it("mouvements : catalogue exposé", async () => {
+    const res = await request(api.getHttpServer()).get("/v1/movements").expect(200);
+    expect(res.body.length).toBeGreaterThanOrEqual(30);
+    expect(res.body.some((m: { id: string }) => m.id === "thruster")).toBe(true);
+  });
+
+  it("estimation ad-hoc d'un WOD custom", async () => {
+    const res = await request(api.getHttpServer())
+      .post("/v1/wods/estimate")
+      .send({
+        sex: "male",
+        scoreType: "time",
+        wodType: "for_time",
+        blocks: [
+          { movementId: "thruster", reps: 30, loadKg: 43 },
+          { movementId: "pull_up", reps: 30 },
+        ],
+        userResult: 240,
+      })
+      .expect(201);
+    expect(res.body.references.length).toBe(3);
+    expect(res.body.subScore).toBeGreaterThan(0);
+    expect(res.body.confidence).toBe("estimated");
+  });
+
   it("RGPD : suppression de compte (effacement) — DOIT être le dernier test", async () => {
     const res = await request(api.getHttpServer())
       .delete("/v1/me")

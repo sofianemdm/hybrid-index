@@ -141,6 +141,58 @@ export const ComputeGrandSlamResponse = z.object({
 });
 export type ComputeGrandSlamResponse = z.infer<typeof ComputeGrandSlamResponse>;
 
+/** Mouvement exposé au public (sans les paramètres internes de notation). */
+export const MovementSummary = z.object({
+  id: z.string(),
+  name: z.string(),
+  category: z.string(),
+  unit: z.enum(["rep", "meter", "calorie", "second"]),
+  requiresEquipment: z.boolean(),
+});
+export type MovementSummary = z.infer<typeof MovementSummary>;
+export const MovementCatalog = z.array(MovementSummary);
+
+/** Un bloc d'un WOD décomposé, envoyé au moteur d'estimation. */
+export const WodBlockInput = z.object({
+  movementId: z.string(),
+  reps: z.number().int().positive().optional(),
+  loadKg: z.number().positive().optional(),
+  distanceMeters: z.number().positive().optional(),
+  calories: z.number().positive().optional(),
+  durationSec: z.number().positive().optional(),
+});
+export type WodBlockInput = z.infer<typeof WodBlockInput>;
+
+export const LevelReference = z.object({
+  level: z.enum(["champion", "intermediate", "occasional"]),
+  rawResult: z.number(),
+});
+export type LevelReference = z.infer<typeof LevelReference>;
+
+/** POST /v1/score/estimate — estime un WOD décomposé (custom) et note un résultat éventuel. */
+export const ComputeEstimateRequest = z.object({
+  sex: Sex,
+  scoreType: ScoreType,
+  wodType: z.enum(["for_time", "amrap", "emom", "chipper", "strength", "interval", "tabata", "distance"]),
+  timeCapSec: z.number().int().positive().optional(),
+  rounds: z.number().int().positive().optional(),
+  blocks: z.array(WodBlockInput).min(1),
+  /** Résultat de l'utilisateur à noter (optionnel : barème seul si absent). */
+  userResult: z.number().positive().optional(),
+});
+export type ComputeEstimateRequest = z.infer<typeof ComputeEstimateRequest>;
+
+export const ComputeEstimateResponse = z.object({
+  subScore: z.number().min(0).max(1000).nullable(),
+  percentile: z.number().min(0).max(1).nullable(),
+  attributesAffected: z.array(AttributeKey),
+  references: z.array(LevelReference).length(3),
+  confidence: z.enum(["estimated", "low", "medium", "high"]),
+  outOfBounds: z.boolean(),
+  scoringVersionId: z.string(),
+});
+export type ComputeEstimateResponse = z.infer<typeof ComputeEstimateResponse>;
+
 /** Paliers de référence (champion/intermédiaire/occasionnel) d'un WOD, par sexe. */
 const WodLevelTriple = z.object({
   champion: z.number(),

@@ -150,4 +150,71 @@ describe("score-service — calcul (e2e)", () => {
       expect(res.body.targetScore).toBeGreaterThanOrEqual(600); // au moins au niveau du meilleur attribut
     });
   });
+
+  describe("POST /v1/score/estimate (moteur d'estimation WOD custom)", () => {
+    it("Fran décomposé → palier intermédiaire ≈ médiane connue (345 s) à ±8 %", async () => {
+      const res = await request(app.getHttpServer())
+        .post("/v1/score/estimate")
+        .send({
+          sex: "male",
+          scoreType: "time",
+          wodType: "for_time",
+          blocks: [
+            { movementId: "thruster", reps: 45, loadKg: 43 },
+            { movementId: "pull_up", reps: 45 },
+          ],
+          userResult: 300,
+        })
+        .expect(201);
+      const inter = res.body.references.find((r: { level: string }) => r.level === "intermediate").rawResult;
+      expect(inter).toBeGreaterThanOrEqual(317); // 345 - 8%
+      expect(inter).toBeLessThanOrEqual(373); // 345 + 8%
+      // paliers strictement ordonnés (temps : champion < inter < occasionnel)
+      const champ = res.body.references.find((r: { level: string }) => r.level === "champion").rawResult;
+      const occ = res.body.references.find((r: { level: string }) => r.level === "occasional").rawResult;
+      expect(champ).toBeLessThan(inter);
+      expect(inter).toBeLessThan(occ);
+      expect(res.body.subScore).toBeGreaterThan(0);
+      expect(res.body.confidence).toBe("estimated");
+      expect(res.body.attributesAffected).toContain("power");
+    });
+
+    it("AMRAP (reps) → barème croissant + pas de note sans userResult", async () => {
+      const res = await request(app.getHttpServer())
+        .post("/v1/score/estimate")
+        .send({
+          sex: "male",
+          scoreType: "reps",
+          wodType: "amrap",
+          timeCapSec: 720,
+          blocks: [
+            { movementId: "pull_up", reps: 5 },
+            { movementId: "push_up", reps: 10 },
+            { movementId: "air_squat", reps: 15 },
+          ],
+        })
+        .expect(201);
+      const champ = res.body.references.find((r: { level: string }) => r.level === "champion").rawResult;
+      const occ = res.body.references.find((r: { level: string }) => r.level === "occasional").rawResult;
+      expect(champ).toBeGreaterThan(occ); // reps : champion > occasionnel
+      expect(res.body.subScore).toBeNull();
+    });
+
+    it("mouvement inconnu → 400", async () => {
+      const res = await request(app.getHttpServer())
+        .post("/v1/score/estimate")
+        .send({ sex: "male", scoreType: "time", wodType: "for_time", blocks: [{ movementId: "licorne", reps: 10 }] })
+        .expect(400);
+      expect(res.body.error.code).toBe("VALIDATION_ERROR");
+    });
+  });
+
+  describe("GET /v1/score/movements", () => {
+    it("renvoie le catalogue de mouvements", async () => {
+      const res = await request(app.getHttpServer()).get("/v1/score/movements").expect(200);
+      expect(res.body.length).toBeGreaterThanOrEqual(30);
+      expect(res.body[0]).toHaveProperty("id");
+      expect(res.body[0]).not.toHaveProperty("rate"); // pas de paramètres internes exposés
+    });
+  });
 });

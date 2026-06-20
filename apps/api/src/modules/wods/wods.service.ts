@@ -1,7 +1,9 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import type { Sex } from "@prisma/client";
+import type { internalScore } from "@hybrid-index/contracts";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { ScoreClient } from "../../infra/score-client/score-client.service";
+import type { EstimateWodRequest } from "./wod-estimate.dto";
 
 @Injectable()
 export class WodsService {
@@ -9,6 +11,16 @@ export class WodsService {
     private readonly prisma: PrismaService,
     private readonly scoreClient: ScoreClient,
   ) {}
+
+  /** Catalogue public des mouvements (pour le builder). */
+  movements(): Promise<internalScore.MovementSummary[]> {
+    return this.scoreClient.getMovements();
+  }
+
+  /** Estimation ad-hoc d'un WOD décomposé (aperçu live du builder). */
+  estimate(req: EstimateWodRequest): Promise<internalScore.ComputeEstimateResponse> {
+    return this.scoreClient.computeEstimate(req);
+  }
 
   /** Catalogue des WODs (15 références + communautaires à venir). */
   async catalog(): Promise<unknown[]> {
