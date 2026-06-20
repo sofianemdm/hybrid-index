@@ -1,0 +1,73 @@
+# HYBRID INDEX — Production. Les SECRETS viennent de l'environnement (jamais en dur).
+# Lancement : voir docs/deploiement.md. Exige un fichier .env.prod (non committé) ou des
+# variables d'environnement définies : POSTGRES_PASSWORD, JWT_SECRET, CORS_ORIGINS, GOOGLE_CLIENT_ID.
+#
+#   docker compose -f infra/docker-compose.prod.yml --env-file .env.prod up -d --build
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: hybrid
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD requis}
+      POSTGRES_DB: hybrid_index
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    # Pas de port exposé à l'hôte en prod (accès uniquement via le réseau Docker interne).
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hybrid -d hybrid_index"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  score-service:
+    build:
+      context: ..
+      dockerfile: infra/docker/Dockerfile.score-service
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      SCORE_SERVICE_PORT: 3001
+    depends_on:
+      postgres:
+        condition: service_healthy
+    expose:
+      - "3001"
+
+  api:
+    build:
+      context: ..
+      dockerfile: infra/docker/Dockerfile.api
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      API_PORT: 3000
+      DATABASE_URL: postgres://hybrid:${POSTGRES_PASSWORD}@postgres:5432/hybrid_index
+      REDIS_URL: redis://redis:6379
+      SCORE_SERVICE_URL: http://score-service:3001
+      # Garde-fous prod (l'api refuse de démarrer si absents) :
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET requis en production}
+      CORS_ORIGINS: ${CORS_ORIGINS:?CORS_ORIGINS requis (origines autorisees, ex https://app.exemple.com)}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+    ports:
+      # À placer derrière un reverse-proxy TLS (Caddy/Traefik/nginx) — cf. docs/deploiement.md.
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      score-service:
+        condition: service_started
+
+volumes:
+  pgdata:
