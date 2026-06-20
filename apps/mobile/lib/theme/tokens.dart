@@ -14,7 +14,9 @@ class HiColors {
 
   static const brandPrimary = Color(0xFF3DE1FF); // cyan signature
   static const brandPrimaryDeep = Color(0xFF0A8FB3);
-  static const brandSecondary = Color(0xFF7C5CFF); // violet énergie
+  static const brandSecondary = Color(0xFF7C5CFF); // violet énergie — déco / grandes surfaces UNIQUEMENT
+  // Violet éclairci pour le TEXTE : #7C5CFF échoue WCAG AA en petit (~3,2:1) ; celui-ci ~6:1 sur fond sombre.
+  static const brandSecondaryText = Color(0xFFA98CFF);
 
   static const textPrimary = Color(0xFFF2F5FA);
   static const textSecondary = Color(0xFFA7B0C0);

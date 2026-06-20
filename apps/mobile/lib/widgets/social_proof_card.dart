@@ -68,15 +68,15 @@ class SocialProofCard extends StatelessWidget {
   Widget _appLine() {
     return Row(
       children: [
-        const Icon(Icons.bolt, color: HiColors.brandSecondary, size: 18),
+        const Icon(Icons.bolt, color: HiColors.brandSecondaryText, size: 18),
         const SizedBox(width: HiSpace.sm),
         Expanded(
           child: RichText(
             text: TextSpan(
-              style: const TextStyle(color: HiColors.textSecondary, fontSize: 13, fontWeight: FontWeight.w600),
+              style: const TextStyle(color: HiColors.textSecondary, fontSize: 14, fontWeight: FontWeight.w600),
               children: [
                 const TextSpan(text: 'Top '),
-                TextSpan(text: '${proof.appTopPercent}%', style: const TextStyle(color: HiColors.brandSecondary, fontWeight: FontWeight.w700)),
+                TextSpan(text: '${proof.appTopPercent}%', style: const TextStyle(color: HiColors.brandSecondaryText, fontWeight: FontWeight.w700)),
                 const TextSpan(text: ' des athlètes HYBRID'),
               ],
             ),

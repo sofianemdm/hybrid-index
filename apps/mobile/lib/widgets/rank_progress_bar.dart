@@ -35,7 +35,7 @@ class RankProgressBar extends StatelessWidget {
                     style: TextStyle(color: HiColors.brandPrimary, fontWeight: FontWeight.w700, fontSize: 13))
               else
                 Text('encore ${rp.pointsToNext} pts → ${HiLabels.rank(rp.next!)}',
-                    style: const TextStyle(color: HiColors.textSecondary, fontSize: 13)),
+                    style: const TextStyle(color: HiColors.textSecondary, fontSize: 14)),
             ],
           ),
           const SizedBox(height: HiSpace.sm),

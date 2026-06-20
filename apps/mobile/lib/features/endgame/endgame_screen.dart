@@ -116,7 +116,7 @@ class _EndgameScreenState extends ConsumerState<EndgameScreen> {
                 const SizedBox(height: HiSpace.md),
                 _statCard(
                   icon: Icons.workspace_premium,
-                  color: HiColors.brandSecondary,
+                  color: HiColors.brandSecondaryText,
                   title: 'Statut Ambassadeur',
                   value: e.ambassador ? 'Débloqué ✓' : 'Verrouillé',
                   highlight: e.ambassador ? 'Tu représentes l’élite HYBRID INDEX' : null,
