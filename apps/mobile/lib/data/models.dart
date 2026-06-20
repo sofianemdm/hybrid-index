@@ -389,6 +389,108 @@ class EndgameInfo {
   }
 }
 
+class WodCatalogEntry {
+  final String id;
+  final String name;
+  final String scoreType;
+  final bool requiresEquipment;
+  final bool isCustom;
+  const WodCatalogEntry({
+    required this.id,
+    required this.name,
+    required this.scoreType,
+    required this.requiresEquipment,
+    required this.isCustom,
+  });
+
+  factory WodCatalogEntry.fromJson(Map<String, dynamic> j) => WodCatalogEntry(
+        id: j['id'] as String,
+        name: j['name'] as String,
+        scoreType: j['scoreType'] as String,
+        requiresEquipment: j['requiresEquipment'] as bool? ?? false,
+        isCustom: j['isCustom'] as bool? ?? false,
+      );
+}
+
+class WodTriple {
+  final num champion;
+  final num intermediate;
+  final num occasional;
+  const WodTriple({required this.champion, required this.intermediate, required this.occasional});
+  factory WodTriple.fromJson(Map<String, dynamic> j) =>
+      WodTriple(champion: j['champion'] as num, intermediate: j['intermediate'] as num, occasional: j['occasional'] as num);
+}
+
+class WodDetail {
+  final String id;
+  final String name;
+  final String scoreType;
+  final bool requiresEquipment;
+  final List<String> targetAttributes;
+  final WodTriple? male;
+  final WodTriple? female;
+  final num? myBestRaw;
+  final int? myBestSubScore;
+  const WodDetail({
+    required this.id,
+    required this.name,
+    required this.scoreType,
+    required this.requiresEquipment,
+    required this.targetAttributes,
+    required this.male,
+    required this.female,
+    required this.myBestRaw,
+    required this.myBestSubScore,
+  });
+
+  WodTriple? levels(String sex) => sex == 'female' ? female : male;
+
+  factory WodDetail.fromJson(Map<String, dynamic> j) {
+    final levels = j['levels'] as Map<String, dynamic>?;
+    final best = j['myBest'] as Map<String, dynamic>?;
+    return WodDetail(
+      id: j['id'] as String,
+      name: j['name'] as String,
+      scoreType: j['scoreType'] as String,
+      requiresEquipment: j['requiresEquipment'] as bool? ?? false,
+      targetAttributes: ((j['targetAttributes'] as List?) ?? []).map((e) => e.toString()).toList(),
+      male: levels == null ? null : WodTriple.fromJson(levels['male'] as Map<String, dynamic>),
+      female: levels == null ? null : WodTriple.fromJson(levels['female'] as Map<String, dynamic>),
+      myBestRaw: best?['rawResult'] as num?,
+      myBestSubScore: (best?['subScore'] as num?)?.toInt(),
+    );
+  }
+}
+
+class WodLeaderboardEntry {
+  final int position;
+  final String userId;
+  final String displayName;
+  final String rank;
+  final num rawResult;
+  final int? subScore;
+  final bool isMe;
+  const WodLeaderboardEntry({
+    required this.position,
+    required this.userId,
+    required this.displayName,
+    required this.rank,
+    required this.rawResult,
+    required this.subScore,
+    required this.isMe,
+  });
+
+  factory WodLeaderboardEntry.fromJson(Map<String, dynamic> j) => WodLeaderboardEntry(
+        position: (j['position'] as num).toInt(),
+        userId: j['userId'] as String,
+        displayName: j['displayName'] as String? ?? '—',
+        rank: j['rank'] as String? ?? 'rookie',
+        rawResult: j['rawResult'] as num,
+        subScore: (j['subScore'] as num?)?.toInt(),
+        isMe: j['isMe'] as bool? ?? false,
+      );
+}
+
 /// WOD du catalogue (sous-ensemble utile au log).
 class WodCatalogItem {
   final String id;

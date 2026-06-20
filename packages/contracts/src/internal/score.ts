@@ -140,3 +140,17 @@ export const ComputeGrandSlamResponse = z.object({
   remaining: z.array(z.string()),
 });
 export type ComputeGrandSlamResponse = z.infer<typeof ComputeGrandSlamResponse>;
+
+/** Paliers de référence (champion/intermédiaire/occasionnel) d'un WOD, par sexe. */
+const WodLevelTriple = z.object({
+  champion: z.number(),
+  intermediate: z.number(),
+  occasional: z.number(),
+});
+export const WodLevelsResponse = z.object({
+  wodId: z.string(),
+  scoreType: ScoreType,
+  male: WodLevelTriple,
+  female: WodLevelTriple,
+});
+export type WodLevelsResponse = z.infer<typeof WodLevelsResponse>;

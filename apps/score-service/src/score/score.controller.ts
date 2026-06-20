@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post } from "@nestjs/common";
 import { internalScore } from "@hybrid-index/contracts";
 import { ZodValidationPipe } from "../common/zod-validation.pipe";
 import { ScoringVersionService } from "./scoring-version.service";
@@ -59,6 +59,11 @@ export class ScoreController {
     body: internalScore.ComputeProjectionRequest,
   ): internalScore.ComputeProjectionResponse {
     return this.scoring.computeProjection(body);
+  }
+
+  @Get("wods/:id/levels")
+  wodLevels(@Param("id") id: string): internalScore.WodLevelsResponse {
+    return this.scoring.getWodLevels(id);
   }
 
   @Post("grand-slam")

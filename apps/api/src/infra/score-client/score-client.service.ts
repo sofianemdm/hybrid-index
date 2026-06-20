@@ -33,6 +33,31 @@ export class ScoreClient {
     return this.post("/v1/score/grand-slam", req, internalScore.ComputeGrandSlamResponse);
   }
 
+  getWodLevels(wodId: string): Promise<internalScore.WodLevelsResponse> {
+    return this.get(`/v1/score/wods/${encodeURIComponent(wodId)}/levels`, internalScore.WodLevelsResponse);
+  }
+
+  private async get<T>(path: string, schema: ZodSchema<T>): Promise<T> {
+    let res: Response;
+    try {
+      res = await fetch(`${this.baseUrl}${path}`, { method: "GET", headers: { "content-type": "application/json" } });
+    } catch {
+      throw new ServiceUnavailableException({ code: "SCORE_SERVICE_UNAVAILABLE", message: "Le service de score est indisponible." });
+    }
+    if (!res.ok) {
+      const payload = (await res.json().catch(() => undefined)) as { error?: unknown } | undefined;
+      if (res.status >= 400 && res.status < 500) {
+        throw new HttpException(payload?.error ?? { code: "VALIDATION_ERROR", message: "Requête invalide" }, res.status);
+      }
+      throw new ServiceUnavailableException({ code: "SCORE_SERVICE_UNAVAILABLE", message: "Le service de score a renvoyé une erreur." });
+    }
+    const parsed = schema.safeParse(await res.json());
+    if (!parsed.success) {
+      throw new ServiceUnavailableException({ code: "SCORE_SERVICE_UNAVAILABLE", message: "Réponse du service de score non conforme." });
+    }
+    return parsed.data;
+  }
+
   private async post<T>(path: string, body: unknown, schema: ZodSchema<T>): Promise<T> {
     let res: Response;
     try {

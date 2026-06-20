@@ -190,6 +190,22 @@ class ApiClient {
 
   Future<void> deleteAccount() async => _send('DELETE', '/v1/me');
 
+  // --- WOD Engine ---
+  Future<List<WodCatalogEntry>> wodsCatalog() async {
+    final j = await _send('GET', '/v1/wods') as List<dynamic>;
+    return j.map((e) => WodCatalogEntry.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  Future<WodDetail> wodDetail(String id) async {
+    final j = await _send('GET', '/v1/wods/$id') as Map<String, dynamic>;
+    return WodDetail.fromJson(j);
+  }
+
+  Future<List<WodLeaderboardEntry>> wodLeaderboard(String id, String sex) async {
+    final j = await _send('GET', '/v1/wods/$id/leaderboard?sex=$sex') as Map<String, dynamic>;
+    return ((j['entries'] as List?) ?? []).map((e) => WodLeaderboardEntry.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
   // --- Avatar ---
   Future<AvatarConfig> getAvatar() async {
     final j = await _send('GET', '/v1/me/avatar') as Map<String, dynamic>;

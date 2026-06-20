@@ -1,0 +1,249 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../data/models.dart';
+import '../../data/session.dart';
+import '../../theme/tokens.dart';
+import '../../widgets/rank_badge.dart';
+import '../log/log_wod_screen.dart';
+import 'wod_format.dart';
+
+/// Fiche WOD : paliers de référence (champion/intermédiaire/occasionnel) + classement + « Faire ce WOD ».
+class WodDetailScreen extends ConsumerStatefulWidget {
+  final String wodId;
+  final String wodName;
+  const WodDetailScreen({super.key, required this.wodId, required this.wodName});
+
+  @override
+  ConsumerState<WodDetailScreen> createState() => _WodDetailScreenState();
+}
+
+class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
+  late String _sex;
+  late Future<WodDetail> _detail;
+  late Future<List<WodLeaderboardEntry>> _leaderboard;
+
+  @override
+  void initState() {
+    super.initState();
+    _sex = ref.read(sessionProvider).sex ?? 'male';
+    _detail = ref.read(apiClientProvider).wodDetail(widget.wodId);
+    _loadLeaderboard();
+  }
+
+  void _loadLeaderboard() {
+    _leaderboard = ref.read(apiClientProvider).wodLeaderboard(widget.wodId, _sex);
+  }
+
+  Future<void> _doWod() async {
+    final changed = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(builder: (_) => LogWodScreen(initialWodId: widget.wodId)),
+    );
+    if (changed == true && mounted) {
+      setState(() {
+        _detail = ref.read(apiClientProvider).wodDetail(widget.wodId);
+        _loadLeaderboard();
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(widget.wodName), backgroundColor: Colors.transparent, elevation: 0),
+      body: SafeArea(
+        child: FutureBuilder<WodDetail>(
+          future: _detail,
+          builder: (context, snap) {
+            if (snap.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (snap.hasError) return Center(child: Text('${snap.error}', style: const TextStyle(color: HiColors.error)));
+            final d = snap.data!;
+            return ListView(
+              padding: const EdgeInsets.fromLTRB(HiSpace.lg, HiSpace.lg, HiSpace.lg, 96),
+              children: [
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: d.targetAttributes
+                      .map((a) => Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: HiColors.attribute(a).withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(HiRadius.pill),
+                            ),
+                            child: Text(HiLabels.attribute(a),
+                                style: TextStyle(color: HiColors.attribute(a), fontSize: 11, fontWeight: FontWeight.w600)),
+                          ))
+                      .toList(),
+                ),
+                const SizedBox(height: HiSpace.lg),
+                _sexToggle(),
+                const SizedBox(height: HiSpace.md),
+                if (d.levels(_sex) != null) _tierCard(d) else const Text('Paliers non disponibles pour ce WOD.', style: TextStyle(color: HiColors.textTertiary)),
+                const SizedBox(height: HiSpace.lg),
+                const Text('Classement', style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 16)),
+                const SizedBox(height: HiSpace.sm),
+                _leaderboardSection(d.scoreType),
+              ],
+            );
+          },
+        ),
+      ),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(HiSpace.md),
+          child: DecoratedBox(
+            decoration: BoxDecoration(gradient: HiColors.brandGradient, borderRadius: BorderRadius.circular(HiRadius.md)),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(HiRadius.md),
+                onTap: _doWod,
+                child: Container(
+                  height: 52,
+                  alignment: Alignment.center,
+                  child: const Text('Faire ce WOD',
+                      style: TextStyle(color: HiColors.textOnBrand, fontWeight: FontWeight.w700, fontSize: 16)),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _sexToggle() {
+    return Row(
+      children: [
+        _segment('Hommes', 'male'),
+        const SizedBox(width: 8),
+        _segment('Femmes', 'female'),
+      ],
+    );
+  }
+
+  Widget _segment(String label, String sex) {
+    final active = _sex == sex;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() {
+          _sex = sex;
+          _loadLeaderboard();
+        }),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            gradient: active ? HiColors.brandGradient : null,
+            color: active ? null : HiColors.bgElevated2,
+            borderRadius: BorderRadius.circular(HiRadius.pill),
+          ),
+          child: Text(label,
+              style: TextStyle(color: active ? HiColors.textOnBrand : HiColors.textSecondary, fontWeight: FontWeight.w700)),
+        ),
+      ),
+    );
+  }
+
+  Widget _tierCard(WodDetail d) {
+    final t = d.levels(_sex)!;
+    return Container(
+      padding: const EdgeInsets.all(HiSpace.md),
+      decoration: BoxDecoration(
+        color: HiColors.bgElevated,
+        borderRadius: BorderRadius.circular(HiRadius.md),
+        border: Border.all(color: HiColors.strokeSubtle),
+      ),
+      child: Column(
+        children: [
+          _tierRow('🏆 Champion', t.champion, d.scoreType, HiColors.attrSpeed),
+          const Divider(color: HiColors.strokeSubtle),
+          _tierRow('Intermédiaire', t.intermediate, d.scoreType, HiColors.textSecondary),
+          const Divider(color: HiColors.strokeSubtle),
+          _tierRow('Occasionnel', t.occasional, d.scoreType, HiColors.textTertiary),
+          if (d.myBestRaw != null) ...[
+            const SizedBox(height: HiSpace.sm),
+            Container(
+              padding: const EdgeInsets.all(HiSpace.sm),
+              decoration: BoxDecoration(
+                color: HiColors.brandPrimary.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(HiRadius.sm),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('Toi : ', style: TextStyle(color: HiColors.textSecondary)),
+                  Text(formatWodResult(d.myBestRaw!, d.scoreType),
+                      style: const TextStyle(color: HiColors.brandPrimary, fontWeight: FontWeight.w800)),
+                  if (d.myBestSubScore != null)
+                    Text('  ·  ${d.myBestSubScore} pts', style: const TextStyle(color: HiColors.textTertiary)),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _tierRow(String label, num value, String scoreType, Color color) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          Expanded(child: Text(label, style: TextStyle(color: color, fontWeight: FontWeight.w600))),
+          Text(formatWodResult(value, scoreType),
+              style: const TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
+        ],
+      ),
+    );
+  }
+
+  Widget _leaderboardSection(String scoreType) {
+    return FutureBuilder<List<WodLeaderboardEntry>>(
+      future: _leaderboard,
+      builder: (context, snap) {
+        if (snap.connectionState == ConnectionState.waiting) {
+          return const Padding(padding: EdgeInsets.all(24), child: Center(child: CircularProgressIndicator()));
+        }
+        if (snap.hasError) return Text('${snap.error}', style: const TextStyle(color: HiColors.error));
+        final entries = snap.data!;
+        if (entries.isEmpty) {
+          return const Text('Sois le premier à poster un résultat 💪', style: TextStyle(color: HiColors.textTertiary));
+        }
+        return Column(
+          children: entries.map((e) {
+            return Container(
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+              color: e.isMe ? HiColors.brandPrimary.withValues(alpha: 0.12) : Colors.transparent,
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 32,
+                    child: Text('#${e.position}',
+                        style: TextStyle(
+                            color: e.position <= 3 ? HiColors.brandPrimary : HiColors.textTertiary,
+                            fontWeight: FontWeight.w700)),
+                  ),
+                  Expanded(
+                    child: Text(e.isMe ? '${e.displayName} (toi)' : e.displayName,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            color: HiColors.textPrimary, fontWeight: e.isMe ? FontWeight.w800 : FontWeight.w500)),
+                  ),
+                  RankBadge(rank: e.rank, fontSize: 10),
+                  const SizedBox(width: HiSpace.sm),
+                  Text(formatWodResult(e.rawResult, scoreType),
+                      style: const TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
+                ],
+              ),
+            );
+          }).toList(),
+        );
+      },
+    );
+  }
+}

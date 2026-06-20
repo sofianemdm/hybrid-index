@@ -273,6 +273,30 @@ describe("api — boucle complète persistée (e2e réel)", () => {
     expect(res.body.globalRank).toBeGreaterThanOrEqual(1);
   });
 
+  it("WOD : catalogue contient les références", async () => {
+    const res = await request(api.getHttpServer()).get("/v1/wods").expect(200);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body.some((w: { id: string }) => w.id === "fran")).toBe(true);
+  });
+
+  it("WOD : fiche Fran avec paliers + mon meilleur effort", async () => {
+    const res = await request(api.getHttpServer())
+      .get("/v1/wods/fran")
+      .set("authorization", `Bearer ${token}`)
+      .expect(200);
+    expect(res.body.scoreType).toBe("time");
+    expect(res.body.levels.male.champion).toBeLessThan(res.body.levels.male.intermediate);
+    expect(res.body.myBest.subScore).toBeGreaterThan(0); // l'utilisateur a loggé Fran
+  });
+
+  it("WOD : classement Fran (Hommes) inclut l'utilisateur", async () => {
+    const res = await request(api.getHttpServer())
+      .get("/v1/wods/fran/leaderboard?sex=male")
+      .set("authorization", `Bearer ${token}`)
+      .expect(200);
+    expect(res.body.entries.some((e: { isMe: boolean }) => e.isMe)).toBe(true);
+  });
+
   it("RGPD : suppression de compte (effacement) — DOIT être le dernier test", async () => {
     const res = await request(api.getHttpServer())
       .delete("/v1/me")

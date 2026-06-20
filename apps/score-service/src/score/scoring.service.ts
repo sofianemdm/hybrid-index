@@ -1,4 +1,5 @@
-import { BadRequestException, Injectable, UnprocessableEntityException } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException, UnprocessableEntityException } from "@nestjs/common";
+import { WOD_LEVELS } from "../wods/wod-levels.data";
 import { ATTRIBUTE_KEYS, type internalScore } from "@hybrid-index/contracts";
 import {
   type AttributeResult,
@@ -230,6 +231,16 @@ export class ScoringService {
       targetAttribute: req.targetAttribute,
       targetScore,
     };
+  }
+
+  /** Paliers de référence (champion/intermédiaire/occasionnel) d'un WOD, par sexe. */
+  getWodLevels(wodId: string): internalScore.WodLevelsResponse {
+    const wod = this.wods.getOrThrow(wodId);
+    const levels = WOD_LEVELS[wodId];
+    if (!levels) {
+      throw new NotFoundException({ code: "NOT_FOUND", message: `Aucun palier de référence pour ${wodId}.` });
+    }
+    return { wodId, scoreType: wod.scoreType, male: levels.male, female: levels.female };
   }
 
   /** Grand Chelem : compte les WODs de référence où le meilleur effort bat la référence pro. */

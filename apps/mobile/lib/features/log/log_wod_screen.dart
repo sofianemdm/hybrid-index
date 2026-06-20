@@ -11,14 +11,25 @@ import '../../widgets/hi_button.dart';
 
 /// Log d'un WOD : choisir un WOD + saisir le résultat → l'Index se recalcule.
 class LogWodScreen extends ConsumerStatefulWidget {
-  const LogWodScreen({super.key});
+  /// Pré-sélectionne un WOD (ex. depuis « Faire ce WOD » sur la fiche).
+  final String? initialWodId;
+  const LogWodScreen({super.key, this.initialWodId});
 
   @override
   ConsumerState<LogWodScreen> createState() => _LogWodScreenState();
 }
 
 class _LogWodScreenState extends ConsumerState<LogWodScreen> {
-  WodCatalogItem _wod = wodCatalog.firstWhere((w) => w.id == 'fran');
+  late WodCatalogItem _wod;
+
+  @override
+  void initState() {
+    super.initState();
+    _wod = wodCatalog.firstWhere(
+      (w) => w.id == widget.initialWodId,
+      orElse: () => wodCatalog.firstWhere((w) => w.id == 'fran'),
+    );
+  }
   final _value = TextEditingController(); // reps / load / distance
   final _min = TextEditingController();
   final _sec = TextEditingController();
