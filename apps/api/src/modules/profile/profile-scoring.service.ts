@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
-import { ATTRIBUTE_KEYS, type internalScore, rankFromIndex } from "@hybrid-index/contracts";
+import { ATTRIBUTE_KEYS, type AttributeKey, type Goal, type Sex, type internalScore, rankFromIndex } from "@hybrid-index/contracts";
+import { type AttributeResult, bandFromP, popPercentileIndex } from "@hybrid-index/scoring-core";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { RedisService } from "../../infra/redis/redis.service";
 import { ScoreClient } from "../../infra/score-client/score-client.service";
@@ -8,7 +9,19 @@ import { SCORING_VERSION_UUID } from "../../common/constants";
 
 const RANK_ORDER = ["rookie", "bronze", "silver", "gold", "platinum", "diamond", "elite"];
 
-/** Profil de score persisté renvoyé au mobile (index + radar lisible). */
+/** Preuve sociale à deux populations (cf. spec gamification). Jamais mélangées. */
+export interface SocialProof {
+  /** « Humanité » : toujours présent, toujours valorisant. */
+  population: { topPercent: number | null; band: string; percentile: number };
+  /** « App » : visible UNIQUEMENT si top 30% ET ligue crédible (≥ 200). Sinon masqué. */
+  app: { visible: boolean; topPercent: number | null; percentile: number | null };
+}
+
+/** Seuils d'affichage du percentile app (cf. spec : silence total hors top 30%, ligue < 200). */
+const APP_VISIBLE_PERCENTILE = 0.7;
+const MIN_LEAGUE_FOR_APP = 200;
+
+/** Profil de score persisté renvoyé au mobile (index + radar lisible + preuve sociale). */
 export interface PersistedProfile {
   index: {
     value: number;
@@ -19,6 +32,9 @@ export interface PersistedProfile {
     radarCoverage: number;
   };
   radar: Array<{ attribute: string; score: number; unlocked: boolean; isEstimated: boolean }>;
+  socialProof: SocialProof;
+  /** Renseigné après un recalcul qui fait MONTER de bande population (déclenche la célébration UI). */
+  bandCelebration?: { from: string | null; to: string } | null;
 }
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
@@ -120,14 +136,62 @@ export class ProfileScoringService {
     const index = await this.scoreClient.computeIndex({ sex: profile.sex, goal: profile.goal, attributeScores });
 
     const computedProfile: internalScore.ComputeProfileResponse = { index, radar: mergedRadar };
-    await this.persist(userId, profile.sex, computedProfile);
-    return toPersistedProfile(computedProfile);
+    const previousBand =
+      (await this.prisma.hybridIndex.findUnique({ where: { userId }, select: { populationBand: true } }))
+        ?.populationBand ?? null;
+    const socialProof = await this.buildSocialProof(profile.sex, profile.goal, mergedRadar, index.percentile);
+    await this.persist(userId, profile.sex, computedProfile, socialProof.population);
+    const result = toPersistedProfile(computedProfile, socialProof);
+    // Célébration : uniquement quand on MONTE de bande population (jamais à la descente).
+    result.bandCelebration = bandImproved(previousBand, socialProof.population.band)
+      ? { from: previousBand, to: socialProof.population.band }
+      : null;
+    return result;
   }
 
-  private async persist(userId: string, sex: string, computed: internalScore.ComputeProfileResponse): Promise<void> {
+  /** Construit la preuve sociale (population toujours ; app seulement si top 30% ET ligue ≥ 200). */
+  private async buildSocialProof(
+    sex: string,
+    goal: string,
+    radar: ReadonlyArray<{ attribute: string; score: number; unlocked: boolean; isEstimated: boolean }>,
+    appPercentile: number,
+  ): Promise<SocialProof> {
+    const results: AttributeResult[] = radar.map((a) => ({
+      attribute: a.attribute as AttributeKey,
+      score: a.score,
+      unlocked: a.unlocked,
+      isEstimated: a.isEstimated,
+      isStale: false,
+      bestAgeWeeks: null,
+    }));
+    const popP = popPercentileIndex(sex as Sex, goal as Goal, results);
+    const band = bandFromP(popP);
+    const leagueSize = await this.prisma.hybridIndex.count({ where: { user: { profile: { sex: sex as never } } } });
+    const appVisible = appPercentile >= APP_VISIBLE_PERCENTILE && leagueSize >= MIN_LEAGUE_FOR_APP;
+    return {
+      population: { topPercent: band.topPercent, band: band.band, percentile: popP },
+      app: {
+        visible: appVisible,
+        topPercent: appVisible ? Math.max(1, Math.ceil((1 - appPercentile) * 100)) : null,
+        percentile: appVisible ? appPercentile : null,
+      },
+    };
+  }
+
+  private async persist(
+    userId: string,
+    sex: string,
+    computed: internalScore.ComputeProfileResponse,
+    population: { percentile: number; band: string },
+  ): Promise<void> {
     const idx = computed.index;
     const rank = rankFromIndex(idx.value);
     const before = await this.prisma.profile.findUnique({ where: { userId }, select: { rank: true } });
+    // Snapshot de position dans la ligue (athlètes du même sexe au-dessus + 1) — autoritatif Postgres.
+    const above = await this.prisma.hybridIndex.count({
+      where: { value: { gt: idx.value }, user: { profile: { sex: sex as never } } },
+    });
+    const leaguePosition = above + 1;
 
     await this.prisma.$transaction([
       this.prisma.hybridIndex.upsert({
@@ -140,6 +204,9 @@ export class ProfileScoringService {
           isEstimated: idx.isEstimated,
           radarCoverage: idx.radarCoverage,
           confidenceLevel: confidenceFor(idx.radarCoverage, idx.isEstimated),
+          populationPercentile: population.percentile,
+          populationBand: population.band,
+          leaguePosition,
           scoringVersionId: SCORING_VERSION_UUID,
         },
         update: {
@@ -149,6 +216,9 @@ export class ProfileScoringService {
           isEstimated: idx.isEstimated,
           radarCoverage: idx.radarCoverage,
           confidenceLevel: confidenceFor(idx.radarCoverage, idx.isEstimated),
+          populationPercentile: population.percentile,
+          populationBand: population.band,
+          leaguePosition,
           scoringVersionId: SCORING_VERSION_UUID,
           computedAt: new Date(),
         },
@@ -191,13 +261,24 @@ export class ProfileScoringService {
   }
 
   async getMyProfile(userId: string): Promise<PersistedProfile | null> {
-    const [index, scores] = await Promise.all([
+    const [profile, index, scores] = await Promise.all([
+      this.prisma.profile.findUnique({ where: { userId }, select: { sex: true, goal: true } }),
       this.prisma.hybridIndex.findUnique({ where: { userId } }),
       this.prisma.attributeScore.findMany({ where: { userId } }),
     ]);
-    if (!index) return null;
+    if (!index || !profile) return null;
 
     const byAttr = new Map(scores.map((s) => [s.attribute, s]));
+    const radar = ATTRIBUTE_KEYS.map((attribute) => {
+      const s = byAttr.get(attribute);
+      return {
+        attribute,
+        score: s?.score ?? 0,
+        unlocked: s?.unlocked ?? false,
+        isEstimated: s?.isEstimated ?? false,
+      };
+    });
+    const socialProof = await this.buildSocialProof(profile.sex, profile.goal, radar, Number(index.percentile));
     return {
       index: {
         value: index.value,
@@ -207,20 +288,28 @@ export class ProfileScoringService {
         isEstimated: index.isEstimated,
         radarCoverage: index.radarCoverage,
       },
-      radar: ATTRIBUTE_KEYS.map((attribute) => {
-        const s = byAttr.get(attribute);
-        return {
-          attribute,
-          score: s?.score ?? 0,
-          unlocked: s?.unlocked ?? false,
-          isEstimated: s?.isEstimated ?? false,
-        };
-      }),
+      radar,
+      socialProof,
     };
   }
 }
 
-function toPersistedProfile(computed: internalScore.ComputeProfileResponse): PersistedProfile {
+/** Ordre des bandes population, de la meilleure à la moins bonne. */
+const BAND_ORDER = ["pop_top_1", "pop_top_2", "pop_top_5", "pop_top_10", "pop_top_20", "pop_top_30", "pop_top_50", "pop_building"];
+
+/** Vrai si `next` est une bande STRICTEMENT meilleure que `prev` (montée). */
+function bandImproved(prev: string | null, next: string): boolean {
+  if (prev === null) return false; // 1er calcul : pas de célébration (c'est le reveal qui porte le wow)
+  const pi = BAND_ORDER.indexOf(prev);
+  const ni = BAND_ORDER.indexOf(next);
+  if (pi < 0 || ni < 0) return false;
+  return ni < pi;
+}
+
+function toPersistedProfile(
+  computed: internalScore.ComputeProfileResponse,
+  socialProof: SocialProof,
+): PersistedProfile {
   return {
     index: {
       value: computed.index.value,
@@ -236,5 +325,6 @@ function toPersistedProfile(computed: internalScore.ComputeProfileResponse): Per
       unlocked: a.unlocked,
       isEstimated: a.isEstimated,
     })),
+    socialProof,
   };
 }

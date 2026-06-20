@@ -240,6 +240,11 @@ model HybridIndex {
   radarCoverage    Int      @map("radar_coverage") @db.SmallInt
   projectedValue   Int?     @map("projected_value")
   confidenceLevel  String   @map("confidence_level")
+  // Preuve sociale « population générale » (popnorm-v1) — cosmétique, distincte du percentile compétitif.
+  populationPercentile Decimal? @map("population_percentile") @db.Decimal(5, 4)
+  populationBand       String?  @map("population_band")
+  // Position dans la ligue au dernier recalcul (snapshot pour détecter « quelqu'un t'a dépassé »).
+  leaguePosition   Int?     @map("league_position")
   scoringVersionId String   @map("scoring_version_id") @db.Uuid
   computedAt       DateTime @default(now()) @map("computed_at") @db.Timestamptz(6)
 

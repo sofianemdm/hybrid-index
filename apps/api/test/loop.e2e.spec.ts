@@ -402,6 +402,23 @@ describe("api — boucle complète persistée (e2e réel)", () => {
     expect(res.body.some((a: { userId: string }) => a.userId === target.userId)).toBe(true);
   });
 
+  it("preuve sociale : percentile population toujours présent, app masqué hors top 30%/ligue<200", async () => {
+    const res = await request(api.getHttpServer())
+      .get("/v1/me/profile")
+      .set("authorization", `Bearer ${token}`)
+      .expect(200);
+    // Humanité : toujours présent, bande pop_* cohérente.
+    expect(res.body.socialProof).toBeDefined();
+    expect(res.body.socialProof.population.band).toMatch(/^pop_/);
+    expect(res.body.socialProof.population.percentile).toBeGreaterThan(0);
+    expect(res.body.socialProof.population.percentile).toBeLessThan(1);
+    // App : la ligue de test (~quelques dizaines d'users) < 200 → bloc app masqué, jamais dévalorisant.
+    expect(res.body.socialProof.app.visible).toBe(false);
+    expect(res.body.socialProof.app.topPercent).toBeNull();
+    // Invariant produit : un utilisateur qui s'entraîne est au-dessus de la médiane des humains.
+    expect(res.body.socialProof.population.percentile).toBeGreaterThan(0.5);
+  });
+
   it("RGPD : suppression de compte (effacement) — DOIT être le dernier test", async () => {
     const res = await request(api.getHttpServer())
       .delete("/v1/me")
