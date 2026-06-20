@@ -118,6 +118,11 @@ class ApiClient {
     return Profile.fromJson(j['profile'] as Map<String, dynamic>);
   }
 
+  Future<List<WodResultItem>> results() async {
+    final j = await _send('GET', '/v1/results') as List<dynamic>;
+    return j.map((e) => WodResultItem.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
   // --- Classement / rival ---
   Future<Leaderboard> leaderboard(String sex, {int limit = 50}) async {
     final j = await _send('GET', '/v1/leaderboard?sex=$sex&limit=$limit') as Map<String, dynamic>;
@@ -156,6 +161,12 @@ class ApiClient {
     final j = await _send('GET', '/v1/me/notifications/feed') as List<dynamic>;
     return j.map((e) => FeedItem.fromJson(e as Map<String, dynamic>)).toList();
   }
+
+  Future<Map<String, dynamic>> notificationPrefs() async =>
+      await _send('GET', '/v1/me/notifications') as Map<String, dynamic>;
+
+  Future<void> updateNotificationPrefs(Map<String, dynamic> payload) async =>
+      _send('PATCH', '/v1/me/notifications', payload);
 
   Future<dynamic> exportData() async => _send('GET', '/v1/me/export');
 

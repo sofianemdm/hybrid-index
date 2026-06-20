@@ -11,6 +11,7 @@ import '../../widgets/radar_view.dart';
 import '../../widgets/rank_badge.dart';
 import '../avatar/avatar_editor_screen.dart';
 import '../coach/coach_screen.dart';
+import '../history/history_screen.dart';
 import '../notifications/notifications_screen.dart';
 import '../settings/settings_screen.dart';
 import '../share/share_card_screen.dart';
@@ -119,6 +120,19 @@ class HomeScreen extends ConsumerWidget {
           label: const Text('Partager ma carte'),
           onPressed: () => Navigator.of(context).push(
             MaterialPageRoute(builder: (_) => const ShareCardScreen()),
+          ),
+        ),
+        const SizedBox(height: HiSpace.sm),
+        OutlinedButton.icon(
+          style: OutlinedButton.styleFrom(
+            minimumSize: const Size.fromHeight(48),
+            side: const BorderSide(color: HiColors.strokeStrong),
+            foregroundColor: HiColors.textPrimary,
+          ),
+          icon: const Icon(Icons.history),
+          label: const Text('Mon historique de WODs'),
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const HistoryScreen()),
           ),
         ),
         const SizedBox(height: HiSpace.md),

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../theme/tokens.dart';
+import 'notification_settings_screen.dart';
 
 /// Centre de notifications in-app : déclencheurs d'engagement évalués sur l'état courant.
 /// (L'envoi push FCM est prévu pour la version mobile native.)
@@ -26,7 +27,20 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Notifications'), backgroundColor: Colors.transparent, elevation: 0),
+      appBar: AppBar(
+        title: const Text('Notifications'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        actions: [
+          IconButton(
+            tooltip: 'Réglages',
+            icon: const Icon(Icons.tune, color: HiColors.textTertiary),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const NotificationSettingsScreen()),
+            ),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: FutureBuilder<List<FeedItem>>(
           future: _future,

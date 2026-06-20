@@ -331,6 +331,29 @@ class FeedItem {
       );
 }
 
+class WodResultItem {
+  final String id;
+  final String wodId;
+  final double rawResult;
+  final int? subScore;
+  final DateTime performedAt;
+  const WodResultItem({
+    required this.id,
+    required this.wodId,
+    required this.rawResult,
+    required this.subScore,
+    required this.performedAt,
+  });
+
+  factory WodResultItem.fromJson(Map<String, dynamic> j) => WodResultItem(
+        id: j['id'] as String,
+        wodId: j['wodId'] as String,
+        rawResult: (j['rawResult'] as num).toDouble(),
+        subScore: (j['subScore'] as num?)?.toInt(),
+        performedAt: DateTime.parse(j['performedAt'] as String),
+      );
+}
+
 /// WOD du catalogue (sous-ensemble utile au log).
 class WodCatalogItem {
   final String id;

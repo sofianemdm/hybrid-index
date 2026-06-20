@@ -8,6 +8,7 @@ import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/hi_button.dart';
+import '../avatar/avatar_customizer.dart';
 import '../reveal/reveal_screen.dart';
 
 /// Wizard d'onboarding : l'utilisateur saisit LUI-MÊME sa distance de course + son temps
@@ -21,6 +22,9 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 }
 
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
+  int _step = 0; // 0 = avatar, 1 = efforts
+  AvatarConfig _avatar = const AvatarConfig(skinTone: 2, hairStyle: 1, hairColor: 1);
+
   bool _withCourse = true;
   final _km = TextEditingController(text: '3');
   final _min = TextEditingController();
@@ -104,7 +108,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     }
     setState(() => _submitting = true);
     try {
-      final profile = await ref.read(apiClientProvider).onboardingComplete(_buildPayload());
+      final api = ref.read(apiClientProvider);
+      await api.updateAvatar(_avatar); // sauvegarde l'avatar créé à l'onboarding
+      ref.invalidate(avatarProvider);
+      final profile = await api.onboardingComplete(_buildPayload());
       ref.invalidate(myProfileProvider);
       if (!mounted) return;
       Navigator.of(context).push(MaterialPageRoute(builder: (_) => RevealScreen(profile: profile)));
@@ -140,51 +147,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               constraints: const BoxConstraints(maxWidth: 480),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const Text('Révèle ton Index',
-                      style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: HiColors.textPrimary)),
-                  const SizedBox(height: 6),
-                  const Text('Un effort suffit. Ajoutes-en plus pour un Index plus précis.',
-                      style: TextStyle(color: HiColors.textSecondary)),
-                  const SizedBox(height: HiSpace.lg),
-
-                  _courseCard(),
-                  const SizedBox(height: HiSpace.md),
-                  _repsCard(
-                    title: 'Max pompes strictes (une série)',
-                    enabled: _withPushups,
-                    value: _pushups,
-                    max: 100,
-                    onToggle: (v) {
-                      setState(() => _withPushups = v);
-                      _refreshPreview();
-                    },
-                    onChanged: (v) => setState(() => _pushups = v),
-                  ),
-                  const SizedBox(height: HiSpace.md),
-                  _repsCard(
-                    title: 'Max squats à vide (une série)',
-                    enabled: _withAirSquats,
-                    value: _airSquats,
-                    max: 200,
-                    onToggle: (v) {
-                      setState(() => _withAirSquats = v);
-                      _refreshPreview();
-                    },
-                    onChanged: (v) => setState(() => _airSquats = v),
-                  ),
-                  const SizedBox(height: HiSpace.lg),
-
-                  _previewCard(),
-                  const SizedBox(height: HiSpace.lg),
-
-                  HiButton(
-                    label: 'Révéler mon HYBRID INDEX',
-                    loading: _submitting,
-                    onPressed: _hasInput ? _reveal : null,
-                  ),
-                  const SizedBox(height: HiSpace.lg),
-                ],
+                children: _step == 0 ? _avatarStep() : _effortsStep(),
               ),
             ),
           ),
@@ -192,6 +155,62 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       ),
     );
   }
+
+  List<Widget> _avatarStep() => [
+        const Text('Crée ton avatar',
+            style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: HiColors.textPrimary)),
+        const SizedBox(height: 6),
+        const Text('Personnalise-le (modifiable à tout moment dans les paramètres).',
+            style: TextStyle(color: HiColors.textSecondary)),
+        const SizedBox(height: HiSpace.lg),
+        AvatarCustomizer(config: _avatar, onChanged: (c) => setState(() => _avatar = c)),
+        const SizedBox(height: HiSpace.xl),
+        HiButton(label: 'Continuer', onPressed: () => setState(() => _step = 1)),
+        const SizedBox(height: HiSpace.lg),
+      ];
+
+  List<Widget> _effortsStep() => [
+        const Text('Révèle ton Index',
+            style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: HiColors.textPrimary)),
+        const SizedBox(height: 6),
+        const Text('Un effort suffit. Ajoutes-en plus pour un Index plus précis.',
+            style: TextStyle(color: HiColors.textSecondary)),
+        const SizedBox(height: HiSpace.lg),
+        _courseCard(),
+        const SizedBox(height: HiSpace.md),
+        _repsCard(
+          title: 'Max pompes strictes (une série)',
+          enabled: _withPushups,
+          value: _pushups,
+          max: 100,
+          onToggle: (v) {
+            setState(() => _withPushups = v);
+            _refreshPreview();
+          },
+          onChanged: (v) => setState(() => _pushups = v),
+        ),
+        const SizedBox(height: HiSpace.md),
+        _repsCard(
+          title: 'Max squats à vide (une série)',
+          enabled: _withAirSquats,
+          value: _airSquats,
+          max: 200,
+          onToggle: (v) {
+            setState(() => _withAirSquats = v);
+            _refreshPreview();
+          },
+          onChanged: (v) => setState(() => _airSquats = v),
+        ),
+        const SizedBox(height: HiSpace.lg),
+        _previewCard(),
+        const SizedBox(height: HiSpace.lg),
+        HiButton(
+          label: 'Révéler mon HYBRID INDEX',
+          loading: _submitting,
+          onPressed: _hasInput ? _reveal : null,
+        ),
+        const SizedBox(height: HiSpace.lg),
+      ];
 
   Widget _courseCard() {
     return Card(
