@@ -10,6 +10,7 @@ import '../../widgets/radar_view.dart';
 import '../../widgets/rank_badge.dart';
 import '../coach/coach_screen.dart';
 import '../settings/settings_screen.dart';
+import '../share/share_card_screen.dart';
 
 /// Accueil : Index courant, rang, carte rival, radar. Tire-pour-rafraîchir.
 class HomeScreen extends ConsumerWidget {
@@ -81,6 +82,19 @@ class HomeScreen extends ConsumerWidget {
           label: const Text('Coach — progresser sur un axe'),
           onPressed: () => Navigator.of(context).push(
             MaterialPageRoute(builder: (_) => const CoachScreen()),
+          ),
+        ),
+        const SizedBox(height: HiSpace.sm),
+        OutlinedButton.icon(
+          style: OutlinedButton.styleFrom(
+            minimumSize: const Size.fromHeight(48),
+            side: const BorderSide(color: HiColors.strokeStrong),
+            foregroundColor: HiColors.textPrimary,
+          ),
+          icon: const Icon(Icons.ios_share),
+          label: const Text('Partager ma carte'),
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const ShareCardScreen()),
           ),
         ),
         const SizedBox(height: HiSpace.md),
