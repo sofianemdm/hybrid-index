@@ -275,10 +275,46 @@ export class ProfileScoringService {
 
     await this.redis.setIndex(sex, userId, idx.value);
 
+    // Historique de progression (H3) : un point seulement quand la valeur change (courbe lisible).
+    const lastHist = await this.prisma.hybridIndexHistory.findFirst({
+      where: { userId },
+      orderBy: { computedAt: "desc" },
+      select: { value: true },
+    });
+    if (!lastHist || lastHist.value !== idx.value) {
+      await this.prisma.hybridIndexHistory
+        .create({
+          data: {
+            userId,
+            value: idx.value,
+            percentile: idx.percentile,
+            scoringVersionId: SCORING_VERSION_UUID,
+            reason: "recompute",
+          },
+        })
+        .catch(() => undefined);
+    }
+
     // Événement de feed : montée de rang (uniquement vers le haut).
     if (before && RANK_ORDER.indexOf(rank) > RANK_ORDER.indexOf(before.rank)) {
       await this.feedEvents.emit(userId, "rank_up", { rank, from: before.rank, index: idx.value });
     }
+  }
+
+  /** Série temporelle de l'Index (H3) pour la courbe de progression personnelle. */
+  async getHistory(userId: string): Promise<Array<{ value: number; percentile: number; rank: string; at: string }>> {
+    const rows = await this.prisma.hybridIndexHistory.findMany({
+      where: { userId },
+      orderBy: { computedAt: "asc" },
+      take: 180,
+      select: { value: true, percentile: true, computedAt: true },
+    });
+    return rows.map((r) => ({
+      value: r.value,
+      percentile: Number(r.percentile),
+      rank: rankFromIndex(r.value),
+      at: r.computedAt.toISOString(),
+    }));
   }
 
   async getMyProfile(userId: string): Promise<PersistedProfile | null> {

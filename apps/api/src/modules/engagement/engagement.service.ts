@@ -199,6 +199,8 @@ export class EngagementService {
   /** Suppression de compte (RGPD droit à l'effacement) : cascade Postgres + retrait Redis. */
   async deleteAccount(userId: string): Promise<{ deleted: true }> {
     const profile = await this.prisma.profile.findUnique({ where: { userId } });
+    // L'historique d'Index vit dans le schéma `scoring` sans FK cascade → effacement explicite (RGPD).
+    await this.prisma.hybridIndexHistory.deleteMany({ where: { userId } });
     await this.prisma.user.delete({ where: { id: userId } });
     if (profile) await this.redis.remove(profile.sex, userId);
     return { deleted: true };

@@ -49,6 +49,20 @@ class RankProgress {
       );
 }
 
+/// Un point de la courbe de progression du Hybrid Index dans le temps (H3).
+class IndexPoint {
+  final int value;
+  final String rank;
+  final DateTime at;
+  const IndexPoint({required this.value, required this.rank, required this.at});
+
+  factory IndexPoint.fromJson(Map<String, dynamic> j) => IndexPoint(
+        value: (j['value'] as num).toInt(),
+        rank: j['rank'] as String? ?? 'rookie',
+        at: DateTime.tryParse(j['at'] as String? ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0),
+      );
+}
+
 class IndexSummary {
   final int value;
   final double percentile;

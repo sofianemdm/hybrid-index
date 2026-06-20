@@ -46,13 +46,13 @@ describe("api — boucle complète persistée (e2e réel)", () => {
 
   afterAll(async () => {
     // Nettoyage : Postgres (cascade) + entrée Redis orpheline.
-    if (userId) {
-      await prisma.user.deleteMany({ where: { id: userId } }).catch(() => undefined);
-      await redis.zrem("leaderboard:male", userId).catch(() => undefined);
-    }
-    if (overtakerUserId) {
-      await prisma.user.deleteMany({ where: { id: overtakerUserId } }).catch(() => undefined);
-      await redis.zrem("leaderboard:male", overtakerUserId).catch(() => undefined);
+    // L'historique d'Index (schéma scoring) n'a pas de cascade FK → nettoyage explicite.
+    for (const id of [userId, overtakerUserId]) {
+      if (id) {
+        await prisma.hybridIndexHistory.deleteMany({ where: { userId: id } }).catch(() => undefined);
+        await prisma.user.deleteMany({ where: { id } }).catch(() => undefined);
+        await redis.zrem("leaderboard:male", id).catch(() => undefined);
+      }
     }
     if (customWodId) {
       await prisma.wod.deleteMany({ where: { id: customWodId } }).catch(() => undefined);
@@ -473,6 +473,21 @@ describe("api — boucle complète persistée (e2e réel)", () => {
       .set("authorization", `Bearer ${token}`)
       .expect(200);
     expect(feed.body.some((i: { key: string }) => i.key === "wod-overtaken")).toBe(true);
+  });
+
+  it("progression : l'historique de l'Index est une série temporelle ordonnée (H3)", async () => {
+    const res = await request(api.getHttpServer())
+      .get("/v1/me/history")
+      .set("authorization", `Bearer ${token}`)
+      .expect(200);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body.length).toBeGreaterThanOrEqual(2); // onboarding + ≥1 WOD loggé
+    // Ordonné chronologiquement.
+    for (let i = 1; i < res.body.length; i++) {
+      expect(new Date(res.body[i].at).getTime()).toBeGreaterThanOrEqual(new Date(res.body[i - 1].at).getTime());
+    }
+    expect(typeof res.body[0].value).toBe("number");
+    expect(typeof res.body[0].rank).toBe("string");
   });
 
   it("RGPD : suppression de compte (effacement) — DOIT être le dernier test", async () => {

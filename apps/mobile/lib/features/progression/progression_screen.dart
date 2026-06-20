@@ -1,3 +1,4 @@
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -15,7 +16,7 @@ class ProgressionScreen extends ConsumerStatefulWidget {
 }
 
 class _ProgressionScreenState extends ConsumerState<ProgressionScreen> {
-  late Future<({StreakState streak, List<BadgeModel> badges})> _future;
+  late Future<({StreakState streak, List<BadgeModel> badges, List<IndexPoint> history})> _future;
 
   @override
   void initState() {
@@ -26,8 +27,12 @@ class _ProgressionScreenState extends ConsumerState<ProgressionScreen> {
   void _load() {
     final api = ref.read(apiClientProvider);
     _future = () async {
-      final results = await Future.wait([api.streak(), api.badges()]);
-      return (streak: results[0] as StreakState, badges: results[1] as List<BadgeModel>);
+      final results = await Future.wait([api.streak(), api.badges(), api.history()]);
+      return (
+        streak: results[0] as StreakState,
+        badges: results[1] as List<BadgeModel>,
+        history: results[2] as List<IndexPoint>,
+      );
     }();
   }
 
@@ -36,7 +41,7 @@ class _ProgressionScreenState extends ConsumerState<ProgressionScreen> {
     return SafeArea(
       child: RefreshIndicator(
         onRefresh: () async => setState(_load),
-        child: FutureBuilder<({StreakState streak, List<BadgeModel> badges})>(
+        child: FutureBuilder<({StreakState streak, List<BadgeModel> badges, List<IndexPoint> history})>(
           future: _future,
           builder: (context, snap) {
             if (snap.connectionState == ConnectionState.waiting) {
@@ -56,6 +61,8 @@ class _ProgressionScreenState extends ConsumerState<ProgressionScreen> {
               children: [
                 const Text('Progression',
                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: HiColors.textPrimary)),
+                const SizedBox(height: HiSpace.md),
+                _indexCurveCard(data.history),
                 const SizedBox(height: HiSpace.md),
                 _streakCard(data.streak),
                 const SizedBox(height: HiSpace.md),
@@ -89,6 +96,75 @@ class _ProgressionScreenState extends ConsumerState<ProgressionScreen> {
           },
         ),
       ),
+    );
+  }
+
+  /// Courbe de progression personnelle de l'Hybrid Index (H3). Met en avant le progrès individuel.
+  Widget _indexCurveCard(List<IndexPoint> history) {
+    return Container(
+      padding: const EdgeInsets.all(HiSpace.lg),
+      decoration: BoxDecoration(
+        color: HiColors.bgElevated,
+        borderRadius: BorderRadius.circular(HiRadius.lg),
+        border: Border.all(color: HiColors.brandPrimary.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Ta courbe Hybrid Index',
+              style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 16)),
+          const SizedBox(height: HiSpace.md),
+          if (history.length < 2)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: HiSpace.md),
+              child: Text('Logue 2-3 WODs pour voir ta progression se dessiner.',
+                  style: TextStyle(color: HiColors.textTertiary)),
+            )
+          else
+            SizedBox(height: 180, child: LineChart(_chartData(history))),
+          if (history.length >= 2) ...[
+            const SizedBox(height: HiSpace.sm),
+            Builder(builder: (_) {
+              final gain = history.last.value - history.first.value;
+              return Text(
+                gain > 0 ? '📈 +$gain points depuis le début' : 'Continue à loguer pour faire grimper ta courbe',
+                style: const TextStyle(color: HiColors.brandPrimary, fontWeight: FontWeight.w600, fontSize: 13),
+              );
+            }),
+          ],
+        ],
+      ),
+    );
+  }
+
+  LineChartData _chartData(List<IndexPoint> h) {
+    final spots = <FlSpot>[
+      for (var i = 0; i < h.length; i++) FlSpot(i.toDouble(), h[i].value.toDouble()),
+    ];
+    final values = h.map((p) => p.value).toList();
+    final minY = (values.reduce((a, b) => a < b ? a : b) - 30).clamp(0, 1000).toDouble();
+    final maxY = (values.reduce((a, b) => a > b ? a : b) + 30).clamp(0, 1000).toDouble();
+    return LineChartData(
+      minY: minY,
+      maxY: maxY,
+      gridData: const FlGridData(show: false),
+      borderData: FlBorderData(show: false),
+      titlesData: const FlTitlesData(
+        leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 32, interval: 200)),
+        rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+      ),
+      lineBarsData: [
+        LineChartBarData(
+          spots: spots,
+          isCurved: true,
+          color: HiColors.brandPrimary,
+          barWidth: 3,
+          dotData: const FlDotData(show: false),
+          belowBarData: BarAreaData(show: true, color: HiColors.brandPrimary.withValues(alpha: 0.12)),
+        ),
+      ],
     );
   }
 

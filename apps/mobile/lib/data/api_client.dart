@@ -127,6 +127,11 @@ class ApiClient {
     return j.map((e) => WodResultItem.fromJson(e as Map<String, dynamic>)).toList();
   }
 
+  Future<List<IndexPoint>> history() async {
+    final j = await _send('GET', '/v1/me/history') as List<dynamic>;
+    return j.map((e) => IndexPoint.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
   // --- Classement ---
   Future<Leaderboard> leaderboard(String sex, {int limit = 50}) async {
     final j = await _send('GET', '/v1/leaderboard?sex=$sex&limit=$limit') as Map<String, dynamic>;

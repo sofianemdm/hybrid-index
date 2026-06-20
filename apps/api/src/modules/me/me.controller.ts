@@ -67,4 +67,10 @@ export class MeController {
     }
     return p;
   }
+
+  /** Courbe de progression personnelle : série temporelle du HYBRID INDEX (H3). */
+  @Get("history")
+  history(@CurrentUser() user: AuthenticatedUser): Promise<unknown> {
+    return this.profileScoring.getHistory(user.userId);
+  }
 }
