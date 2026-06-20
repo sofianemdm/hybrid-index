@@ -4,6 +4,7 @@ import { AuthController } from "./auth.controller";
 import { AuthService } from "./auth.service";
 import { JwtAuthGuard } from "./jwt-auth.guard";
 import { OptionalJwtAuthGuard } from "./optional-jwt-auth.guard";
+import { GoogleTokenVerifier } from "./google-verifier";
 
 /**
  * Auth email + mot de passe (bcrypt) + JWT. OAuth Apple/Google différé (credentials externes).
@@ -28,7 +29,7 @@ function resolveJwtSecret(): string {
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtAuthGuard, OptionalJwtAuthGuard],
+  providers: [AuthService, JwtAuthGuard, OptionalJwtAuthGuard, GoogleTokenVerifier],
   exports: [JwtAuthGuard, OptionalJwtAuthGuard, JwtModule],
 })
 export class AuthModule {}

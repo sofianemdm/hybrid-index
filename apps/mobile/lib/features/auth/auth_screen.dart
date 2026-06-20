@@ -71,6 +71,23 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m)));
   }
 
+  void _googleInfo() {
+    showDialog<void>(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: HiColors.bgElevated,
+        title: const Text('Connexion Google', style: TextStyle(color: HiColors.textPrimary)),
+        content: const Text(
+          'Le serveur est prêt (endpoint /v1/auth/google + age-gate). '
+          'Pour l’activer, renseigne un GOOGLE_CLIENT_ID (Google Cloud Console) côté serveur '
+          'et dans l’app. En attendant, utilise l’email + mot de passe.',
+          style: TextStyle(color: HiColors.textSecondary),
+        ),
+        actions: [TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Compris'))],
+      ),
+    );
+  }
+
   Future<void> _pickDob() async {
     final now = DateTime.now();
     final picked = await showDatePicker(
@@ -168,6 +185,17 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     label: _register ? 'Créer mon compte' : 'Se connecter',
                     loading: _loading,
                     onPressed: _submit,
+                  ),
+                  const SizedBox(height: HiSpace.md),
+                  OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size.fromHeight(48),
+                      side: const BorderSide(color: HiColors.strokeStrong),
+                      foregroundColor: HiColors.textPrimary,
+                    ),
+                    icon: const Icon(Icons.account_circle_outlined),
+                    label: const Text('Continuer avec Google'),
+                    onPressed: _googleInfo,
                   ),
                   const SizedBox(height: HiSpace.md),
                 ],

@@ -21,6 +21,22 @@ export const LoginRequest = z.object({
 });
 export type LoginRequest = z.infer<typeof LoginRequest>;
 
+/** Connexion Google : le profil n'est requis qu'à la PREMIÈRE connexion (Google ne fournit pas
+ *  la date de naissance / le sexe / l'objectif, nécessaires à l'age-gating et au scoring). */
+export const GoogleAuthRequest = z.object({
+  idToken: z.string().min(1),
+  profile: z
+    .object({
+      displayName: z.string().min(2).max(24),
+      dateOfBirth: z.coerce.date(),
+      sex: Sex,
+      goal: Goal,
+      equipmentPref: EquipmentPref.default("equipped"),
+    })
+    .optional(),
+});
+export type GoogleAuthRequest = z.infer<typeof GoogleAuthRequest>;
+
 export interface AuthResponse {
   token: string;
   user: { id: string; email: string; displayName: string };
