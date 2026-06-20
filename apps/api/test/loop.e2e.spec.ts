@@ -491,11 +491,15 @@ describe("api — boucle complète persistée (e2e réel)", () => {
   });
 
   it("RGPD : suppression de compte (effacement) — DOIT être le dernier test", async () => {
+    const deletedUserId = userId;
     const res = await request(api.getHttpServer())
       .delete("/v1/me")
       .set("authorization", `Bearer ${token}`)
       .expect(200);
     expect(res.body.deleted).toBe(true);
+    // Droit à l'effacement : l'historique d'Index (schéma scoring, sans cascade FK) doit AUSSI partir.
+    const remainingHistory = await prisma.hybridIndexHistory.count({ where: { userId: deletedUserId } });
+    expect(remainingHistory).toBe(0);
     userId = ""; // déjà supprimé : évite le double-nettoyage afterAll
   });
 });

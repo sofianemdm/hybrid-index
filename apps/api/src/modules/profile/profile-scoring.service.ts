@@ -156,7 +156,7 @@ export class ProfileScoringService {
     await this.persist(userId, profile.sex, computedProfile, socialProof.population);
     const result = toPersistedProfile(computedProfile, socialProof);
 
-    // Gains de compétence (no-drop ⇒ delta ≥ 0) + point faible courant.
+    // Gains de compétence : no-drop ⇒ delta ≥ 0 ; on n'expose QUE les vrais gains (delta > 0).
     result.gains = mergedRadar
       .filter((a) => a.unlocked)
       .map((a) => ({ attribute: a.attribute, delta: a.score - (beforeScore.get(a.attribute) ?? 0) }))
@@ -303,18 +303,21 @@ export class ProfileScoringService {
 
   /** Série temporelle de l'Index (H3) pour la courbe de progression personnelle. */
   async getHistory(userId: string): Promise<Array<{ value: number; percentile: number; rank: string; at: string }>> {
+    // Les 180 points les PLUS RÉCENTS (desc + take), puis remis en ordre chronologique pour la courbe.
     const rows = await this.prisma.hybridIndexHistory.findMany({
       where: { userId },
-      orderBy: { computedAt: "asc" },
+      orderBy: { computedAt: "desc" },
       take: 180,
       select: { value: true, percentile: true, computedAt: true },
     });
-    return rows.map((r) => ({
-      value: r.value,
-      percentile: Number(r.percentile),
-      rank: rankFromIndex(r.value),
-      at: r.computedAt.toISOString(),
-    }));
+    return rows
+      .reverse()
+      .map((r) => ({
+        value: r.value,
+        percentile: Number(r.percentile),
+        rank: rankFromIndex(r.value),
+        at: r.computedAt.toISOString(),
+      }));
   }
 
   async getMyProfile(userId: string): Promise<PersistedProfile | null> {

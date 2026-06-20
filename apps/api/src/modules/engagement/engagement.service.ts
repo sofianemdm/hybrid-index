@@ -200,8 +200,11 @@ export class EngagementService {
   async deleteAccount(userId: string): Promise<{ deleted: true }> {
     const profile = await this.prisma.profile.findUnique({ where: { userId } });
     // L'historique d'Index vit dans le schéma `scoring` sans FK cascade → effacement explicite (RGPD).
-    await this.prisma.hybridIndexHistory.deleteMany({ where: { userId } });
-    await this.prisma.user.delete({ where: { id: userId } });
+    // Atomique : soit tout est effacé, soit rien (pas d'historique orphelin ni de compte fantôme).
+    await this.prisma.$transaction([
+      this.prisma.hybridIndexHistory.deleteMany({ where: { userId } }),
+      this.prisma.user.delete({ where: { id: userId } }),
+    ]);
     if (profile) await this.redis.remove(profile.sex, userId);
     return { deleted: true };
   }
