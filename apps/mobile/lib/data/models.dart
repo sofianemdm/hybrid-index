@@ -204,6 +204,8 @@ class PublicProfile {
   final IndexSummary? index;
   final List<RadarAttribute> radar;
   final int? position;
+  final bool isFollowing;
+  final bool isMe;
   const PublicProfile({
     required this.userId,
     required this.displayName,
@@ -213,6 +215,8 @@ class PublicProfile {
     required this.index,
     required this.radar,
     required this.position,
+    required this.isFollowing,
+    required this.isMe,
   });
 
   factory PublicProfile.fromJson(Map<String, dynamic> j) => PublicProfile(
@@ -226,6 +230,8 @@ class PublicProfile {
             .map((e) => RadarAttribute.fromJson(e as Map<String, dynamic>))
             .toList(),
         position: (j['position'] as num?)?.toInt(),
+        isFollowing: j['isFollowing'] as bool? ?? false,
+        isMe: j['isMe'] as bool? ?? false,
       );
 }
 
@@ -387,6 +393,71 @@ class EndgameInfo {
       ambassador: j['ambassador'] as bool? ?? false,
     );
   }
+}
+
+class FeedActivity {
+  final String id;
+  final String type;
+  final String actorUserId;
+  final String actorName;
+  final String actorRank;
+  final bool isMe;
+  final Map<String, dynamic> payload;
+  final Map<String, int> reactions;
+  final List<String> myReactions;
+  const FeedActivity({
+    required this.id,
+    required this.type,
+    required this.actorUserId,
+    required this.actorName,
+    required this.actorRank,
+    required this.isMe,
+    required this.payload,
+    required this.reactions,
+    required this.myReactions,
+  });
+
+  factory FeedActivity.fromJson(Map<String, dynamic> j) {
+    final actor = j['actor'] as Map<String, dynamic>;
+    final reactions = <String, int>{};
+    (j['reactions'] as Map?)?.forEach((k, v) => reactions[k.toString()] = (v as num).toInt());
+    return FeedActivity(
+      id: j['id'] as String,
+      type: j['type'] as String,
+      actorUserId: actor['userId'] as String,
+      actorName: actor['displayName'] as String? ?? '—',
+      actorRank: actor['rank'] as String? ?? 'rookie',
+      isMe: actor['isMe'] as bool? ?? false,
+      payload: (j['payload'] as Map?)?.cast<String, dynamic>() ?? {},
+      reactions: reactions,
+      myReactions: ((j['myReactions'] as List?) ?? []).map((e) => e.toString()).toList(),
+    );
+  }
+}
+
+class AthleteSummary {
+  final String userId;
+  final String displayName;
+  final String sex;
+  final String goal;
+  final String rank;
+  final int? index;
+  const AthleteSummary({
+    required this.userId,
+    required this.displayName,
+    required this.sex,
+    required this.goal,
+    required this.rank,
+    required this.index,
+  });
+  factory AthleteSummary.fromJson(Map<String, dynamic> j) => AthleteSummary(
+        userId: j['userId'] as String,
+        displayName: j['displayName'] as String? ?? '—',
+        sex: j['sex'] as String? ?? 'male',
+        goal: j['goal'] as String? ?? 'all_round',
+        rank: j['rank'] as String? ?? 'rookie',
+        index: (j['index'] as num?)?.toInt(),
+      );
 }
 
 class MovementSummary {

@@ -12,13 +12,22 @@ export class ProfilesService {
     private readonly leaderboard: LeaderboardService,
   ) {}
 
-  async publicProfile(userId: string): Promise<unknown> {
+  async publicProfile(userId: string, viewerId?: string): Promise<unknown> {
     const profile = await this.prisma.profile.findUnique({ where: { userId } });
     if (!profile || profile.visibility !== "public") {
       throw new NotFoundException({ code: "NOT_FOUND", message: "Profil introuvable ou privé." });
     }
     const scoring = await this.profileScoring.getMyProfile(userId);
     const pos = await this.leaderboard.positionOf(profile.sex, userId);
+
+    let isFollowing = false;
+    if (viewerId && viewerId !== userId) {
+      const f = await this.prisma.follow.findUnique({
+        where: { followerId_followeeId: { followerId: viewerId, followeeId: userId } },
+      });
+      isFollowing = !!f;
+    }
+
     return {
       userId,
       displayName: profile.displayName,
@@ -28,6 +37,8 @@ export class ProfilesService {
       index: scoring?.index ?? null,
       radar: scoring?.radar ?? [],
       position: pos?.position ?? null,
+      isFollowing,
+      isMe: viewerId === userId,
     };
   }
 }

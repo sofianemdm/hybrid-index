@@ -2,6 +2,7 @@ import { Injectable, Logger } from "@nestjs/common";
 import { Prisma, type Sex } from "@prisma/client";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { LeaderboardService } from "../leaderboard/leaderboard.service";
+import { FeedEventsService } from "../social/feed-events.service";
 import { StreakService } from "./streak.service";
 import { BADGES, type BadgeContext, type BadgeDef, matchesCondition } from "./badges.data";
 
@@ -22,6 +23,7 @@ export class BadgesService {
     private readonly prisma: PrismaService,
     private readonly leaderboard: LeaderboardService,
     private readonly streak: StreakService,
+    private readonly feedEvents: FeedEventsService,
   ) {}
 
   private async buildContext(userId: string): Promise<BadgeContext> {
@@ -81,6 +83,9 @@ export class BadgesService {
       try {
         await this.prisma.userBadge.create({ data: { userId, badgeId: badge.id } });
         newly.push(badge); // poussé UNIQUEMENT si l'attribution a réussi (anti double-célébration).
+        if (badge.rarity !== "common") {
+          await this.feedEvents.emit(userId, "badge_unlocked", { badgeId: badge.id, name: badge.name, rarity: badge.rarity });
+        }
       } catch (e) {
         // P2002 = déjà attribué par une requête concurrente : on ignore sans le compter comme nouveau.
         if (!(e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002")) {

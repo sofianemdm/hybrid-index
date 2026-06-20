@@ -181,6 +181,26 @@ class ApiClient {
   Future<void> updateNotificationPrefs(Map<String, dynamic> payload) async =>
       _send('PATCH', '/v1/me/notifications', payload);
 
+  // --- Communauté ---
+  Future<List<FeedActivity>> feed() async {
+    final j = await _send('GET', '/v1/feed') as List<dynamic>;
+    return j.map((e) => FeedActivity.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  Future<void> react(String feedEventId, String emoji) async =>
+      _send('POST', '/v1/reactions', {'feedEventId': feedEventId, 'emoji': emoji});
+
+  Future<void> unreact(String feedEventId) async => _send('DELETE', '/v1/reactions/$feedEventId');
+
+  Future<void> followUser(String userId) async => _send('POST', '/v1/follow/$userId');
+
+  Future<void> unfollowUser(String userId) async => _send('DELETE', '/v1/follow/$userId');
+
+  Future<List<AthleteSummary>> following() async {
+    final j = await _send('GET', '/v1/me/following') as List<dynamic>;
+    return j.map((e) => AthleteSummary.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
   Future<EndgameInfo> endgame() async {
     final j = await _send('GET', '/v1/me/endgame') as Map<String, dynamic>;
     return EndgameInfo.fromJson(j);

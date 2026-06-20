@@ -9,6 +9,66 @@ import '../../widgets/index_ring.dart';
 import '../../widgets/radar_view.dart';
 import '../../widgets/rank_badge.dart';
 
+/// Bouton Suivre / Suivi (toggle).
+class _FollowButton extends ConsumerStatefulWidget {
+  final String userId;
+  final bool initial;
+  const _FollowButton({required this.userId, required this.initial});
+
+  @override
+  ConsumerState<_FollowButton> createState() => _FollowButtonState();
+}
+
+class _FollowButtonState extends ConsumerState<_FollowButton> {
+  late bool _following = widget.initial;
+  bool _busy = false;
+
+  Future<void> _toggle() async {
+    setState(() => _busy = true);
+    try {
+      final api = ref.read(apiClientProvider);
+      if (_following) {
+        await api.unfollowUser(widget.userId);
+      } else {
+        await api.followUser(widget.userId);
+      }
+      if (mounted) setState(() => _following = !_following);
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 200,
+      child: _following
+          ? OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size.fromHeight(44),
+                side: const BorderSide(color: HiColors.strokeStrong),
+                foregroundColor: HiColors.textSecondary,
+              ),
+              icon: const Icon(Icons.check, size: 18),
+              label: const Text('Suivi'),
+              onPressed: _busy ? null : _toggle,
+            )
+          : FilledButton.icon(
+              style: FilledButton.styleFrom(
+                minimumSize: const Size.fromHeight(44),
+                backgroundColor: HiColors.brandPrimary,
+                foregroundColor: HiColors.textOnBrand,
+              ),
+              icon: const Icon(Icons.person_add_alt, size: 18),
+              label: const Text('Suivre'),
+              onPressed: _busy ? null : _toggle,
+            ),
+    );
+  }
+}
+
 /// Profil public d'un autre athlète (tout est public) + comparaison avec le mien.
 class PublicProfileScreen extends ConsumerWidget {
   final String userId;
@@ -55,6 +115,10 @@ class PublicProfileScreen extends ConsumerWidget {
                       const Text('Pas encore d’Index.', style: TextStyle(color: HiColors.textTertiary)),
                     const SizedBox(height: HiSpace.md),
                     RankBadge(rank: p.rank, fontSize: 14),
+                    if (!p.isMe) ...[
+                      const SizedBox(height: HiSpace.md),
+                      _FollowButton(userId: p.userId, initial: p.isFollowing),
+                    ],
                     const SizedBox(height: HiSpace.lg),
                     if (mine != null && p.index != null) _compareCard(mine, p),
                     const SizedBox(height: HiSpace.md),

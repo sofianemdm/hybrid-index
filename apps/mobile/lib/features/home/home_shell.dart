@@ -6,6 +6,7 @@ import '../../theme/tokens.dart';
 import '../leaderboard/leaderboard_screen.dart';
 import '../log/log_wod_screen.dart';
 import '../progression/progression_screen.dart';
+import '../community/community_tab.dart';
 import '../wods/wod_tab.dart';
 import '../wods/wod_builder_screen.dart';
 import 'home_screen.dart';
@@ -61,9 +62,9 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     return Scaffold(
       body: IndexedStack(
         index: _tab,
-        children: const [HomeScreen(), WodTab(), ProgressionScreen(), LeaderboardScreen()],
+        children: const [HomeScreen(), WodTab(), CommunityTab(), ProgressionScreen(), LeaderboardScreen()],
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: HiColors.brandPrimary,
         foregroundColor: HiColors.textOnBrand,
@@ -80,6 +81,8 @@ class _HomeShellState extends ConsumerState<HomeShell> {
           NavigationDestination(icon: Icon(Icons.bolt_outlined), selectedIcon: Icon(Icons.bolt), label: 'Accueil'),
           NavigationDestination(
               icon: Icon(Icons.fitness_center_outlined), selectedIcon: Icon(Icons.fitness_center), label: 'WOD'),
+          NavigationDestination(
+              icon: Icon(Icons.groups_outlined), selectedIcon: Icon(Icons.groups), label: 'Communauté'),
           NavigationDestination(
               icon: Icon(Icons.emoji_events_outlined), selectedIcon: Icon(Icons.emoji_events), label: 'Progrès'),
           NavigationDestination(

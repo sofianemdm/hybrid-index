@@ -4,6 +4,7 @@ import { ScoreClient } from "../../infra/score-client/score-client.service";
 import { ProfileScoringService, type PersistedProfile } from "../profile/profile-scoring.service";
 import { StreakService } from "../engagement/streak.service";
 import { BadgesService } from "../engagement/badges.service";
+import { FeedEventsService } from "../social/feed-events.service";
 import type { BadgeDef } from "../engagement/badges.data";
 import { SCORING_VERSION_UUID } from "../../common/constants";
 import type { LogResultRequest } from "./results.dto";
@@ -38,6 +39,7 @@ export class ResultsService {
     private readonly profileScoring: ProfileScoringService,
     private readonly streak: StreakService,
     private readonly badges: BadgesService,
+    private readonly feedEvents: FeedEventsService,
   ) {}
 
   async log(userId: string, req: LogResultRequest): Promise<LogResultResponse> {
@@ -75,6 +77,20 @@ export class ResultsService {
 
     const recomputed = await this.profileScoring.recomputeForUser(userId);
     if (!recomputed) throw new NotFoundException({ code: "NOT_FOUND", message: "Recalcul impossible." });
+
+    // Feed : PR (nouveau meilleur sur ce WOD) ou simple log.
+    const best = await this.prisma.wodResult.aggregate({
+      where: { userId, wodId: req.wodId, review: "ok", subScore: { not: null } },
+      _max: { subScore: true },
+    });
+    const wodMeta = await this.prisma.wod.findUnique({ where: { id: req.wodId }, select: { name: true } });
+    const isPr = scored.subScore === best._max.subScore;
+    await this.feedEvents.emit(userId, isPr ? "pr" : "wod_logged", {
+      wodId: req.wodId,
+      wodName: wodMeta?.name ?? req.wodId,
+      subScore: scored.subScore,
+      rawResult: req.rawResult,
+    });
 
     // Engagement : met à jour la série et attribue les badges nouvellement mérités.
     // Best-effort : un échec ne doit pas faire échouer le log, mais on le LOGGE (pas de silence).

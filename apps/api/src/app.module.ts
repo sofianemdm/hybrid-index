@@ -13,11 +13,13 @@ import { CoachModule } from "./modules/coach/coach.module";
 import { EngagementModule } from "./modules/engagement/engagement.module";
 import { EndgameModule } from "./modules/endgame/endgame.module";
 import { WodsModule } from "./modules/wods/wods.module";
+import { SocialModule } from "./modules/social/social.module";
 
 @Module({
   imports: [
     PrismaModule,
     RedisModule,
+    SocialModule,
     AuthModule,
     ProfileModule,
     MeModule,

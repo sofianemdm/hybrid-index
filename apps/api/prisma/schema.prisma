@@ -148,6 +148,17 @@ enum ScoringStatus {
   @@schema("scoring")
 }
 
+enum FeedEventType {
+  pr
+  wod_logged
+  rank_up
+  badge_unlocked
+  challenge_created
+  challenge_resolved
+
+  @@schema("app")
+}
+
 // ----------------------------- app.* -----------------------------
 
 model User {
@@ -169,6 +180,8 @@ model User {
   attributeScores   AttributeScore[]
   wodResults        WodResult[]
   wodsCreated       Wod[]             @relation("WodCreator")
+  feedEvents        FeedEvent[]       @relation("FeedActor")
+  reactions         Reaction[]        @relation("ReactionAuthor")
   rival             Rival?            @relation("UserRival")
   rivalOf           Rival[]           @relation("RivalTarget")
   streak            Streak?
@@ -424,6 +437,38 @@ model UserBadge {
 
   @@id([userId, badgeId])
   @@map("user_badge")
+  @@schema("app")
+}
+
+model FeedEvent {
+  id         String        @id @default(uuid()) @db.Uuid
+  actorId    String        @map("actor_id") @db.Uuid
+  type       FeedEventType
+  payload    Json
+  visibility Visibility    @default(public)
+  createdAt  DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  actor     User       @relation("FeedActor", fields: [actorId], references: [id], onDelete: Cascade)
+  reactions Reaction[]
+
+  @@index([actorId, createdAt(sort: Desc)])
+  @@map("feed_event")
+  @@schema("app")
+}
+
+model Reaction {
+  id          String   @id @default(uuid()) @db.Uuid
+  fromUserId  String   @map("from_user_id") @db.Uuid
+  feedEventId String   @map("feed_event_id") @db.Uuid
+  emoji       String
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  fromUser  User      @relation("ReactionAuthor", fields: [fromUserId], references: [id], onDelete: Cascade)
+  feedEvent FeedEvent @relation(fields: [feedEventId], references: [id], onDelete: Cascade)
+
+  @@unique([fromUserId, feedEventId, emoji])
+  @@index([feedEventId])
+  @@map("reaction")
   @@schema("app")
 }
 

@@ -363,6 +363,31 @@ describe("api — boucle complète persistée (e2e réel)", () => {
     expect(lb.body.entries.some((e: { isMe: boolean }) => e.isMe)).toBe(true);
   });
 
+  it("feed : contient mes propres événements (PR/WOD loggés)", async () => {
+    const res = await request(api.getHttpServer()).get("/v1/feed").set("authorization", `Bearer ${token}`).expect(200);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body.length).toBeGreaterThan(0);
+    expect(res.body[0].actor.isMe).toBe(true);
+  });
+
+  it("kudos : auto-kudos interdit (409)", async () => {
+    const feed = (await request(api.getHttpServer()).get("/v1/feed").set("authorization", `Bearer ${token}`)).body;
+    await request(api.getHttpServer())
+      .post("/v1/reactions")
+      .set("authorization", `Bearer ${token}`)
+      .send({ feedEventId: feed[0].id, emoji: "💪" })
+      .expect(409);
+  });
+
+  it("follow : suivre un athlète + apparaître dans following", async () => {
+    const lb = (await request(api.getHttpServer()).get("/v1/leaderboard?sex=male&limit=5").set("authorization", `Bearer ${token}`)).body;
+    const other = lb.entries.find((e: { isMe: boolean }) => !e.isMe);
+    if (!other) return;
+    await request(api.getHttpServer()).post(`/v1/follow/${other.userId}`).set("authorization", `Bearer ${token}`).expect(201);
+    const following = (await request(api.getHttpServer()).get("/v1/me/following").set("authorization", `Bearer ${token}`)).body;
+    expect(following.some((a: { userId: string }) => a.userId === other.userId)).toBe(true);
+  });
+
   it("RGPD : suppression de compte (effacement) — DOIT être le dernier test", async () => {
     const res = await request(api.getHttpServer())
       .delete("/v1/me")

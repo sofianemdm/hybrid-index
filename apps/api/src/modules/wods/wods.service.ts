@@ -4,6 +4,7 @@ import type { internalScore } from "@hybrid-index/contracts";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { ScoreClient } from "../../infra/score-client/score-client.service";
 import { ProfileScoringService, type PersistedProfile } from "../profile/profile-scoring.service";
+import { FeedEventsService } from "../social/feed-events.service";
 import { SCORING_VERSION_UUID } from "../../common/constants";
 import type { EstimateWodRequest } from "./wod-estimate.dto";
 import type { CreateWodRequest, LogWodResultRequest } from "./create-wod.dto";
@@ -14,6 +15,7 @@ export class WodsService {
     private readonly prisma: PrismaService,
     private readonly scoreClient: ScoreClient,
     private readonly profileScoring: ProfileScoringService,
+    private readonly feedEvents: FeedEventsService,
   ) {}
 
   /** Crée un WOD personnalisé (attributs ciblés dérivés du moteur d'estimation). */
@@ -112,6 +114,19 @@ export class WodsService {
     });
     await this.prisma.wod.update({ where: { id: wodId }, data: { resultCount: { increment: 1 } } });
     const recomputed = await this.profileScoring.recomputeForUser(userId);
+
+    // Feed : PR (nouveau meilleur) ou simple log.
+    const best = await this.prisma.wodResult.aggregate({
+      where: { userId, wodId, review: "ok", subScore: { not: null } },
+      _max: { subScore: true },
+    });
+    const isPr = subScore !== null && best._max.subScore === subScore;
+    await this.feedEvents.emit(userId, isPr ? "pr" : "wod_logged", {
+      wodId,
+      wodName: wod.name,
+      subScore,
+      rawResult: body.rawResult,
+    });
 
     return {
       result: { id: created.id, wodId, rawResult: body.rawResult, subScore, rxCompliant: created.rxCompliant },

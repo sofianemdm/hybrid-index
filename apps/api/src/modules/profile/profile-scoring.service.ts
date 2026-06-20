@@ -3,7 +3,10 @@ import { ATTRIBUTE_KEYS, type internalScore, rankFromIndex } from "@hybrid-index
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { RedisService } from "../../infra/redis/redis.service";
 import { ScoreClient } from "../../infra/score-client/score-client.service";
+import { FeedEventsService } from "../social/feed-events.service";
 import { SCORING_VERSION_UUID } from "../../common/constants";
+
+const RANK_ORDER = ["rookie", "bronze", "silver", "gold", "platinum", "diamond", "elite"];
 
 /** Profil de score persisté renvoyé au mobile (index + radar lisible). */
 export interface PersistedProfile {
@@ -41,6 +44,7 @@ export class ProfileScoringService {
     private readonly prisma: PrismaService,
     private readonly scoreClient: ScoreClient,
     private readonly redis: RedisService,
+    private readonly feedEvents: FeedEventsService,
   ) {}
 
   async recomputeForUser(userId: string): Promise<PersistedProfile | null> {
@@ -123,6 +127,7 @@ export class ProfileScoringService {
   private async persist(userId: string, sex: string, computed: internalScore.ComputeProfileResponse): Promise<void> {
     const idx = computed.index;
     const rank = rankFromIndex(idx.value);
+    const before = await this.prisma.profile.findUnique({ where: { userId }, select: { rank: true } });
 
     await this.prisma.$transaction([
       this.prisma.hybridIndex.upsert({
@@ -178,6 +183,11 @@ export class ProfileScoringService {
     ]);
 
     await this.redis.setIndex(sex, userId, idx.value);
+
+    // Événement de feed : montée de rang (uniquement vers le haut).
+    if (before && RANK_ORDER.indexOf(rank) > RANK_ORDER.indexOf(before.rank)) {
+      await this.feedEvents.emit(userId, "rank_up", { rank, from: before.rank, index: idx.value });
+    }
   }
 
   async getMyProfile(userId: string): Promise<PersistedProfile | null> {
