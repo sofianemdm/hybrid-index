@@ -229,6 +229,58 @@ class PublicProfile {
       );
 }
 
+class StreakState {
+  final int current;
+  final int best;
+  final int weeklyGoal;
+  final int freezeTokens;
+  final int thisWeekCount;
+  final bool weekValidated;
+  const StreakState({
+    required this.current,
+    required this.best,
+    required this.weeklyGoal,
+    required this.freezeTokens,
+    required this.thisWeekCount,
+    required this.weekValidated,
+  });
+
+  factory StreakState.fromJson(Map<String, dynamic> j) => StreakState(
+        current: (j['current'] as num).toInt(),
+        best: (j['best'] as num).toInt(),
+        weeklyGoal: (j['weeklyGoal'] as num).toInt(),
+        freezeTokens: (j['freezeTokens'] as num).toInt(),
+        thisWeekCount: (j['thisWeekCount'] as num).toInt(),
+        weekValidated: j['weekValidated'] as bool? ?? false,
+      );
+}
+
+class BadgeModel {
+  final String id;
+  final String category;
+  final String name;
+  final String description;
+  final String rarity;
+  final bool unlocked;
+  const BadgeModel({
+    required this.id,
+    required this.category,
+    required this.name,
+    required this.description,
+    required this.rarity,
+    required this.unlocked,
+  });
+
+  factory BadgeModel.fromJson(Map<String, dynamic> j) => BadgeModel(
+        id: j['id'] as String,
+        category: j['category'] as String,
+        name: j['name'] as String,
+        description: j['description'] as String,
+        rarity: j['rarity'] as String,
+        unlocked: j['unlocked'] as bool? ?? false,
+      );
+}
+
 /// WOD du catalogue (sous-ensemble utile au log).
 class WodCatalogItem {
   final String id;

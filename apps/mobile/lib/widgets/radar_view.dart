@@ -71,7 +71,7 @@ class RadarView extends StatelessWidget {
             ),
           Text(
             a.unlocked ? '${a.score}' : '—',
-            style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 14),
+            style: const TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 14),
           ),
         ],
       ),

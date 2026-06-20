@@ -1,9 +1,13 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app.dart';
 import '../../data/api_client.dart';
 import '../../data/session.dart';
+import '../../data/web_download.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/hi_button.dart';
 
@@ -73,6 +77,43 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
+  Future<void> _exportData() async {
+    try {
+      final data = await ref.read(apiClientProvider).exportData();
+      final bytes = Uint8List.fromList(utf8.encode(const JsonEncoder.withIndent('  ').convert(data)));
+      final ok = await downloadBytes(bytes, 'hybrid-index-donnees.json');
+      _toast(ok ? 'Données exportées 📥' : 'Export non supporté ici.');
+    } catch (e) {
+      _toast('$e');
+    }
+  }
+
+  Future<void> _confirmDelete() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: HiColors.bgElevated,
+        title: const Text('Supprimer le compte ?', style: TextStyle(color: HiColors.textPrimary)),
+        content: const Text('Cette action est définitive : toutes tes données seront effacées.',
+            style: TextStyle(color: HiColors.textSecondary)),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Annuler')),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Supprimer', style: TextStyle(color: HiColors.error)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    try {
+      await ref.read(apiClientProvider).deleteAccount();
+      await ref.read(sessionProvider.notifier).logout();
+    } catch (e) {
+      _toast('$e');
+    }
+  }
+
   void _toast(String m) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m)));
 
   @override
@@ -108,6 +149,33 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ),
                       const SizedBox(height: HiSpace.xl),
                       HiButton(label: 'Enregistrer', loading: _saving, onPressed: _save),
+                      const SizedBox(height: HiSpace.xl),
+                      const Divider(color: HiColors.strokeSubtle),
+                      const SizedBox(height: HiSpace.md),
+                      const Text('Données & confidentialité (RGPD)',
+                          style: TextStyle(color: HiColors.textSecondary, fontSize: 13)),
+                      const SizedBox(height: HiSpace.sm),
+                      OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          minimumSize: const Size.fromHeight(48),
+                          side: const BorderSide(color: HiColors.strokeStrong),
+                          foregroundColor: HiColors.textPrimary,
+                        ),
+                        icon: const Icon(Icons.download),
+                        label: const Text('Exporter mes données'),
+                        onPressed: _exportData,
+                      ),
+                      const SizedBox(height: HiSpace.sm),
+                      OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          minimumSize: const Size.fromHeight(48),
+                          side: BorderSide(color: HiColors.error.withValues(alpha: 0.6)),
+                          foregroundColor: HiColors.error,
+                        ),
+                        icon: const Icon(Icons.delete_forever),
+                        label: const Text('Supprimer mon compte'),
+                        onPressed: _confirmDelete,
+                      ),
                       const SizedBox(height: HiSpace.md),
                       TextButton(
                         onPressed: () => ref.read(sessionProvider.notifier).logout(),

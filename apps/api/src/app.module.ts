@@ -10,6 +10,7 @@ import { ResultsModule } from "./modules/results/results.module";
 import { LeaderboardModule } from "./modules/leaderboard/leaderboard.module";
 import { ProfilesModule } from "./modules/profiles/profiles.module";
 import { CoachModule } from "./modules/coach/coach.module";
+import { EngagementModule } from "./modules/engagement/engagement.module";
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { CoachModule } from "./modules/coach/coach.module";
     LeaderboardModule,
     ProfilesModule,
     CoachModule,
+    EngagementModule,
   ],
   controllers: [HealthController],
 })

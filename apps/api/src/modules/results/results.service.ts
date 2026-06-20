@@ -2,6 +2,9 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { ScoreClient } from "../../infra/score-client/score-client.service";
 import { ProfileScoringService, type PersistedProfile } from "../profile/profile-scoring.service";
+import { StreakService } from "../engagement/streak.service";
+import { BadgesService } from "../engagement/badges.service";
+import type { BadgeDef } from "../engagement/badges.data";
 import { SCORING_VERSION_UUID } from "../../common/constants";
 import type { LogResultRequest } from "./results.dto";
 
@@ -16,6 +19,8 @@ export interface LogResultResponse {
   };
   /** Profil recalculé (l'Index a pu bouger). */
   profile: PersistedProfile;
+  /** Badges débloqués par ce log (pour célébration côté app). */
+  unlockedBadges: BadgeDef[];
 }
 
 /**
@@ -29,6 +34,8 @@ export class ResultsService {
     private readonly prisma: PrismaService,
     private readonly scoreClient: ScoreClient,
     private readonly profileScoring: ProfileScoringService,
+    private readonly streak: StreakService,
+    private readonly badges: BadgesService,
   ) {}
 
   async log(userId: string, req: LogResultRequest): Promise<LogResultResponse> {
@@ -67,6 +74,10 @@ export class ResultsService {
     const recomputed = await this.profileScoring.recomputeForUser(userId);
     if (!recomputed) throw new NotFoundException({ code: "NOT_FOUND", message: "Recalcul impossible." });
 
+    // Engagement : met à jour la série et attribue les badges nouvellement mérités.
+    await this.streak.evaluateAndGet(userId).catch(() => undefined);
+    const unlockedBadges = await this.badges.evaluate(userId).catch(() => [] as BadgeDef[]);
+
     return {
       result: {
         id: created.id,
@@ -77,6 +88,7 @@ export class ResultsService {
         performedAt: created.performedAt.toISOString(),
       },
       profile: recomputed,
+      unlockedBadges,
     };
   }
 

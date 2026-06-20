@@ -184,4 +184,56 @@ describe("api — boucle complète persistée (e2e réel)", () => {
     expect(res.body.index.value).toBeGreaterThan(0);
     expect(res.body.radar.length).toBe(6);
   });
+
+  it("streak : structure + progression de la semaine", async () => {
+    const res = await request(api.getHttpServer())
+      .get("/v1/me/streak")
+      .set("authorization", `Bearer ${token}`)
+      .expect(200);
+    expect(res.body.weeklyGoal).toBe(3);
+    expect(res.body.thisWeekCount).toBeGreaterThanOrEqual(1);
+    expect(typeof res.body.current).toBe("number");
+  });
+
+  it("badges : au moins un débloqué (rang/index élevé)", async () => {
+    const res = await request(api.getHttpServer())
+      .get("/v1/me/badges")
+      .set("authorization", `Bearer ${token}`)
+      .expect(200);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body.length).toBeGreaterThanOrEqual(17);
+    expect(res.body.some((b: { unlocked: boolean }) => b.unlocked)).toBe(true);
+  });
+
+  it("notifications : lecture + mise à jour du dailyCap", async () => {
+    await request(api.getHttpServer())
+      .get("/v1/me/notifications")
+      .set("authorization", `Bearer ${token}`)
+      .expect(200);
+    const res = await request(api.getHttpServer())
+      .patch("/v1/me/notifications")
+      .set("authorization", `Bearer ${token}`)
+      .send({ dailyCap: 1 })
+      .expect(200);
+    expect(res.body.dailyCap).toBe(1);
+  });
+
+  it("RGPD : export contient profil + résultats, sans hash de mot de passe", async () => {
+    const res = await request(api.getHttpServer())
+      .get("/v1/me/export")
+      .set("authorization", `Bearer ${token}`)
+      .expect(200);
+    expect(res.body.profile.displayName).toBe(displayName);
+    expect(Array.isArray(res.body.wodResults)).toBe(true);
+    expect(res.body.passwordHash).toBeUndefined();
+  });
+
+  it("RGPD : suppression de compte (effacement) — DOIT être le dernier test", async () => {
+    const res = await request(api.getHttpServer())
+      .delete("/v1/me")
+      .set("authorization", `Bearer ${token}`)
+      .expect(200);
+    expect(res.body.deleted).toBe(true);
+    userId = ""; // déjà supprimé : évite le double-nettoyage afterAll
+  });
 });

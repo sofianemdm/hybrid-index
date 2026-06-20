@@ -348,6 +348,8 @@ model Streak {
   freezeTokensRefreshedAt DateTime? @map("freeze_tokens_refreshed_at") @db.Timestamptz(6)
   plannedRest            Boolean   @default(false) @map("planned_rest")
   lastWeekEvaluated      String?   @map("last_week_evaluated")
+  lastOutcome            String?   @map("last_outcome")
+  validatedActiveWeeks   Int       @default(0) @map("validated_active_weeks")
   updatedAt              DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)

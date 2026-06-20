@@ -2,6 +2,7 @@
 import { PrismaClient, type AttributeKey, type Sex, type ScoreType, type WodType } from "@prisma/client";
 import Redis from "ioredis";
 import { rankFromIndex } from "@hybrid-index/contracts";
+import { BADGES } from "../src/modules/engagement/badges.data";
 
 const SCORING_VERSION_UUID = "11111111-1111-1111-1111-111111111111";
 const prisma = new PrismaClient();
@@ -82,6 +83,15 @@ async function main(): Promise<void> {
         movements: {},
       },
       update: { name: w.name },
+    });
+  }
+
+  console.log("Seed: badges…");
+  for (const b of BADGES) {
+    await prisma.badge.upsert({
+      where: { id: b.id },
+      create: { id: b.id, category: b.category, condition: b.condition, rarity: b.rarity, cosmeticUnlock: b.cosmeticUnlock },
+      update: { category: b.category, condition: b.condition, rarity: b.rarity, cosmeticUnlock: b.cosmeticUnlock },
     });
   }
 

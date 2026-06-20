@@ -5,6 +5,7 @@ import '../../app.dart';
 import '../../theme/tokens.dart';
 import '../leaderboard/leaderboard_screen.dart';
 import '../log/log_wod_screen.dart';
+import '../progression/progression_screen.dart';
 import 'home_screen.dart';
 
 /// Coquille principale : Accueil / Classement + bouton central « Logger un WOD ».
@@ -33,7 +34,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     return Scaffold(
       body: IndexedStack(
         index: _tab,
-        children: const [HomeScreen(), LeaderboardScreen()],
+        children: const [HomeScreen(), ProgressionScreen(), LeaderboardScreen()],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton.extended(
@@ -50,6 +51,8 @@ class _HomeShellState extends ConsumerState<HomeShell> {
         onDestinationSelected: (i) => setState(() => _tab = i),
         destinations: const [
           NavigationDestination(icon: Icon(Icons.bolt_outlined), selectedIcon: Icon(Icons.bolt), label: 'Accueil'),
+          NavigationDestination(
+              icon: Icon(Icons.emoji_events_outlined), selectedIcon: Icon(Icons.emoji_events), label: 'Progrès'),
           NavigationDestination(
               icon: Icon(Icons.leaderboard_outlined), selectedIcon: Icon(Icons.leaderboard), label: 'Classement'),
         ],

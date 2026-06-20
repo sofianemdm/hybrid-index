@@ -43,6 +43,15 @@ export class RedisService implements OnModuleDestroy {
     }
   }
 
+  /** Retire un utilisateur du classement de son sexe (suppression de compte). */
+  async remove(sex: string, userId: string): Promise<void> {
+    try {
+      await this.client.zrem(this.key(sex), userId);
+    } catch {
+      // ignore — Postgres reste la source de vérité.
+    }
+  }
+
   /** Rang (0-indexé, meilleur = 0) ou null si absent / Redis indisponible. */
   async rank(sex: string, userId: string): Promise<number | null> {
     try {

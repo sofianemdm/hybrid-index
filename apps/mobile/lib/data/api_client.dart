@@ -42,6 +42,9 @@ class ApiClient {
         case 'PATCH':
           res = await _client.patch(uri, headers: _headers, body: jsonEncode(body));
           break;
+        case 'DELETE':
+          res = await _client.delete(uri, headers: _headers);
+          break;
         case 'GET':
         default:
           res = await _client.get(uri, headers: _headers);
@@ -128,4 +131,19 @@ class ApiClient {
     final j = await _send('GET', '/v1/profiles/$userId') as Map<String, dynamic>;
     return PublicProfile.fromJson(j);
   }
+
+  // --- Engagement / RGPD ---
+  Future<StreakState> streak() async {
+    final j = await _send('GET', '/v1/me/streak') as Map<String, dynamic>;
+    return StreakState.fromJson(j);
+  }
+
+  Future<List<BadgeModel>> badges() async {
+    final j = await _send('GET', '/v1/me/badges') as List<dynamic>;
+    return j.map((e) => BadgeModel.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  Future<dynamic> exportData() async => _send('GET', '/v1/me/export');
+
+  Future<void> deleteAccount() async => _send('DELETE', '/v1/me');
 }
