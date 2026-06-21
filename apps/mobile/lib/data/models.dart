@@ -174,6 +174,111 @@ class Profile {
   }
 }
 
+/// Messagerie privée (Phase C5).
+class DmEligibility {
+  final bool allowed;
+  final String? reason;
+  const DmEligibility({required this.allowed, this.reason});
+
+  factory DmEligibility.fromJson(Map<String, dynamic> j) =>
+      DmEligibility(allowed: j['allowed'] as bool? ?? false, reason: j['reason'] as String?);
+
+  String get message {
+    switch (reason) {
+      case 'age':
+        return 'Messages limités aux comptes de la même tranche d\'âge.';
+      case 'blocked':
+        return 'Échange impossible avec cet utilisateur.';
+      case 'not_connected':
+        return 'Suivez-vous mutuellement ou partagez un club pour discuter.';
+      default:
+        return 'Message privé indisponible.';
+    }
+  }
+}
+
+class DmMessage {
+  final String id;
+  final String senderId;
+  final String body;
+  final String createdAt;
+  final bool isMine;
+  const DmMessage({
+    required this.id,
+    required this.senderId,
+    required this.body,
+    required this.createdAt,
+    required this.isMine,
+  });
+
+  factory DmMessage.fromJson(Map<String, dynamic> j) => DmMessage(
+        id: j['id'] as String,
+        senderId: j['senderId'] as String? ?? '',
+        body: j['body'] as String? ?? '',
+        createdAt: j['createdAt'] as String? ?? '',
+        isMine: j['isMine'] as bool? ?? false,
+      );
+}
+
+class ConversationSummary {
+  final String id;
+  final String otherUserId;
+  final String otherName;
+  final String otherRank;
+  final String? lastBody;
+  final bool lastIsMine;
+  final int unread;
+  const ConversationSummary({
+    required this.id,
+    required this.otherUserId,
+    required this.otherName,
+    required this.otherRank,
+    this.lastBody,
+    required this.lastIsMine,
+    required this.unread,
+  });
+
+  factory ConversationSummary.fromJson(Map<String, dynamic> j) {
+    final other = (j['other'] as Map?)?.cast<String, dynamic>() ?? {};
+    final last = (j['lastMessage'] as Map?)?.cast<String, dynamic>();
+    return ConversationSummary(
+      id: j['id'] as String,
+      otherUserId: other['userId'] as String? ?? '',
+      otherName: other['displayName'] as String? ?? '—',
+      otherRank: other['rank'] as String? ?? 'rookie',
+      lastBody: last?['body'] as String?,
+      lastIsMine: last?['isMine'] as bool? ?? false,
+      unread: (j['unread'] as num?)?.toInt() ?? 0,
+    );
+  }
+}
+
+class Conversation {
+  final String id;
+  final String otherUserId;
+  final String otherName;
+  final String otherRank;
+  final List<DmMessage> messages;
+  const Conversation({
+    required this.id,
+    required this.otherUserId,
+    required this.otherName,
+    required this.otherRank,
+    required this.messages,
+  });
+
+  factory Conversation.fromJson(Map<String, dynamic> j) {
+    final other = (j['other'] as Map?)?.cast<String, dynamic>() ?? {};
+    return Conversation(
+      id: j['id'] as String,
+      otherUserId: other['userId'] as String? ?? '',
+      otherName: other['displayName'] as String? ?? '—',
+      otherRank: other['rank'] as String? ?? 'rookie',
+      messages: ((j['messages'] as List?) ?? []).map((e) => DmMessage.fromJson(e as Map<String, dynamic>)).toList(),
+    );
+  }
+}
+
 /// Un de mes résultats de séance (pour partager une perf dans un post).
 class MyResult {
   final String id;

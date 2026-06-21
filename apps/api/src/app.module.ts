@@ -18,6 +18,7 @@ import { ProgressModule } from "./modules/progress/progress.module";
 import { ModerationModule } from "./modules/moderation/moderation.module";
 import { ClubsModule } from "./modules/clubs/clubs.module";
 import { PostsModule } from "./modules/posts/posts.module";
+import { MessagingModule } from "./modules/messaging/messaging.module";
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { PostsModule } from "./modules/posts/posts.module";
     SocialModule,
     ProgressModule,
     ClubsModule,
+    MessagingModule,
     AuthModule,
     ProfileModule,
     MeModule,

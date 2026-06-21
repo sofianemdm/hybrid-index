@@ -26,6 +26,8 @@ describe("api — boucle complète persistée (e2e réel)", () => {
   let userId = "";
   let customWodId = "";
   let overtakerUserId = "";
+  let overtakerToken = "";
+  let minorUserId = "";
 
   beforeAll(async () => {
     const scoreRef = await Test.createTestingModule({ imports: [ScoreAppModule] }).compile();
@@ -47,7 +49,7 @@ describe("api — boucle complète persistée (e2e réel)", () => {
   afterAll(async () => {
     // Nettoyage : Postgres (cascade) + entrée Redis orpheline.
     // L'historique d'Index (schéma scoring) n'a pas de cascade FK → nettoyage explicite.
-    for (const id of [userId, overtakerUserId]) {
+    for (const id of [userId, overtakerUserId, minorUserId]) {
       if (id) {
         await prisma.hybridIndexHistory.deleteMany({ where: { userId: id } }).catch(() => undefined);
         await prisma.progressWeekly.deleteMany({ where: { userId: id } }).catch(() => undefined);
@@ -452,6 +454,7 @@ describe("api — boucle complète persistée (e2e réel)", () => {
       })
       .expect(201);
     const t2 = reg.body.token as string;
+    overtakerToken = t2;
     overtakerUserId = reg.body.user.id as string;
     await request(api.getHttpServer())
       .post("/v1/onboarding/complete")
@@ -574,6 +577,76 @@ describe("api — boucle complète persistée (e2e réel)", () => {
       .delete(`/v1/posts/${textPostId}`)
       .set("authorization", `Bearer ${token}`)
       .expect(200);
+  });
+
+  it("DM : portée prudente (lien requis), séparation stricte par âge, échange autorisé (C5)", async () => {
+    // À ce stade je suis l'overtaker mais il ne me suit pas → pas de lien → DM refusé.
+    const before = await request(api.getHttpServer())
+      .get(`/v1/users/${overtakerUserId}/can-dm`)
+      .set("authorization", `Bearer ${token}`)
+      .expect(200);
+    expect(before.body.allowed).toBe(false);
+    expect(before.body.reason).toBe("not_connected");
+
+    // Séparation stricte par âge : un mineur (14 ans) ↔ adulte → refus « age » même sans lien.
+    const minor = await request(api.getHttpServer())
+      .post("/v1/auth/register")
+      .send({
+        email: `e2e_minor_${stamp}@test.local`,
+        password: "motdepasse123",
+        displayName: `E2EMinor${stamp}`,
+        dateOfBirth: "2012-03-03",
+        sex: "male",
+        goal: "all_round",
+      })
+      .expect(201);
+    minorUserId = minor.body.user.id as string;
+    const ageCheck = await request(api.getHttpServer())
+      .get(`/v1/users/${minorUserId}/can-dm`)
+      .set("authorization", `Bearer ${token}`)
+      .expect(200);
+    expect(ageCheck.body.allowed).toBe(false);
+    expect(ageCheck.body.reason).toBe("age");
+
+    // L'overtaker me suit en retour → abonnement mutuel → DM autorisé.
+    await request(api.getHttpServer())
+      .post(`/v1/follow/${userId}`)
+      .set("authorization", `Bearer ${overtakerToken}`)
+      .expect(201);
+    const ok = await request(api.getHttpServer())
+      .get(`/v1/users/${overtakerUserId}/can-dm`)
+      .set("authorization", `Bearer ${token}`)
+      .expect(200);
+    expect(ok.body.allowed).toBe(true);
+
+    // J'envoie un message → conversation créée.
+    const sent = await request(api.getHttpServer())
+      .post("/v1/messages")
+      .set("authorization", `Bearer ${token}`)
+      .send({ toUserId: overtakerUserId, body: "GG pour ton Fran 🔥" })
+      .expect(201);
+    const convId = sent.body.conversationId as string;
+    expect(convId).toBeTruthy();
+    expect(sent.body.message.isMine).toBe(true);
+
+    // L'autre voit la conversation et le message côté réception.
+    const inbox = await request(api.getHttpServer())
+      .get("/v1/conversations")
+      .set("authorization", `Bearer ${overtakerToken}`)
+      .expect(200);
+    expect(inbox.body.some((c: { id: string; unread: number }) => c.id === convId && c.unread >= 1)).toBe(true);
+    const thread = await request(api.getHttpServer())
+      .get(`/v1/conversations/${convId}/messages`)
+      .set("authorization", `Bearer ${overtakerToken}`)
+      .expect(200);
+    expect(thread.body.messages.length).toBe(1);
+    expect(thread.body.messages[0].isMine).toBe(false);
+
+    // Un tiers non participant ne peut pas lire la conversation (403).
+    await request(api.getHttpServer())
+      .get(`/v1/conversations/${convId}/messages`)
+      .set("authorization", `Bearer ${minor.body.token}`)
+      .expect(403);
   });
 
   it("RGPD : suppression de compte (effacement) — DOIT être le dernier test", async () => {

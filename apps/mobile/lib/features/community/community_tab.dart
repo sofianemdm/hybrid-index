@@ -6,6 +6,7 @@ import '../../data/session.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/rank_badge.dart';
 import '../clubs/clubs_screen.dart';
+import '../messaging/conversations_screen.dart';
 import '../profile/public_profile_screen.dart';
 import '../wods/wod_detail_screen.dart';
 import '../wods/wod_format.dart';
@@ -144,6 +145,12 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
                   Expanded(
                     child: Text('Communauté',
                         style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: HiColors.textPrimary)),
+                  ),
+                  IconButton(
+                    tooltip: 'Messages',
+                    icon: Icon(Icons.forum_outlined, color: HiColors.textTertiary),
+                    onPressed: () =>
+                        Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ConversationsScreen())),
                   ),
                   IconButton(
                     tooltip: 'Publier',

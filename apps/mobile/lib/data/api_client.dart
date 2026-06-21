@@ -182,6 +182,28 @@ class ApiClient {
 
   Future<void> declineClubInvite(String inviteId) async => _send('POST', '/v1/club-invites/$inviteId/decline', {});
 
+  // --- Messagerie privée ---
+  Future<DmEligibility> canDm(String userId) async {
+    final j = await _send('GET', '/v1/users/$userId/can-dm') as Map<String, dynamic>;
+    return DmEligibility.fromJson(j);
+  }
+
+  Future<List<ConversationSummary>> conversations() async {
+    final j = await _send('GET', '/v1/conversations') as List<dynamic>;
+    return j.map((e) => ConversationSummary.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  Future<Conversation> conversationMessages(String id) async {
+    final j = await _send('GET', '/v1/conversations/$id/messages') as Map<String, dynamic>;
+    return Conversation.fromJson(j);
+  }
+
+  /// Envoie un message ; renvoie l'id de conversation (créée au besoin).
+  Future<String> sendMessage(String toUserId, String body) async {
+    final j = await _send('POST', '/v1/messages', {'toUserId': toUserId, 'body': body}) as Map<String, dynamic>;
+    return j['conversationId'] as String;
+  }
+
   // --- Coach / profils publics ---
   Future<CoachResult> coach({String? attribute}) async {
     final q = attribute == null ? '' : '?attribute=$attribute';

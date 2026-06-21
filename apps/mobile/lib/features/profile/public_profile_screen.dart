@@ -5,6 +5,7 @@ import '../../app.dart';
 import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../theme/tokens.dart';
+import '../messaging/chat_screen.dart';
 import '../../widgets/index_ring.dart';
 import '../../widgets/radar_view.dart';
 import '../../widgets/overlay_radar.dart';
@@ -66,6 +67,61 @@ class _FollowButtonState extends ConsumerState<_FollowButton> {
               label: const Text('Suivre'),
               onPressed: _busy ? null : _toggle,
             ),
+    );
+  }
+}
+
+/// Bouton « Message » : visible seulement si l'échange est autorisé (lien social + même tranche d'âge).
+class _DmButton extends ConsumerStatefulWidget {
+  final String userId;
+  final String name;
+  const _DmButton({required this.userId, required this.name});
+
+  @override
+  ConsumerState<_DmButton> createState() => _DmButtonState();
+}
+
+class _DmButtonState extends ConsumerState<_DmButton> {
+  late Future<DmEligibility> _elig;
+
+  @override
+  void initState() {
+    super.initState();
+    _elig = ref.read(apiClientProvider).canDm(widget.userId);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<DmEligibility>(
+      future: _elig,
+      builder: (context, snap) {
+        if (!snap.hasData) return const SizedBox.shrink();
+        final e = snap.data!;
+        if (!e.allowed) {
+          // On informe discrètement pourquoi le DM n'est pas possible (sauf cas "soi-même").
+          if (e.reason == 'self') return const SizedBox.shrink();
+          return SizedBox(
+            width: 200,
+            child: Text(e.message,
+                textAlign: TextAlign.center, style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
+          );
+        }
+        return SizedBox(
+          width: 200,
+          child: OutlinedButton.icon(
+            style: OutlinedButton.styleFrom(
+              minimumSize: const Size.fromHeight(44),
+              side: BorderSide(color: HiColors.brandPrimary),
+              foregroundColor: HiColors.brandPrimary,
+            ),
+            icon: const Icon(Icons.chat_bubble_outline, size: 18),
+            label: const Text('Message'),
+            onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+              builder: (_) => ChatScreen(otherUserId: widget.userId, otherName: widget.name),
+            )),
+          ),
+        );
+      },
     );
   }
 }
@@ -191,6 +247,8 @@ class PublicProfileScreen extends ConsumerWidget {
                     if (!p.isMe) ...[
                       const SizedBox(height: HiSpace.md),
                       _FollowButton(userId: p.userId, initial: p.isFollowing),
+                      const SizedBox(height: HiSpace.sm),
+                      _DmButton(userId: p.userId, name: p.displayName),
                       const SizedBox(height: HiSpace.sm),
                       _InviteToClubButton(userId: p.userId),
                     ],
