@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'dart:math' as math;
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
 import '../data/models.dart';
@@ -17,6 +19,25 @@ class AvatarPalettes {
   ];
   static const hairStyleLabels = ['Chauve', 'Court', 'Mi-long', 'Long', 'Piquant', 'Afro'];
   static const beardStyleLabels = ['Aucune', 'Barbe naissante', 'Barbe pleine', 'Bouc', 'Moustache'];
+
+  /// Fonds d'avatar (index 0 = neutre). Couleurs sobres, cohérentes avec le thème sombre.
+  static const backgroundLabels = ['Neutre', 'Ardoise', 'Cyan', 'Violet', 'Or', 'Émeraude', 'Rubis', 'Nuit'];
+  static const background = <Color>[
+    Color(0xFF20283A), Color(0xFF334155), Color(0xFF0E7490), Color(0xFF6D28D9),
+    Color(0xFFB7791F), Color(0xFF047857), Color(0xFFB91C1C), Color(0xFF0B1220),
+  ];
+}
+
+/// Décode une data URL base64 (« data:image/...;base64,xxxx ») en octets.
+Uint8List? decodeAvatarPhoto(String? dataUrl) {
+  if (dataUrl == null || dataUrl.isEmpty) return null;
+  try {
+    final comma = dataUrl.indexOf(',');
+    final b64 = comma >= 0 ? dataUrl.substring(comma + 1) : dataUrl;
+    return base64Decode(b64);
+  } catch (_) {
+    return null;
+  }
 }
 
 /// Avatar stylisé dessiné (peau/cheveux/barbe) avec cadre de rang. Pas d'assets : tout est vectoriel.
@@ -35,10 +56,39 @@ class HiAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final photo = decodeAvatarPhoto(config.photoData);
+    final ringColor = HiColors.rank(rank);
+
+    // Photo de profil : remplace l'avatar dessiné, avec cadre de rang.
+    if (photo != null) {
+      return SizedBox(
+        width: size,
+        height: size,
+        child: Container(
+          decoration: showRing
+              ? BoxDecoration(shape: BoxShape.circle, border: Border.all(color: ringColor, width: size * 0.04))
+              : null,
+          child: ClipOval(
+            child: Image.memory(photo, width: size, height: size, fit: BoxFit.cover, gaplessPlayback: true),
+          ),
+        ),
+      );
+    }
+
+    // Avatar dessiné, avec fond personnalisé optionnel (index 0 = neutre).
+    final bg = config.background > 0 && config.background < AvatarPalettes.background.length
+        ? AvatarPalettes.background[config.background]
+        : null;
     return SizedBox(
       width: size,
       height: size,
-      child: CustomPaint(painter: _AvatarPainter(config, HiColors.rank(rank), rank, showRing)),
+      child: Stack(
+        children: [
+          if (bg != null)
+            Positioned.fill(child: DecoratedBox(decoration: BoxDecoration(shape: BoxShape.circle, color: bg))),
+          CustomPaint(size: Size(size, size), painter: _AvatarPainter(config, ringColor, rank, showRing)),
+        ],
+      ),
     );
   }
 }

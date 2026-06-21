@@ -3,7 +3,15 @@ import { PrismaService } from "../../infra/prisma/prisma.service";
 import { ProfileScoringService } from "../profile/profile-scoring.service";
 import type { UpdateAvatarRequest, UpdateMeRequest } from "./me.dto";
 
-const DEFAULT_AVATAR = { skinTone: 2, hairStyle: 1, hairColor: 1, beardStyle: null as number | null };
+const DEFAULT_AVATAR = {
+  skinTone: 2,
+  hairStyle: 1,
+  hairColor: 1,
+  beardStyle: null as number | null,
+  accessory: 0,
+  background: 0,
+  photoData: null as string | null,
+};
 
 @Injectable()
 export class MeService {
@@ -58,6 +66,9 @@ export class MeService {
       hairStyle: avatar.hairStyle,
       hairColor: avatar.hairColor,
       beardStyle: avatar.beardStyle,
+      accessory: avatar.accessory,
+      background: avatar.background,
+      photoData: avatar.photoData,
     };
   }
 
@@ -67,6 +78,9 @@ export class MeService {
       hairStyle: req.hairStyle,
       hairColor: req.hairColor,
       beardStyle: req.beardStyle ?? null,
+      accessory: req.accessory ?? 0,
+      background: req.background ?? 0,
+      photoData: req.photoData ?? null,
     };
     await this.prisma.avatar.upsert({
       where: { userId },

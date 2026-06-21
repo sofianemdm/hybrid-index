@@ -19,6 +19,7 @@ dependencies:
   google_sign_in_platform_interface: ^2.5.0
   in_app_review: ^2.0.9
   share_plus: ^10.1.2
+  image_picker: ^1.1.2
 
 dev_dependencies:
   flutter_test:

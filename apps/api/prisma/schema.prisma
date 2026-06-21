@@ -472,6 +472,9 @@ model Avatar {
   hairStyle         Int      @map("hair_style") @db.SmallInt
   hairColor         Int      @map("hair_color") @db.SmallInt
   beardStyle        Int?     @map("beard_style") @db.SmallInt
+  accessory         Int      @default(0) @map("accessory") @db.SmallInt
+  background        Int      @default(0) @map("background") @db.SmallInt
+  photoData         String?  @map("photo_data") // image de profil (data URL base64, optionnelle)
   equippedCosmetics Json     @map("equipped_cosmetics")
   unlockedCosmetics Json     @map("unlocked_cosmetics")
   updatedAt         DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)

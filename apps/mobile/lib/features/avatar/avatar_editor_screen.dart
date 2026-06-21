@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../app.dart';
 import '../../data/api_client.dart';
@@ -40,6 +43,31 @@ class _AvatarEditorScreenState extends ConsumerState<AvatarEditorScreen> {
     }
   }
 
+  Future<void> _pickPhoto() async {
+    try {
+      final x = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 512,
+        maxHeight: 512,
+        imageQuality: 72,
+      );
+      if (x == null) return;
+      final bytes = await x.readAsBytes();
+      if (bytes.length > 400000) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Image trop lourde — choisis-en une plus petite.')),
+          );
+        }
+        return;
+      }
+      final dataUrl = 'data:image/jpeg;base64,${base64Encode(bytes)}';
+      if (mounted) setState(() => _config = _config.copyWith(photoData: dataUrl));
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+    }
+  }
+
   Future<void> _save() async {
     setState(() => _saving = true);
     try {
@@ -70,6 +98,31 @@ class _AvatarEditorScreenState extends ConsumerState<AvatarEditorScreen> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Center(child: HiAvatar(config: _config, rank: rank, size: 160)),
+                      const SizedBox(height: HiSpace.md),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          OutlinedButton.icon(
+                            onPressed: _pickPhoto,
+                            icon: const Icon(Icons.photo_camera_outlined, size: 18),
+                            label: Text(_config.photoData == null ? 'Mettre une photo' : 'Changer la photo'),
+                          ),
+                          if (_config.photoData != null) ...[
+                            const SizedBox(width: 8),
+                            TextButton(
+                              onPressed: () => setState(() => _config = _config.copyWith(clearPhoto: true)),
+                              child: Text('Retirer', style: TextStyle(color: HiColors.error)),
+                            ),
+                          ],
+                        ],
+                      ),
+                      if (_config.photoData != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Text('Avec une photo, l\'avatar dessiné est masqué.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
+                        ),
                       const SizedBox(height: HiSpace.lg),
                       _label('Teint'),
                       _swatches(
@@ -97,6 +150,13 @@ class _AvatarEditorScreenState extends ConsumerState<AvatarEditorScreen> {
                         AvatarPalettes.beardStyleLabels,
                         _config.beardStyle ?? 0,
                         (i) => setState(() => _config = _config.copyWith(beardStyle: i, clearBeard: i == 0)),
+                      ),
+                      const SizedBox(height: HiSpace.lg),
+                      _label('Fond'),
+                      _swatches(
+                        AvatarPalettes.background,
+                        _config.background,
+                        (i) => setState(() => _config = _config.copyWith(background: i)),
                       ),
                       const SizedBox(height: HiSpace.xl),
                       HiButton(label: 'Enregistrer mon avatar', loading: _saving, onPressed: _save),

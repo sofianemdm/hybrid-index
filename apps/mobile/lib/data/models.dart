@@ -654,11 +654,19 @@ class AvatarConfig {
   final int hairStyle;
   final int hairColor;
   final int? beardStyle;
+  final int accessory;
+  final int background;
+
+  /// Photo de profil (data URL base64). Si présente, elle remplace l'avatar dessiné.
+  final String? photoData;
   const AvatarConfig({
     required this.skinTone,
     required this.hairStyle,
     required this.hairColor,
     this.beardStyle,
+    this.accessory = 0,
+    this.background = 0,
+    this.photoData,
   });
 
   factory AvatarConfig.fromJson(Map<String, dynamic> j) => AvatarConfig(
@@ -666,14 +674,30 @@ class AvatarConfig {
         hairStyle: (j['hairStyle'] as num).toInt(),
         hairColor: (j['hairColor'] as num).toInt(),
         beardStyle: (j['beardStyle'] as num?)?.toInt(),
+        accessory: (j['accessory'] as num?)?.toInt() ?? 0,
+        background: (j['background'] as num?)?.toInt() ?? 0,
+        photoData: j['photoData'] as String?,
       );
 
-  AvatarConfig copyWith({int? skinTone, int? hairStyle, int? hairColor, int? beardStyle, bool clearBeard = false}) =>
+  AvatarConfig copyWith({
+    int? skinTone,
+    int? hairStyle,
+    int? hairColor,
+    int? beardStyle,
+    bool clearBeard = false,
+    int? accessory,
+    int? background,
+    String? photoData,
+    bool clearPhoto = false,
+  }) =>
       AvatarConfig(
         skinTone: skinTone ?? this.skinTone,
         hairStyle: hairStyle ?? this.hairStyle,
         hairColor: hairColor ?? this.hairColor,
         beardStyle: clearBeard ? null : (beardStyle ?? this.beardStyle),
+        accessory: accessory ?? this.accessory,
+        background: background ?? this.background,
+        photoData: clearPhoto ? null : (photoData ?? this.photoData),
       );
 
   Map<String, dynamic> toJson() => {
@@ -681,6 +705,9 @@ class AvatarConfig {
         'hairStyle': hairStyle,
         'hairColor': hairColor,
         'beardStyle': beardStyle,
+        'accessory': accessory,
+        'background': background,
+        'photoData': photoData,
       };
 }
 
