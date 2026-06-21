@@ -603,12 +603,14 @@ class WodCatalogEntry {
   final String scoreType;
   final bool requiresEquipment;
   final bool isCustom;
+  final bool isFlagship;
   const WodCatalogEntry({
     required this.id,
     required this.name,
     required this.scoreType,
     required this.requiresEquipment,
     required this.isCustom,
+    this.isFlagship = false,
   });
 
   factory WodCatalogEntry.fromJson(Map<String, dynamic> j) => WodCatalogEntry(
@@ -617,6 +619,7 @@ class WodCatalogEntry {
         scoreType: j['scoreType'] as String,
         requiresEquipment: j['requiresEquipment'] as bool? ?? false,
         isCustom: j['isCustom'] as bool? ?? false,
+        isFlagship: j['isFlagship'] as bool? ?? false,
       );
 }
 

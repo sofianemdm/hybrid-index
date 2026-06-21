@@ -30,8 +30,8 @@ const PACE_CEILING_S_PER_KM = 720;
 
 /** Les 15 WODs de référence pour le Grand Chelem (endgame) — hors course libre / air squats 1 série. */
 const GRAND_SLAM_WODS = [
-  "pft_hyrox", "fran", "grace", "jackie", "row_2k", "helen", "karen", "cindy",
-  "benchmark_zero", "run_5k", "run_1k", "max_pushups", "max_air_squats_2min", "burpees_7min", "max_situps_2min",
+  "hyrox_sprint", "fran", "grace", "jackie", "row_2k", "helen", "karen", "cindy",
+  "benchmark_zero", "run_5k", "run_1k", "max_pushups", "max_air_squats_2min", "burpees_7min", "ergo_skill",
 ];
 
 type EffortTag = { attribute: internalScore.RadarAttribute["attribute"]; estimated: boolean };

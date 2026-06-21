@@ -2,10 +2,12 @@ import { WODS, WODS_BY_ID } from "../src/wods/wods.data";
 import { percentile } from "@hybrid-index/scoring-core";
 
 describe("Registre des WODs (intégrité)", () => {
-  it("contient 17 WODs (8 avec matériel + 9 sans, dont course libre & air squats)", () => {
+  it("contient 17 WODs (9 avec matériel + 8 sans, dont course libre & air squats)", () => {
     expect(WODS).toHaveLength(17);
-    expect(WODS.filter((w) => w.requiresEquipment)).toHaveLength(8);
-    expect(WODS.filter((w) => !w.requiresEquipment)).toHaveLength(9);
+    // 9/8 depuis l'ajout de la séance phare « Machine & Mur » (ergo+wall walk+TTB, avec matériel)
+    // en remplacement de « Max sit-ups » (sans). L'app reste 100% utilisable sans matériel (8 séances).
+    expect(WODS.filter((w) => w.requiresEquipment)).toHaveLength(9);
+    expect(WODS.filter((w) => !w.requiresEquipment)).toHaveLength(8);
   });
 
   it("a des identifiants uniques et un index cohérent", () => {

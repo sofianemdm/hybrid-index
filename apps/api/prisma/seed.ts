@@ -15,7 +15,7 @@ const WODS: Array<{
   requiresEquipment: boolean;
   targetAttributes: AttributeKey[];
 }> = [
-  { id: "pft_hyrox", name: "PFT HYROX", scoreType: "time", requiresEquipment: true, targetAttributes: ["engine", "muscular_endurance", "power", "hybrid"] },
+  { id: "hyrox_sprint", name: "Sprint HYROX", scoreType: "time", requiresEquipment: true, targetAttributes: ["engine", "power", "hybrid", "muscular_endurance"] },
   { id: "fran", name: "Fran", scoreType: "time", requiresEquipment: true, targetAttributes: ["muscular_endurance", "power"] },
   { id: "grace", name: "Grace", scoreType: "time", requiresEquipment: true, targetAttributes: ["power", "strength"] },
   { id: "jackie", name: "Jackie", scoreType: "time", requiresEquipment: true, targetAttributes: ["engine", "muscular_endurance", "power", "strength"] },
@@ -29,7 +29,7 @@ const WODS: Array<{
   { id: "max_pushups", name: "Max pompes strictes", scoreType: "reps", requiresEquipment: false, targetAttributes: ["strength", "muscular_endurance"] },
   { id: "max_air_squats_2min", name: "Max air squats en 2 min", scoreType: "reps", requiresEquipment: false, targetAttributes: ["muscular_endurance", "power"] },
   { id: "burpees_7min", name: "Test burpees 7 min", scoreType: "reps", requiresEquipment: false, targetAttributes: ["engine", "muscular_endurance", "power", "hybrid"] },
-  { id: "max_situps_2min", name: "Max sit-ups en 2 min", scoreType: "reps", requiresEquipment: false, targetAttributes: ["muscular_endurance"] },
+  { id: "ergo_skill", name: "Machine & Mur", scoreType: "time", requiresEquipment: true, targetAttributes: ["strength", "muscular_endurance", "engine", "power"] },
   { id: "run_free_distance", name: "Course distance libre", scoreType: "time", requiresEquipment: false, targetAttributes: ["engine", "speed"] },
   { id: "max_air_squats", name: "Max air squats (une série)", scoreType: "reps", requiresEquipment: false, targetAttributes: ["muscular_endurance", "strength"] },
 ];
@@ -62,7 +62,7 @@ function displayNameFor(i: number, sex: Sex): string {
 
 /** Repères de perf de seed par séance : [élite, débutant] par sexe. time=true → plus bas = meilleur. */
 const SEED_PERF: Record<string, { time: boolean; m: [number, number]; f: [number, number] }> = {
-  pft_hyrox: { time: true, m: [3900, 6000], f: [4500, 6600] },
+  hyrox_sprint: { time: true, m: [660, 1200], f: [720, 1380] },
   fran: { time: true, m: [120, 420], f: [150, 480] },
   grace: { time: true, m: [80, 300], f: [110, 360] },
   jackie: { time: true, m: [360, 720], f: [420, 840] },
@@ -76,7 +76,7 @@ const SEED_PERF: Record<string, { time: boolean; m: [number, number]; f: [number
   max_pushups: { time: false, m: [75, 20], f: [50, 12] },
   max_air_squats_2min: { time: false, m: [110, 50], f: [100, 45] },
   burpees_7min: { time: false, m: [140, 70], f: [120, 60] },
-  max_situps_2min: { time: false, m: [90, 40], f: [85, 38] },
+  ergo_skill: { time: true, m: [420, 1020], f: [480, 1140] },
   max_air_squats: { time: false, m: [100, 40], f: [95, 38] },
 };
 
@@ -122,9 +122,18 @@ async function main(): Promise<void> {
         scoreType: w.scoreType,
         movements: {},
       },
-      update: { name: w.name },
+      update: {
+        name: w.name,
+        scoreType: w.scoreType,
+        requiresEquipment: w.requiresEquipment,
+        targetAttributes: w.targetAttributes as AttributeKey[],
+      },
     });
   }
+  // Purge des séances officielles obsolètes (ex. ids renommés) — préserve les séances custom.
+  const validWodIds = WODS.map((w) => w.id);
+  await prisma.wodResult.deleteMany({ where: { wod: { isCustom: false }, wodId: { notIn: validWodIds } } });
+  await prisma.wod.deleteMany({ where: { isCustom: false, id: { notIn: validWodIds } } });
 
   console.log("Seed: badges…");
   for (const b of BADGES) {

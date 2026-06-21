@@ -40,8 +40,9 @@ class _WodTabState extends ConsumerState<WodTab> {
               ]);
             }
             final all = snap.data!;
-            final sansMateriel = all.where((w) => !w.requiresEquipment).toList();
-            final avecMateriel = all.where((w) => w.requiresEquipment).toList();
+            final phares = all.where((w) => w.isFlagship).toList();
+            final sansMateriel = all.where((w) => !w.requiresEquipment && !w.isFlagship).toList();
+            final avecMateriel = all.where((w) => w.requiresEquipment && !w.isFlagship).toList();
             return ListView(
               padding: const EdgeInsets.fromLTRB(HiSpace.lg, HiSpace.lg, HiSpace.lg, 96),
               children: [
@@ -51,6 +52,16 @@ class _WodTabState extends ConsumerState<WodTab> {
                 Text('Choisis une séance (aussi appelée « WOD »), vois les records et où tu te situes.',
                     style: TextStyle(color: HiColors.textSecondary)),
                 const SizedBox(height: HiSpace.lg),
+                if (phares.isNotEmpty) ...[
+                  _section('⭐ Séances phares'),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: HiSpace.sm),
+                    child: Text('Les 4 grands défis où tout le monde se mesure.',
+                        style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
+                  ),
+                  ...phares.map((w) => _card(w, flagship: true)),
+                  const SizedBox(height: HiSpace.lg),
+                ],
                 if (sansMateriel.isNotEmpty) ...[
                   _section('Sans matériel'),
                   ...sansMateriel.map(_card),
@@ -74,7 +85,7 @@ class _WodTabState extends ConsumerState<WodTab> {
             style: TextStyle(color: HiColors.textTertiary, fontSize: 12, letterSpacing: 1.5, fontWeight: FontWeight.w700)),
       );
 
-  Widget _card(WodCatalogEntry w) {
+  Widget _card(WodCatalogEntry w, {bool flagship = false}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: HiSpace.sm),
       child: Material(
@@ -85,11 +96,18 @@ class _WodTabState extends ConsumerState<WodTab> {
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute(builder: (_) => WodDetailScreen(wodId: w.id, wodName: w.name)),
           ),
-          child: Padding(
+          child: Container(
+            decoration: flagship
+                ? BoxDecoration(
+                    borderRadius: BorderRadius.circular(HiRadius.md),
+                    border: Border.all(color: HiColors.brandPrimary.withValues(alpha: 0.6), width: 1.5),
+                  )
+                : null,
             padding: const EdgeInsets.all(HiSpace.md),
             child: Row(
               children: [
-                Icon(w.scoreType == 'time' ? Icons.timer_outlined : Icons.repeat, color: HiColors.brandPrimary),
+                Icon(flagship ? Icons.star : (w.scoreType == 'time' ? Icons.timer_outlined : Icons.repeat),
+                    color: HiColors.brandPrimary),
                 const SizedBox(width: HiSpace.md),
                 Expanded(
                   child: Text(w.name, style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),

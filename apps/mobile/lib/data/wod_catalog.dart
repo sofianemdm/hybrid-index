@@ -4,7 +4,7 @@ import 'models.dart';
 /// 8 avec matériel, 7 sans. Utilisé par l'écran de log.
 const List<WodCatalogItem> wodCatalog = [
   // Avec matériel
-  WodCatalogItem(id: 'pft_hyrox', name: 'PFT HYROX', scoreType: 'time', requiresEquipment: true),
+  WodCatalogItem(id: 'hyrox_sprint', name: 'Sprint HYROX', scoreType: 'time', requiresEquipment: true),
   WodCatalogItem(id: 'fran', name: 'Fran', scoreType: 'time', requiresEquipment: true),
   WodCatalogItem(id: 'grace', name: 'Grace', scoreType: 'time', requiresEquipment: true),
   WodCatalogItem(id: 'jackie', name: 'Jackie', scoreType: 'time', requiresEquipment: true),
@@ -20,5 +20,5 @@ const List<WodCatalogItem> wodCatalog = [
   WodCatalogItem(id: 'max_air_squats', name: 'Max air squats (une série)', scoreType: 'reps', requiresEquipment: false),
   WodCatalogItem(id: 'max_air_squats_2min', name: 'Max air squats (2 min)', scoreType: 'reps', requiresEquipment: false),
   WodCatalogItem(id: 'burpees_7min', name: 'Test burpees (7 min)', scoreType: 'reps', requiresEquipment: false),
-  WodCatalogItem(id: 'max_situps_2min', name: 'Max sit-ups (2 min)', scoreType: 'reps', requiresEquipment: false),
+  WodCatalogItem(id: 'ergo_skill', name: 'Machine & Mur', scoreType: 'time', requiresEquipment: true),
 ];

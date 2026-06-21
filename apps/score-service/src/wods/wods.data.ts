@@ -30,20 +30,20 @@ const points = (nodes: Array<[number, number]>): DistributionModel => ({
 export const WODS: ReadonlyArray<WodDefinition> = [
   // ---------------- 8 WODs AVEC matériel ----------------
   {
-    id: "pft_hyrox",
-    name: "PFT HYROX",
+    id: "hyrox_sprint",
+    name: "Sprint HYROX",
     scoreType: "time",
     requiresEquipment: true,
     isBenchmark: true,
     targetAttributes: [
       { attribute: "engine", estimated: false },
-      { attribute: "muscular_endurance", estimated: false },
       { attribute: "power", estimated: false },
       { attribute: "hybrid", estimated: false },
+      { attribute: "muscular_endurance", estimated: false },
     ],
     bySex: {
-      male: { model: lognormalFromMedian(5100, 0.18), hardMin: 840, hardMax: 3600, proReference: 3300 },
-      female: { model: lognormalFromMedian(5700, 0.18), hardMin: 960, hardMax: 4200, proReference: 3660 },
+      male: { model: lognormalFromMedian(900, 0.17), hardMin: 540, hardMax: 1800, proReference: 630 },
+      female: { model: lognormalFromMedian(1020, 0.17), hardMin: 600, hardMax: 1980, proReference: 690 },
     },
   },
   {
@@ -337,15 +337,20 @@ export const WODS: ReadonlyArray<WodDefinition> = [
     },
   },
   {
-    id: "max_situps_2min",
-    name: "Max sit-ups en 2 min",
-    scoreType: "reps",
-    requiresEquipment: false,
+    id: "ergo_skill",
+    name: "Machine & Mur",
+    scoreType: "time",
+    requiresEquipment: true,
     isBenchmark: true,
-    targetAttributes: [{ attribute: "muscular_endurance", estimated: false }],
+    targetAttributes: [
+      { attribute: "strength", estimated: false },
+      { attribute: "muscular_endurance", estimated: false },
+      { attribute: "engine", estimated: false },
+      { attribute: "power", estimated: false },
+    ],
     bySex: {
-      male: { model: normal(50, 11), hardMin: 10, hardMax: 105, proReference: 80 },
-      female: { model: normal(45, 11), hardMin: 10, hardMax: 105, proReference: 80 },
+      male: { model: lognormalFromMedian(660, 0.2), hardMin: 330, hardMax: 1500, proReference: 390 },
+      female: { model: lognormalFromMedian(780, 0.2), hardMin: 360, hardMax: 1680, proReference: 450 },
     },
   },
   {

@@ -9,6 +9,9 @@ import { SCORING_VERSION_UUID } from "../../common/constants";
 import type { EstimateWodRequest } from "./wod-estimate.dto";
 import type { CreateWodRequest, LogWodResultRequest } from "./create-wod.dto";
 
+/** Les 4 séances PHARES (marquee benchmarks) — mises en avant, où tout le monde se mesure. */
+export const FLAGSHIP_WOD_IDS = ["hyrox_sprint", "grace", "benchmark_zero", "ergo_skill"];
+
 @Injectable()
 export class WodsService {
   constructor(
@@ -155,6 +158,7 @@ export class WodsService {
       requiresEquipment: w.requiresEquipment,
       targetAttributes: w.targetAttributes,
       isBenchmark: w.isBenchmark,
+      isFlagship: FLAGSHIP_WOD_IDS.includes(w.id),
       isCustom: w.isCustom,
     }));
   }
@@ -194,6 +198,7 @@ export class WodsService {
       requiresEquipment: wod.requiresEquipment,
       targetAttributes: wod.targetAttributes,
       isBenchmark: wod.isBenchmark,
+      isFlagship: FLAGSHIP_WOD_IDS.includes(wod.id),
       isCustom: wod.isCustom,
       levels,
       myBest,

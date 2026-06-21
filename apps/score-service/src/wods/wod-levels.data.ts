@@ -10,7 +10,7 @@ export interface WodLevels {
 }
 
 export const WOD_LEVELS: Record<string, { male: WodLevels; female: WodLevels }> = {
-  pft_hyrox: { male: { champion: 3300, intermediate: 5100, occasional: 6600 }, female: { champion: 3540, intermediate: 5700, occasional: 7200 } },
+  hyrox_sprint: { male: { champion: 660, intermediate: 900, occasional: 1200 }, female: { champion: 720, intermediate: 1020, occasional: 1380 } },
   fran: { male: { champion: 113, intermediate: 345, occasional: 540 }, female: { champion: 135, intermediate: 390, occasional: 660 } },
   grace: { male: { champion: 68, intermediate: 203, occasional: 360 }, female: { champion: 85, intermediate: 236, occasional: 420 } },
   jackie: { male: { champion: 300, intermediate: 540, occasional: 780 }, female: { champion: 340, intermediate: 630, occasional: 900 } },
@@ -24,5 +24,5 @@ export const WOD_LEVELS: Record<string, { male: WodLevels; female: WodLevels }> 
   max_pushups: { male: { champion: 100, intermediate: 25, occasional: 10 }, female: { champion: 70, intermediate: 12, occasional: 4 } },
   max_air_squats_2min: { male: { champion: 100, intermediate: 50, occasional: 30 }, female: { champion: 95, intermediate: 45, occasional: 28 } },
   burpees_7min: { male: { champion: 140, intermediate: 70, occasional: 40 }, female: { champion: 120, intermediate: 60, occasional: 35 } },
-  max_situps_2min: { male: { champion: 100, intermediate: 50, occasional: 30 }, female: { champion: 95, intermediate: 45, occasional: 28 } },
+  ergo_skill: { male: { champion: 420, intermediate: 660, occasional: 1020 }, female: { champion: 480, intermediate: 780, occasional: 1140 } },
 };
