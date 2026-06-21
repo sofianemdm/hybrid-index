@@ -23,7 +23,7 @@ export const UpdateAvatarRequest = z.object({
   beardStyle: z.number().int().min(0).max(5).nullable().optional(),
   accessory: z.number().int().min(0).max(5).optional(),
   background: z.number().int().min(0).max(7).optional(),
-  /** Photo de profil en data URL base64 (optionnelle, ≤ ~300 Ko). null = retirer. */
-  photoData: z.string().max(420_000).nullable().optional(),
+  /** Photo de profil en data URL base64 (optionnelle, ≈ ≤ 400 Ko d'image). null = retirer. */
+  photoData: z.string().max(600_000).nullable().optional(),
 });
 export type UpdateAvatarRequest = z.infer<typeof UpdateAvatarRequest>;

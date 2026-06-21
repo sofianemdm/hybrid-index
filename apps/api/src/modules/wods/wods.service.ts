@@ -198,21 +198,19 @@ export class WodsService {
     let myBest: unknown = null;
     let myHistory: unknown[] = [];
     if (userId) {
-      const mine = await this.prisma.wodResult.findMany({
-        where: { userId, wodId: id, review: "ok", subScore: { not: null } },
-        orderBy: { performedAt: "desc" },
-        take: 30,
-      });
+      const baseWhere = { userId, wodId: id, review: "ok" as const, subScore: { not: null } };
+      const [best, mine] = await Promise.all([
+        // Meilleur effort sur TOUT l'historique (la donnée de fierté ne doit jamais régresser).
+        this.prisma.wodResult.findFirst({ where: baseWhere, orderBy: { subScore: "desc" } }),
+        // Les 30 prestations les plus récentes (affichage de l'historique).
+        this.prisma.wodResult.findMany({ where: baseWhere, orderBy: { performedAt: "desc" }, take: 30 }),
+      ]);
       myHistory = mine.map((r) => ({
         rawResult: Number(r.rawResult),
         subScore: ovrSub(r.subScore),
         rxCompliant: r.rxCompliant,
         performedAt: r.performedAt.toISOString(),
       }));
-      const best = mine.reduce<(typeof mine)[number] | null>(
-        (b, r) => (b === null || (r.subScore ?? 0) > (b.subScore ?? 0) ? r : b),
-        null,
-      );
       if (best) {
         myBest = {
           rawResult: Number(best.rawResult),
