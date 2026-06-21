@@ -43,7 +43,8 @@ export class MessagingService {
     if (me === other) return { allowed: false, reason: "self" };
     const [meUser, otherUser] = await Promise.all([
       this.prisma.user.findUnique({ where: { id: me }, select: { dateOfBirth: true } }),
-      this.prisma.user.findUnique({ where: { id: other }, select: { dateOfBirth: true } }),
+      // Cible : doit exister ET être active (pas de DM vers un compte supprimé/désactivé).
+      this.prisma.user.findFirst({ where: { id: other, status: "active" }, select: { dateOfBirth: true } }),
     ]);
     if (!meUser || !otherUser) return { allowed: false, reason: "not_connected" };
     if (await this.moderation.isBlockedBetween(me, other)) return { allowed: false, reason: "blocked" };
@@ -98,7 +99,8 @@ export class MessagingService {
       include: {
         userA: { include: { profile: { select: { displayName: true, rank: true } } } },
         userB: { include: { profile: { select: { displayName: true, rank: true } } } },
-        messages: { orderBy: { createdAt: "desc" }, take: 1 },
+        // Aperçu : ignorer les messages masqués par modération.
+        messages: { where: { status: "visible" }, orderBy: { createdAt: "desc" }, take: 1 },
       },
     });
     const result = [];
@@ -106,7 +108,7 @@ export class MessagingService {
       const other = c.userAId === me ? c.userB : c.userA;
       const last = c.messages[0];
       const unread = await this.prisma.message.count({
-        where: { conversationId: c.id, senderId: { not: me }, readAt: null },
+        where: { conversationId: c.id, senderId: { not: me }, readAt: null, status: "visible" },
       });
       result.push({
         id: c.id,

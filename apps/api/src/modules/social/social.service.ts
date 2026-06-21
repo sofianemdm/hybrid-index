@@ -18,7 +18,7 @@ export class SocialService {
   // --- Follow ---
   async follow(me: string, target: string): Promise<{ following: true }> {
     if (me === target) throw new BadRequestException({ code: "VALIDATION_ERROR", message: "On ne se suit pas soi-même." });
-    const exists = await this.prisma.user.findUnique({ where: { id: target }, select: { id: true } });
+    const exists = await this.prisma.user.findFirst({ where: { id: target, status: "active" }, select: { id: true } });
     if (!exists) throw new BadRequestException({ code: "NOT_FOUND", message: "Athlète introuvable." });
     await this.prisma.follow.upsert({
       where: { followerId_followeeId: { followerId: me, followeeId: target } },
@@ -75,6 +75,7 @@ export class SocialService {
     const profiles = await this.prisma.profile.findMany({
       where: {
         visibility: "public",
+        user: { is: { status: "active" } },
         ...(filters.sex ? { sex: filters.sex as never } : {}),
         ...(filters.rank ? { rank: filters.rank as never } : {}),
         ...(filters.q ? { displayName: { contains: filters.q.slice(0, 50), mode: "insensitive" } } : {}),
