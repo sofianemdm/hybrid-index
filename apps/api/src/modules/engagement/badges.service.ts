@@ -30,8 +30,9 @@ export class BadgesService {
     const idx = await this.prisma.hybridIndex.findUnique({ where: { userId } });
     const sex = (profile?.sex ?? "male") as Sex;
 
-    const [logCount, distinct, equipmentFreeCount, unlockedAttrs, streakState] = await Promise.all([
+    const [logCount, followsCount, distinct, equipmentFreeCount, unlockedAttrs, streakState] = await Promise.all([
       this.prisma.wodResult.count({ where: { userId } }),
+      this.prisma.follow.count({ where: { followerId: userId } }),
       this.prisma.wodResult.findMany({ where: { userId }, distinct: ["wodId"], select: { wodId: true } }),
       this.prisma.wodResult.count({ where: { userId, wod: { requiresEquipment: false } } }),
       this.prisma.attributeScore.count({ where: { userId, unlocked: true } }),
@@ -55,6 +56,7 @@ export class BadgesService {
 
     return {
       logCount,
+      followsCount,
       distinctWods: distinct.length,
       equipmentFreeCount,
       rank: profile?.rank ?? "rookie",

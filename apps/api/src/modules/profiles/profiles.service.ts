@@ -28,8 +28,14 @@ export class ProfilesService {
       isFollowing = !!f;
     }
 
+    const [resultCount, followCount] = await Promise.all([
+      this.prisma.wodResult.count({ where: { userId } }),
+      this.prisma.follow.count({ where: { followerId: userId } }),
+    ]);
+
     return {
       userId,
+      isConfirmed: resultCount >= 5 && followCount >= 5, // « Athlète confirmé » (anti-bot)
       displayName: profile.displayName,
       sex: profile.sex,
       goal: profile.goal,

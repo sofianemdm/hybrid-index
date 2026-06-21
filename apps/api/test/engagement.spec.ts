@@ -27,6 +27,7 @@ describe("iso-week (semaines ISO-8601, UTC)", () => {
 describe("matchesCondition (moteur de badges)", () => {
   const base: BadgeContext = {
     logCount: 10,
+    followsCount: 6,
     distinctWods: 6,
     equipmentFreeCount: 8,
     rank: "gold",
@@ -36,6 +37,12 @@ describe("matchesCondition (moteur de badges)", () => {
     streakCurrent: 5,
     streakBest: 12,
   };
+
+  it("« confirmed » = 5 séances ET 5 relations", () => {
+    expect(matchesCondition("confirmed", base)).toBe(true); // 10 séances, 6 relations
+    expect(matchesCondition("confirmed", { ...base, followsCount: 4 })).toBe(false);
+    expect(matchesCondition("confirmed", { ...base, logCount: 3 })).toBe(false);
+  });
 
   it("comparateurs >= sur rang/index/percentile/streak/wods", () => {
     expect(matchesCondition("rank>=gold", base)).toBe(true);

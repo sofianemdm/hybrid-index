@@ -232,8 +232,21 @@ class PublicProfileScreen extends ConsumerWidget {
                 constraints: const BoxConstraints(maxWidth: 480),
                 child: Column(
                   children: [
-                    Text(p.displayName,
-                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: HiColors.textPrimary)),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Flexible(
+                          child: Text(p.displayName,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: HiColors.textPrimary)),
+                        ),
+                        if (p.isConfirmed) ...[
+                          const SizedBox(width: 6),
+                          Icon(Icons.verified, size: 20, color: HiColors.brandPrimary),
+                        ],
+                      ],
+                    ),
                     const SizedBox(height: 4),
                     Text('${HiLabels.goal(p.goal)} · ${p.position != null ? '#${p.position} de sa ligue' : '—'}',
                         style: TextStyle(color: HiColors.textSecondary)),

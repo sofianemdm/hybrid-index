@@ -565,6 +565,7 @@ class PublicProfile {
   final int? position;
   final bool isFollowing;
   final bool isMe;
+  final bool isConfirmed;
   const PublicProfile({
     required this.userId,
     required this.displayName,
@@ -576,6 +577,7 @@ class PublicProfile {
     required this.position,
     required this.isFollowing,
     required this.isMe,
+    this.isConfirmed = false,
   });
 
   factory PublicProfile.fromJson(Map<String, dynamic> j) => PublicProfile(
@@ -591,6 +593,7 @@ class PublicProfile {
         position: (j['position'] as num?)?.toInt(),
         isFollowing: j['isFollowing'] as bool? ?? false,
         isMe: j['isMe'] as bool? ?? false,
+        isConfirmed: j['isConfirmed'] as bool? ?? false,
       );
 }
 

@@ -16,6 +16,7 @@ export interface BadgeDef {
 export const BADGES: BadgeDef[] = [
   // PROGRESSION
   { id: "first-index", category: "progression", name: "Premier Index", description: "Tu as obtenu ton premier HYBRID INDEX complet.", rarity: "common", condition: "attribute_unlocked:all", cosmeticUnlock: null },
+  { id: "confirmed-athlete", category: "progression", name: "Athlète confirmé", description: "5 séances loggées et 5 athlètes suivis — un vrai membre actif.", rarity: "rare", condition: "confirmed", cosmeticUnlock: null },
   { id: "rank-bronze", category: "progression", name: "Bronze", description: "Atteins le rang Bronze.", rarity: "common", condition: "rank>=bronze", cosmeticUnlock: null },
   { id: "rank-gold", category: "progression", name: "Or", description: "Atteins le rang Or.", rarity: "rare", condition: "rank>=gold", cosmeticUnlock: "avatar_glow_gold" },
   { id: "rank-diamond", category: "progression", name: "Diamant", description: "Atteins le rang Diamant.", rarity: "epic", condition: "rank>=diamond", cosmeticUnlock: "avatar_aura_diamond" },
@@ -40,6 +41,7 @@ const RANK_ORDER = ["rookie", "bronze", "silver", "gold", "platinum", "diamond",
 
 export interface BadgeContext {
   logCount: number;
+  followsCount: number; // nombre d'athlètes suivis
   distinctWods: number;
   equipmentFreeCount: number;
   rank: string;
@@ -53,6 +55,8 @@ export interface BadgeContext {
 /** Évalue une condition machine contre le contexte de l'utilisateur. */
 export function matchesCondition(condition: string, ctx: BadgeContext): boolean {
   if (condition === "attribute_unlocked:all") return ctx.attributesAllUnlocked;
+  // « Athlète confirmé » : membre actif et réel (anti-bot) — 5 séances + 5 relations.
+  if (condition === "confirmed") return ctx.logCount >= 5 && ctx.followsCount >= 5;
 
   const ge = condition.match(/^(\w+)>=(.+)$/);
   if (ge) {
