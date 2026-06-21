@@ -163,7 +163,7 @@ class _CardState extends State<_Card> with TickerProviderStateMixin {
     final idx = widget.profile.index;
     final skin = _skin;
     final isElite = idx.rank == 'elite';
-    final topPct = (100 - idx.percentile * 100).clamp(0, 100).round();
+    final topPct = (100 - idx.percentile * 100).clamp(1, 100).round();
     final byAttr = {for (final a in widget.profile.radar) a.attribute: a};
     const left = ['engine', 'power', 'muscular_endurance'];
     const right = ['strength', 'speed', 'hybrid'];

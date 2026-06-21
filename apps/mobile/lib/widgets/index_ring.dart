@@ -47,7 +47,7 @@ class IndexRing extends StatelessWidget {
                       style: TextStyle(color: HiColors.textSecondary, fontSize: 11, letterSpacing: 2)),
                   const SizedBox(height: 6),
                   Text(
-                    'Top ${(100 - percentile * 100).clamp(0, 100).toStringAsFixed(0)} %',
+                    'TOP ${(100 - percentile * 100).clamp(1, 100).round()} %',
                     style: TextStyle(color: HiColors.brandPrimary, fontSize: 13, fontWeight: FontWeight.w600),
                   ),
                 ],

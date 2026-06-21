@@ -118,7 +118,7 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
     final to = celebration[1];
     final m = RegExp(r'pop_top_(\d+)').firstMatch(to);
     if (m == null) return null;
-    return '🚀 Tu entres dans le top ${m.group(1)}% des humains les plus en forme !';
+    return '🚀 Tu entres dans le top ${m.group(1)}% des plus en forme !';
   }
 
   void _toast(String m) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m)));

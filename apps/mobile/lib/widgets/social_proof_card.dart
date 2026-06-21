@@ -47,19 +47,25 @@ class SocialProofCard extends StatelessWidget {
           child: top == null
               // Sous la médiane : jamais dévalorisant, formulé en progression.
               ? Text(
-                  'Tu poses tes bases — chaque séance te rapproche du haut du classement mondial.',
+                  'Tu poses tes bases — chaque séance te rapproche du haut du classement.',
                   style: TextStyle(color: HiColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600),
                 )
-              : RichText(
-                  text: TextSpan(
-                    style: TextStyle(color: HiColors.textPrimary, fontSize: 15, fontWeight: FontWeight.w700, height: 1.3),
-                    children: [
-                      const TextSpan(text: 'Tu fais partie des '),
-                      TextSpan(text: '$top%', style: TextStyle(color: HiColors.brandPrimary)),
-                      const TextSpan(text: ' des humains les plus en forme'),
-                    ],
-                  ),
-                ),
+              : top <= 1
+                  // Tout en haut : on célèbre, sans surenchère « des humains ».
+                  ? Text(
+                      '🔥 Tu es dans l\'élite — tout en haut des plus performants.',
+                      style: TextStyle(color: HiColors.textPrimary, fontSize: 15, fontWeight: FontWeight.w700, height: 1.3),
+                    )
+                  : RichText(
+                      text: TextSpan(
+                        style: TextStyle(color: HiColors.textPrimary, fontSize: 15, fontWeight: FontWeight.w700, height: 1.3),
+                        children: [
+                          const TextSpan(text: 'Tu fais partie des '),
+                          TextSpan(text: '$top%', style: TextStyle(color: HiColors.brandPrimary)),
+                          const TextSpan(text: ' les plus en forme'),
+                        ],
+                      ),
+                    ),
         ),
       ],
     );
