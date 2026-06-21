@@ -11,6 +11,7 @@ import type { EstimateWodRequest } from "./wod-estimate.dto";
 import type { CreateWodRequest, LogWodResultRequest } from "./create-wod.dto";
 import { ratingFromInternal } from "@hybrid-index/scoring-core";
 import { WOD_PRESCRIPTIONS } from "./wod-prescriptions.data";
+import { WOD_REFERENCES } from "./wod-references.data";
 
 /** Sous-score interne /1000 → note d'affichage /100 (null si absent). */
 const ovrSub = (v: number | null): number | null => (v == null ? null : Math.round(ratingFromInternal(v)));
@@ -236,6 +237,8 @@ export class WodsService {
       myHistory, // mes prestations passées sur cette séance (récent → ancien)
       // Énoncé concret de la séance (mouvements + poids) pour les WODs de référence.
       prescription: WOD_PRESCRIPTIONS[wod.id] ?? null,
+      // Cibles « Référence Pro » (données publiques) à viser sur cette séance.
+      references: WOD_REFERENCES[wod.id] ?? [],
     };
   }
 

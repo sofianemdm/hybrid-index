@@ -98,6 +98,10 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
                 const SizedBox(height: HiSpace.md),
                 if (d.levels(_sex) != null) _tierCard(d) else Text('Paliers non disponibles pour cette séance.', style: TextStyle(color: HiColors.textTertiary)),
                 const SizedBox(height: HiSpace.lg),
+                if (d.references.any((r) => r.sex == _sex)) ...[
+                  _referencesSection(d),
+                  const SizedBox(height: HiSpace.lg),
+                ],
                 if (d.myHistory.isNotEmpty) ...[
                   _mesPrestations(d),
                   const SizedBox(height: HiSpace.lg),
@@ -377,6 +381,58 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
                 color: active ? HiColors.textOnBrand : HiColors.textSecondary,
                 fontWeight: FontWeight.w700,
                 fontSize: 12)),
+      ),
+    );
+  }
+
+  Widget _referencesSection(WodDetail d) {
+    final refs = d.references.where((r) => r.sex == _sex).toList();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('🎯 Références pro', style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 16)),
+        const SizedBox(height: 2),
+        Text('Données publiques · des cibles à viser', style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
+        const SizedBox(height: HiSpace.sm),
+        Container(
+          decoration: BoxDecoration(
+            color: HiColors.bgElevated,
+            borderRadius: BorderRadius.circular(HiRadius.md),
+            border: Border.all(color: HiColors.strokeSubtle),
+          ),
+          child: Column(
+            children: [
+              for (var i = 0; i < refs.length; i++) ...[
+                if (i > 0) Divider(height: 1, color: HiColors.strokeSubtle),
+                _refRow(refs[i]),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _refRow(WodReference r) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: HiSpace.md, vertical: 10),
+      child: Row(
+        children: [
+          Text(r.tier == 'record' ? '🌍' : '⭐', style: const TextStyle(fontSize: 15)),
+          const SizedBox(width: HiSpace.sm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(r.athlete ?? 'Élite',
+                    style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
+                if (r.source != null && r.source!.isNotEmpty)
+                  Text(r.source!, style: TextStyle(color: HiColors.textTertiary, fontSize: 11)),
+              ],
+            ),
+          ),
+          Text(r.note, style: TextStyle(color: HiColors.brandPrimary, fontWeight: FontWeight.w800)),
+        ],
       ),
     );
   }

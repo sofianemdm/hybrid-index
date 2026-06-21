@@ -1018,6 +1018,33 @@ class WodHistoryEntry {
       );
 }
 
+/// Cible « Référence Pro » (donnée publique) à viser sur une séance.
+class WodReference {
+  final String tier; // 'record' | 'elite'
+  final String sex;
+  final String? athlete;
+  final num result;
+  final String note;
+  final String? source;
+  const WodReference({
+    required this.tier,
+    required this.sex,
+    this.athlete,
+    required this.result,
+    required this.note,
+    this.source,
+  });
+
+  factory WodReference.fromJson(Map<String, dynamic> j) => WodReference(
+        tier: j['tier'] as String? ?? 'elite',
+        sex: j['sex'] as String? ?? 'male',
+        athlete: j['athlete'] as String?,
+        result: (j['result'] as num?) ?? 0,
+        note: j['note'] as String? ?? '',
+        source: j['source'] as String?,
+      );
+}
+
 class WodDetail {
   final String id;
   final String name;
@@ -1034,6 +1061,9 @@ class WodDetail {
 
   /// Mes prestations passées sur cette séance (récent → ancien).
   final List<WodHistoryEntry> myHistory;
+
+  /// Cibles « Référence Pro » (données publiques) à viser.
+  final List<WodReference> references;
   const WodDetail({
     required this.id,
     required this.name,
@@ -1046,6 +1076,7 @@ class WodDetail {
     required this.myBestSubScore,
     this.prescription,
     this.myHistory = const [],
+    this.references = const [],
   });
 
   WodTriple? levels(String sex) => sex == 'female' ? female : male;
@@ -1068,6 +1099,9 @@ class WodDetail {
           : WodPrescription.fromJson((j['prescription'] as Map).cast<String, dynamic>()),
       myHistory: ((j['myHistory'] as List?) ?? [])
           .map((e) => WodHistoryEntry.fromJson((e as Map).cast<String, dynamic>()))
+          .toList(),
+      references: ((j['references'] as List?) ?? [])
+          .map((e) => WodReference.fromJson((e as Map).cast<String, dynamic>()))
           .toList(),
     );
   }
