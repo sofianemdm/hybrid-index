@@ -63,19 +63,19 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
           context: context,
           builder: (_) => AlertDialog(
             backgroundColor: HiColors.bgElevated,
-            title: const Text('Résultat enregistré 💪', style: TextStyle(color: HiColors.textPrimary)),
+            title: Text('Résultat enregistré 💪', style: TextStyle(color: HiColors.textPrimary)),
             content: Column(mainAxisSize: MainAxisSize.min, children: [
-              const Text('HYBRID INDEX', style: TextStyle(color: HiColors.textSecondary)),
+              Text('HYBRID INDEX', style: TextStyle(color: HiColors.textSecondary)),
               const SizedBox(height: 8),
               Text('${profile.index.value}',
-                  style: const TextStyle(color: HiColors.brandPrimary, fontSize: 44, fontWeight: FontWeight.w800)),
+                  style: TextStyle(color: HiColors.brandPrimary, fontSize: 44, fontWeight: FontWeight.w800)),
               const SizedBox(height: 12),
               AttributeGains(gains: profile.gains, weakest: profile.weakest),
               if (_bandUpText(profile.bandCelebration) != null) ...[
                 const SizedBox(height: 12),
                 Text(_bandUpText(profile.bandCelebration)!,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(color: HiColors.brandPrimary, fontWeight: FontWeight.w700)),
+                    style: TextStyle(color: HiColors.brandPrimary, fontWeight: FontWeight.w700)),
               ],
             ]),
             actions: [TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Continuer'))],
@@ -121,18 +121,18 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text('Ton résultat (${_isTime ? 'temps' : widget.scoreType == 'load' ? 'kg' : widget.scoreType == 'distance' ? 'mètres' : 'reps'})',
-                    style: const TextStyle(color: HiColors.textSecondary)),
+                    style: TextStyle(color: HiColors.textSecondary)),
                 const SizedBox(height: 8),
                 if (_isTime)
                   Row(children: [
                     Expanded(child: _num(_min, 'min')),
-                    const Padding(padding: EdgeInsets.symmetric(horizontal: 8), child: Text(':', style: TextStyle(color: HiColors.textSecondary, fontSize: 20))),
+                    Padding(padding: const EdgeInsets.symmetric(horizontal: 8), child: Text(':', style: TextStyle(color: HiColors.textSecondary, fontSize: 20))),
                     Expanded(child: _num(_sec, 'sec')),
                   ])
                 else
                   _num(_value, 'résultat', decimal: widget.scoreType == 'load'),
                 const SizedBox(height: HiSpace.lg),
-                const Text('Échelle', style: TextStyle(color: HiColors.textSecondary)),
+                Text('Échelle', style: TextStyle(color: HiColors.textSecondary)),
                 const SizedBox(height: 8),
                 Row(children: [
                   _scaleChip('Rx (prescrit)', true),
@@ -141,7 +141,7 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
                 ]),
                 if (pref != null) ...[
                   const SizedBox(height: HiSpace.sm),
-                  const Text('Le classement Rx et Scaled sont séparés.',
+                  Text('Le classement Rx et Scaled sont séparés.',
                       style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
                 ],
                 const SizedBox(height: HiSpace.xl),

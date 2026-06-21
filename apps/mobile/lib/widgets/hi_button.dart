@@ -30,14 +30,14 @@ class HiButton extends StatelessWidget {
               height: 52,
               alignment: Alignment.center,
               child: loading
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 22,
                       height: 22,
                       child: CircularProgressIndicator(strokeWidth: 2.5, color: HiColors.textOnBrand),
                     )
                   : Text(
                       label,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: HiColors.textOnBrand,
                         fontWeight: FontWeight.w700,
                         fontSize: 16,
@@ -63,7 +63,7 @@ class HiButtonSecondary extends StatelessWidget {
     return OutlinedButton(
       style: OutlinedButton.styleFrom(
         minimumSize: const Size.fromHeight(52),
-        side: const BorderSide(color: HiColors.strokeStrong),
+        side: BorderSide(color: HiColors.strokeStrong),
         foregroundColor: HiColors.textPrimary,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(HiRadius.md)),
       ),

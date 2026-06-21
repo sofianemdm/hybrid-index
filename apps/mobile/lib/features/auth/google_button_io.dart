@@ -35,7 +35,7 @@ class GoogleSignInButton extends StatelessWidget {
     return OutlinedButton.icon(
       style: OutlinedButton.styleFrom(
         minimumSize: const Size.fromHeight(48),
-        side: const BorderSide(color: HiColors.strokeStrong),
+        side: BorderSide(color: HiColors.strokeStrong),
         foregroundColor: HiColors.textPrimary,
       ),
       icon: const Icon(Icons.account_circle_outlined),

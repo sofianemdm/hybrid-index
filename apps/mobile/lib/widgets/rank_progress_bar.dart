@@ -28,14 +28,14 @@ class RankProgressBar extends StatelessWidget {
           Row(
             children: [
               Text(HiLabels.rank(rp.current),
-                  style: const TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
+                  style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
               const Spacer(),
               if (atMax)
-                const Text('Rang maximal 👑',
+                Text('Rang maximal 👑',
                     style: TextStyle(color: HiColors.brandPrimary, fontWeight: FontWeight.w700, fontSize: 13))
               else
                 Text('encore ${rp.pointsToNext} pts → ${HiLabels.rank(rp.next!)}',
-                    style: const TextStyle(color: HiColors.textSecondary, fontSize: 14)),
+                    style: TextStyle(color: HiColors.textSecondary, fontSize: 14)),
             ],
           ),
           const SizedBox(height: HiSpace.sm),
@@ -45,7 +45,7 @@ class RankProgressBar extends StatelessWidget {
               value: visual,
               minHeight: 8,
               backgroundColor: HiColors.bgElevated2,
-              valueColor: const AlwaysStoppedAnimation(HiColors.brandPrimary),
+              valueColor: AlwaysStoppedAnimation(HiColors.brandPrimary),
             ),
           ),
         ],

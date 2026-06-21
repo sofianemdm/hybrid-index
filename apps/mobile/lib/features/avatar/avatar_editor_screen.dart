@@ -110,7 +110,7 @@ class _AvatarEditorScreenState extends ConsumerState<AvatarEditorScreen> {
 
   Widget _label(String t) => Padding(
         padding: const EdgeInsets.only(bottom: HiSpace.sm),
-        child: Text(t, style: const TextStyle(color: HiColors.textSecondary, fontSize: 13)),
+        child: Text(t, style: TextStyle(color: HiColors.textSecondary, fontSize: 13)),
       );
 
   Widget _swatches(List<Color> colors, int selected, ValueChanged<int> onTap) {
@@ -148,7 +148,7 @@ class _AvatarEditorScreenState extends ConsumerState<AvatarEditorScreen> {
           selectedColor: HiColors.brandPrimary,
           backgroundColor: HiColors.bgElevated2,
           labelStyle: TextStyle(color: active ? HiColors.textOnBrand : HiColors.textSecondary, fontWeight: FontWeight.w600),
-          side: const BorderSide(color: HiColors.strokeSubtle),
+          side: BorderSide(color: HiColors.strokeSubtle),
           onSelected: (_) => onTap(i),
         );
       }),

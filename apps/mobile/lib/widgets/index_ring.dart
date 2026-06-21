@@ -43,12 +43,12 @@ class IndexRing extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  const Text('HYBRID INDEX',
+                  Text('HYBRID INDEX',
                       style: TextStyle(color: HiColors.textSecondary, fontSize: 11, letterSpacing: 2)),
                   const SizedBox(height: 6),
                   Text(
                     'Top ${(100 - percentile * 100).clamp(0, 100).toStringAsFixed(0)} %',
-                    style: const TextStyle(color: HiColors.brandPrimary, fontSize: 13, fontWeight: FontWeight.w600),
+                    style: TextStyle(color: HiColors.brandPrimary, fontSize: 13, fontWeight: FontWeight.w600),
                   ),
                 ],
               ),
@@ -80,11 +80,11 @@ class _RingPainter extends CustomPainter {
 
     final sweep = 2 * math.pi * progress.clamp(0.0, 1.0);
     final arc = Paint()
-      ..shader = const SweepGradient(
+      ..shader = SweepGradient(
         startAngle: 0,
         endAngle: 2 * math.pi,
         colors: [HiColors.brandPrimary, HiColors.brandSecondary, HiColors.brandPrimary],
-        transform: GradientRotation(start),
+        transform: const GradientRotation(start),
       ).createShader(Rect.fromCircle(center: center, radius: radius))
       ..style = PaintingStyle.stroke
       ..strokeWidth = stroke

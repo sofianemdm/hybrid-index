@@ -29,7 +29,7 @@ class RevealScreen extends ConsumerWidget {
               child: Column(
                 children: [
                   const SizedBox(height: HiSpace.md),
-                  const Text('TON HYBRID INDEX',
+                  Text('TON HYBRID INDEX',
                       style: TextStyle(color: HiColors.textSecondary, letterSpacing: 3, fontSize: 13)),
                   const SizedBox(height: HiSpace.lg),
                   IndexRing(value: idx.value, percentile: idx.percentile),
@@ -37,7 +37,7 @@ class RevealScreen extends ConsumerWidget {
                   RankBadge(rank: idx.rank, fontSize: 15),
                   if (idx.isProvisional) ...[
                     const SizedBox(height: HiSpace.sm),
-                    const Text('Index provisoire — affine-le en loggant plus de WODs.',
+                    Text('Index provisoire — affine-le en loggant plus de WODs.',
                         textAlign: TextAlign.center, style: TextStyle(color: HiColors.warn, fontSize: 12)),
                   ],
                   if (idx.rankProgress != null) ...[
@@ -55,7 +55,7 @@ class RevealScreen extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Ton radar',
+                          Text('Ton radar',
                               style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 16)),
                           const SizedBox(height: HiSpace.sm),
                           RadarView(radar: profile.radar),

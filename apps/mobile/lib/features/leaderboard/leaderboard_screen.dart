@@ -43,8 +43,8 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
     return SafeArea(
       child: Column(
         children: [
-          const Padding(
-            padding: EdgeInsets.fromLTRB(HiSpace.lg, HiSpace.lg, HiSpace.lg, HiSpace.sm),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(HiSpace.lg, HiSpace.lg, HiSpace.lg, HiSpace.sm),
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text('Classement',
@@ -74,13 +74,13 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                     child: Padding(
                       padding: const EdgeInsets.all(HiSpace.lg),
                       child: Text('${snap.error}',
-                          textAlign: TextAlign.center, style: const TextStyle(color: HiColors.error)),
+                          textAlign: TextAlign.center, style: TextStyle(color: HiColors.error)),
                     ),
                   );
                 }
                 final lb = snap.data!;
                 if (lb.entries.isEmpty) {
-                  return const Center(
+                  return Center(
                       child: Text('Aucun athlète pour l’instant.', style: TextStyle(color: HiColors.textTertiary)));
                 }
                 return RefreshIndicator(
@@ -88,7 +88,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                   child: ListView.separated(
                     padding: const EdgeInsets.fromLTRB(HiSpace.lg, 0, HiSpace.lg, 96),
                     itemCount: lb.entries.length,
-                    separatorBuilder: (_, __) => const Divider(height: 1, color: HiColors.strokeSubtle),
+                    separatorBuilder: (_, __) => Divider(height: 1, color: HiColors.strokeSubtle),
                     itemBuilder: (_, i) => _row(lb.entries[i]),
                   ),
                 );
@@ -151,7 +151,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
           RankBadge(rank: e.rank, fontSize: 11),
           const SizedBox(width: HiSpace.md),
           Text('${e.value}',
-              style: const TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w800, fontFeatures: [])),
+              style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w800, fontFeatures: const [])),
         ],
       ),
       ),

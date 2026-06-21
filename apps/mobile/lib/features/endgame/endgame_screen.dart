@@ -34,7 +34,7 @@ class _EndgameScreenState extends ConsumerState<EndgameScreen> {
               return const Center(child: CircularProgressIndicator());
             }
             if (snap.hasError) {
-              return Center(child: Text('${snap.error}', style: const TextStyle(color: HiColors.error)));
+              return Center(child: Text('${snap.error}', style: TextStyle(color: HiColors.error)));
             }
             final e = snap.data!;
             final progress = e.total == 0 ? 0.0 : e.beaten / e.total;
@@ -54,18 +54,18 @@ class _EndgameScreenState extends ConsumerState<EndgameScreen> {
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.emoji_events, color: HiColors.attrSpeed),
+                          Icon(Icons.emoji_events, color: HiColors.attrSpeed),
                           const SizedBox(width: 8),
-                          const Expanded(
+                          Expanded(
                             child: Text('Grand Chelem',
                                 style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w800, fontSize: 18)),
                           ),
                           Text('${e.beaten}/${e.total}',
-                              style: const TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w800)),
+                              style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w800)),
                         ],
                       ),
                       const SizedBox(height: 4),
-                      const Text('Bats le temps/score « pro » sur les 15 WODs de référence.',
+                      Text('Bats le temps/score « pro » sur les 15 WODs de référence.',
                           style: TextStyle(color: HiColors.textSecondary, fontSize: 13)),
                       const SizedBox(height: HiSpace.md),
                       ClipRRect(
@@ -80,11 +80,11 @@ class _EndgameScreenState extends ConsumerState<EndgameScreen> {
                       ),
                       if (e.grandSlamComplete) ...[
                         const SizedBox(height: HiSpace.md),
-                        const Text('🏆 Grand Chelem complété — statut Ambassadeur débloqué !',
+                        Text('🏆 Grand Chelem complété — statut Ambassadeur débloqué !',
                             style: TextStyle(color: HiColors.attrSpeed, fontWeight: FontWeight.w700)),
                       ] else if (e.remaining.isNotEmpty) ...[
                         const SizedBox(height: HiSpace.md),
-                        const Text('Il te reste :', style: TextStyle(color: HiColors.textSecondary, fontSize: 13)),
+                        Text('Il te reste :', style: TextStyle(color: HiColors.textSecondary, fontSize: 13)),
                         const SizedBox(height: 4),
                         Wrap(
                           spacing: 6,
@@ -96,7 +96,7 @@ class _EndgameScreenState extends ConsumerState<EndgameScreen> {
                                       color: HiColors.bgElevated2,
                                       borderRadius: BorderRadius.circular(HiRadius.pill),
                                     ),
-                                    child: Text(name, style: const TextStyle(color: HiColors.textTertiary, fontSize: 11)),
+                                    child: Text(name, style: TextStyle(color: HiColors.textTertiary, fontSize: 11)),
                                   ))
                               .toList(),
                         ),
@@ -151,8 +151,8 @@ class _EndgameScreenState extends ConsumerState<EndgameScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(color: HiColors.textSecondary, fontSize: 13)),
-                Text(value, style: const TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w800, fontSize: 18)),
+                Text(title, style: TextStyle(color: HiColors.textSecondary, fontSize: 13)),
+                Text(value, style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w800, fontSize: 18)),
                 if (highlight != null)
                   Text(highlight, style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w600)),
               ],

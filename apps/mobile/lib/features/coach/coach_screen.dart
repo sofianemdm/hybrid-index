@@ -46,7 +46,7 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Text('Sur quel axe progresser ?',
+                Text('Sur quel axe progresser ?',
                     style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 16)),
                 const SizedBox(height: HiSpace.sm),
                 Wrap(
@@ -65,7 +65,7 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
                       return const Padding(padding: EdgeInsets.all(40), child: Center(child: CircularProgressIndicator()));
                     }
                     if (snap.hasError) {
-                      return Text('${snap.error}', style: const TextStyle(color: HiColors.error));
+                      return Text('${snap.error}', style: TextStyle(color: HiColors.error));
                     }
                     return _content(snap.data!);
                   },
@@ -94,34 +94,34 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
           child: Column(
             children: [
               Text('Si tu progresses sur ${HiLabels.attribute(r.targetAttribute)}',
-                  style: const TextStyle(color: HiColors.textSecondary)),
+                  style: TextStyle(color: HiColors.textSecondary)),
               const SizedBox(height: HiSpace.md),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text('${r.current}',
-                      style: const TextStyle(color: HiColors.textSecondary, fontSize: 28, fontWeight: FontWeight.w700)),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      style: TextStyle(color: HiColors.textSecondary, fontSize: 28, fontWeight: FontWeight.w700)),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     child: Icon(Icons.arrow_forward, color: HiColors.textTertiary),
                   ),
                   Text('${r.projected}',
-                      style: const TextStyle(color: HiColors.brandPrimary, fontSize: 40, fontWeight: FontWeight.w800)),
+                      style: TextStyle(color: HiColors.brandPrimary, fontSize: 40, fontWeight: FontWeight.w800)),
                 ],
               ),
               if (r.delta > 0)
                 Text('+${r.delta} points potentiels',
-                    style: const TextStyle(color: HiColors.success, fontWeight: FontWeight.w600)),
+                    style: TextStyle(color: HiColors.success, fontWeight: FontWeight.w600)),
             ],
           ),
         ),
         const SizedBox(height: HiSpace.lg),
         Text('Séances pour ${HiLabels.attribute(r.targetAttribute)}',
-            style: const TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 16)),
+            style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 16)),
         const SizedBox(height: HiSpace.sm),
         if (r.sessions.isEmpty)
-          const Text('Aucune séance pour cet axe avec ton matériel.', style: TextStyle(color: HiColors.textTertiary))
+          Text('Aucune séance pour cet axe avec ton matériel.', style: TextStyle(color: HiColors.textTertiary))
         else
           ...r.sessions.map((s) => _sessionCard(s, color)),
       ],
@@ -140,7 +140,7 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
               children: [
                 Expanded(
                   child: Text(s.name,
-                      style: const TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
+                      style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
                 ),
                 _tag('${s.durationMin} min', HiColors.textTertiary),
               ],
@@ -155,7 +155,7 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
               ],
             ),
             const SizedBox(height: 8),
-            Text(s.description, style: const TextStyle(color: HiColors.textSecondary, fontSize: 13, height: 1.4)),
+            Text(s.description, style: TextStyle(color: HiColors.textSecondary, fontSize: 13, height: 1.4)),
           ],
         ),
       ),
@@ -183,7 +183,7 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
       selectedColor: HiColors.brandPrimary,
       backgroundColor: HiColors.bgElevated2,
       labelStyle: TextStyle(color: active ? HiColors.textOnBrand : HiColors.textSecondary, fontWeight: FontWeight.w600),
-      side: const BorderSide(color: HiColors.strokeSubtle),
+      side: BorderSide(color: HiColors.strokeSubtle),
       onSelected: (_) => _select(value),
     );
   }

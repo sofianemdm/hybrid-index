@@ -49,7 +49,7 @@ class _FollowButtonState extends ConsumerState<_FollowButton> {
           ? OutlinedButton.icon(
               style: OutlinedButton.styleFrom(
                 minimumSize: const Size.fromHeight(44),
-                side: const BorderSide(color: HiColors.strokeStrong),
+                side: BorderSide(color: HiColors.strokeStrong),
                 foregroundColor: HiColors.textSecondary,
               ),
               icon: const Icon(Icons.check, size: 18),
@@ -93,7 +93,7 @@ class PublicProfileScreen extends ConsumerWidget {
               return Center(
                 child: Padding(
                   padding: const EdgeInsets.all(HiSpace.lg),
-                  child: Text('${snap.error}', textAlign: TextAlign.center, style: const TextStyle(color: HiColors.error)),
+                  child: Text('${snap.error}', textAlign: TextAlign.center, style: TextStyle(color: HiColors.error)),
                 ),
               );
             }
@@ -105,15 +105,15 @@ class PublicProfileScreen extends ConsumerWidget {
                 child: Column(
                   children: [
                     Text(p.displayName,
-                        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: HiColors.textPrimary)),
+                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: HiColors.textPrimary)),
                     const SizedBox(height: 4),
                     Text('${HiLabels.goal(p.goal)} · ${p.position != null ? '#${p.position} de sa ligue' : '—'}',
-                        style: const TextStyle(color: HiColors.textSecondary)),
+                        style: TextStyle(color: HiColors.textSecondary)),
                     const SizedBox(height: HiSpace.lg),
                     if (p.index != null)
                       IndexRing(value: p.index!.value, percentile: p.index!.percentile, size: 200)
                     else
-                      const Text('Pas encore d’Index.', style: TextStyle(color: HiColors.textTertiary)),
+                      Text('Pas encore d’Index.', style: TextStyle(color: HiColors.textTertiary)),
                     const SizedBox(height: HiSpace.md),
                     RankBadge(rank: p.rank, fontSize: 14),
                     if (!p.isMe) ...[
@@ -130,7 +130,7 @@ class PublicProfileScreen extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(mine != null ? 'Comparaison' : 'Son radar',
-                                style: const TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 16)),
+                                style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 16)),
                             const SizedBox(height: HiSpace.sm),
                             if (mine != null)
                               OverlayRadar(mine: mine.radar, other: p.radar)
@@ -170,7 +170,7 @@ class PublicProfileScreen extends ConsumerWidget {
               ahead
                   ? 'Tu es devant de ${diff.abs()} points (toi ${mine.index.value} · lui ${other.index!.value}).'
                   : 'Il te devance de ${diff.abs()} points (toi ${mine.index.value} · lui ${other.index!.value}).',
-              style: const TextStyle(color: HiColors.textPrimary),
+              style: TextStyle(color: HiColors.textPrimary),
             ),
           ),
         ],

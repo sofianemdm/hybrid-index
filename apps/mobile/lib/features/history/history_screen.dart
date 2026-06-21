@@ -59,13 +59,13 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
               return const Center(child: CircularProgressIndicator());
             }
             if (snap.hasError) {
-              return Center(child: Text('${snap.error}', style: const TextStyle(color: HiColors.error)));
+              return Center(child: Text('${snap.error}', style: TextStyle(color: HiColors.error)));
             }
             final items = snap.data!;
             if (items.isEmpty) {
-              return const Center(
+              return Center(
                 child: Padding(
-                  padding: EdgeInsets.all(HiSpace.lg),
+                  padding: const EdgeInsets.all(HiSpace.lg),
                   child: Text('Aucun WOD loggé pour l’instant.',
                       textAlign: TextAlign.center, style: TextStyle(color: HiColors.textTertiary)),
                 ),
@@ -97,10 +97,10 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(_name(r.wodId), style: const TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
+                Text(_name(r.wodId), style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 2),
                 Text('${_formatResult(r)} · ${_date(r.performedAt)}',
-                    style: const TextStyle(color: HiColors.textSecondary, fontSize: 13)),
+                    style: TextStyle(color: HiColors.textSecondary, fontSize: 13)),
               ],
             ),
           ),
@@ -112,7 +112,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                 borderRadius: BorderRadius.circular(HiRadius.pill),
               ),
               child: Text('${r.subScore}',
-                  style: const TextStyle(color: HiColors.brandPrimary, fontWeight: FontWeight.w800)),
+                  style: TextStyle(color: HiColors.brandPrimary, fontWeight: FontWeight.w800)),
             ),
         ],
       ),

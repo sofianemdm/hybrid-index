@@ -36,7 +36,7 @@ class _WodTabState extends ConsumerState<WodTab> {
             }
             if (snap.hasError) {
               return ListView(children: [
-                Padding(padding: const EdgeInsets.all(HiSpace.lg), child: Text('${snap.error}', style: const TextStyle(color: HiColors.error))),
+                Padding(padding: const EdgeInsets.all(HiSpace.lg), child: Text('${snap.error}', style: TextStyle(color: HiColors.error))),
               ]);
             }
             final all = snap.data!;
@@ -45,10 +45,10 @@ class _WodTabState extends ConsumerState<WodTab> {
             return ListView(
               padding: const EdgeInsets.fromLTRB(HiSpace.lg, HiSpace.lg, HiSpace.lg, 96),
               children: [
-                const Text('WOD',
+                Text('WOD',
                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: HiColors.textPrimary)),
                 const SizedBox(height: 4),
-                const Text('Choisis un WOD, vois les records et où tu te situes.',
+                Text('Choisis un WOD, vois les records et où tu te situes.',
                     style: TextStyle(color: HiColors.textSecondary)),
                 const SizedBox(height: HiSpace.lg),
                 if (sansMateriel.isNotEmpty) ...[
@@ -71,7 +71,7 @@ class _WodTabState extends ConsumerState<WodTab> {
   Widget _section(String t) => Padding(
         padding: const EdgeInsets.only(bottom: HiSpace.sm),
         child: Text(t.toUpperCase(),
-            style: const TextStyle(color: HiColors.textTertiary, fontSize: 12, letterSpacing: 1.5, fontWeight: FontWeight.w700)),
+            style: TextStyle(color: HiColors.textTertiary, fontSize: 12, letterSpacing: 1.5, fontWeight: FontWeight.w700)),
       );
 
   Widget _card(WodCatalogEntry w) {
@@ -92,14 +92,14 @@ class _WodTabState extends ConsumerState<WodTab> {
                 Icon(w.scoreType == 'time' ? Icons.timer_outlined : Icons.repeat, color: HiColors.brandPrimary),
                 const SizedBox(width: HiSpace.md),
                 Expanded(
-                  child: Text(w.name, style: const TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
+                  child: Text(w.name, style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
                 ),
                 if (w.isCustom)
-                  const Padding(
-                    padding: EdgeInsets.only(right: 6),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 6),
                     child: Text('≈', style: TextStyle(color: HiColors.warn, fontWeight: FontWeight.w800)),
                   ),
-                const Icon(Icons.chevron_right, color: HiColors.textTertiary),
+                Icon(Icons.chevron_right, color: HiColors.textTertiary),
               ],
             ),
           ),

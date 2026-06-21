@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app.dart';
 import 'data/session.dart';
+import 'data/theme_mode.dart';
 import 'theme/app_theme.dart';
+import 'theme/tokens.dart';
 
 void main() {
   runApp(const ProviderScope(child: HybridIndexApp()));
@@ -28,10 +30,19 @@ class _HybridIndexAppState extends ConsumerState<HybridIndexApp> {
 
   @override
   Widget build(BuildContext context) {
+    final themeMode = ref.watch(themeModeProvider);
     return MaterialApp(
       title: 'HYBRID INDEX',
       debugShowCheckedModeBanner: false,
-      theme: buildHiTheme(),
+      theme: buildHiTheme(Brightness.light),
+      darkTheme: buildHiTheme(Brightness.dark),
+      themeMode: themeMode,
+      // Synchronise la palette des tokens HiColors avec le thème RÉELLEMENT appliqué (système inclus)
+      // AVANT que le sous-arbre ne se construise.
+      builder: (context, child) {
+        HiColors.active = Theme.of(context).brightness == Brightness.light ? kHiLight : kHiDark;
+        return child!;
+      },
       home: const AuthGate(),
     );
   }

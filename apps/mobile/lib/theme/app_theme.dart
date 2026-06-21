@@ -1,53 +1,65 @@
 import 'package:flutter/material.dart';
 import 'tokens.dart';
 
-/// ThemeData sombre HYBRID INDEX.
-ThemeData buildHiTheme() {
-  final base = ThemeData.dark(useMaterial3: true);
+/// ThemeData HYBRID INDEX pour une luminosité donnée (sombre par défaut, clair disponible).
+/// Utilise la palette directement (déterministe, indépendant de HiColors.active).
+ThemeData buildHiTheme(Brightness brightness) {
+  final pal = brightness == Brightness.light ? kHiLight : kHiDark;
+  final base = ThemeData(brightness: brightness, useMaterial3: true);
+  final scheme = brightness == Brightness.light
+      ? ColorScheme.light(
+          primary: pal.brandPrimary,
+          secondary: pal.brandSecondary,
+          surface: pal.bgElevated,
+          error: pal.error,
+          onPrimary: pal.textOnBrand,
+          onSurface: pal.textPrimary,
+        )
+      : ColorScheme.dark(
+          primary: pal.brandPrimary,
+          secondary: pal.brandSecondary,
+          surface: pal.bgElevated,
+          error: pal.error,
+          onPrimary: pal.textOnBrand,
+          onSurface: pal.textPrimary,
+        );
   return base.copyWith(
-    scaffoldBackgroundColor: HiColors.bgBase,
-    colorScheme: const ColorScheme.dark(
-      primary: HiColors.brandPrimary,
-      secondary: HiColors.brandSecondary,
-      surface: HiColors.bgElevated,
-      error: HiColors.error,
-      onPrimary: HiColors.textOnBrand,
-      onSurface: HiColors.textPrimary,
-    ),
+    scaffoldBackgroundColor: pal.bgBase,
+    colorScheme: scheme,
     textTheme: base.textTheme.apply(
-      bodyColor: HiColors.textPrimary,
-      displayColor: HiColors.textPrimary,
+      bodyColor: pal.textPrimary,
+      displayColor: pal.textPrimary,
       fontFamily: 'Roboto',
     ),
     cardTheme: CardThemeData(
-      color: HiColors.bgElevated,
+      color: pal.bgElevated,
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(HiRadius.lg),
-        side: const BorderSide(color: HiColors.strokeSubtle),
+        side: BorderSide(color: pal.strokeSubtle),
       ),
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: HiColors.bgElevated2,
-      hintStyle: const TextStyle(color: HiColors.textTertiary),
-      labelStyle: const TextStyle(color: HiColors.textSecondary),
+      fillColor: pal.bgElevated2,
+      hintStyle: TextStyle(color: pal.textTertiary),
+      labelStyle: TextStyle(color: pal.textSecondary),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(HiRadius.md),
-        borderSide: const BorderSide(color: HiColors.strokeSubtle),
+        borderSide: BorderSide(color: pal.strokeSubtle),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(HiRadius.md),
-        borderSide: const BorderSide(color: HiColors.strokeSubtle),
+        borderSide: BorderSide(color: pal.strokeSubtle),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(HiRadius.md),
-        borderSide: const BorderSide(color: HiColors.brandPrimary, width: 1.5),
+        borderSide: BorderSide(color: pal.brandPrimary, width: 1.5),
       ),
     ),
-    snackBarTheme: const SnackBarThemeData(
-      backgroundColor: HiColors.bgElevated2,
-      contentTextStyle: TextStyle(color: HiColors.textPrimary),
+    snackBarTheme: SnackBarThemeData(
+      backgroundColor: pal.bgElevated2,
+      contentTextStyle: TextStyle(color: pal.textPrimary),
       behavior: SnackBarBehavior.floating,
     ),
   );

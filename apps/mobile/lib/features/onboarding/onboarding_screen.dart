@@ -135,7 +135,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         actions: [
           TextButton(
             onPressed: () => ref.read(sessionProvider.notifier).logout(),
-            child: const Text('Déconnexion', style: TextStyle(color: HiColors.textTertiary)),
+            child: Text('Déconnexion', style: TextStyle(color: HiColors.textTertiary)),
           ),
         ],
       ),
@@ -157,10 +157,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   List<Widget> _avatarStep() => [
-        const Text('Crée ton avatar',
+        Text('Crée ton avatar',
             style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: HiColors.textPrimary)),
         const SizedBox(height: 6),
-        const Text('Personnalise-le (modifiable à tout moment dans les paramètres).',
+        Text('Personnalise-le (modifiable à tout moment dans les paramètres).',
             style: TextStyle(color: HiColors.textSecondary)),
         const SizedBox(height: HiSpace.lg),
         AvatarCustomizer(config: _avatar, onChanged: (c) => setState(() => _avatar = c)),
@@ -170,10 +170,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       ];
 
   List<Widget> _effortsStep() => [
-        const Text('Révèle ton Index',
+        Text('Révèle ton Index',
             style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: HiColors.textPrimary)),
         const SizedBox(height: 6),
-        const Text('Un effort suffit. Ajoutes-en plus pour un Index plus précis.',
+        Text('Un effort suffit. Ajoutes-en plus pour un Index plus précis.',
             style: TextStyle(color: HiColors.textSecondary)),
         const SizedBox(height: HiSpace.lg),
         _courseCard(),
@@ -221,7 +221,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           children: [
             Row(
               children: [
-                const Expanded(
+                Expanded(
                   child: Text('Course (saisis ta distance)',
                       style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w600)),
                 ),
@@ -246,15 +246,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   ),
                   const SizedBox(width: HiSpace.md),
                   Expanded(flex: 2, child: _field(_min, 'min')),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 6),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
                     child: Text(':', style: TextStyle(color: HiColors.textSecondary, fontSize: 20)),
                   ),
                   Expanded(flex: 2, child: _field(_sec, 'sec')),
                 ],
               ),
               const SizedBox(height: 6),
-              const Text('Ex. 3 km en 15:00. On calcule ton allure et on l’ajuste à toutes distances.',
+              Text('Ex. 3 km en 15:00. On calcule ton allure et on l’ajuste à toutes distances.',
                   style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
             ],
           ],
@@ -280,7 +280,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             Row(
               children: [
                 Expanded(
-                  child: Text(title, style: const TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w600)),
+                  child: Text(title, style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w600)),
                 ),
                 Switch(
                   value: enabled,
@@ -308,7 +308,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     width: 48,
                     child: Text('${value.round()}',
                         textAlign: TextAlign.end,
-                        style: const TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
+                        style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
                   ),
                 ],
               ),
@@ -328,7 +328,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       );
     }
     if (_preview == null) {
-      return const Text('Ton Index estimé s’affichera ici.',
+      return Text('Ton Index estimé s’affichera ici.',
           textAlign: TextAlign.center, style: TextStyle(color: HiColors.textTertiary));
     }
     return Container(
@@ -340,10 +340,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       ),
       child: Column(
         children: [
-          const Text('INDEX ESTIMÉ', style: TextStyle(color: HiColors.textSecondary, fontSize: 11, letterSpacing: 2)),
+          Text('INDEX ESTIMÉ', style: TextStyle(color: HiColors.textSecondary, fontSize: 11, letterSpacing: 2)),
           const SizedBox(height: 4),
           Text('${_preview!.index.value}',
-              style: const TextStyle(color: HiColors.brandPrimary, fontSize: 40, fontWeight: FontWeight.w800)),
+              style: TextStyle(color: HiColors.brandPrimary, fontSize: 40, fontWeight: FontWeight.w800)),
         ],
       ),
     );

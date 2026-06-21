@@ -85,7 +85,7 @@ class _GoogleProfileScreenState extends ConsumerState<GoogleProfileScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Text('Encore quelques infos pour finaliser ton compte Google.',
+                Text('Encore quelques infos pour finaliser ton compte Google.',
                     style: TextStyle(color: HiColors.textSecondary)),
                 const SizedBox(height: HiSpace.lg),
                 TextField(
@@ -127,7 +127,7 @@ class _GoogleProfileScreenState extends ConsumerState<GoogleProfileScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: HiColors.textSecondary, fontSize: 13)),
+        Text(label, style: TextStyle(color: HiColors.textSecondary, fontSize: 13)),
         const SizedBox(height: 8),
         Wrap(
           spacing: 8,
@@ -141,7 +141,7 @@ class _GoogleProfileScreenState extends ConsumerState<GoogleProfileScreen> {
               selectedColor: HiColors.brandPrimary,
               backgroundColor: HiColors.bgElevated2,
               labelStyle: TextStyle(color: active ? HiColors.textOnBrand : HiColors.textSecondary, fontWeight: FontWeight.w600),
-              side: const BorderSide(color: HiColors.strokeSubtle),
+              side: BorderSide(color: HiColors.strokeSubtle),
               onSelected: (_) => onChanged(e.key),
             );
           }).toList(),

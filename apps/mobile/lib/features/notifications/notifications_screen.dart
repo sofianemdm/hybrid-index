@@ -34,7 +34,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         actions: [
           IconButton(
             tooltip: 'Réglages',
-            icon: const Icon(Icons.tune, color: HiColors.textTertiary),
+            icon: Icon(Icons.tune, color: HiColors.textTertiary),
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const NotificationSettingsScreen()),
             ),
@@ -49,13 +49,13 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
               return const Center(child: CircularProgressIndicator());
             }
             if (snap.hasError) {
-              return Center(child: Text('${snap.error}', style: const TextStyle(color: HiColors.error)));
+              return Center(child: Text('${snap.error}', style: TextStyle(color: HiColors.error)));
             }
             final items = snap.data!;
             if (items.isEmpty) {
-              return const Center(
+              return Center(
                 child: Padding(
-                  padding: EdgeInsets.all(HiSpace.lg),
+                  padding: const EdgeInsets.all(HiSpace.lg),
                   child: Text('Rien de neuf pour l’instant. Logue un WOD pour faire bouger les choses !',
                       textAlign: TextAlign.center, style: TextStyle(color: HiColors.textTertiary)),
                 ),
@@ -93,9 +93,9 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(item.title, style: const TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
+                Text(item.title, style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 2),
-                Text(item.body, style: const TextStyle(color: HiColors.textSecondary, fontSize: 13)),
+                Text(item.body, style: TextStyle(color: HiColors.textSecondary, fontSize: 13)),
               ],
             ),
           ),

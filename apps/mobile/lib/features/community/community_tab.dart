@@ -56,17 +56,17 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
             }
             if (snap.hasError) {
               return ListView(children: [
-                Padding(padding: const EdgeInsets.all(HiSpace.lg), child: Text('${snap.error}', style: const TextStyle(color: HiColors.error))),
+                Padding(padding: const EdgeInsets.all(HiSpace.lg), child: Text('${snap.error}', style: TextStyle(color: HiColors.error))),
               ]);
             }
             final items = snap.data!;
             if (items.isEmpty) {
-              return ListView(children: const [
+              return ListView(children: [
                 Padding(
-                  padding: EdgeInsets.all(HiSpace.xl),
+                  padding: const EdgeInsets.all(HiSpace.xl),
                   child: Column(children: [
                     Icon(Icons.groups_outlined, color: HiColors.textTertiary, size: 40),
-                    SizedBox(height: HiSpace.md),
+                    const SizedBox(height: HiSpace.md),
                     Text('Suis des athlètes pour voir leur activité, ou logue un WOD pour démarrer ton fil.',
                         textAlign: TextAlign.center, style: TextStyle(color: HiColors.textTertiary)),
                   ]),
@@ -77,13 +77,13 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
               padding: const EdgeInsets.fromLTRB(HiSpace.lg, HiSpace.lg, HiSpace.lg, 96),
               children: [
                 Row(children: [
-                  const Expanded(
+                  Expanded(
                     child: Text('Communauté',
                         style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: HiColors.textPrimary)),
                   ),
                   IconButton(
                     tooltip: 'Rechercher',
-                    icon: const Icon(Icons.search, color: HiColors.textTertiary),
+                    icon: Icon(Icons.search, color: HiColors.textTertiary),
                     onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ExploreScreen())),
                   ),
                 ]),
@@ -133,14 +133,14 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
             child: Row(
               children: [
                 Text(a.isMe ? 'Toi' : a.actorName,
-                    style: const TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
+                    style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
                 const SizedBox(width: 8),
                 RankBadge(rank: a.actorRank, fontSize: 10),
               ],
             ),
           ),
           const SizedBox(height: 4),
-          Text(_message(a), style: const TextStyle(color: HiColors.textSecondary)),
+          Text(_message(a), style: TextStyle(color: HiColors.textSecondary)),
           const SizedBox(height: HiSpace.sm),
           Row(
             children: [

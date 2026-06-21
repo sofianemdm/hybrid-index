@@ -55,19 +55,19 @@ class HomeScreen extends ConsumerWidget {
                 Expanded(
                   child: Text(
                     'Salut, ${session.user?.displayName ?? ''}',
-                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: HiColors.textPrimary),
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: HiColors.textPrimary),
                   ),
                 ),
                 IconButton(
                   tooltip: 'Notifications',
-                  icon: const Icon(Icons.notifications_none, color: HiColors.textTertiary),
+                  icon: Icon(Icons.notifications_none, color: HiColors.textTertiary),
                   onPressed: () => Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const NotificationsScreen()),
                   ),
                 ),
                 IconButton(
                   tooltip: 'Paramètres',
-                  icon: const Icon(Icons.settings_outlined, color: HiColors.textTertiary),
+                  icon: Icon(Icons.settings_outlined, color: HiColors.textTertiary),
                   onPressed: () => Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const SettingsScreen()),
                   ),
@@ -107,7 +107,7 @@ class HomeScreen extends ConsumerWidget {
         OutlinedButton.icon(
           style: OutlinedButton.styleFrom(
             minimumSize: const Size.fromHeight(48),
-            side: const BorderSide(color: HiColors.strokeStrong),
+            side: BorderSide(color: HiColors.strokeStrong),
             foregroundColor: HiColors.brandPrimary,
           ),
           icon: const Icon(Icons.fitness_center),
@@ -120,7 +120,7 @@ class HomeScreen extends ConsumerWidget {
         OutlinedButton.icon(
           style: OutlinedButton.styleFrom(
             minimumSize: const Size.fromHeight(48),
-            side: const BorderSide(color: HiColors.strokeStrong),
+            side: BorderSide(color: HiColors.strokeStrong),
             foregroundColor: HiColors.textPrimary,
           ),
           icon: const Icon(Icons.ios_share),
@@ -133,7 +133,7 @@ class HomeScreen extends ConsumerWidget {
         OutlinedButton.icon(
           style: OutlinedButton.styleFrom(
             minimumSize: const Size.fromHeight(48),
-            side: const BorderSide(color: HiColors.strokeStrong),
+            side: BorderSide(color: HiColors.strokeStrong),
             foregroundColor: HiColors.textPrimary,
           ),
           icon: const Icon(Icons.history),
@@ -149,7 +149,7 @@ class HomeScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Ton radar',
+                Text('Ton radar',
                     style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 16)),
                 const SizedBox(height: HiSpace.sm),
                 RadarView(radar: p.radar),
@@ -168,7 +168,7 @@ class HomeScreen extends ConsumerWidget {
         color: HiColors.error.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(HiRadius.md),
       ),
-      child: Text(message, style: const TextStyle(color: HiColors.error)),
+      child: Text(message, style: TextStyle(color: HiColors.error)),
     );
   }
 }

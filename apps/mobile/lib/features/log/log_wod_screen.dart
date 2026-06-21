@@ -103,16 +103,16 @@ class _LogWodScreenState extends ConsumerState<LogWodScreen> {
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: HiColors.bgElevated,
-        title: const Text('Résultat enregistré 💪', style: TextStyle(color: HiColors.textPrimary)),
+        title: Text('Résultat enregistré 💪', style: TextStyle(color: HiColors.textPrimary)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Nouvel HYBRID INDEX', style: TextStyle(color: HiColors.textSecondary)),
+            Text('Nouvel HYBRID INDEX', style: TextStyle(color: HiColors.textSecondary)),
             const SizedBox(height: 8),
             Text('${p.index.value}',
-                style: const TextStyle(color: HiColors.brandPrimary, fontSize: 44, fontWeight: FontWeight.w800)),
+                style: TextStyle(color: HiColors.brandPrimary, fontSize: 44, fontWeight: FontWeight.w800)),
             Text('${p.index.radarCoverage}/6 attributs débloqués',
-                style: const TextStyle(color: HiColors.textTertiary, fontSize: 12)),
+                style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
             const SizedBox(height: HiSpace.md),
             AttributeGains(gains: p.gains, weakest: p.weakest),
             if (newBadges.isNotEmpty) ...[
@@ -125,11 +125,11 @@ class _LogWodScreenState extends ConsumerState<LogWodScreen> {
                 ),
                 child: Column(
                   children: [
-                    const Text('🎉 Badge(s) débloqué(s) !',
+                    Text('🎉 Badge(s) débloqué(s) !',
                         style: TextStyle(color: HiColors.success, fontWeight: FontWeight.w700)),
                     const SizedBox(height: 4),
                     ...newBadges.map((b) => Text(b,
-                        textAlign: TextAlign.center, style: const TextStyle(color: HiColors.textPrimary))),
+                        textAlign: TextAlign.center, style: TextStyle(color: HiColors.textPrimary))),
                   ],
                 ),
               ),
@@ -165,19 +165,19 @@ class _LogWodScreenState extends ConsumerState<LogWodScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Text('Choisis un WOD', style: TextStyle(color: HiColors.textSecondary)),
+                Text('Choisis un WOD', style: TextStyle(color: HiColors.textSecondary)),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<WodCatalogItem>(
                   initialValue: _wod,
                   isExpanded: true,
                   dropdownColor: HiColors.bgElevated2,
                   items: [
-                    const DropdownMenuItem<WodCatalogItem>(
+                    DropdownMenuItem<WodCatalogItem>(
                       enabled: false,
                       child: Text('— Sans matériel —', style: TextStyle(color: HiColors.textTertiary)),
                     ),
                     ...bodyweight.map(_item),
-                    const DropdownMenuItem<WodCatalogItem>(
+                    DropdownMenuItem<WodCatalogItem>(
                       enabled: false,
                       child: Text('— Avec matériel —', style: TextStyle(color: HiColors.textTertiary)),
                     ),
@@ -195,14 +195,14 @@ class _LogWodScreenState extends ConsumerState<LogWodScreen> {
                   },
                 ),
                 const SizedBox(height: HiSpace.lg),
-                Text('Ton résultat ($_unitLabel)', style: const TextStyle(color: HiColors.textSecondary)),
+                Text('Ton résultat ($_unitLabel)', style: TextStyle(color: HiColors.textSecondary)),
                 const SizedBox(height: 8),
                 if (_isTime)
                   Row(
                     children: [
                       Expanded(child: _numField(_min, 'min')),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 8),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
                         child: Text(':', style: TextStyle(color: HiColors.textSecondary, fontSize: 20)),
                       ),
                       Expanded(child: _numField(_sec, 'sec')),
@@ -212,7 +212,7 @@ class _LogWodScreenState extends ConsumerState<LogWodScreen> {
                   _numField(_value, _unitLabel, allowDecimal: _wod.scoreType == 'load'),
                 if (pref != null) ...[
                   const SizedBox(height: HiSpace.sm),
-                  const Text('Le score est normalisé selon ton sexe (classement équitable).',
+                  Text('Le score est normalisé selon ton sexe (classement équitable).',
                       style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
                 ],
                 const SizedBox(height: HiSpace.xl),
@@ -226,7 +226,7 @@ class _LogWodScreenState extends ConsumerState<LogWodScreen> {
   }
 
   DropdownMenuItem<WodCatalogItem> _item(WodCatalogItem w) =>
-      DropdownMenuItem<WodCatalogItem>(value: w, child: Text(w.name, style: const TextStyle(color: HiColors.textPrimary)));
+      DropdownMenuItem<WodCatalogItem>(value: w, child: Text(w.name, style: TextStyle(color: HiColors.textPrimary)));
 
   Widget _numField(TextEditingController c, String hint, {bool allowDecimal = false}) {
     return TextField(

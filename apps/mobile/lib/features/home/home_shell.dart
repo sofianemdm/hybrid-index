@@ -31,15 +31,15 @@ class _HomeShellState extends ConsumerState<HomeShell> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.build, color: HiColors.brandPrimary),
-              title: const Text('Construire un WOD', style: TextStyle(color: HiColors.textPrimary)),
-              subtitle: const Text('Compose ton propre WOD, estimé automatiquement', style: TextStyle(color: HiColors.textTertiary)),
+              leading: Icon(Icons.build, color: HiColors.brandPrimary),
+              title: Text('Construire un WOD', style: TextStyle(color: HiColors.textPrimary)),
+              subtitle: Text('Compose ton propre WOD, estimé automatiquement', style: TextStyle(color: HiColors.textTertiary)),
               onTap: () => Navigator.of(context).pop('build'),
             ),
             ListTile(
-              leading: const Icon(Icons.timer_outlined, color: HiColors.brandPrimary),
-              title: const Text('Logger un WOD rapidement', style: TextStyle(color: HiColors.textPrimary)),
-              subtitle: const Text('Saisis un résultat sur un WOD de référence', style: TextStyle(color: HiColors.textTertiary)),
+              leading: Icon(Icons.timer_outlined, color: HiColors.brandPrimary),
+              title: Text('Logger un WOD rapidement', style: TextStyle(color: HiColors.textPrimary)),
+              subtitle: Text('Saisis un résultat sur un WOD de référence', style: TextStyle(color: HiColors.textTertiary)),
               onTap: () => Navigator.of(context).pop('log'),
             ),
           ],

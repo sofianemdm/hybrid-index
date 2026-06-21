@@ -52,14 +52,14 @@ class _Splash extends StatelessWidget {
   const _Splash();
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text('HYBRID INDEX',
                 style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, letterSpacing: 3, color: HiColors.textPrimary)),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             SizedBox(width: 28, height: 28, child: CircularProgressIndicator(color: HiColors.brandPrimary, strokeWidth: 2.5)),
           ],
         ),
@@ -81,9 +81,9 @@ class _ErrorScreen extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.cloud_off, color: HiColors.error, size: 40),
+              Icon(Icons.cloud_off, color: HiColors.error, size: 40),
               const SizedBox(height: HiSpace.md),
-              Text(message, textAlign: TextAlign.center, style: const TextStyle(color: HiColors.textSecondary)),
+              Text(message, textAlign: TextAlign.center, style: TextStyle(color: HiColors.textSecondary)),
               const SizedBox(height: HiSpace.lg),
               OutlinedButton(onPressed: onRetry, child: const Text('Réessayer')),
             ],

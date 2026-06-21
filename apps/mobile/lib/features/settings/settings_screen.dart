@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app.dart';
 import '../../data/api_client.dart';
 import '../../data/session.dart';
+import '../../data/theme_mode.dart';
 import '../../data/web_download.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/hi_button.dart';
@@ -93,14 +94,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: HiColors.bgElevated,
-        title: const Text('Supprimer le compte ?', style: TextStyle(color: HiColors.textPrimary)),
-        content: const Text('Cette action est définitive : toutes tes données seront effacées.',
+        title: Text('Supprimer le compte ?', style: TextStyle(color: HiColors.textPrimary)),
+        content: Text('Cette action est définitive : toutes tes données seront effacées.',
             style: TextStyle(color: HiColors.textSecondary)),
         actions: [
           TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Annuler')),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Supprimer', style: TextStyle(color: HiColors.error)),
+            child: Text('Supprimer', style: TextStyle(color: HiColors.error)),
           ),
         ],
       ),
@@ -116,6 +117,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   void _toast(String m) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m)));
 
+  /// Sélecteur de thème (Système / Clair / Sombre). Défaut = système ; choix persisté.
+  Widget _themeSelector() {
+    final mode = ref.watch(themeModeProvider);
+    return SegmentedButton<ThemeMode>(
+      segments: const [
+        ButtonSegment(value: ThemeMode.system, icon: Icon(Icons.brightness_auto), label: Text('Système')),
+        ButtonSegment(value: ThemeMode.light, icon: Icon(Icons.light_mode), label: Text('Clair')),
+        ButtonSegment(value: ThemeMode.dark, icon: Icon(Icons.dark_mode), label: Text('Sombre')),
+      ],
+      selected: {mode},
+      showSelectedIcon: false,
+      onSelectionChanged: (s) => ref.read(themeModeProvider.notifier).set(s.first),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -130,7 +146,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Text('Pseudo', style: TextStyle(color: HiColors.textSecondary)),
+                      Text('Pseudo', style: TextStyle(color: HiColors.textSecondary)),
                       const SizedBox(height: 8),
                       TextField(controller: _displayName),
                       const SizedBox(height: HiSpace.lg),
@@ -153,7 +169,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       OutlinedButton.icon(
                         style: OutlinedButton.styleFrom(
                           minimumSize: const Size.fromHeight(48),
-                          side: const BorderSide(color: HiColors.strokeStrong),
+                          side: BorderSide(color: HiColors.strokeStrong),
                           foregroundColor: HiColors.textPrimary,
                         ),
                         icon: const Icon(Icons.face),
@@ -163,15 +179,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         ),
                       ),
                       const SizedBox(height: HiSpace.xl),
-                      const Divider(color: HiColors.strokeSubtle),
+                      Divider(color: HiColors.strokeSubtle),
                       const SizedBox(height: HiSpace.md),
-                      const Text('Données & confidentialité (RGPD)',
+                      Text('Apparence', style: TextStyle(color: HiColors.textSecondary, fontSize: 13)),
+                      const SizedBox(height: HiSpace.sm),
+                      _themeSelector(),
+                      const SizedBox(height: HiSpace.xl),
+                      Divider(color: HiColors.strokeSubtle),
+                      const SizedBox(height: HiSpace.md),
+                      Text('Données & confidentialité (RGPD)',
                           style: TextStyle(color: HiColors.textSecondary, fontSize: 13)),
                       const SizedBox(height: HiSpace.sm),
                       OutlinedButton.icon(
                         style: OutlinedButton.styleFrom(
                           minimumSize: const Size.fromHeight(48),
-                          side: const BorderSide(color: HiColors.strokeStrong),
+                          side: BorderSide(color: HiColors.strokeStrong),
                           foregroundColor: HiColors.textPrimary,
                         ),
                         icon: const Icon(Icons.download),
@@ -192,7 +214,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       const SizedBox(height: HiSpace.md),
                       TextButton(
                         onPressed: () => ref.read(sessionProvider.notifier).logout(),
-                        child: const Text('Se déconnecter', style: TextStyle(color: HiColors.textTertiary)),
+                        child: Text('Se déconnecter', style: TextStyle(color: HiColors.textTertiary)),
                       ),
                     ],
                   ),
@@ -215,7 +237,7 @@ class _ChoiceRow extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: HiColors.textSecondary, fontSize: 13)),
+        Text(label, style: TextStyle(color: HiColors.textSecondary, fontSize: 13)),
         const SizedBox(height: 8),
         Wrap(
           spacing: 8,
@@ -232,7 +254,7 @@ class _ChoiceRow extends StatelessWidget {
                 color: active ? HiColors.textOnBrand : HiColors.textSecondary,
                 fontWeight: FontWeight.w600,
               ),
-              side: const BorderSide(color: HiColors.strokeSubtle),
+              side: BorderSide(color: HiColors.strokeSubtle),
               onSelected: (_) => onChanged(e.key),
             );
           }).toList(),

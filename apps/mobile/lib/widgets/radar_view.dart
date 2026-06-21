@@ -30,13 +30,13 @@ class RadarView extends StatelessWidget {
                 ),
               ],
               radarBackgroundColor: Colors.transparent,
-              radarBorderData: const BorderSide(color: HiColors.strokeSubtle, width: 1),
-              gridBorderData: const BorderSide(color: HiColors.strokeSubtle, width: 1),
+              radarBorderData: BorderSide(color: HiColors.strokeSubtle, width: 1),
+              gridBorderData: BorderSide(color: HiColors.strokeSubtle, width: 1),
               tickBorderData: const BorderSide(color: Colors.transparent),
               ticksTextStyle: const TextStyle(color: Colors.transparent, fontSize: 1),
               tickCount: 4,
               titlePositionPercentageOffset: 0.18,
-              titleTextStyle: const TextStyle(color: HiColors.textSecondary, fontSize: 11),
+              titleTextStyle: TextStyle(color: HiColors.textSecondary, fontSize: 11),
               getTitle: (index, angle) {
                 final a = radar[index % radar.length];
                 return RadarChartTitle(text: HiLabels.attribute(a.attribute));
@@ -61,17 +61,17 @@ class RadarView extends StatelessWidget {
           Expanded(
             child: Text(
               HiLabels.attribute(a.attribute),
-              style: const TextStyle(color: HiColors.textSecondary, fontSize: 14),
+              style: TextStyle(color: HiColors.textSecondary, fontSize: 14),
             ),
           ),
           if (a.isEstimated)
-            const Padding(
-              padding: EdgeInsets.only(right: 8),
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
               child: Text('estimé', style: TextStyle(color: HiColors.warn, fontSize: 11)),
             ),
           Text(
             a.unlocked ? '${a.score}' : '—',
-            style: const TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 14),
+            style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 14),
           ),
         ],
       ),

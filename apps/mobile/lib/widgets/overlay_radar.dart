@@ -19,7 +19,7 @@ class OverlayRadar extends StatelessWidget {
 
     // fl_chart exige au moins 3 sommets ; le radar canonique en a 6, on garde une garde de sécurité.
     if (mine.length < 3) {
-      return const SizedBox(
+      return SizedBox(
         height: 120,
         child: Center(child: Text('Radar indisponible', style: TextStyle(color: HiColors.textTertiary))),
       );
@@ -49,13 +49,13 @@ class OverlayRadar extends StatelessWidget {
                 ),
               ],
               radarBackgroundColor: Colors.transparent,
-              radarBorderData: const BorderSide(color: HiColors.strokeSubtle, width: 1),
-              gridBorderData: const BorderSide(color: HiColors.strokeSubtle, width: 1),
+              radarBorderData: BorderSide(color: HiColors.strokeSubtle, width: 1),
+              gridBorderData: BorderSide(color: HiColors.strokeSubtle, width: 1),
               tickBorderData: const BorderSide(color: Colors.transparent),
               ticksTextStyle: const TextStyle(color: Colors.transparent, fontSize: 1),
               tickCount: 4,
               titlePositionPercentageOffset: 0.18,
-              titleTextStyle: const TextStyle(color: HiColors.textSecondary, fontSize: 11),
+              titleTextStyle: TextStyle(color: HiColors.textSecondary, fontSize: 11),
               getTitle: (index, angle) => RadarChartTitle(text: HiLabels.attribute(mine[index % mine.length].attribute)),
             ),
           ),
@@ -78,7 +78,7 @@ class OverlayRadar extends StatelessWidget {
         children: [
           Container(width: 12, height: 12, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
           const SizedBox(width: 6),
-          Text(label, style: const TextStyle(color: HiColors.textSecondary, fontSize: 12)),
+          Text(label, style: TextStyle(color: HiColors.textSecondary, fontSize: 12)),
         ],
       );
 }

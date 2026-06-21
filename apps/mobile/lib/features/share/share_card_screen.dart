@@ -58,7 +58,7 @@ class _ShareCardScreenState extends ConsumerState<ShareCardScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (profile == null)
-                  const Text('Aucun Index à partager.', style: TextStyle(color: HiColors.textTertiary))
+                  Text('Aucun Index à partager.', style: TextStyle(color: HiColors.textTertiary))
                 else ...[
                   RepaintBoundary(
                     key: _cardKey,
@@ -74,7 +74,7 @@ class _ShareCardScreenState extends ConsumerState<ShareCardScreen> {
                         minimumSize: const Size.fromHeight(50),
                       ),
                       icon: _exporting
-                          ? const SizedBox(
+                          ? SizedBox(
                               width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: HiColors.textOnBrand))
                           : const Icon(Icons.download),
                       label: const Text('Télécharger ma carte'),
@@ -115,10 +115,10 @@ class _Card extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const Text('HYBRID INDEX',
+          Text('HYBRID INDEX',
               style: TextStyle(color: HiColors.brandPrimary, fontWeight: FontWeight.w800, letterSpacing: 4, fontSize: 16)),
           const SizedBox(height: 4),
-          Text(name, style: const TextStyle(color: HiColors.textSecondary, fontSize: 14)),
+          Text(name, style: TextStyle(color: HiColors.textSecondary, fontSize: 14)),
           const Spacer(),
           ShaderMask(
             shaderCallback: (r) => HiColors.brandGradient.createShader(r),
@@ -129,11 +129,11 @@ class _Card extends StatelessWidget {
           RankBadge(rank: idx.rank, fontSize: 16),
           const SizedBox(height: 12),
           Text('Meilleur que ${(idx.percentile * 100).clamp(0, 100).toStringAsFixed(0)} % de la population',
-              textAlign: TextAlign.center, style: const TextStyle(color: HiColors.textSecondary, fontSize: 13)),
+              textAlign: TextAlign.center, style: TextStyle(color: HiColors.textSecondary, fontSize: 13)),
           const Spacer(),
           Container(height: 1, color: HiColors.strokeSubtle),
           const SizedBox(height: 10),
-          const Text('Et toi, c\'est combien ?',
+          Text('Et toi, c\'est combien ?',
               style: TextStyle(color: HiColors.textTertiary, fontSize: 12, fontStyle: FontStyle.italic)),
         ],
       ),

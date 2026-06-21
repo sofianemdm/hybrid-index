@@ -27,7 +27,7 @@ class SocialProofCard extends StatelessWidget {
           _humanityLine(),
           if (appVisible) ...[
             const SizedBox(height: HiSpace.sm),
-            const Divider(height: 1, color: HiColors.strokeSubtle),
+            Divider(height: 1, color: HiColors.strokeSubtle),
             const SizedBox(height: HiSpace.sm),
             _appLine(),
           ],
@@ -41,21 +41,21 @@ class SocialProofCard extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Icon(Icons.public, color: HiColors.brandPrimary, size: 22),
+        Icon(Icons.public, color: HiColors.brandPrimary, size: 22),
         const SizedBox(width: HiSpace.sm),
         Expanded(
           child: top == null
               // Sous la médiane : jamais dévalorisant, formulé en progression.
-              ? const Text(
+              ? Text(
                   'Tu poses tes bases — chaque WOD te rapproche du haut du classement mondial.',
                   style: TextStyle(color: HiColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600),
                 )
               : RichText(
                   text: TextSpan(
-                    style: const TextStyle(color: HiColors.textPrimary, fontSize: 15, fontWeight: FontWeight.w700, height: 1.3),
+                    style: TextStyle(color: HiColors.textPrimary, fontSize: 15, fontWeight: FontWeight.w700, height: 1.3),
                     children: [
                       const TextSpan(text: 'Tu fais partie des '),
-                      TextSpan(text: '$top%', style: const TextStyle(color: HiColors.brandPrimary)),
+                      TextSpan(text: '$top%', style: TextStyle(color: HiColors.brandPrimary)),
                       const TextSpan(text: ' des humains les plus en forme'),
                     ],
                   ),
@@ -68,15 +68,15 @@ class SocialProofCard extends StatelessWidget {
   Widget _appLine() {
     return Row(
       children: [
-        const Icon(Icons.bolt, color: HiColors.brandSecondaryText, size: 18),
+        Icon(Icons.bolt, color: HiColors.brandSecondaryText, size: 18),
         const SizedBox(width: HiSpace.sm),
         Expanded(
           child: RichText(
             text: TextSpan(
-              style: const TextStyle(color: HiColors.textSecondary, fontSize: 14, fontWeight: FontWeight.w600),
+              style: TextStyle(color: HiColors.textSecondary, fontSize: 14, fontWeight: FontWeight.w600),
               children: [
                 const TextSpan(text: 'Top '),
-                TextSpan(text: '${proof.appTopPercent}%', style: const TextStyle(color: HiColors.brandSecondaryText, fontWeight: FontWeight.w700)),
+                TextSpan(text: '${proof.appTopPercent}%', style: TextStyle(color: HiColors.brandSecondaryText, fontWeight: FontWeight.w700)),
                 const TextSpan(text: ' des athlètes HYBRID'),
               ],
             ),

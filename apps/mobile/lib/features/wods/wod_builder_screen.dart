@@ -177,7 +177,7 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
               children: [
                 TextField(controller: _name, decoration: const InputDecoration(labelText: 'Nom du WOD')),
                 const SizedBox(height: HiSpace.md),
-                const Text('Format', style: TextStyle(color: HiColors.textSecondary, fontSize: 13)),
+                Text('Format', style: TextStyle(color: HiColors.textSecondary, fontSize: 13)),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
@@ -191,7 +191,7 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
                       selectedColor: HiColors.brandPrimary,
                       backgroundColor: HiColors.bgElevated2,
                       labelStyle: TextStyle(color: active ? HiColors.textOnBrand : HiColors.textSecondary, fontWeight: FontWeight.w600),
-                      side: const BorderSide(color: HiColors.strokeSubtle),
+                      side: BorderSide(color: HiColors.strokeSubtle),
                       onSelected: (_) {
                         setState(() => _type = e.key);
                         _refreshEstimate();
@@ -202,7 +202,7 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
                 if (_scoreType == 'reps') ...[
                   const SizedBox(height: HiSpace.md),
                   Row(children: [
-                    const Text('Plafond (min) : ', style: TextStyle(color: HiColors.textSecondary)),
+                    Text('Plafond (min) : ', style: TextStyle(color: HiColors.textSecondary)),
                     SizedBox(
                       width: 70,
                       child: TextField(
@@ -220,17 +220,17 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
                   contentPadding: EdgeInsets.zero,
                   activeThumbColor: HiColors.brandPrimary,
                   value: _requiresEquipment,
-                  title: const Text('Nécessite du matériel', style: TextStyle(color: HiColors.textPrimary, fontSize: 14)),
+                  title: Text('Nécessite du matériel', style: TextStyle(color: HiColors.textPrimary, fontSize: 14)),
                   onChanged: (v) => setState(() => _requiresEquipment = v),
                 ),
                 const SizedBox(height: HiSpace.md),
-                const Text('Mouvements', style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
+                Text('Mouvements', style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
                 const SizedBox(height: HiSpace.sm),
                 ..._blocks.asMap().entries.map((e) => _blockRow(e.key, e.value)),
                 OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(
                     minimumSize: const Size.fromHeight(48),
-                    side: const BorderSide(color: HiColors.strokeStrong),
+                    side: BorderSide(color: HiColors.strokeStrong),
                     foregroundColor: HiColors.brandPrimary,
                   ),
                   icon: const Icon(Icons.add),
@@ -257,7 +257,7 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
         padding: const EdgeInsets.all(HiSpace.md),
         child: Row(
           children: [
-            Expanded(child: Text(b.movement.name, style: const TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w600))),
+            Expanded(child: Text(b.movement.name, style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w600))),
             SizedBox(
               width: 60,
               child: TextField(
@@ -289,7 +289,7 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
               ),
             ],
             IconButton(
-              icon: const Icon(Icons.close, color: HiColors.textTertiary, size: 20),
+              icon: Icon(Icons.close, color: HiColors.textTertiary, size: 20),
               onPressed: () {
                 setState(() => _blocks.removeAt(i));
                 _refreshEstimate();
@@ -306,7 +306,7 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
       return const Center(child: Padding(padding: EdgeInsets.all(16), child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))));
     }
     if (_estimate == null) {
-      return const Text('Ajoute des mouvements pour voir l’estimation.', textAlign: TextAlign.center, style: TextStyle(color: HiColors.textTertiary));
+      return Text('Ajoute des mouvements pour voir l’estimation.', textAlign: TextAlign.center, style: TextStyle(color: HiColors.textTertiary));
     }
     final e = _estimate!;
     final champ = e.ref('champion')?.rawResult;
@@ -322,17 +322,17 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(children: [
-            const Text('Estimation', style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
+            Text('Estimation', style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
             const Spacer(),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(color: HiColors.warn.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(HiRadius.pill)),
-              child: const Text('≈ estimé', style: TextStyle(color: HiColors.warn, fontSize: 11, fontWeight: FontWeight.w600)),
+              child: Text('≈ estimé', style: TextStyle(color: HiColors.warn, fontSize: 11, fontWeight: FontWeight.w600)),
             ),
           ]),
           const SizedBox(height: HiSpace.sm),
-          if (champ != null) Text('🏆 Champion : ${formatWodResult(champ, _scoreType)}', style: const TextStyle(color: HiColors.textSecondary)),
-          if (inter != null) Text('Intermédiaire : ${formatWodResult(inter, _scoreType)}', style: const TextStyle(color: HiColors.textSecondary)),
+          if (champ != null) Text('🏆 Champion : ${formatWodResult(champ, _scoreType)}', style: TextStyle(color: HiColors.textSecondary)),
+          if (inter != null) Text('Intermédiaire : ${formatWodResult(inter, _scoreType)}', style: TextStyle(color: HiColors.textSecondary)),
           const SizedBox(height: 6),
           Wrap(
             spacing: 6,
@@ -378,9 +378,9 @@ class _MovementSheetState extends State<_MovementSheet> {
                 controller: controller,
                 itemCount: items.length,
                 itemBuilder: (_, i) => ListTile(
-                  title: Text(items[i].name, style: const TextStyle(color: HiColors.textPrimary)),
-                  subtitle: Text(items[i].category, style: const TextStyle(color: HiColors.textTertiary, fontSize: 12)),
-                  trailing: const Icon(Icons.add, color: HiColors.brandPrimary),
+                  title: Text(items[i].name, style: TextStyle(color: HiColors.textPrimary)),
+                  subtitle: Text(items[i].category, style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
+                  trailing: Icon(Icons.add, color: HiColors.brandPrimary),
                   onTap: () => widget.onPick(items[i]),
                 ),
               ),

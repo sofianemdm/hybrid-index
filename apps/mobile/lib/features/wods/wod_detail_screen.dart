@@ -61,7 +61,7 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
             if (snap.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
             }
-            if (snap.hasError) return Center(child: Text('${snap.error}', style: const TextStyle(color: HiColors.error)));
+            if (snap.hasError) return Center(child: Text('${snap.error}', style: TextStyle(color: HiColors.error)));
             final d = snap.data!;
             return ListView(
               padding: const EdgeInsets.fromLTRB(HiSpace.lg, HiSpace.lg, HiSpace.lg, 96),
@@ -84,9 +84,9 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
                 const SizedBox(height: HiSpace.lg),
                 _sexToggle(),
                 const SizedBox(height: HiSpace.md),
-                if (d.levels(_sex) != null) _tierCard(d) else const Text('Paliers non disponibles pour ce WOD.', style: TextStyle(color: HiColors.textTertiary)),
+                if (d.levels(_sex) != null) _tierCard(d) else Text('Paliers non disponibles pour ce WOD.', style: TextStyle(color: HiColors.textTertiary)),
                 const SizedBox(height: HiSpace.lg),
-                const Text('Classement', style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 16)),
+                Text('Classement', style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 16)),
                 const SizedBox(height: HiSpace.sm),
                 _leaderboardSection(d.scoreType),
                 const SizedBox(height: HiSpace.lg),
@@ -144,9 +144,9 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
       child: Column(
         children: [
           _tierRow('🏆 Champion', t.champion, d.scoreType, HiColors.attrSpeed),
-          const Divider(color: HiColors.strokeSubtle),
+          Divider(color: HiColors.strokeSubtle),
           _tierRow('Intermédiaire', t.intermediate, d.scoreType, HiColors.textSecondary),
-          const Divider(color: HiColors.strokeSubtle),
+          Divider(color: HiColors.strokeSubtle),
           _tierRow('Occasionnel', t.occasional, d.scoreType, HiColors.textTertiary),
           if (d.myBestRaw != null) ...[
             const SizedBox(height: HiSpace.sm),
@@ -159,11 +159,11 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text('Toi : ', style: TextStyle(color: HiColors.textSecondary)),
+                  Text('Toi : ', style: TextStyle(color: HiColors.textSecondary)),
                   Text(formatWodResult(d.myBestRaw!, d.scoreType),
-                      style: const TextStyle(color: HiColors.brandPrimary, fontWeight: FontWeight.w800)),
+                      style: TextStyle(color: HiColors.brandPrimary, fontWeight: FontWeight.w800)),
                   if (d.myBestSubScore != null)
-                    Text('  ·  ${d.myBestSubScore} pts', style: const TextStyle(color: HiColors.textTertiary)),
+                    Text('  ·  ${d.myBestSubScore} pts', style: TextStyle(color: HiColors.textTertiary)),
                 ],
               ),
             ),
@@ -180,7 +180,7 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
         children: [
           Expanded(child: Text(label, style: TextStyle(color: color, fontWeight: FontWeight.w600))),
           Text(formatWodResult(value, scoreType),
-              style: const TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
+              style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
         ],
       ),
     );
@@ -193,10 +193,10 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
         if (snap.connectionState == ConnectionState.waiting) {
           return const Padding(padding: EdgeInsets.all(24), child: Center(child: CircularProgressIndicator()));
         }
-        if (snap.hasError) return Text('${snap.error}', style: const TextStyle(color: HiColors.error));
+        if (snap.hasError) return Text('${snap.error}', style: TextStyle(color: HiColors.error));
         final entries = snap.data!;
         if (entries.isEmpty) {
-          return const Text('Sois le premier à poster un résultat 💪', style: TextStyle(color: HiColors.textTertiary));
+          return Text('Sois le premier à poster un résultat 💪', style: TextStyle(color: HiColors.textTertiary));
         }
         return Column(
           children: entries.map((e) {
@@ -221,7 +221,7 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
                   RankBadge(rank: e.rank, fontSize: 10),
                   const SizedBox(width: HiSpace.sm),
                   Text(formatWodResult(e.rawResult, scoreType),
-                      style: const TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
+                      style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
                 ],
               ),
             );

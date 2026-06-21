@@ -115,11 +115,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const SizedBox(height: HiSpace.lg),
-                  const Text('HYBRID INDEX',
+                  Text('HYBRID INDEX',
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 30, fontWeight: FontWeight.w800, letterSpacing: 3, color: HiColors.textPrimary)),
                   const SizedBox(height: 6),
-                  const Text('Ton score de condition physique hybride, comparable.',
+                  Text('Ton score de condition physique hybride, comparable.',
                       textAlign: TextAlign.center, style: TextStyle(color: HiColors.textSecondary)),
                   const SizedBox(height: HiSpace.xl),
                   _SegToggle(
@@ -190,10 +190,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   ),
                   const SizedBox(height: HiSpace.md),
                   if (Env.googleEnabled) ...[
-                    const Row(children: [
+                    Row(children: [
                       Expanded(child: Divider(color: HiColors.strokeSubtle)),
                       Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 12),
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
                         child: Text('ou', style: TextStyle(color: HiColors.textTertiary)),
                       ),
                       Expanded(child: Divider(color: HiColors.strokeSubtle)),
@@ -274,7 +274,7 @@ class _ChoiceRow extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: HiColors.textSecondary, fontSize: 13)),
+        Text(label, style: TextStyle(color: HiColors.textSecondary, fontSize: 13)),
         const SizedBox(height: 8),
         Wrap(
           spacing: 8,
@@ -292,7 +292,7 @@ class _ChoiceRow extends StatelessWidget {
                 color: active ? HiColors.textOnBrand : HiColors.textSecondary,
                 fontWeight: FontWeight.w600,
               ),
-              side: const BorderSide(color: HiColors.strokeSubtle),
+              side: BorderSide(color: HiColors.strokeSubtle),
             );
           }).toList(),
         ),

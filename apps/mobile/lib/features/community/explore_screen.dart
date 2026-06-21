@@ -97,15 +97,15 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                   if (snap.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
                   }
-                  if (snap.hasError) return Center(child: Text('${snap.error}', style: const TextStyle(color: HiColors.error)));
+                  if (snap.hasError) return Center(child: Text('${snap.error}', style: TextStyle(color: HiColors.error)));
                   final items = snap.data!;
                   if (items.isEmpty) {
-                    return const Center(child: Text('Aucun athlète.', style: TextStyle(color: HiColors.textTertiary)));
+                    return Center(child: Text('Aucun athlète.', style: TextStyle(color: HiColors.textTertiary)));
                   }
                   return ListView.separated(
                     padding: const EdgeInsets.fromLTRB(HiSpace.lg, 0, HiSpace.lg, HiSpace.lg),
                     itemCount: items.length,
-                    separatorBuilder: (_, __) => const Divider(height: 1, color: HiColors.strokeSubtle),
+                    separatorBuilder: (_, __) => Divider(height: 1, color: HiColors.strokeSubtle),
                     itemBuilder: (_, i) => _row(items[i]),
                   );
                 },
@@ -124,14 +124,14 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         selectedColor: HiColors.brandPrimary,
         backgroundColor: HiColors.bgElevated2,
         labelStyle: TextStyle(color: active ? HiColors.textOnBrand : HiColors.textSecondary, fontWeight: FontWeight.w600),
-        side: const BorderSide(color: HiColors.strokeSubtle),
+        side: BorderSide(color: HiColors.strokeSubtle),
         onSelected: (_) => onTap(),
       );
 
   Widget _row(AthleteSummary a) => ListTile(
         contentPadding: EdgeInsets.zero,
-        title: Text(a.displayName, style: const TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w600)),
-        subtitle: Text('${HiLabels.goal(a.goal)} · Index ${a.index ?? '—'}', style: const TextStyle(color: HiColors.textTertiary, fontSize: 12)),
+        title: Text(a.displayName, style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w600)),
+        subtitle: Text('${HiLabels.goal(a.goal)} · Index ${a.index ?? '—'}', style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
         trailing: RankBadge(rank: a.rank, fontSize: 10),
         onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => PublicProfileScreen(userId: a.userId))),
       );

@@ -51,7 +51,7 @@ class _ProgressionScreenState extends ConsumerState<ProgressionScreen> {
               return ListView(children: [
                 Padding(
                   padding: const EdgeInsets.all(HiSpace.lg),
-                  child: Text('${snap.error}', style: const TextStyle(color: HiColors.error)),
+                  child: Text('${snap.error}', style: TextStyle(color: HiColors.error)),
                 ),
               ]);
             }
@@ -59,7 +59,7 @@ class _ProgressionScreenState extends ConsumerState<ProgressionScreen> {
             return ListView(
               padding: const EdgeInsets.fromLTRB(HiSpace.lg, HiSpace.lg, HiSpace.lg, 96),
               children: [
-                const Text('Progression',
+                Text('Progression',
                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: HiColors.textPrimary)),
                 const SizedBox(height: HiSpace.md),
                 _indexCurveCard(data.history),
@@ -69,7 +69,7 @@ class _ProgressionScreenState extends ConsumerState<ProgressionScreen> {
                 OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(
                     minimumSize: const Size.fromHeight(48),
-                    side: const BorderSide(color: HiColors.strokeStrong),
+                    side: BorderSide(color: HiColors.strokeStrong),
                     foregroundColor: HiColors.attrSpeed,
                   ),
                   icon: const Icon(Icons.emoji_events),
@@ -80,7 +80,7 @@ class _ProgressionScreenState extends ConsumerState<ProgressionScreen> {
                 ),
                 const SizedBox(height: HiSpace.lg),
                 Text('Badges (${data.badges.where((b) => b.unlocked).length}/${data.badges.length})',
-                    style: const TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 16)),
+                    style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 16)),
                 const SizedBox(height: HiSpace.sm),
                 GridView.count(
                   crossAxisCount: 2,
@@ -111,12 +111,12 @@ class _ProgressionScreenState extends ConsumerState<ProgressionScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Ta courbe Hybrid Index',
+          Text('Ta courbe Hybrid Index',
               style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 16)),
           const SizedBox(height: HiSpace.md),
           if (history.length < 2)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: HiSpace.md),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: HiSpace.md),
               child: Text('Logue 2-3 WODs pour voir ta progression se dessiner.',
                   style: TextStyle(color: HiColors.textTertiary)),
             )
@@ -128,7 +128,7 @@ class _ProgressionScreenState extends ConsumerState<ProgressionScreen> {
               final gain = history.last.value - history.first.value;
               return Text(
                 gain > 0 ? '📈 +$gain points depuis le début' : 'Continue à loguer pour faire grimper ta courbe',
-                style: const TextStyle(color: HiColors.brandPrimary, fontWeight: FontWeight.w600, fontSize: 13),
+                style: TextStyle(color: HiColors.brandPrimary, fontWeight: FontWeight.w600, fontSize: 13),
               );
             }),
           ],
@@ -182,19 +182,19 @@ class _ProgressionScreenState extends ConsumerState<ProgressionScreen> {
         children: [
           Row(
             children: [
-              const Icon(Icons.local_fire_department, color: HiColors.warn, size: 32),
+              Icon(Icons.local_fire_department, color: HiColors.warn, size: 32),
               const SizedBox(width: HiSpace.sm),
               Text('${s.current} sem.',
-                  style: const TextStyle(color: HiColors.textPrimary, fontSize: 28, fontWeight: FontWeight.w800)),
+                  style: TextStyle(color: HiColors.textPrimary, fontSize: 28, fontWeight: FontWeight.w800)),
               const SizedBox(width: 8),
               Text('série en cours · record ${s.best}',
-                  style: const TextStyle(color: HiColors.textSecondary, fontSize: 13)),
+                  style: TextStyle(color: HiColors.textSecondary, fontSize: 13)),
             ],
           ),
           const SizedBox(height: HiSpace.md),
           Text('Cette semaine : ${s.thisWeekCount}/${s.weeklyGoal} WODs'
               '${s.weekValidated ? ' ✓ validée' : ''}',
-              style: const TextStyle(color: HiColors.textSecondary)),
+              style: TextStyle(color: HiColors.textSecondary)),
           const SizedBox(height: 6),
           ClipRRect(
             borderRadius: BorderRadius.circular(HiRadius.pill),
@@ -208,30 +208,30 @@ class _ProgressionScreenState extends ConsumerState<ProgressionScreen> {
           const SizedBox(height: HiSpace.md),
           Row(
             children: [
-              const Icon(Icons.ac_unit, color: HiColors.info, size: 18),
+              Icon(Icons.ac_unit, color: HiColors.info, size: 18),
               const SizedBox(width: 6),
               Text('${s.freezeTokens} jeton(s) de gel (protègent une semaine ratée)',
-                  style: const TextStyle(color: HiColors.textTertiary, fontSize: 12)),
+                  style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
             ],
           ),
           const SizedBox(height: HiSpace.md),
           Row(
             children: [
-              const Expanded(child: Text('Objectif hebdo', style: TextStyle(color: HiColors.textSecondary, fontSize: 13))),
+              Expanded(child: Text('Objectif hebdo', style: TextStyle(color: HiColors.textSecondary, fontSize: 13))),
               IconButton(
-                icon: const Icon(Icons.remove_circle_outline, color: HiColors.textSecondary, size: 20),
+                icon: Icon(Icons.remove_circle_outline, color: HiColors.textSecondary, size: 20),
                 onPressed: s.weeklyGoal > 2 ? () => _setGoal(s.weeklyGoal - 1) : null,
               ),
-              Text('${s.weeklyGoal}', style: const TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
+              Text('${s.weeklyGoal}', style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
               IconButton(
-                icon: const Icon(Icons.add_circle_outline, color: HiColors.textSecondary, size: 20),
+                icon: Icon(Icons.add_circle_outline, color: HiColors.textSecondary, size: 20),
                 onPressed: s.weeklyGoal < 5 ? () => _setGoal(s.weeklyGoal + 1) : null,
               ),
             ],
           ),
           TextButton.icon(
-            icon: const Icon(Icons.beach_access, size: 18, color: HiColors.info),
-            label: const Text('Marquer une semaine de repos', style: TextStyle(color: HiColors.info)),
+            icon: Icon(Icons.beach_access, size: 18, color: HiColors.info),
+            label: Text('Marquer une semaine de repos', style: TextStyle(color: HiColors.info)),
             onPressed: _planRest,
           ),
         ],
@@ -290,7 +290,7 @@ class _ProgressionScreenState extends ConsumerState<ProgressionScreen> {
                 Text(b.description,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: HiColors.textTertiary, fontSize: 11, height: 1.1)),
+                    style: TextStyle(color: HiColors.textTertiary, fontSize: 11, height: 1.1)),
               ],
             ),
           ),
