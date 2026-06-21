@@ -9,6 +9,7 @@ import { ProgressService } from "../progress/progress.service";
 import { SCORING_VERSION_UUID } from "../../common/constants";
 import type { EstimateWodRequest } from "./wod-estimate.dto";
 import type { CreateWodRequest, LogWodResultRequest } from "./create-wod.dto";
+import { WOD_PRESCRIPTIONS } from "./wod-prescriptions.data";
 
 /** Les 4 séances PHARES (marquee benchmarks) — mises en avant, où tout le monde se mesure. */
 export const FLAGSHIP_WOD_IDS = ["hyrox_sprint", "grace", "benchmark_zero", "ergo_skill"];
@@ -214,6 +215,8 @@ export class WodsService {
       isCustom: wod.isCustom,
       levels,
       myBest,
+      // Énoncé concret de la séance (mouvements + poids) pour les WODs de référence.
+      prescription: WOD_PRESCRIPTIONS[wod.id] ?? null,
     };
   }
 

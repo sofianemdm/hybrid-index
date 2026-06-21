@@ -916,6 +916,84 @@ class WodTriple {
       WodTriple(champion: j['champion'] as num, intermediate: j['intermediate'] as num, occasional: j['occasional'] as num);
 }
 
+/// Une ligne de l'énoncé : un mouvement avec son schéma de reps/distance.
+class WodBlock {
+  final String reps;
+  final String movement;
+  final String? detail;
+  const WodBlock({required this.reps, required this.movement, this.detail});
+
+  factory WodBlock.fromJson(Map<String, dynamic> j) => WodBlock(
+        reps: j['reps'] as String? ?? '',
+        movement: j['movement'] as String? ?? '',
+        detail: j['detail'] as String?,
+      );
+}
+
+/// Charge d'un mouvement : RX (standard) + version allégée, par sexe.
+class WodWeight {
+  final String movement;
+  final num rxMale;
+  final num rxFemale;
+  final num scaledMale;
+  final num scaledFemale;
+  final String unit;
+  final String? note;
+  const WodWeight({
+    required this.movement,
+    required this.rxMale,
+    required this.rxFemale,
+    required this.scaledMale,
+    required this.scaledFemale,
+    required this.unit,
+    this.note,
+  });
+
+  num rx(String sex) => sex == 'female' ? rxFemale : rxMale;
+  num scaled(String sex) => sex == 'female' ? scaledFemale : scaledMale;
+
+  factory WodWeight.fromJson(Map<String, dynamic> j) => WodWeight(
+        movement: j['movement'] as String? ?? '',
+        rxMale: (j['rxMale'] as num?) ?? 0,
+        rxFemale: (j['rxFemale'] as num?) ?? 0,
+        scaledMale: (j['scaledMale'] as num?) ?? 0,
+        scaledFemale: (j['scaledFemale'] as num?) ?? 0,
+        unit: j['unit'] as String? ?? 'kg',
+        note: j['note'] as String?,
+      );
+}
+
+/// Prescription concrète d'une séance : « ce que c'est » + « ce que tu dois faire ».
+class WodPrescription {
+  final String? summary;
+  final String format;
+  final int? timeCapSec;
+  final List<WodBlock> blocks;
+  final List<WodWeight> weights;
+  final String scoringNote;
+  const WodPrescription({
+    this.summary,
+    required this.format,
+    this.timeCapSec,
+    required this.blocks,
+    required this.weights,
+    required this.scoringNote,
+  });
+
+  factory WodPrescription.fromJson(Map<String, dynamic> j) => WodPrescription(
+        summary: j['summary'] as String?,
+        format: j['format'] as String? ?? '',
+        timeCapSec: (j['timeCapSec'] as num?)?.toInt(),
+        blocks: ((j['blocks'] as List?) ?? [])
+            .map((e) => WodBlock.fromJson((e as Map).cast<String, dynamic>()))
+            .toList(),
+        weights: ((j['weights'] as List?) ?? [])
+            .map((e) => WodWeight.fromJson((e as Map).cast<String, dynamic>()))
+            .toList(),
+        scoringNote: j['scoringNote'] as String? ?? '',
+      );
+}
+
 class WodDetail {
   final String id;
   final String name;
@@ -926,6 +1004,9 @@ class WodDetail {
   final WodTriple? female;
   final num? myBestRaw;
   final int? myBestSubScore;
+
+  /// Énoncé concret de la séance (mouvements + poids). Null pour les WODs custom.
+  final WodPrescription? prescription;
   const WodDetail({
     required this.id,
     required this.name,
@@ -936,6 +1017,7 @@ class WodDetail {
     required this.female,
     required this.myBestRaw,
     required this.myBestSubScore,
+    this.prescription,
   });
 
   WodTriple? levels(String sex) => sex == 'female' ? female : male;
@@ -953,6 +1035,9 @@ class WodDetail {
       female: levels == null ? null : WodTriple.fromJson(levels['female'] as Map<String, dynamic>),
       myBestRaw: best?['rawResult'] as num?,
       myBestSubScore: (best?['subScore'] as num?)?.toInt(),
+      prescription: j['prescription'] == null
+          ? null
+          : WodPrescription.fromJson((j['prescription'] as Map).cast<String, dynamic>()),
     );
   }
 }

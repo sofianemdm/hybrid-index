@@ -73,9 +73,11 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
             }
             if (snap.hasError) return Center(child: Text('${snap.error}', style: TextStyle(color: HiColors.error)));
             final d = snap.data!;
+            final challenge = _challengeCard(d);
             return ListView(
               padding: const EdgeInsets.fromLTRB(HiSpace.lg, HiSpace.lg, HiSpace.lg, 96),
               children: [
+                if (challenge != null) ...[challenge, const SizedBox(height: HiSpace.lg)],
                 Wrap(
                   spacing: 6,
                   runSpacing: 6,
@@ -195,6 +197,148 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
           Expanded(child: Text(label, style: TextStyle(color: color, fontWeight: FontWeight.w600))),
           Text(formatWodResult(value, scoreType),
               style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
+        ],
+      ),
+    );
+  }
+
+  String _fmtCap(int sec) {
+    if (sec % 60 == 0) return '${sec ~/ 60} min';
+    final m = sec ~/ 60;
+    final s = (sec % 60).toString().padLeft(2, '0');
+    return '$m:$s';
+  }
+
+  /// Carte « Le défi » : énoncé concret de la séance + poids liés au sexe sélectionné.
+  /// Null si la séance n'a pas de prescription (WOD custom).
+  Widget? _challengeCard(WodDetail d) {
+    final p = d.prescription;
+    if (p == null || p.blocks.isEmpty) return null;
+    return Container(
+      padding: const EdgeInsets.all(HiSpace.lg),
+      decoration: BoxDecoration(
+        color: HiColors.bgElevated,
+        borderRadius: BorderRadius.circular(HiRadius.lg),
+        border: Border.all(color: HiColors.strokeStrong),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Le défi',
+              style: TextStyle(
+                  color: HiColors.textPrimary, fontSize: 18, fontWeight: FontWeight.w800, letterSpacing: -0.2)),
+          const SizedBox(height: HiSpace.sm),
+          Wrap(
+            spacing: HiSpace.sm,
+            runSpacing: HiSpace.xs,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(gradient: HiColors.brandGradient, borderRadius: BorderRadius.circular(HiRadius.pill)),
+                child: Text(p.format,
+                    style: TextStyle(color: HiColors.textOnBrand, fontSize: 12, fontWeight: FontWeight.w700)),
+              ),
+              if (p.timeCapSec != null)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: HiColors.strokeStrong),
+                    borderRadius: BorderRadius.circular(HiRadius.pill),
+                  ),
+                  child: Row(mainAxisSize: MainAxisSize.min, children: [
+                    Icon(Icons.timer_outlined, size: 13, color: HiColors.textSecondary),
+                    const SizedBox(width: 4),
+                    Text('Cap ${_fmtCap(p.timeCapSec!)}',
+                        style: TextStyle(color: HiColors.textSecondary, fontSize: 12, fontWeight: FontWeight.w600)),
+                  ]),
+                ),
+            ],
+          ),
+          if (p.summary != null && p.summary!.isNotEmpty) ...[
+            const SizedBox(height: HiSpace.md),
+            Text(p.summary!, style: TextStyle(color: HiColors.textSecondary, fontSize: 14, height: 1.4)),
+          ],
+          const SizedBox(height: HiSpace.md),
+          ...p.blocks.map(_blockRow),
+          if (p.weights.isNotEmpty) ...[
+            Divider(color: HiColors.strokeSubtle, height: HiSpace.lg),
+            Text('CHARGES',
+                style: TextStyle(
+                    color: HiColors.textTertiary, fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 0.3)),
+            const SizedBox(height: HiSpace.sm),
+            ...p.weights.map(_weightRow),
+          ],
+          const SizedBox(height: HiSpace.md),
+          Container(
+            padding: const EdgeInsets.all(HiSpace.sm),
+            decoration: BoxDecoration(
+              color: HiColors.brandPrimary.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(HiRadius.sm),
+            ),
+            child: Row(children: [
+              Icon(Icons.flag_outlined, size: 15, color: HiColors.brandPrimary),
+              const SizedBox(width: HiSpace.sm),
+              Expanded(
+                child: Text(p.scoringNote,
+                    style: TextStyle(color: HiColors.textSecondary, fontSize: 12.5, height: 1.35)),
+              ),
+            ]),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _blockRow(WodBlock b) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 64,
+            child: Text(b.reps,
+                style: TextStyle(color: HiColors.brandPrimary, fontSize: 14, fontWeight: FontWeight.w800)),
+          ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(b.movement,
+                    style: TextStyle(color: HiColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600)),
+                if (b.detail != null && b.detail!.isNotEmpty)
+                  Text(b.detail!, style: TextStyle(color: HiColors.textTertiary, fontSize: 12, height: 1.3)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _weightRow(WodWeight w) {
+    final rx = w.rx(_sex);
+    final scaled = w.scaled(_sex);
+    String fmt(num v) => v % 1 == 0 ? '${v.toInt()} ${w.unit}' : '$v ${w.unit}';
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(w.movement, style: TextStyle(color: HiColors.textPrimary, fontSize: 13, fontWeight: FontWeight.w600)),
+          const SizedBox(height: 2),
+          RichText(
+            text: TextSpan(children: [
+              TextSpan(text: 'RX : ', style: TextStyle(color: HiColors.textTertiary, fontSize: 12, fontWeight: FontWeight.w600)),
+              TextSpan(text: fmt(rx), style: TextStyle(color: HiColors.brandPrimary, fontSize: 13, fontWeight: FontWeight.w800)),
+              TextSpan(text: '   ·   ', style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
+              TextSpan(text: 'Léger : ', style: TextStyle(color: HiColors.textTertiary, fontSize: 12, fontWeight: FontWeight.w600)),
+              TextSpan(text: fmt(scaled), style: TextStyle(color: HiColors.textSecondary, fontSize: 13, fontWeight: FontWeight.w700)),
+              if (w.note != null && w.note!.isNotEmpty)
+                TextSpan(text: '  (${w.note})', style: TextStyle(color: HiColors.textTertiary, fontSize: 11)),
+            ]),
+          ),
         ],
       ),
     );

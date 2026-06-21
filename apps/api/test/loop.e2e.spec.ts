@@ -292,6 +292,15 @@ describe("api — boucle complète persistée (e2e réel)", () => {
     expect(res.body.scoreType).toBe("time");
     expect(res.body.levels.male.champion).toBeLessThan(res.body.levels.male.intermediate);
     expect(res.body.myBest.subScore).toBeGreaterThan(0); // l'utilisateur a loggé Fran
+    // Énoncé concret : Fran = 21-15-9 thrusters/tractions, thruster chargé 43/30 kg.
+    expect(res.body.prescription).toBeTruthy();
+    expect(res.body.prescription.format).toContain("21-15-9");
+    expect(res.body.prescription.blocks.length).toBeGreaterThanOrEqual(2);
+    const thruster = res.body.prescription.weights.find((w: { movement: string }) => /thruster/i.test(w.movement));
+    expect(thruster.rxMale).toBe(43);
+    expect(thruster.rxFemale).toBe(30);
+    expect(thruster.scaledMale).toBeLessThan(thruster.rxMale);
+    expect(res.body.prescription.scoringNote).toMatch(/temps/i);
   });
 
   it("WOD : classement Fran (Hommes) inclut l'utilisateur", async () => {
