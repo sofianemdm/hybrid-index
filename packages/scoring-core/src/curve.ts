@@ -38,3 +38,64 @@ export function curveF(p: number, params: CurveParams = SIGMOID_V1): number {
 export function subScoreFromPercentile(p: number, params: CurveParams = SIGMOID_V1): number {
   return Math.round(1000 * curveF(p, params));
 }
+
+// ───────────────────────── Affichage /100 (display-v1) ─────────────────────────
+/**
+ * Échelle d'AFFICHAGE « type FIFA » du HYBRID INDEX et des sous-scores : une note /100 ancrée
+ * sur le niveau RÉEL. Le cœur de calcul reste [0,1000] (sigmoid-v1, intact) ; ceci est une
+ * PROJECTION pure et monotone appliquée AU BORD (cf. sport-science index-v2 §1-bis). Aucune
+ * migration de données : la note est dérivée à la lecture.
+ *
+ * Forme : g(P) = logistique renormalisée jusqu'au pivot a, puis approche exponentielle de la
+ * borne haute (compression du sommet). Plancher 35 (sédentaire), asymptote 99 (jamais 100).
+ * Repères : P=0→35, médiane→63, bon niveau→82, top box→90, pro→~92.
+ * VERSIONNÉE : tout changement de constantes ⇒ nouvelle version display-vX.
+ */
+export const DISPLAY_VERSION = "display-v1";
+
+const DISPLAY = {
+  floor: 35,
+  pivot: 0.8, // percentile-pivot `a`
+  noteAtPivot: 86,
+  cap: 99,
+  lambda: 3.357,
+  k: 6.4,
+  p0: 0.5,
+} as const;
+
+/** Cœur logistique renormalisé s(P) ∈ [0,1] propre à la courbe d'affichage. */
+function displayCore(p: number): number {
+  const sig = (x: number): number => 1 / (1 + Math.exp(-DISPLAY.k * (x - DISPLAY.p0)));
+  const s0 = sig(0);
+  const s1 = sig(1);
+  return (sig(p) - s0) / (s1 - s0);
+}
+
+/** Note d'affichage /100 (1 décimale) à partir d'un percentile P ∈ [0,1]. Monotone croissante. */
+export function ratingFromPercentile(p: number): number {
+  const pc = Math.min(1, Math.max(0, p));
+  const { floor, pivot, noteAtPivot, cap, lambda } = DISPLAY;
+  const sA = displayCore(pivot);
+  const g =
+    pc <= pivot
+      ? floor + ((noteAtPivot - floor) / sA) * displayCore(pc)
+      : cap - (cap - noteAtPivot) * Math.exp(-lambda * (pc - pivot));
+  return Math.round(g * 10) / 10;
+}
+
+/** Percentile équivalent d'un score interne S ∈ [0,1000] (inverse analytique de sigmoid-v1). */
+export function percentileFromInternal(internal: number, params: CurveParams = SIGMOID_V1): number {
+  const u = Math.min(1 - 1e-6, Math.max(1e-6, internal / 1000));
+  const r0 = rawSigmoid(0, params);
+  const r1 = rawSigmoid(1, params);
+  const raw = Math.min(1 - 1e-9, Math.max(1e-9, u * (r1 - r0) + r0));
+  return params.p0 + (1 / params.k) * Math.log(raw / (1 - raw));
+}
+
+/**
+ * Note d'affichage /100 (1 décimale) d'un score interne [0,1000] — sert pour l'Index ET pour
+ * un score d'attribut. C'est la composition g(f⁻¹(S/1000)).
+ */
+export function ratingFromInternal(internal: number, params: CurveParams = SIGMOID_V1): number {
+  return ratingFromPercentile(percentileFromInternal(internal, params));
+}

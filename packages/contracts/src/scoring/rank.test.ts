@@ -2,60 +2,63 @@ import { describe, expect, it } from "vitest";
 import { RANK_BANDS } from "../enums";
 import { clampIndex, rankBandFromIndex, rankFromIndex, rankProgress } from "./rank";
 
+// Bandes sur l'échelle d'AFFICHAGE /100 (display-v1) :
+// rookie [40,55) bronze [55,65) silver [65,72) gold [72,79) platinum [79,85) diamond [85,92) elite [92,100].
 describe("rankFromIndex", () => {
-  it("mappe les valeurs de référence du cahier (§9.2)", () => {
-    expect(rankFromIndex(0)).toBe("rookie");
-    expect(rankFromIndex(149)).toBe("rookie");
-    expect(rankFromIndex(150)).toBe("bronze");
-    expect(rankFromIndex(299)).toBe("bronze");
-    expect(rankFromIndex(300)).toBe("silver");
-    expect(rankFromIndex(450)).toBe("gold");
-    expect(rankFromIndex(499)).toBe("gold"); // exemple A après correctif D2
-    expect(rankFromIndex(600)).toBe("platinum");
-    expect(rankFromIndex(719)).toBe("platinum");
-    expect(rankFromIndex(750)).toBe("diamond");
-    expect(rankFromIndex(775)).toBe("diamond"); // exemple B
-    expect(rankFromIndex(900)).toBe("elite");
-    expect(rankFromIndex(1000)).toBe("elite");
+  it("mappe chaque OVR /100 sur le bon rang", () => {
+    expect(rankFromIndex(40)).toBe("rookie");
+    expect(rankFromIndex(54)).toBe("rookie");
+    expect(rankFromIndex(55)).toBe("bronze");
+    expect(rankFromIndex(64)).toBe("bronze");
+    expect(rankFromIndex(65)).toBe("silver");
+    expect(rankFromIndex(67)).toBe("silver"); // exemple A (index interne ~499)
+    expect(rankFromIndex(72)).toBe("gold");
+    expect(rankFromIndex(79)).toBe("platinum");
+    expect(rankFromIndex(82)).toBe("platinum"); // exemple B (index interne ~775)
+    expect(rankFromIndex(85)).toBe("diamond");
+    expect(rankFromIndex(92)).toBe("elite");
+    expect(rankFromIndex(100)).toBe("elite");
   });
 
-  it("est monotone : le rang ne régresse jamais quand l'Index augmente", () => {
+  it("est ordonné (monotone) sur toute la plage", () => {
     let lastOrdinal = -1;
-    for (let v = 0; v <= 1000; v += 1) {
+    for (let v = 40; v <= 100; v += 2) {
       const ordinal = RANK_BANDS.findIndex((b) => b.rank === rankFromIndex(v));
       expect(ordinal).toBeGreaterThanOrEqual(lastOrdinal);
       lastOrdinal = ordinal;
     }
   });
 
-  it("respecte exactement les bornes [min, max) de chaque bande", () => {
+  it("chaque borne basse de bande donne ce rang", () => {
     for (const band of RANK_BANDS) {
       expect(rankFromIndex(band.min)).toBe(band.rank);
-      const justBelowMax = band.rank === "elite" ? band.max : band.max - 1;
+      const justBelowMax = band.rank === "elite" ? band.max : band.max - 0.1;
       expect(rankFromIndex(justBelowMax)).toBe(band.rank);
     }
   });
+});
 
-  it("clampe les valeurs hors plage", () => {
-    expect(clampIndex(-50)).toBe(0);
-    expect(clampIndex(1500)).toBe(1000);
-    expect(clampIndex(Number.NaN)).toBe(0);
+describe("clampIndex", () => {
+  it("clampe dans [40,100] (plancher 40, jamais 0)", () => {
+    expect(clampIndex(-50)).toBe(40);
+    expect(clampIndex(1500)).toBe(100);
+    expect(clampIndex(Number.NaN)).toBe(40);
     expect(rankFromIndex(-10)).toBe("rookie");
     expect(rankFromIndex(2000)).toBe("elite");
   });
 });
 
 describe("rankProgress", () => {
-  it("calcule les points avant le prochain rang", () => {
-    const p = rankProgress(553); // en Or [450,600)
+  it("calcule la progression vers le rang suivant", () => {
+    const p = rankProgress(75); // en Or [72,79)
     expect(p.current).toBe("gold");
     expect(p.next).toBe("platinum");
-    expect(p.pointsToNext).toBe(47); // « Encore 47 pts avant PLATINE » (cahier §4.3)
-    expect(p.progress).toBeCloseTo((553 - 450) / 150, 5);
+    expect(p.pointsToNext).toBe(4); // « Encore 4 pts avant PLATINE » (79 - 75)
+    expect(p.progress).toBeCloseTo((75 - 72) / (79 - 72), 5);
   });
 
-  it("gère le dernier rang (elite) sans suivant", () => {
-    const p = rankProgress(950);
+  it("au rang max (elite), pas de suivant", () => {
+    const p = rankProgress(95);
     expect(p.current).toBe("elite");
     expect(p.next).toBeNull();
     expect(p.pointsToNext).toBeNull();
@@ -63,6 +66,6 @@ describe("rankProgress", () => {
   });
 
   it("renvoie le bon band complet", () => {
-    expect(rankBandFromIndex(600)).toEqual({ rank: "platinum", min: 600, max: 750 });
+    expect(rankBandFromIndex(80)).toEqual({ rank: "platinum", min: 79, max: 85 });
   });
 });

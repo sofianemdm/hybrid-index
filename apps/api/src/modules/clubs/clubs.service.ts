@@ -1,4 +1,5 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
+import { ratingFromInternal } from "@hybrid-index/scoring-core";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { ModerationService } from "../moderation/moderation.service";
 
@@ -120,7 +121,7 @@ export class ClubsService {
         userId: m.userId,
         displayName: m.user.profile?.displayName ?? "—",
         rank: m.user.profile?.rank ?? "rookie",
-        index: m.user.hybridIndex?.value ?? 0,
+        index: m.user.hybridIndex ? Math.round(ratingFromInternal(m.user.hybridIndex.value)) : 0, // OVR /100
         role: m.role,
         isMe: m.userId === me,
       }))

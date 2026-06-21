@@ -85,15 +85,17 @@ export interface RankBand {
 }
 
 /** Source d'autorité des bornes de rang — DOIT rester identique à gamification.md §3.1. */
+// Bandes de rang sur l'échelle d'AFFICHAGE /100 (« type FIFA », cf. gamification index-v2).
+// Granularité concentrée sur 55–92 (où vit la masse) ; elite ≥ 92 (frontière pro, rare).
 export const RANK_BANDS: readonly RankBand[] = [
-  { rank: "rookie", min: 0, max: 150 },
-  { rank: "bronze", min: 150, max: 300 },
-  { rank: "silver", min: 300, max: 450 },
-  { rank: "gold", min: 450, max: 600 },
-  { rank: "platinum", min: 600, max: 750 },
-  { rank: "diamond", min: 750, max: 900 },
-  { rank: "elite", min: 900, max: 1000 },
+  { rank: "rookie", min: 40, max: 55 },
+  { rank: "bronze", min: 55, max: 65 },
+  { rank: "silver", min: 65, max: 72 },
+  { rank: "gold", min: 72, max: 79 },
+  { rank: "platinum", min: 79, max: 85 },
+  { rank: "diamond", min: 85, max: 92 },
+  { rank: "elite", min: 92, max: 100 },
 ] as const;
 
-export const INDEX_MIN = 0;
-export const INDEX_MAX = 1000;
+export const INDEX_MIN = 40;
+export const INDEX_MAX = 100;

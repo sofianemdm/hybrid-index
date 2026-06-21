@@ -67,7 +67,9 @@ describe("Worked example A — Homme, objectif 'Partout', 3 efforts → ~499 (OR
     expect(index.value).toBeLessThanOrEqual(500);
     expect(index.radarCoverage).toBe(4);
     expect(index.isProvisional).toBe(false);
-    expect(rankFromIndex(index.value)).toBe("gold");
+    // Affichage /100 (display-v1) : index interne ~499 → OVR 67 = silver.
+    expect(index.ratingInt).toBe(67);
+    expect(rankFromIndex(index.ratingInt!)).toBe("silver");
   });
 });
 
@@ -99,6 +101,8 @@ describe("Worked example B — Femme, objectif 'HYROX', 3 efforts → ~775 (DIAM
     expect(index.value).toBeGreaterThanOrEqual(772);
     expect(index.value).toBeLessThanOrEqual(778);
     expect(index.isEstimated).toBe(true);
-    expect(rankFromIndex(index.value)).toBe("diamond");
+    // Affichage /100 (display-v1) : index interne ~775 → OVR 82 = platinum.
+    expect(index.ratingInt).toBe(82);
+    expect(rankFromIndex(index.ratingInt!)).toBe("platinum");
   });
 });

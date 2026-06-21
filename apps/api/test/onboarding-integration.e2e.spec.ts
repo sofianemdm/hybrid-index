@@ -38,8 +38,8 @@ describe("api ↔ score-service — reveal RÉEL (intégration, sans mock, sans 
       .post("/v1/onboarding/estimate")
       .send({ sex: "male", goal: "all_round", course: { distanceMeters: 5000, timeSeconds: 1440 } })
       .expect(201);
-    expect(res.body.index.value).toBeGreaterThanOrEqual(850);
-    expect(res.body.index.value).toBeLessThanOrEqual(1000);
+    expect(res.body.index.value).toBeGreaterThanOrEqual(80); // OVR /100
+    expect(res.body.index.value).toBeLessThanOrEqual(100);
     expect(res.body.index.radarCoverage).toBe(1);
     expect(res.body.index.isProvisional).toBe(true);
     expect(["diamond", "elite"]).toContain(res.body.index.rank);

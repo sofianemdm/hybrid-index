@@ -1,7 +1,11 @@
 import { Injectable } from "@nestjs/common";
 import type { Sex } from "@prisma/client";
+import { ratingFromInternal } from "@hybrid-index/scoring-core";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { RedisService } from "../../infra/redis/redis.service";
+
+/** Valeur interne /1000 → OVR /100 affiché (le tri reste sur la valeur interne). */
+const ovr = (internal: number): number => Math.round(ratingFromInternal(internal));
 
 export interface LeaderboardEntry {
   position: number; // 1-indexé
@@ -52,7 +56,7 @@ export class LeaderboardService {
       position: i + 1,
       userId: r.userId,
       displayName: names.get(r.userId)?.displayName ?? "—",
-      value: r.value,
+      value: ovr(r.value),
       rank: names.get(r.userId)?.rank ?? "rookie",
       isMe: r.userId === meUserId,
     }));
@@ -78,7 +82,7 @@ export class LeaderboardService {
       }
     }
 
-    return { sex, total, entries, me };
+    return { sex, total, entries, me: me ? { position: me.position, value: ovr(me.value) } : null };
   }
 
   /** Position 1-indexée + valeur d'un utilisateur, via Redis puis Postgres. */

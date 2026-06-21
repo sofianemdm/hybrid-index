@@ -61,6 +61,9 @@ export type ComputeIndexRequest = z.infer<typeof ComputeIndexRequest>;
 
 export const ComputeIndexResponse = z.object({
   value: z.number().min(0).max(1000),
+  // Note d'affichage /100 « type FIFA » dérivée de la valeur interne (null si non mesuré).
+  rating: z.number().min(0).max(100).nullable().optional(),
+  ratingInt: z.number().int().min(0).max(100).nullable().optional(),
   percentile: z.number().min(0).max(1),
   isProvisional: z.boolean(),
   isEstimated: z.boolean(),

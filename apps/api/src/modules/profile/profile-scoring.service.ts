@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { ATTRIBUTE_KEYS, type AttributeKey, type Goal, type Sex, type internalScore, rankFromIndex, rankProgress } from "@hybrid-index/contracts";
-import { type AttributeResult, bandFromP, popPercentileIndex } from "@hybrid-index/scoring-core";
+import { type AttributeResult, bandFromP, popPercentileIndex, ratingFromInternal } from "@hybrid-index/scoring-core";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { RedisService } from "../../infra/redis/redis.service";
 import { ScoreClient } from "../../infra/score-client/score-client.service";
@@ -24,7 +24,10 @@ const MIN_LEAGUE_FOR_APP = 200;
 /** Profil de score persisté renvoyé au mobile (index + radar lisible + preuve sociale). */
 export interface PersistedProfile {
   index: {
-    value: number;
+    value: number | null; // OVR /100 (null si non mesuré)
+    rating?: number | null; // /100 à 1 décimale
+    internal?: number; // valeur interne /1000
+
     percentile: number;
     rank: string;
     isProvisional: boolean;
@@ -206,7 +209,8 @@ export class ProfileScoringService {
     population: { percentile: number; band: string },
   ): Promise<void> {
     const idx = computed.index;
-    const rank = rankFromIndex(idx.value);
+    // Le rang est calculé sur la note d'AFFICHAGE /100 (idx.ratingInt), pas la valeur interne /1000.
+    const rank = rankFromIndex(idx.ratingInt ?? 40);
     const before = await this.prisma.profile.findUnique({ where: { userId }, select: { rank: true } });
     // Snapshot de position dans la ligue (athlètes du même sexe au-dessus + 1) — autoritatif Postgres.
     const above = await this.prisma.hybridIndex.count({
@@ -312,12 +316,15 @@ export class ProfileScoringService {
     });
     return rows
       .reverse()
-      .map((r) => ({
-        value: r.value,
-        percentile: Number(r.percentile),
-        rank: rankFromIndex(r.value),
-        at: r.computedAt.toISOString(),
-      }));
+      .map((r) => {
+        const ratingInt = Math.round(ratingFromInternal(r.value));
+        return {
+          value: ratingInt, // historique affiché en /100
+          percentile: Number(r.percentile),
+          rank: rankFromIndex(ratingInt),
+          at: r.computedAt.toISOString(),
+        };
+      });
   }
 
   async getMyProfile(userId: string): Promise<PersistedProfile | null> {
@@ -340,15 +347,22 @@ export class ProfileScoringService {
     });
     const socialProof = await this.buildSocialProof(profile.sex, profile.goal, radar, Number(index.percentile));
     return {
-      index: {
-        value: index.value,
-        percentile: Number(index.percentile),
-        rank: rankFromIndex(index.value),
-        isProvisional: index.isProvisional,
-        isEstimated: index.isEstimated,
-        radarCoverage: index.radarCoverage,
-        rankProgress: rankProgress(index.value),
-      },
+      index: (() => {
+        // `index` est une ligne DB (valeur interne /1000) → on dérive l'OVR /100.
+        const measured = index.radarCoverage > 0;
+        const ratingInt = measured ? Math.round(ratingFromInternal(index.value)) : null;
+        return {
+          value: ratingInt, // OVR /100 affiché
+          rating: measured ? ratingFromInternal(index.value) : null,
+          internal: index.value, // valeur interne /1000 (tri/debug)
+          percentile: Number(index.percentile),
+          rank: rankFromIndex(ratingInt ?? 40),
+          isProvisional: index.isProvisional,
+          isEstimated: index.isEstimated,
+          radarCoverage: index.radarCoverage,
+          rankProgress: rankProgress(ratingInt ?? 40),
+        };
+      })(),
       radar,
       socialProof,
       gains: [], // pas de delta sur un simple GET (pas d'état « avant »)
@@ -375,13 +389,15 @@ function toPersistedProfile(
 ): PersistedProfile {
   return {
     index: {
-      value: computed.index.value,
+      value: computed.index.ratingInt ?? null, // OVR /100 affiché
+      rating: computed.index.rating ?? null,
+      internal: computed.index.value, // valeur interne /1000 (tri/debug)
       percentile: computed.index.percentile,
-      rank: rankFromIndex(computed.index.value),
+      rank: rankFromIndex(computed.index.ratingInt ?? 40),
       isProvisional: computed.index.isProvisional,
       isEstimated: computed.index.isEstimated,
       radarCoverage: computed.index.radarCoverage,
-      rankProgress: rankProgress(computed.index.value),
+      rankProgress: rankProgress(computed.index.ratingInt ?? 40),
     },
     radar: computed.radar.map((a) => ({
       attribute: a.attribute,

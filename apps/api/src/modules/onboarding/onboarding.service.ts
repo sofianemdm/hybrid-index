@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { type internalScore, type onboardingDto, rankFromIndex } from "@hybrid-index/contracts";
+import { ratingFromInternal } from "@hybrid-index/scoring-core";
 import { ScoreClient } from "../../infra/score-client/score-client.service";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { ProfileScoringService, type PersistedProfile } from "../profile/profile-scoring.service";
@@ -32,9 +33,10 @@ export class OnboardingService {
 
     return {
       index: {
-        value: profile.index.value,
+        // OVR /100 révélé (toujours mesuré ici ; fallback dérivé par sécurité de typage).
+        value: profile.index.ratingInt ?? Math.round(ratingFromInternal(profile.index.value)),
         percentile: profile.index.percentile,
-        rank: rankFromIndex(profile.index.value),
+        rank: rankFromIndex(profile.index.ratingInt ?? Math.round(ratingFromInternal(profile.index.value))),
         isProvisional: profile.index.isProvisional,
         isEstimated: profile.index.isEstimated,
         radarCoverage: profile.index.radarCoverage,

@@ -388,6 +388,8 @@ export class ScoringService {
 
   private toIndexResponse(result: {
     value: number;
+    rating: number | null;
+    ratingInt: number | null;
     percentile: number;
     isProvisional: boolean;
     isEstimated: boolean;
@@ -395,6 +397,8 @@ export class ScoringService {
   }): internalScore.ComputeIndexResponse {
     return {
       value: result.value,
+      rating: result.rating,
+      ratingInt: result.ratingInt,
       percentile: result.percentile,
       isProvisional: result.isProvisional,
       isEstimated: result.isEstimated,

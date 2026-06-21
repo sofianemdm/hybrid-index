@@ -51,8 +51,8 @@ describe("api — onboarding/estimate (e2e)", () => {
       .post("/v1/onboarding/estimate")
       .send({ sex: "male", goal: "all_round", course: { distanceMeters: 5000, timeSeconds: 1440 } })
       .expect(201);
-    expect(res.body.index.value).toBe(884);
-    expect(res.body.index.rank).toBe("diamond"); // 884 ∈ [750,900)
+    expect(res.body.index.value).toBe(87); // OVR /100 (display-v1)
+    expect(res.body.index.rank).toBe("diamond"); // 87 ∈ [85,92)
     expect(res.body.index.isProvisional).toBe(true);
     expect(res.body.index.isEstimated).toBe(false); // course seule = non estimé
     expect(res.body.radar[0].attribute).toBe("engine");

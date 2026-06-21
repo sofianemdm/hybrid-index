@@ -1,7 +1,12 @@
 import { BadRequestException, ConflictException, Injectable } from "@nestjs/common";
+import { ratingFromInternal } from "@hybrid-index/scoring-core";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { ModerationService } from "../moderation/moderation.service";
 import { PostsService } from "../posts/posts.service";
+
+/** Valeur interne /1000 → OVR /100 affiché (null si non mesuré). */
+const ovr = (internal: number | null | undefined): number | null =>
+  internal == null ? null : Math.round(ratingFromInternal(internal));
 
 const ALLOWED_EMOJIS = new Set(["💪", "🔥", "👏", "🚀"]);
 /** Feed FINI (pas de scroll infini) : fenêtre bornée des activités les plus récentes. */
@@ -90,7 +95,7 @@ export class SocialService {
         sex: p.sex,
         goal: p.goal,
         rank: p.rank,
-        index: p.user.hybridIndex?.value ?? null,
+        index: ovr(p.user.hybridIndex?.value),
       }))
       .sort((a, b) => (b.index ?? 0) - (a.index ?? 0));
   }
@@ -158,7 +163,7 @@ export class SocialService {
       sex: user.profile?.sex ?? "male",
       goal: user.profile?.goal ?? "all_round",
       rank: user.profile?.rank ?? "rookie",
-      index: user.hybridIndex?.value ?? null,
+      index: ovr(user.hybridIndex?.value),
     };
   }
 }

@@ -1,6 +1,7 @@
 import type { AttributeKey, Goal } from "@hybrid-index/contracts";
 import { normalCdf } from "./math/normal";
 import { clampPercentile } from "./distribution";
+import { ratingFromInternal } from "./curve";
 import { WEIGHTS_V1 } from "./weights";
 import type { AttributeResult } from "./attribute";
 
@@ -18,11 +19,23 @@ export const PROVISIONAL_MIN_ATTRIBUTES = 4;
 export const PROVISIONAL_MIN_EFFORTS = 3;
 
 export interface IndexResult {
+  /** Valeur interne [0,1000] (cœur de calcul, clé de tri des classements). NE PAS afficher. */
   value: number;
+  /** Note d'AFFICHAGE /100 « type FIFA » (1 décimale), ou null si non mesuré (couverture 0). */
+  rating: number | null;
+  /** Note d'affichage arrondie à l'entier (l'OVR montré à l'utilisateur), ou null si non mesuré. */
+  ratingInt: number | null;
   percentile: number;
   isProvisional: boolean;
   isEstimated: boolean;
   radarCoverage: number;
+}
+
+/** Construit la note d'affichage /100 à partir de la valeur interne (null si non mesuré). */
+function display(value: number, coverage: number): { rating: number | null; ratingInt: number | null } {
+  if (coverage === 0) return { rating: null, ratingInt: null };
+  const rating = ratingFromInternal(value);
+  return { rating, ratingInt: Math.round(rating) };
 }
 
 /** Percentile de l'Index dans la distribution par sexe N(450,140) (initial, à recalibrer). */
@@ -40,7 +53,7 @@ export function hybridIndex(
   const coverage = unlocked.length;
 
   if (coverage === 0) {
-    return { value: 0, percentile: indexPercentile(0), isProvisional: true, isEstimated: false, radarCoverage: 0 };
+    return { value: 0, ...display(0, 0), percentile: indexPercentile(0), isProvisional: true, isEstimated: false, radarCoverage: 0 };
   }
 
   let num = 0;
@@ -52,14 +65,14 @@ export function hybridIndex(
   }
   // Robustesse : impossible avec weights-v1 (min 0.7), mais protège des futures versions de poids.
   if (den <= 0) {
-    return { value: 0, percentile: indexPercentile(0), isProvisional: true, isEstimated: false, radarCoverage: coverage };
+    return { value: 0, ...display(0, 0), percentile: indexPercentile(0), isProvisional: true, isEstimated: false, radarCoverage: coverage };
   }
   const value = Math.round(num / den);
 
   const isProvisional = !(coverage >= PROVISIONAL_MIN_ATTRIBUTES || totalValidEfforts >= PROVISIONAL_MIN_EFFORTS);
   const isEstimated = unlocked.some((a) => a.isEstimated);
 
-  return { value, percentile: indexPercentile(value), isProvisional, isEstimated, radarCoverage: coverage };
+  return { value, ...display(value, coverage), percentile: indexPercentile(value), isProvisional, isEstimated, radarCoverage: coverage };
 }
 
 /**

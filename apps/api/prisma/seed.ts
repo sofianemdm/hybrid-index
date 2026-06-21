@@ -2,6 +2,7 @@
 import { PrismaClient, type AttributeKey, type Sex, type ScoreType, type WodType } from "@prisma/client";
 import Redis from "ioredis";
 import { rankFromIndex } from "@hybrid-index/contracts";
+import { ratingFromInternal } from "@hybrid-index/scoring-core";
 import { BADGES } from "../src/modules/engagement/badges.data";
 
 const SCORING_VERSION_UUID = "11111111-1111-1111-1111-111111111111";
@@ -168,7 +169,8 @@ async function main(): Promise<void> {
       const goal = GOALS[i % GOALS.length];
       const value = sampleIndex();
       const percentile = Math.min(0.9999, Math.max(0.0001, value / 1000));
-      const rank = rankFromIndex(value);
+      // value est interne /1000 ; le rang se calcule sur la note d'affichage /100.
+      const rank = rankFromIndex(Math.round(ratingFromInternal(value)));
 
       const user = await prisma.user.upsert({
         where: { email },
