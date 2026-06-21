@@ -1,6 +1,11 @@
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
+import { ratingFromInternal } from "@hybrid-index/scoring-core";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { ModerationService } from "../moderation/moderation.service";
+
+/** Sous-score interne /1000 → note d'affichage /100 (null si absent). */
+const ovrSub = (v: number | null | undefined): number | null =>
+  v == null ? null : Math.round(ratingFromInternal(v));
 
 const ALLOWED_EMOJIS = new Set(["💪", "🔥", "👏", "🚀"]);
 const MAX_BODY = 500;
@@ -61,7 +66,7 @@ export class PostsService {
         wodName: res.wod.name,
         scoreType: res.wod.scoreType,
         rawResult: Number(res.rawResult),
-        subScore: res.subScore ?? null,
+        subScore: ovrSub(res.subScore),
       };
     }
 
@@ -165,7 +170,7 @@ export class PostsService {
           payload.wodName = res.wod.name;
           payload.scoreType = res.wod.scoreType;
           payload.rawResult = Number(res.rawResult);
-          payload.subScore = res.subScore ?? null;
+          payload.subScore = ovrSub(res.subScore);
         }
       }
       return {

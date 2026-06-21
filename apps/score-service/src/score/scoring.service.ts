@@ -202,7 +202,8 @@ export class ScoringService {
       bestAgeWeeks: null,
     }));
     const unlockedCount = radar.filter((a) => a.unlocked).length;
-    const current = hybridIndex(radar, req.goal, unlockedCount).value;
+    // OVR /100 (cohérence avec l'affichage de l'Index).
+    const current = hybridIndex(radar, req.goal, unlockedCount).ratingInt ?? 40;
 
     const bestUnlocked = radar.filter((a) => a.unlocked).reduce((m, a) => Math.max(m, a.score), 0);
     const cur = radar.find((a) => a.attribute === req.targetAttribute);
@@ -223,7 +224,7 @@ export class ScoringService {
       });
     }
     const projectedCount = projectedRadar.filter((a) => a.unlocked).length;
-    const projected = hybridIndex(projectedRadar, req.goal, projectedCount).value;
+    const projected = hybridIndex(projectedRadar, req.goal, projectedCount).ratingInt ?? 40;
 
     return {
       current,

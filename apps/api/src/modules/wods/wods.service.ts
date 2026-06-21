@@ -9,7 +9,11 @@ import { ProgressService } from "../progress/progress.service";
 import { SCORING_VERSION_UUID } from "../../common/constants";
 import type { EstimateWodRequest } from "./wod-estimate.dto";
 import type { CreateWodRequest, LogWodResultRequest } from "./create-wod.dto";
+import { ratingFromInternal } from "@hybrid-index/scoring-core";
 import { WOD_PRESCRIPTIONS } from "./wod-prescriptions.data";
+
+/** Sous-score interne /1000 → note d'affichage /100 (null si absent). */
+const ovrSub = (v: number | null): number | null => (v == null ? null : Math.round(ratingFromInternal(v)));
 
 /** Les 4 séances PHARES (marquee benchmarks) — mises en avant, où tout le monde se mesure. */
 export const FLAGSHIP_WOD_IDS = ["hyrox_sprint", "grace", "benchmark_zero", "ergo_skill"];
@@ -147,7 +151,7 @@ export class WodsService {
       .catch(() => undefined);
 
     return {
-      result: { id: created.id, wodId, rawResult: body.rawResult, subScore, rxCompliant: created.rxCompliant },
+      result: { id: created.id, wodId, rawResult: body.rawResult, subScore: ovrSub(subScore), rxCompliant: created.rxCompliant },
       profile: recomputed,
     };
   }
@@ -199,7 +203,7 @@ export class WodsService {
       if (best) {
         myBest = {
           rawResult: Number(best.rawResult),
-          subScore: best.subScore,
+          subScore: ovrSub(best.subScore),
           performedAt: best.performedAt.toISOString(),
         };
       }
@@ -252,7 +256,7 @@ export class WodsService {
         displayName: names.get(r.userId)?.displayName ?? "—",
         rank: names.get(r.userId)?.rank ?? "rookie",
         rawResult: Number(r.rawResult),
-        subScore: r.subScore,
+        subScore: ovrSub(r.subScore),
         isMe: r.userId === userId,
       })),
     };

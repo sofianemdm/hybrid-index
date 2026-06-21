@@ -1,4 +1,5 @@
 import { Injectable, Logger, NotFoundException } from "@nestjs/common";
+import { ratingFromInternal } from "@hybrid-index/scoring-core";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { ScoreClient } from "../../infra/score-client/score-client.service";
 import { ProfileScoringService, type PersistedProfile } from "../profile/profile-scoring.service";
@@ -118,7 +119,7 @@ export class ResultsService {
         id: created.id,
         wodId: created.wodId,
         rawResult: Number(created.rawResult),
-        subScore: created.subScore,
+        subScore: created.subScore == null ? null : Math.round(ratingFromInternal(created.subScore)), // /100
         percentile: created.percentile === null ? null : Number(created.percentile),
         performedAt: created.performedAt.toISOString(),
       },
@@ -140,7 +141,7 @@ export class ResultsService {
       wodName: r.wod.name,
       scoreType: r.wod.scoreType,
       rawResult: Number(r.rawResult),
-      subScore: r.subScore,
+      subScore: r.subScore == null ? null : Math.round(ratingFromInternal(r.subScore)), // /100
       percentile: r.percentile === null ? null : Number(r.percentile),
       performedAt: r.performedAt.toISOString(),
     }));

@@ -6,9 +6,9 @@ import { ratingFromPercentile, ratingFromInternal, percentileFromInternal, subSc
  * On verrouille la forme (plancher, médiane, compression du haut) et la monotonie.
  */
 describe("ratingFromPercentile — courbe d'affichage /100", () => {
-  it("plancher ~35 au plus bas, asymptote < 100 au plus haut", () => {
+  it("plancher ~35 au plus bas, sommet ~98 (< 100) au plus haut", () => {
     expect(ratingFromPercentile(0)).toBeCloseTo(35, 1);
-    expect(ratingFromPercentile(1)).toBeGreaterThan(90);
+    expect(ratingFromPercentile(1)).toBeGreaterThan(96);
     expect(ratingFromPercentile(1)).toBeLessThan(100);
   });
 
@@ -26,11 +26,13 @@ describe("ratingFromPercentile — courbe d'affichage /100", () => {
     expect(ratingFromPercentile(0.9)).toBeLessThanOrEqual(92);
   });
 
-  it("comprime le sommet : un pro (P≈0.97) reste sous 95, et P=0.999 sous 96", () => {
-    expect(ratingFromPercentile(0.97)).toBeLessThan(95);
-    expect(ratingFromPercentile(0.999)).toBeLessThan(96);
-    // … mais reste au-dessus de la zone amateur.
-    expect(ratingFromPercentile(0.97)).toBeGreaterThan(90);
+  it("sommet différencié : pro (P≈0.97) ~95, record (P≈0.999) ~98, sans tout aplatir", () => {
+    expect(ratingFromPercentile(0.97)).toBeGreaterThanOrEqual(93);
+    expect(ratingFromPercentile(0.97)).toBeLessThanOrEqual(97);
+    expect(ratingFromPercentile(0.999)).toBeGreaterThanOrEqual(96);
+    expect(ratingFromPercentile(0.999)).toBeLessThan(99);
+    // Différenciation préservée entre « top box » et « pro » (≥ 3 points d'écart).
+    expect(ratingFromPercentile(0.97) - ratingFromPercentile(0.9)).toBeGreaterThanOrEqual(3);
   });
 
   it("est strictement monotone croissante", () => {

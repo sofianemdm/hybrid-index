@@ -1,5 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { Prisma, type Sex } from "@prisma/client";
+import { ratingFromInternal } from "@hybrid-index/scoring-core";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { FeedEventsService } from "../social/feed-events.service";
 import { StreakService } from "./streak.service";
@@ -57,7 +58,7 @@ export class BadgesService {
       distinctWods: distinct.length,
       equipmentFreeCount,
       rank: profile?.rank ?? "rookie",
-      index: idx?.value ?? 0,
+      index: idx ? Math.round(ratingFromInternal(idx.value)) : 0, // OVR /100 (cohérent avec l'affichage)
       percentile,
       attributesAllUnlocked: unlockedAttrs >= 6,
       streakCurrent: streakState.current,

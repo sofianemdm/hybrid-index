@@ -46,19 +46,20 @@ export function subScoreFromPercentile(p: number, params: CurveParams = SIGMOID_
  * PROJECTION pure et monotone appliquée AU BORD (cf. sport-science index-v2 §1-bis). Aucune
  * migration de données : la note est dérivée à la lecture.
  *
- * Forme : g(P) = logistique renormalisée jusqu'au pivot a, puis approche exponentielle de la
- * borne haute (compression du sommet). Plancher 35 (sédentaire), asymptote 99 (jamais 100).
- * Repères : P=0→35, médiane→63, bon niveau→82, top box→90, pro→~92.
+ * Forme : g(P) = logistique renormalisée jusqu'au pivot a, puis montée en PUISSANCE jusqu'à 98
+ * (le sommet reste DIFFÉRENCIÉ : un athlète fort garde des attributs distincts, pas tous au plafond).
+ * Plancher 35 (sédentaire), max ~98 (le record du monde frôle 99, jamais 100).
+ * Repères : P=0→35, médiane→63, bon niveau→82, top box→90, pro→~95, record→~98.
  * VERSIONNÉE : tout changement de constantes ⇒ nouvelle version display-vX.
  */
 export const DISPLAY_VERSION = "display-v1";
 
 const DISPLAY = {
   floor: 35,
-  pivot: 0.8, // percentile-pivot `a`
+  pivot: 0.8, // percentile-pivot `a` : en dessous, montée logistique ; au-dessus, montée en puissance
   noteAtPivot: 86,
-  cap: 99,
-  lambda: 3.357,
+  top: 98, // note à P=1 (le record du monde frôle 99, jamais 100)
+  expo: 1.5, // exposant de la branche haute (>1 ⇒ le tout-dernier % coûte le plus cher, mais le haut RESTE différencié)
   k: 6.4,
   p0: 0.5,
 } as const;
@@ -74,12 +75,12 @@ function displayCore(p: number): number {
 /** Note d'affichage /100 (1 décimale) à partir d'un percentile P ∈ [0,1]. Monotone croissante. */
 export function ratingFromPercentile(p: number): number {
   const pc = Math.min(1, Math.max(0, p));
-  const { floor, pivot, noteAtPivot, cap, lambda } = DISPLAY;
+  const { floor, pivot, noteAtPivot, top, expo } = DISPLAY;
   const sA = displayCore(pivot);
   const g =
     pc <= pivot
       ? floor + ((noteAtPivot - floor) / sA) * displayCore(pc)
-      : cap - (cap - noteAtPivot) * Math.exp(-lambda * (pc - pivot));
+      : noteAtPivot + (top - noteAtPivot) * Math.pow((pc - pivot) / (1 - pivot), expo);
   return Math.round(g * 10) / 10;
 }
 

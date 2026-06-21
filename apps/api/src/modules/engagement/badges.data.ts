@@ -20,7 +20,7 @@ export const BADGES: BadgeDef[] = [
   { id: "rank-gold", category: "progression", name: "Or", description: "Atteins le rang Or.", rarity: "rare", condition: "rank>=gold", cosmeticUnlock: "avatar_glow_gold" },
   { id: "rank-diamond", category: "progression", name: "Diamant", description: "Atteins le rang Diamant.", rarity: "epic", condition: "rank>=diamond", cosmeticUnlock: "avatar_aura_diamond" },
   { id: "rank-elite", category: "progression", name: "Élite", description: "Atteins le rang Élite. L'air se raréfie ici.", rarity: "legendary", condition: "rank>=elite", cosmeticUnlock: "avatar_crown_elite" },
-  { id: "index-750", category: "progression", name: "Seuil 750", description: "Franchis un Index de 750.", rarity: "epic", condition: "index>=750", cosmeticUnlock: null },
+  { id: "index-750", category: "progression", name: "Seuil 90", description: "Franchis un HYBRID INDEX de 90.", rarity: "epic", condition: "index>=90", cosmeticUnlock: null },
   // COLLECTION
   { id: "explorer-5", category: "collection", name: "Explorateur", description: "Complète 5 WODs différents.", rarity: "common", condition: "wods_distinct>=5", cosmeticUnlock: null },
   { id: "all-attributes", category: "collection", name: "Profil complet", description: "Débloque les 6 attributs du radar.", rarity: "rare", condition: "attribute_unlocked:all", cosmeticUnlock: "radar_skin_full" },
