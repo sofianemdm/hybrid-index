@@ -17,14 +17,16 @@ import { SocialModule } from "./modules/social/social.module";
 import { ProgressModule } from "./modules/progress/progress.module";
 import { ModerationModule } from "./modules/moderation/moderation.module";
 import { ClubsModule } from "./modules/clubs/clubs.module";
+import { PostsModule } from "./modules/posts/posts.module";
 
 @Module({
   imports: [
     PrismaModule,
     RedisModule,
+    ModerationModule,
+    PostsModule,
     SocialModule,
     ProgressModule,
-    ModerationModule,
     ClubsModule,
     AuthModule,
     ProfileModule,

@@ -130,10 +130,13 @@ export class ResultsService {
       where: { userId },
       orderBy: { performedAt: "desc" },
       take: 50,
+      include: { wod: { select: { name: true, scoreType: true } } },
     });
     return rows.map((r) => ({
       id: r.id,
       wodId: r.wodId,
+      wodName: r.wod.name,
+      scoreType: r.wod.scoreType,
       rawResult: Number(r.rawResult),
       subScore: r.subScore,
       percentile: r.percentile === null ? null : Number(r.percentile),

@@ -534,6 +534,48 @@ describe("api — boucle complète persistée (e2e réel)", () => {
     expect(wlb.body.entries.every((e: { isMe: boolean }) => e.isMe)).toBe(true);
   });
 
+  it("posts : message texte + partage de perf dans le feed unifié, auto-kudos interdit (C4)", async () => {
+    // Post texte.
+    const text = await request(api.getHttpServer())
+      .post("/v1/posts")
+      .set("authorization", `Bearer ${token}`)
+      .send({ kind: "text", body: `Première séance bouclée ${stamp} 🔥` })
+      .expect(201);
+    expect(text.body.source).toBe("post");
+    expect(text.body.type).toBe("post_text");
+    const textPostId = text.body.id as string;
+
+    // Partage de perf : référence un de mes résultats (Fran loggé plus tôt).
+    const results = await request(api.getHttpServer()).get("/v1/results").set("authorization", `Bearer ${token}`).expect(200);
+    const fran = results.body.find((r: { wodId: string }) => r.wodId === "fran");
+    expect(fran).toBeTruthy();
+    const perf = await request(api.getHttpServer())
+      .post("/v1/posts")
+      .set("authorization", `Bearer ${token}`)
+      .send({ kind: "perf_share", wodResultId: fran.id, body: "Content de ce chrono" })
+      .expect(201);
+    expect(perf.body.type).toBe("post_perf");
+    expect(perf.body.payload.wodName).toBeTruthy();
+    expect(perf.body.payload.rawResult).toBe(fran.rawResult);
+
+    // Le feed unifié contient mes posts.
+    const feed = (await request(api.getHttpServer()).get("/v1/feed").set("authorization", `Bearer ${token}`)).body;
+    expect(feed.some((f: { id: string; source: string }) => f.id === textPostId && f.source === "post")).toBe(true);
+
+    // Auto-kudos interdit sur un post.
+    await request(api.getHttpServer())
+      .post(`/v1/posts/${textPostId}/reactions`)
+      .set("authorization", `Bearer ${token}`)
+      .send({ emoji: "💪" })
+      .expect(409);
+
+    // L'auteur peut supprimer son post.
+    await request(api.getHttpServer())
+      .delete(`/v1/posts/${textPostId}`)
+      .set("authorization", `Bearer ${token}`)
+      .expect(200);
+  });
+
   it("RGPD : suppression de compte (effacement) — DOIT être le dernier test", async () => {
     const deletedUserId = userId;
     const res = await request(api.getHttpServer())

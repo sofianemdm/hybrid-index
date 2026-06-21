@@ -174,6 +174,36 @@ class Profile {
   }
 }
 
+/// Un de mes résultats de séance (pour partager une perf dans un post).
+class MyResult {
+  final String id;
+  final String wodId;
+  final String wodName;
+  final String scoreType;
+  final num rawResult;
+  final int? subScore;
+  final String performedAt;
+  const MyResult({
+    required this.id,
+    required this.wodId,
+    required this.wodName,
+    required this.scoreType,
+    required this.rawResult,
+    this.subScore,
+    required this.performedAt,
+  });
+
+  factory MyResult.fromJson(Map<String, dynamic> j) => MyResult(
+        id: j['id'] as String,
+        wodId: j['wodId'] as String,
+        wodName: j['wodName'] as String? ?? 'Séance',
+        scoreType: j['scoreType'] as String? ?? 'time',
+        rawResult: (j['rawResult'] as num?) ?? 0,
+        subScore: (j['subScore'] as num?)?.toInt(),
+        performedAt: j['performedAt'] as String? ?? '',
+      );
+}
+
 /// Clubs (Phase C) — groupe + filtre des classements (pas une nouvelle ligue).
 class ClubSummary {
   final String id;
@@ -622,6 +652,9 @@ class EndgameInfo {
 class FeedActivity {
   final String id;
   final String type;
+
+  /// 'event' (activité auto : PR, séance…) ou 'post' (message authored par un athlète).
+  final String source;
   final String actorUserId;
   final String actorName;
   final String actorRank;
@@ -632,6 +665,7 @@ class FeedActivity {
   const FeedActivity({
     required this.id,
     required this.type,
+    required this.source,
     required this.actorUserId,
     required this.actorName,
     required this.actorRank,
@@ -641,6 +675,8 @@ class FeedActivity {
     required this.myReactions,
   });
 
+  bool get isPost => source == 'post';
+
   factory FeedActivity.fromJson(Map<String, dynamic> j) {
     final actor = j['actor'] as Map<String, dynamic>;
     final reactions = <String, int>{};
@@ -648,6 +684,7 @@ class FeedActivity {
     return FeedActivity(
       id: j['id'] as String,
       type: j['type'] as String,
+      source: j['source'] as String? ?? 'event',
       actorUserId: actor['userId'] as String,
       actorName: actor['displayName'] as String? ?? '—',
       actorRank: actor['rank'] as String? ?? 'rookie',

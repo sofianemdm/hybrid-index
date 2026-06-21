@@ -231,10 +231,33 @@ class ApiClient {
     return j.map((e) => FeedActivity.fromJson(e as Map<String, dynamic>)).toList();
   }
 
-  Future<void> react(String feedEventId, String emoji) async =>
-      _send('POST', '/v1/reactions', {'feedEventId': feedEventId, 'emoji': emoji});
+  /// Réaction sur un item de feed : route vers l'endpoint event ou post selon [isPost].
+  Future<void> react(String id, String emoji, {bool isPost = false}) async => isPost
+      ? _send('POST', '/v1/posts/$id/reactions', {'emoji': emoji})
+      : _send('POST', '/v1/reactions', {'feedEventId': id, 'emoji': emoji});
 
-  Future<void> unreact(String feedEventId) async => _send('DELETE', '/v1/reactions/$feedEventId');
+  Future<void> unreact(String id, {bool isPost = false}) async =>
+      isPost ? _send('DELETE', '/v1/posts/$id/reactions') : _send('DELETE', '/v1/reactions/$id');
+
+  /// Crée un post texte ou un partage de perf (perf_share référence un wodResultId).
+  Future<FeedActivity> createPost({required String kind, String? body, String? wodResultId}) async {
+    final j = await _send('POST', '/v1/posts', {
+      'kind': kind,
+      if (body != null && body.isNotEmpty) 'body': body,
+      if (wodResultId != null) 'wodResultId': wodResultId,
+    }) as Map<String, dynamic>;
+    return FeedActivity.fromJson(j);
+  }
+
+  Future<List<MyResult>> myResults() async {
+    final j = await _send('GET', '/v1/results') as List<dynamic>;
+    return j.map((e) => MyResult.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  Future<void> deletePost(String id) async => _send('DELETE', '/v1/posts/$id');
+
+  Future<void> reportPost(String id, String reason, {String? note}) async =>
+      _send('POST', '/v1/posts/$id/report', {'reason': reason, if (note != null && note.isNotEmpty) 'note': note});
 
   Future<void> followUser(String userId) async => _send('POST', '/v1/follow/$userId');
 

@@ -1,11 +1,19 @@
 import { BadRequestException, ConflictException, Injectable } from "@nestjs/common";
 import { PrismaService } from "../../infra/prisma/prisma.service";
+import { ModerationService } from "../moderation/moderation.service";
+import { PostsService } from "../posts/posts.service";
 
 const ALLOWED_EMOJIS = new Set(["💪", "🔥", "👏", "🚀"]);
+/** Feed FINI (pas de scroll infini) : fenêtre bornée des activités les plus récentes. */
+const FEED_LIMIT = 60;
 
 @Injectable()
 export class SocialService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly posts: PostsService,
+    private readonly moderation: ModerationService,
+  ) {}
 
   // --- Follow ---
   async follow(me: string, target: string): Promise<{ following: true }> {
@@ -86,20 +94,29 @@ export class SocialService {
       .sort((a, b) => (b.index ?? 0) - (a.index ?? 0));
   }
 
-  // --- Feed ---
+  // --- Feed unifié (événements auto + posts authored), FINI, hors utilisateurs bloqués ---
   async feed(me: string): Promise<unknown[]> {
-    const follows = await this.prisma.follow.findMany({ where: { followerId: me }, select: { followeeId: true } });
-    const actorIds = [...follows.map((f) => f.followeeId), me];
-    const events = await this.prisma.feedEvent.findMany({
-      where: { actorId: { in: actorIds }, visibility: "public" },
-      orderBy: { createdAt: "desc" },
-      take: 50,
-      include: {
-        actor: { include: { profile: { select: { displayName: true, rank: true } } } },
-        reactions: { select: { emoji: true, fromUserId: true } },
-      },
-    });
-    return events.map((e) => {
+    const [follows, blocked] = await Promise.all([
+      this.prisma.follow.findMany({ where: { followerId: me }, select: { followeeId: true } }),
+      this.moderation.blockedIds(me),
+    ]);
+    const blockedSet = new Set(blocked);
+    const actorIds = [...new Set([...follows.map((f) => f.followeeId), me])].filter((id) => !blockedSet.has(id));
+
+    const [events, postItems] = await Promise.all([
+      this.prisma.feedEvent.findMany({
+        where: { actorId: { in: actorIds }, visibility: "public" },
+        orderBy: { createdAt: "desc" },
+        take: FEED_LIMIT,
+        include: {
+          actor: { include: { profile: { select: { displayName: true, rank: true } } } },
+          reactions: { select: { emoji: true, fromUserId: true } },
+        },
+      }),
+      this.posts.forFeed(actorIds, me, FEED_LIMIT),
+    ]);
+
+    const eventItems = events.map((e) => {
       const counts: Record<string, number> = {};
       const mine: string[] = [];
       for (const r of e.reactions) {
@@ -108,7 +125,8 @@ export class SocialService {
       }
       return {
         id: e.id,
-        type: e.type,
+        source: "event" as const,
+        type: e.type as string,
         createdAt: e.createdAt.toISOString(),
         actor: {
           userId: e.actorId,
@@ -121,6 +139,11 @@ export class SocialService {
         myReactions: mine,
       };
     });
+
+    // Fusion + tri chronologique décroissant + fenêtre bornée (feed fini).
+    return [...eventItems, ...postItems]
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .slice(0, FEED_LIMIT);
   }
 
   private athlete(user: {
