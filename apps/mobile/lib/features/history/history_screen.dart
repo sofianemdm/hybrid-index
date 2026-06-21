@@ -5,6 +5,7 @@ import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../data/wod_catalog.dart';
 import '../../theme/tokens.dart';
+import '../wods/wod_detail_screen.dart';
 
 /// Journal : historique des WODs loggés (résultat + sous-score + date).
 class HistoryScreen extends ConsumerStatefulWidget {
@@ -84,14 +85,17 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
   }
 
   Widget _tile(WodResultItem r) {
-    return Container(
-      padding: const EdgeInsets.all(HiSpace.md),
-      decoration: BoxDecoration(
-        color: HiColors.bgElevated,
-        borderRadius: BorderRadius.circular(HiRadius.md),
-        border: Border.all(color: HiColors.strokeSubtle),
-      ),
-      child: Row(
+    return GestureDetector(
+      onTap: () => Navigator.of(context).push(MaterialPageRoute(
+          builder: (_) => WodDetailScreen(wodId: r.wodId, wodName: _name(r.wodId)))),
+      child: Container(
+        padding: const EdgeInsets.all(HiSpace.md),
+        decoration: BoxDecoration(
+          color: HiColors.bgElevated,
+          borderRadius: BorderRadius.circular(HiRadius.md),
+          border: Border.all(color: HiColors.strokeSubtle),
+        ),
+        child: Row(
         children: [
           Expanded(
             child: Column(
@@ -114,7 +118,8 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
               child: Text('${r.subScore}',
                   style: TextStyle(color: HiColors.brandPrimary, fontWeight: FontWeight.w800)),
             ),
-        ],
+          ],
+        ),
       ),
     );
   }

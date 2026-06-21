@@ -6,6 +6,7 @@ import '../../data/session.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/rank_badge.dart';
 import '../profile/public_profile_screen.dart';
+import '../wods/wod_detail_screen.dart';
 import 'explore_screen.dart';
 
 /// Onglet Communauté : feed d'activité (PR, séances, montées de rang, badges) + kudos.
@@ -140,7 +141,19 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
             ),
           ),
           const SizedBox(height: 4),
-          Text(_message(a), style: TextStyle(color: HiColors.textSecondary)),
+          Builder(builder: (context) {
+            final target = _seanceTarget(a);
+            final text = Text(_message(a),
+                style: TextStyle(
+                  color: target != null ? HiColors.brandPrimary : HiColors.textSecondary,
+                ));
+            if (target == null) return text;
+            return GestureDetector(
+              onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                  builder: (_) => WodDetailScreen(wodId: target.$1, wodName: target.$2))),
+              child: text,
+            );
+          }),
           const SizedBox(height: HiSpace.sm),
           Row(
             children: [
@@ -152,6 +165,14 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
         ],
       ),
     );
+  }
+
+  /// (wodId, nom) si l'activité référence une séance (PR / séance loggée) → ouvre son classement.
+  (String, String)? _seanceTarget(FeedActivity a) {
+    if (a.type != 'pr' && a.type != 'wod_logged') return null;
+    final id = a.payload['wodId']?.toString();
+    if (id == null || id.isEmpty) return null;
+    return (id, a.payload['wodName']?.toString() ?? 'Séance');
   }
 
   Widget _kudos(FeedActivity a, String emoji) {
