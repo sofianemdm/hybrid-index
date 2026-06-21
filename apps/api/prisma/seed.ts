@@ -36,9 +36,49 @@ const WODS: Array<{
 
 const ATTRS: AttributeKey[] = ["engine", "speed", "strength", "power", "muscular_endurance", "hybrid"];
 const GOALS = ["hyrox", "crossfit_strength", "all_round"] as const;
-const FIRST_M = ["Lucas", "Hugo", "Nathan", "Théo", "Maxime", "Antoine", "Raph", "Yanis", "Marco", "Diego", "Adam", "Noah", "Léo", "Tom", "Enzo", "Mehdi", "Sacha", "Ivan", "Karl", "Bruno"];
-const FIRST_F = ["Léa", "Manon", "Camille", "Sarah", "Chloé", "Inès", "Jade", "Lina", "Maya", "Nora", "Eva", "Zoé", "Anaïs", "Lou", "Romane", "Yasmine", "Alice", "Nina", "Clara", "Iris"];
-const SUFFIX = ["Fit", "WOD", "Hyrox", "Beast", "Iron", "Hybrid", "Athl", "Pro", "X", "Run"];
+// Noms RÉALISTES (40 par sexe + 48 noms de famille) → pseudos crédibles, pas générés par template.
+const FIRST_M = ["Lucas", "Hugo", "Nathan", "Théo", "Maxime", "Antoine", "Raphaël", "Yanis", "Marco", "Diego", "Adam", "Noah", "Léo", "Tom", "Enzo", "Mehdi", "Sacha", "Ivan", "Karl", "Bruno", "Julien", "Thomas", "Alexandre", "Mathis", "Gabriel", "Romain", "Quentin", "Florian", "Kevin", "Samuel", "Victor", "Paul", "Louis", "Aurélien", "Damien", "Nicolas", "Pierre", "Clément", "Bastien", "Jordan"];
+const FIRST_F = ["Léa", "Manon", "Camille", "Sarah", "Chloé", "Inès", "Jade", "Lina", "Maya", "Nora", "Eva", "Zoé", "Anaïs", "Lou", "Romane", "Yasmine", "Alice", "Nina", "Clara", "Iris", "Emma", "Julie", "Marine", "Pauline", "Laura", "Élise", "Margaux", "Justine", "Audrey", "Charlotte", "Mathilde", "Océane", "Lucie", "Amandine", "Sophie", "Mélanie", "Fanny", "Céline", "Morgane", "Aurore"];
+const LAST = ["Martin", "Bernard", "Dubois", "Thomas", "Robert", "Petit", "Durand", "Leroy", "Moreau", "Simon", "Laurent", "Lefebvre", "Michel", "Garcia", "David", "Bertrand", "Roux", "Vincent", "Fournier", "Morel", "Girard", "André", "Mercier", "Blanc", "Guérin", "Boyer", "Rousseau", "Henry", "Roussel", "Nicolas", "Perrin", "Morin", "Mathieu", "Gauthier", "Dumont", "Lopez", "Fontaine", "Chevalier", "Robin", "Masson", "Sanchez", "Gérard", "Nguyen", "Faure", "Brun", "Caron", "Lambert", "Renaud"];
+
+function stripAccents(s: string): string {
+  return s.normalize("NFD").replace(/[̀-ͯ]/g, "");
+}
+
+/** Nom d'affichage crédible et unique (mix « Prénom Nom », « prenom.nom », « prenomnom »). */
+function displayNameFor(i: number, sex: Sex): string {
+  const firsts = sex === "male" ? FIRST_M : FIRST_F;
+  const first = firsts[i % firsts.length];
+  const last = LAST[(i * 13 + (sex === "male" ? 0 : 7)) % LAST.length];
+  switch (i % 4) {
+    case 1:
+      return `${stripAccents(first).toLowerCase()}.${stripAccents(last).toLowerCase()}`;
+    case 3:
+      return `${stripAccents(first).toLowerCase()}${stripAccents(last).toLowerCase()}`;
+    default:
+      return `${first} ${last}`;
+  }
+}
+
+/** Repères de perf de seed par séance : [élite, débutant] par sexe. time=true → plus bas = meilleur. */
+const SEED_PERF: Record<string, { time: boolean; m: [number, number]; f: [number, number] }> = {
+  pft_hyrox: { time: true, m: [3900, 6000], f: [4500, 6600] },
+  fran: { time: true, m: [120, 420], f: [150, 480] },
+  grace: { time: true, m: [80, 300], f: [110, 360] },
+  jackie: { time: true, m: [360, 720], f: [420, 840] },
+  row_2k: { time: true, m: [380, 560], f: [440, 640] },
+  helen: { time: true, m: [480, 900], f: [540, 1020] },
+  karen: { time: true, m: [360, 900], f: [420, 1020] },
+  cindy: { time: false, m: [32, 8], f: [25, 6] },
+  benchmark_zero: { time: true, m: [480, 1080], f: [540, 1200] },
+  run_5k: { time: true, m: [1080, 1800], f: [1200, 2040] },
+  run_1k: { time: true, m: [180, 330], f: [210, 390] },
+  max_pushups: { time: false, m: [75, 20], f: [50, 12] },
+  max_air_squats_2min: { time: false, m: [110, 50], f: [100, 45] },
+  burpees_7min: { time: false, m: [140, 70], f: [120, 60] },
+  max_situps_2min: { time: false, m: [90, 40], f: [85, 38] },
+  max_air_squats: { time: false, m: [100, 40], f: [95, 38] },
+};
 
 function rand(min: number, max: number): number {
   return Math.floor(min + Math.random() * (max - min + 1));
@@ -102,13 +142,20 @@ async function main(): Promise<void> {
   });
 
   console.log("Seed: athlètes fictifs (classement)…");
+  // On repart de zéro pour les comptes de seed (idempotent + applique les nouveaux noms/perfs).
+  // Cascade : profil, index, attributs, résultats. N'affecte JAMAIS les vrais comptes.
+  const oldSeed = await prisma.user.findMany({ where: { email: { startsWith: "seed_" } }, select: { id: true } });
+  for (const u of oldSeed) {
+    await redis.zrem("leaderboard:male", u.id).catch(() => undefined);
+    await redis.zrem("leaderboard:female", u.id).catch(() => undefined);
+  }
+  await prisma.user.deleteMany({ where: { email: { startsWith: "seed_" } } });
   const sexes: Sex[] = ["male", "female"];
   let created = 0;
   for (const sex of sexes) {
-    const firsts = sex === "male" ? FIRST_M : FIRST_F;
     for (let i = 0; i < 40; i++) {
       const email = `seed_${sex}_${i}@hybrid.local`;
-      const displayName = `${firsts[i % firsts.length]}_${SUFFIX[i % SUFFIX.length]}${i}`;
+      const displayName = displayNameFor(i, sex);
       const goal = GOALS[i % GOALS.length];
       const value = sampleIndex();
       const percentile = Math.min(0.9999, Math.max(0.0001, value / 1000));
@@ -158,6 +205,38 @@ async function main(): Promise<void> {
           update: { score, scoringVersionId: SCORING_VERSION_UUID },
         });
       }
+
+      // Séances historiques figées : peuplent les classements par séance ; performedAt dans le passé
+      // (14-200 j) → exclues du classement de progression hebdo. Sous-ensemble aléatoire, perfs
+      // corrélées à l'Index de l'athlète, rendu réaliste pour chaque séance.
+      const seedableWodIds = Object.keys(SEED_PERF);
+      const picked = new Set<string>();
+      const nbSessions = rand(4, 9);
+      while (picked.size < nbSessions) {
+        picked.add(seedableWodIds[rand(0, seedableWodIds.length - 1)]);
+      }
+      const wodResults = [...picked].map((wodId) => {
+        const perf = SEED_PERF[wodId];
+        const meta = WODS.find((w) => w.id === wodId)!;
+        const sub = Math.min(999, Math.max(50, value + rand(-110, 110)));
+        const frac = sub / 1000;
+        const [elite, beg] = sex === "male" ? perf.m : perf.f;
+        const raw = Math.max(1, Math.round(beg + (elite - beg) * frac + rand(-3, 3)));
+        return {
+          userId: user.id,
+          wodId,
+          sex,
+          rawResult: raw,
+          subScore: sub,
+          percentile: Math.min(0.9999, Math.max(0.0001, frac)),
+          attributesAffected: meta.targetAttributes as AttributeKey[],
+          rxCompliant: true,
+          scoringVersionId: SCORING_VERSION_UUID,
+          idempotencyKey: `seed_${wodId}`,
+          performedAt: new Date(Date.now() - rand(14, 200) * 86400000),
+        };
+      });
+      await prisma.wodResult.createMany({ data: wodResults, skipDuplicates: true });
 
       if (redisOk) {
         await redis.zadd(`leaderboard:${sex}`, value, user.id).catch(() => {
