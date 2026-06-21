@@ -151,6 +151,28 @@ describe("api — boucle complète persistée (e2e réel)", () => {
     expect(res.body.error.code).toBe("WOD_RESULT_OUT_OF_BOUNDS");
   });
 
+  it("course distance libre : distanceMeters requis, puis noté via l'allure", async () => {
+    // Sans distance → refus (la note dépend de l'allure, pas du seul temps).
+    await request(api.getHttpServer())
+      .post("/v1/results")
+      .set("authorization", `Bearer ${token}`)
+      .send({ wodId: "run_free_distance", scoreType: "time", rawResult: 1500 })
+      .expect(400);
+
+    // Avec distance → noté et persisté.
+    const res = await request(api.getHttpServer())
+      .post("/v1/results")
+      .set("authorization", `Bearer ${token}`)
+      .send({ wodId: "run_free_distance", scoreType: "time", rawResult: 1500, distanceMeters: 5000 })
+      .expect(201);
+    expect(res.body.result.subScore).toBeGreaterThan(0);
+    const row = await prisma.wodResult.findFirst({
+      where: { userId, wodId: "run_free_distance" },
+      orderBy: { createdAt: "desc" },
+    });
+    expect(row?.distanceMeters).toBe(5000);
+  });
+
   it("log idempotent : même idempotencyKey → pas de double comptage", async () => {
     const payload = { wodId: "row_2k", scoreType: "time", rawResult: 440, idempotencyKey: `e2e_${stamp}_row` };
     await request(api.getHttpServer()).post("/v1/results").set("authorization", `Bearer ${token}`).send(payload).expect(201);

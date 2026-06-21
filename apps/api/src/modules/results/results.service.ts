@@ -54,6 +54,7 @@ export class ResultsService {
       sex: profile.sex,
       scoreType: req.scoreType,
       rawResult: req.rawResult,
+      distanceMeters: req.distanceMeters,
     });
 
     const performedAt = req.performedAt ?? new Date();
@@ -61,6 +62,7 @@ export class ResultsService {
       wodId: req.wodId,
       sex: profile.sex,
       rawResult: req.rawResult,
+      distanceMeters: req.distanceMeters ?? null,
       subScore: scored.subScore,
       percentile: scored.percentile,
       attributesAffected: scored.attributesAffected,

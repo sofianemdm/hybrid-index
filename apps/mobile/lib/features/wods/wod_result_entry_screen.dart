@@ -23,18 +23,21 @@ class WodResultEntryScreen extends ConsumerStatefulWidget {
 
 class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
   final _value = TextEditingController();
+  final _distance = TextEditingController(); // mètres — course à distance libre uniquement
   final _min = TextEditingController();
   final _sec = TextEditingController();
   bool _rx = true;
   bool _loading = false;
 
   bool get _isTime => widget.scoreType == 'time';
+  bool get _isFreeRun => widget.wodId == 'run_free_distance';
 
   @override
   void dispose() {
     _value.dispose();
     _min.dispose();
     _sec.dispose();
+    _distance.dispose();
     super.dispose();
   }
 
@@ -53,9 +56,22 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
       _toast('Saisis un résultat valide.');
       return;
     }
+    int? distanceMeters;
+    if (_isFreeRun) {
+      distanceMeters = int.tryParse(_distance.text.trim());
+      if (distanceMeters == null || distanceMeters <= 0) {
+        _toast('Saisis la distance parcourue (en mètres).');
+        return;
+      }
+    }
     setState(() => _loading = true);
     try {
-      final profile = await ref.read(apiClientProvider).logWodResult(widget.wodId, {'rawResult': raw, 'rxCompliant': _rx});
+      final payload = <String, dynamic>{
+        'rawResult': raw,
+        'rxCompliant': _rx,
+        if (distanceMeters != null) 'distanceMeters': distanceMeters,
+      };
+      final profile = await ref.read(apiClientProvider).logWodResult(widget.wodId, payload);
       ref.invalidate(myProfileProvider);
       if (!mounted) return;
       if (profile != null) {
@@ -120,7 +136,15 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text('Ton résultat (${_isTime ? 'temps' : widget.scoreType == 'load' ? 'kg' : widget.scoreType == 'distance' ? 'mètres' : 'reps'})',
+                if (_isFreeRun) ...[
+                  Text('Distance parcourue (mètres)', style: TextStyle(color: HiColors.textSecondary)),
+                  const SizedBox(height: 8),
+                  _num(_distance, 'ex. 5000'),
+                  const SizedBox(height: HiSpace.lg),
+                ],
+                Text(_isFreeRun
+                    ? 'Ton temps'
+                    : 'Ton résultat (${_isTime ? 'temps' : widget.scoreType == 'load' ? 'kg' : widget.scoreType == 'distance' ? 'mètres' : 'reps'})',
                     style: TextStyle(color: HiColors.textSecondary)),
                 const SizedBox(height: 8),
                 if (_isTime)

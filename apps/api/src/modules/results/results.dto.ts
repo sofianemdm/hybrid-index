@@ -7,6 +7,8 @@ export const LogResultRequest = z.object({
   scoreType: ScoreType,
   /** Résultat brut normalisé : secondes (time), reps, kg (load) ou mètres (distance). */
   rawResult: z.number().positive(),
+  /** Distance parcourue en mètres — REQUIS pour la course à distance libre (`run_free_distance`). */
+  distanceMeters: z.number().int().positive().optional(),
   /** Date de réalisation (défaut : maintenant). */
   performedAt: z.coerce.date().optional(),
   /** Clé d'idempotence (anti double-comptage sur retry réseau). */
