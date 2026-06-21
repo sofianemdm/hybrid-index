@@ -17,6 +17,7 @@ import '../history/history_screen.dart';
 import '../notifications/notifications_screen.dart';
 import '../settings/settings_screen.dart';
 import '../share/share_card_screen.dart';
+import 'score_v2_banner.dart';
 
 /// Accueil : Index courant, rang, radar. Tire-pour-rafraîchir.
 class HomeScreen extends ConsumerWidget {
@@ -36,6 +37,7 @@ class HomeScreen extends ConsumerWidget {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(HiSpace.lg, HiSpace.lg, HiSpace.lg, 96),
           children: [
+            const ScoreV2BannerLauncher(),
             Row(
               children: [
                 GestureDetector(
