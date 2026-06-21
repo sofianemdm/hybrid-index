@@ -204,6 +204,8 @@ export class EngagementService {
     await this.prisma.$transaction([
       this.prisma.hybridIndexHistory.deleteMany({ where: { userId } }),
       this.prisma.progressWeekly.deleteMany({ where: { userId } }), // pas de cascade FK (agrégat)
+      // ClubInvite porte inviterId/inviteeId en scalaire (pas de cascade) → effacement explicite (RGPD).
+      this.prisma.clubInvite.deleteMany({ where: { OR: [{ inviterId: userId }, { inviteeId: userId }] } }),
       this.prisma.user.delete({ where: { id: userId } }),
     ]);
     if (profile) await this.redis.remove(profile.sex, userId);
