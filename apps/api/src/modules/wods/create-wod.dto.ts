@@ -26,5 +26,7 @@ export type CreateWodRequest = z.infer<typeof CreateWodRequest>;
 export const LogWodResultRequest = z.object({
   rawResult: z.number().positive(),
   rxCompliant: z.boolean().optional(),
+  /** Distance parcourue en mètres — REQUIS pour la course à distance libre (`run_free_distance`). */
+  distanceMeters: z.number().int().positive().optional(),
 });
 export type LogWodResultRequest = z.infer<typeof LogWodResultRequest>;

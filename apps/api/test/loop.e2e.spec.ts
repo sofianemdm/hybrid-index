@@ -151,19 +151,19 @@ describe("api — boucle complète persistée (e2e réel)", () => {
     expect(res.body.error.code).toBe("WOD_RESULT_OUT_OF_BOUNDS");
   });
 
-  it("course distance libre : distanceMeters requis, puis noté via l'allure", async () => {
+  it("course distance libre : distanceMeters requis, puis noté via l'allure (endpoint app /v1/wods/:id/results)", async () => {
     // Sans distance → refus (la note dépend de l'allure, pas du seul temps).
     await request(api.getHttpServer())
-      .post("/v1/results")
+      .post("/v1/wods/run_free_distance/results")
       .set("authorization", `Bearer ${token}`)
-      .send({ wodId: "run_free_distance", scoreType: "time", rawResult: 1500 })
+      .send({ rawResult: 1500 })
       .expect(400);
 
-    // Avec distance → noté et persisté.
+    // Avec distance → noté et persisté (chemin réellement emprunté par l'app mobile).
     const res = await request(api.getHttpServer())
-      .post("/v1/results")
+      .post("/v1/wods/run_free_distance/results")
       .set("authorization", `Bearer ${token}`)
-      .send({ wodId: "run_free_distance", scoreType: "time", rawResult: 1500, distanceMeters: 5000 })
+      .send({ rawResult: 1500, distanceMeters: 5000 })
       .expect(201);
     expect(res.body.result.subScore).toBeGreaterThan(0);
     const row = await prisma.wodResult.findFirst({

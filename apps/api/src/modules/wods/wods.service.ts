@@ -97,6 +97,7 @@ export class WodsService {
         sex: profile.sex,
         scoreType: wod.scoreType,
         rawResult: body.rawResult,
+        distanceMeters: body.distanceMeters,
       });
       subScore = scored.subScore;
       percentile = scored.percentile;
@@ -109,6 +110,7 @@ export class WodsService {
         wodId,
         sex: profile.sex,
         rawResult: body.rawResult,
+        distanceMeters: body.distanceMeters ?? null,
         subScore,
         percentile,
         attributesAffected,
