@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../app.dart';
 import '../../data/models.dart';
@@ -23,17 +24,39 @@ class _ShareCardScreenState extends ConsumerState<ShareCardScreen> {
   final _cardKey = GlobalKey();
   bool _exporting = false;
 
-  Future<void> _export() async {
+  /// Capture la carte en PNG (figée le temps de la capture).
+  Future<Uint8List?> _capture() async {
     setState(() => _exporting = true);
-    // Laisse la carte se reconstruire en état figé (OVR plein, sans reflet animé) avant capture.
     await WidgetsBinding.instance.endOfFrame;
     try {
       final boundary = _cardKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
-      if (boundary == null) return;
+      if (boundary == null) return null;
       final image = await boundary.toImage(pixelRatio: 3);
       final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-      if (byteData == null) return;
-      final bytes = byteData.buffer.asUint8List();
+      return byteData?.buffer.asUint8List();
+    } finally {
+      if (mounted) setState(() => _exporting = false);
+    }
+  }
+
+  /// Partage natif (réseaux sociaux) ; capture puis feuille de partage iOS/Android (et Web Share API).
+  Future<void> _share() async {
+    try {
+      final bytes = await _capture();
+      if (bytes == null || !mounted) return;
+      await Share.shareXFiles(
+        [XFile.fromData(bytes, name: 'hybrid-index.png', mimeType: 'image/png')],
+        text: 'Mon HYBRID INDEX 💪 Et toi, c\'est combien ? #HybridIndex',
+      );
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+    }
+  }
+
+  Future<void> _export() async {
+    try {
+      final bytes = await _capture();
+      if (bytes == null || !mounted) return;
       final ok = await downloadBytes(bytes, 'hybrid-index.png');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -41,8 +64,6 @@ class _ShareCardScreenState extends ConsumerState<ShareCardScreen> {
       );
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
-    } finally {
-      if (mounted) setState(() => _exporting = false);
     }
   }
 
@@ -79,8 +100,18 @@ class _ShareCardScreenState extends ConsumerState<ShareCardScreen> {
                       icon: _exporting
                           ? SizedBox(
                               width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: HiColors.textOnBrand))
-                          : const Icon(Icons.download),
-                      label: const Text('Télécharger ma carte'),
+                          : const Icon(Icons.ios_share),
+                      label: const Text('Partager ma carte'),
+                      onPressed: _exporting ? null : _share,
+                    ),
+                  ),
+                  const SizedBox(height: HiSpace.sm),
+                  SizedBox(
+                    width: 300,
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(46)),
+                      icon: const Icon(Icons.download, size: 18),
+                      label: const Text('Télécharger'),
                       onPressed: _exporting ? null : _export,
                     ),
                   ),
