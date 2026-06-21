@@ -162,7 +162,11 @@ export class ProfileScoringService {
     // Gains de compétence : no-drop ⇒ delta ≥ 0 ; on n'expose QUE les vrais gains (delta > 0).
     result.gains = mergedRadar
       .filter((a) => a.unlocked)
-      .map((a) => ({ attribute: a.attribute, delta: a.score - (beforeScore.get(a.attribute) ?? 0) }))
+      .map((a) => ({
+        attribute: a.attribute,
+        // Gain exprimé en /100 (cohérent avec l'affichage des attributs).
+        delta: Math.round(ratingFromInternal(a.score)) - Math.round(ratingFromInternal(beforeScore.get(a.attribute) ?? 0)),
+      }))
       .filter((g) => g.delta > 0);
     result.weakest = weakestOf(mergedRadar);
 
@@ -363,7 +367,8 @@ export class ProfileScoringService {
           rankProgress: rankProgress(ratingInt ?? 40),
         };
       })(),
-      radar,
+      // Attributs affichés en /100 (cohérence OVR / carte FIFA) ; l'interne reste /1000.
+      radar: radar.map((a) => ({ ...a, score: a.unlocked ? Math.round(ratingFromInternal(a.score)) : 0 })),
       socialProof,
       gains: [], // pas de delta sur un simple GET (pas d'état « avant »)
       weakest: weakestOf(radar),
@@ -401,7 +406,7 @@ function toPersistedProfile(
     },
     radar: computed.radar.map((a) => ({
       attribute: a.attribute,
-      score: a.score,
+      score: a.unlocked ? Math.round(ratingFromInternal(a.score)) : 0, // /100
       unlocked: a.unlocked,
       isEstimated: a.isEstimated,
     })),

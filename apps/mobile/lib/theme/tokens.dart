@@ -206,6 +206,18 @@ class HiLabels {
   static String attribute(String k) => attributes[k] ?? k;
   static String rank(String k) => ranks[k] ?? k;
   static String goal(String k) => goals[k] ?? k;
+
+  /// Abréviations 3 lettres des attributs (carte FIFA).
+  static const Map<String, String> attrAbbr = {
+    'engine': 'ENG',
+    'strength': 'FOR',
+    'power': 'PUI',
+    'speed': 'VIT',
+    'muscular_endurance': 'RES',
+    'hybrid': 'HYB',
+  };
+  static String attrAbbreviation(String k) =>
+      attrAbbr[k] ?? (k.length >= 3 ? k.substring(0, 3).toUpperCase() : k.toUpperCase());
 }
 
 class HiSpace {
