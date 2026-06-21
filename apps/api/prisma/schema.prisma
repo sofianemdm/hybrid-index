@@ -175,8 +175,43 @@ model User {
   userBadges        UserBadge[]
   following         Follow[]          @relation("Follower")
   followers         Follow[]          @relation("Followee")
+  progressEvents    ProgressEvent[]
 
   @@map("user")
+  @@schema("app")
+}
+
+// Classement de progression hebdomadaire (B1) — ledger durable des points d'effort (EP).
+model ProgressEvent {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  weekKey      String   @map("week_key") // isoWeekKey(performedAt), ex. "2026-W25"
+  type         String // wod_logged | active_day | pr | new_wod | attr_unlocked
+  epAwarded    Int      @map("ep_awarded") // 0 si plafonné
+  cappedReason String?  @map("capped_reason")
+  refId        String?  @map("ref_id") @db.Uuid
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([weekKey, userId])
+  @@index([userId, weekKey])
+  @@map("progress_event")
+  @@schema("app")
+}
+
+// Agrégat hebdo par utilisateur (repli classement + meilleure semaine perso).
+model ProgressWeekly {
+  userId      String  @map("user_id") @db.Uuid
+  weekKey     String  @map("week_key")
+  sex         Sex
+  ep          Int     @default(0)
+  activeDays  Int     @default(0) @map("active_days")
+  prCount     Int     @default(0) @map("pr_count")
+
+  @@id([userId, weekKey])
+  @@index([weekKey, sex, ep(sort: Desc)])
+  @@map("progress_weekly")
   @@schema("app")
 }
 

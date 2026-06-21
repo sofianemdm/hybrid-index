@@ -6,6 +6,7 @@ import '../../data/session.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/rank_badge.dart';
 import '../profile/public_profile_screen.dart';
+import 'progress_board_screen.dart';
 
 /// Classement public par ligue (Hommes / Femmes), trié par HYBRID INDEX.
 class LeaderboardScreen extends ConsumerStatefulWidget {
@@ -49,6 +50,21 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
               alignment: Alignment.centerLeft,
               child: Text('Classement',
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: HiColors.textPrimary)),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(HiSpace.lg, 0, HiSpace.lg, HiSpace.sm),
+            child: OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size.fromHeight(44),
+                side: BorderSide(color: HiColors.brandPrimary.withValues(alpha: 0.5)),
+                foregroundColor: HiColors.brandPrimary,
+              ),
+              icon: const Icon(Icons.local_fire_department),
+              label: const Text('Progression de la semaine (par effort)'),
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const ProgressBoardScreen()),
+              ),
             ),
           ),
           Padding(

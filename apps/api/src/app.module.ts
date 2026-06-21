@@ -14,12 +14,14 @@ import { EngagementModule } from "./modules/engagement/engagement.module";
 import { EndgameModule } from "./modules/endgame/endgame.module";
 import { WodsModule } from "./modules/wods/wods.module";
 import { SocialModule } from "./modules/social/social.module";
+import { ProgressModule } from "./modules/progress/progress.module";
 
 @Module({
   imports: [
     PrismaModule,
     RedisModule,
     SocialModule,
+    ProgressModule,
     AuthModule,
     ProfileModule,
     MeModule,

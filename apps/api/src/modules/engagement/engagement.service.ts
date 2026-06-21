@@ -203,6 +203,7 @@ export class EngagementService {
     // Atomique : soit tout est effacé, soit rien (pas d'historique orphelin ni de compte fantôme).
     await this.prisma.$transaction([
       this.prisma.hybridIndexHistory.deleteMany({ where: { userId } }),
+      this.prisma.progressWeekly.deleteMany({ where: { userId } }), // pas de cascade FK (agrégat)
       this.prisma.user.delete({ where: { id: userId } }),
     ]);
     if (profile) await this.redis.remove(profile.sex, userId);

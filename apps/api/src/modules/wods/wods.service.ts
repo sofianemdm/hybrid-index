@@ -5,6 +5,7 @@ import { PrismaService } from "../../infra/prisma/prisma.service";
 import { ScoreClient } from "../../infra/score-client/score-client.service";
 import { ProfileScoringService, type PersistedProfile } from "../profile/profile-scoring.service";
 import { FeedEventsService } from "../social/feed-events.service";
+import { ProgressService } from "../progress/progress.service";
 import { SCORING_VERSION_UUID } from "../../common/constants";
 import type { EstimateWodRequest } from "./wod-estimate.dto";
 import type { CreateWodRequest, LogWodResultRequest } from "./create-wod.dto";
@@ -19,6 +20,7 @@ export class WodsService {
     private readonly scoreClient: ScoreClient,
     private readonly profileScoring: ProfileScoringService,
     private readonly feedEvents: FeedEventsService,
+    private readonly progress: ProgressService,
   ) {}
 
   /** Crée un WOD personnalisé (attributs ciblés dérivés du moteur d'estimation). */
@@ -130,6 +132,16 @@ export class WodsService {
       subScore,
       rawResult: body.rawResult,
     });
+
+    // Classement de progression hebdo (B1) — best-effort.
+    await this.progress
+      .awardForResult(userId, created.sex, {
+        wodResultId: created.id,
+        wodId,
+        subScore,
+        performedAt: created.performedAt,
+      })
+      .catch(() => undefined);
 
     return {
       result: { id: created.id, wodId, rawResult: body.rawResult, subScore, rxCompliant: created.rxCompliant },

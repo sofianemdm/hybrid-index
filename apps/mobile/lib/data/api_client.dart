@@ -138,6 +138,11 @@ class ApiClient {
     return Leaderboard.fromJson(j);
   }
 
+  Future<ProgressBoard> progressBoard(String sex) async {
+    final j = await _send('GET', '/v1/leaderboard/progress?sex=$sex') as Map<String, dynamic>;
+    return ProgressBoard.fromJson(j);
+  }
+
   // --- Coach / profils publics ---
   Future<CoachResult> coach({String? attribute}) async {
     final q = attribute == null ? '' : '?attribute=$attribute';

@@ -5,6 +5,7 @@ import { ProfileScoringService, type PersistedProfile } from "../profile/profile
 import { StreakService } from "../engagement/streak.service";
 import { BadgesService } from "../engagement/badges.service";
 import { FeedEventsService } from "../social/feed-events.service";
+import { ProgressService } from "../progress/progress.service";
 import type { BadgeDef } from "../engagement/badges.data";
 import { SCORING_VERSION_UUID } from "../../common/constants";
 import type { LogResultRequest } from "./results.dto";
@@ -40,6 +41,7 @@ export class ResultsService {
     private readonly streak: StreakService,
     private readonly badges: BadgesService,
     private readonly feedEvents: FeedEventsService,
+    private readonly progress: ProgressService,
   ) {}
 
   async log(userId: string, req: LogResultRequest): Promise<LogResultResponse> {
@@ -99,6 +101,15 @@ export class ResultsService {
       this.logger.warn(`Badges échoués (${userId}) : ${e}`);
       return [] as BadgeDef[];
     });
+    // Classement de progression hebdomadaire (B1) — best-effort.
+    await this.progress
+      .awardForResult(userId, profile.sex, {
+        wodResultId: created.id,
+        wodId: req.wodId,
+        subScore: scored.subScore,
+        performedAt: created.performedAt,
+      })
+      .catch((e) => this.logger.warn(`Progress échoué (${userId}) : ${e}`));
 
     return {
       result: {

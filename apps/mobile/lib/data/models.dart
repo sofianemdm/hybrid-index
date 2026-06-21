@@ -174,6 +174,55 @@ class Profile {
   }
 }
 
+/// Classement de PROGRESSION hebdomadaire (par effort) — distinct du classement Index.
+class ProgressEntry {
+  final int position;
+  final String userId;
+  final String displayName;
+  final String rank;
+  final int ep;
+  final bool isMe;
+  const ProgressEntry({
+    required this.position,
+    required this.userId,
+    required this.displayName,
+    required this.rank,
+    required this.ep,
+    required this.isMe,
+  });
+
+  factory ProgressEntry.fromJson(Map<String, dynamic> j) => ProgressEntry(
+        position: (j['position'] as num).toInt(),
+        userId: j['userId'] as String,
+        displayName: j['displayName'] as String? ?? '—',
+        rank: j['rank'] as String? ?? 'rookie',
+        ep: (j['ep'] as num).toInt(),
+        isMe: j['isMe'] as bool? ?? false,
+      );
+}
+
+class ProgressBoard {
+  final String weekKey;
+  final int total;
+  final int? myPosition;
+  final int? myEp;
+  final List<ProgressEntry> entries;
+  const ProgressBoard({required this.weekKey, required this.total, this.myPosition, this.myEp, required this.entries});
+
+  factory ProgressBoard.fromJson(Map<String, dynamic> j) {
+    final me = j['me'] as Map<String, dynamic>?;
+    return ProgressBoard(
+      weekKey: j['weekKey'] as String? ?? '',
+      total: (j['total'] as num?)?.toInt() ?? 0,
+      myPosition: (me?['position'] as num?)?.toInt(),
+      myEp: (me?['ep'] as num?)?.toInt(),
+      entries: (j['entries'] as List<dynamic>? ?? [])
+          .map((e) => ProgressEntry.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+}
+
 class LeaderboardEntry {
   final int position;
   final String userId;

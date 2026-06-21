@@ -50,6 +50,7 @@ describe("api — boucle complète persistée (e2e réel)", () => {
     for (const id of [userId, overtakerUserId]) {
       if (id) {
         await prisma.hybridIndexHistory.deleteMany({ where: { userId: id } }).catch(() => undefined);
+        await prisma.progressWeekly.deleteMany({ where: { userId: id } }).catch(() => undefined);
         await prisma.user.deleteMany({ where: { id } }).catch(() => undefined);
         await redis.zrem("leaderboard:male", id).catch(() => undefined);
       }
@@ -490,6 +491,18 @@ describe("api — boucle complète persistée (e2e réel)", () => {
     expect(typeof res.body[0].rank).toBe("string");
   });
 
+  it("progression hebdo : l'utilisateur figure au classement d'effort (B1)", async () => {
+    const res = await request(api.getHttpServer())
+      .get("/v1/leaderboard/progress?sex=male")
+      .set("authorization", `Bearer ${token}`)
+      .expect(200);
+    expect(res.body.weekKey).toMatch(/^\d{4}-W\d{2}$/);
+    // L'utilisateur a loggé des séances cette semaine → EP > 0 et présent au classement.
+    expect(res.body.me).not.toBeNull();
+    expect(res.body.me.ep).toBeGreaterThan(0);
+    expect(res.body.entries.some((e: { isMe: boolean }) => e.isMe)).toBe(true);
+  });
+
   it("RGPD : suppression de compte (effacement) — DOIT être le dernier test", async () => {
     const deletedUserId = userId;
     const res = await request(api.getHttpServer())
@@ -500,6 +513,8 @@ describe("api — boucle complète persistée (e2e réel)", () => {
     // Droit à l'effacement : l'historique d'Index (schéma scoring, sans cascade FK) doit AUSSI partir.
     const remainingHistory = await prisma.hybridIndexHistory.count({ where: { userId: deletedUserId } });
     expect(remainingHistory).toBe(0);
+    const remainingProgress = await prisma.progressWeekly.count({ where: { userId: deletedUserId } });
+    expect(remainingProgress).toBe(0);
     userId = ""; // déjà supprimé : évite le double-nettoyage afterAll
   });
 });
