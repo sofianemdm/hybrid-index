@@ -98,6 +98,10 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
                 const SizedBox(height: HiSpace.md),
                 if (d.levels(_sex) != null) _tierCard(d) else Text('Paliers non disponibles pour cette séance.', style: TextStyle(color: HiColors.textTertiary)),
                 const SizedBox(height: HiSpace.lg),
+                if (d.myHistory.isNotEmpty) ...[
+                  _mesPrestations(d),
+                  const SizedBox(height: HiSpace.lg),
+                ],
                 Text('Classement', style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 16)),
                 if (widget.clubId != null) ...[
                   const SizedBox(height: HiSpace.sm),
@@ -373,6 +377,55 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
                 color: active ? HiColors.textOnBrand : HiColors.textSecondary,
                 fontWeight: FontWeight.w700,
                 fontSize: 12)),
+      ),
+    );
+  }
+
+  Widget _mesPrestations(WodDetail d) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Mes prestations', style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 16)),
+        const SizedBox(height: HiSpace.sm),
+        Container(
+          decoration: BoxDecoration(
+            color: HiColors.bgElevated,
+            borderRadius: BorderRadius.circular(HiRadius.md),
+            border: Border.all(color: HiColors.strokeSubtle),
+          ),
+          child: Column(
+            children: [
+              for (var i = 0; i < d.myHistory.length; i++) ...[
+                if (i > 0) Divider(height: 1, color: HiColors.strokeSubtle),
+                _histRow(d.myHistory[i], d.scoreType),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _histRow(WodHistoryEntry h, String scoreType) {
+    final p = h.performedAt;
+    final date = p.length >= 10 ? '${p.substring(8, 10)}/${p.substring(5, 7)}/${p.substring(2, 4)}' : '';
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: HiSpace.md, vertical: 10),
+      child: Row(
+        children: [
+          SizedBox(width: 70, child: Text(date, style: TextStyle(color: HiColors.textTertiary, fontSize: 12))),
+          Expanded(
+            child: Text(formatWodResult(h.rawResult, scoreType),
+                style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
+          ),
+          if (!h.rxCompliant)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Text('Scaled', style: TextStyle(color: HiColors.textTertiary, fontSize: 11)),
+            ),
+          if (h.subScore != null)
+            Text('${h.subScore} pts', style: TextStyle(color: HiColors.brandPrimary, fontWeight: FontWeight.w800)),
+        ],
       ),
     );
   }

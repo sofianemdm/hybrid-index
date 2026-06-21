@@ -994,6 +994,27 @@ class WodPrescription {
       );
 }
 
+/// Une de mes prestations passées sur une séance (historique de la fiche WOD).
+class WodHistoryEntry {
+  final num rawResult;
+  final int? subScore;
+  final bool rxCompliant;
+  final String performedAt;
+  const WodHistoryEntry({
+    required this.rawResult,
+    this.subScore,
+    required this.rxCompliant,
+    required this.performedAt,
+  });
+
+  factory WodHistoryEntry.fromJson(Map<String, dynamic> j) => WodHistoryEntry(
+        rawResult: (j['rawResult'] as num?) ?? 0,
+        subScore: (j['subScore'] as num?)?.toInt(),
+        rxCompliant: j['rxCompliant'] as bool? ?? true,
+        performedAt: j['performedAt'] as String? ?? '',
+      );
+}
+
 class WodDetail {
   final String id;
   final String name;
@@ -1007,6 +1028,9 @@ class WodDetail {
 
   /// Énoncé concret de la séance (mouvements + poids). Null pour les WODs custom.
   final WodPrescription? prescription;
+
+  /// Mes prestations passées sur cette séance (récent → ancien).
+  final List<WodHistoryEntry> myHistory;
   const WodDetail({
     required this.id,
     required this.name,
@@ -1018,6 +1042,7 @@ class WodDetail {
     required this.myBestRaw,
     required this.myBestSubScore,
     this.prescription,
+    this.myHistory = const [],
   });
 
   WodTriple? levels(String sex) => sex == 'female' ? female : male;
@@ -1038,6 +1063,9 @@ class WodDetail {
       prescription: j['prescription'] == null
           ? null
           : WodPrescription.fromJson((j['prescription'] as Map).cast<String, dynamic>()),
+      myHistory: ((j['myHistory'] as List?) ?? [])
+          .map((e) => WodHistoryEntry.fromJson((e as Map).cast<String, dynamic>()))
+          .toList(),
     );
   }
 }

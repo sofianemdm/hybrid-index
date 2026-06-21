@@ -195,11 +195,23 @@ export class WodsService {
     }
 
     let myBest: unknown = null;
+    let myHistory: unknown[] = [];
     if (userId) {
-      const best = await this.prisma.wodResult.findFirst({
+      const mine = await this.prisma.wodResult.findMany({
         where: { userId, wodId: id, review: "ok", subScore: { not: null } },
-        orderBy: { subScore: "desc" },
+        orderBy: { performedAt: "desc" },
+        take: 30,
       });
+      myHistory = mine.map((r) => ({
+        rawResult: Number(r.rawResult),
+        subScore: ovrSub(r.subScore),
+        rxCompliant: r.rxCompliant,
+        performedAt: r.performedAt.toISOString(),
+      }));
+      const best = mine.reduce<(typeof mine)[number] | null>(
+        (b, r) => (b === null || (r.subScore ?? 0) > (b.subScore ?? 0) ? r : b),
+        null,
+      );
       if (best) {
         myBest = {
           rawResult: Number(best.rawResult),
@@ -221,6 +233,7 @@ export class WodsService {
       isCustom: wod.isCustom,
       levels,
       myBest,
+      myHistory, // mes prestations passées sur cette séance (récent → ancien)
       // Énoncé concret de la séance (mouvements + poids) pour les WODs de référence.
       prescription: WOD_PRESCRIPTIONS[wod.id] ?? null,
     };
