@@ -174,6 +174,99 @@ class Profile {
   }
 }
 
+/// Clubs (Phase C) — groupe + filtre des classements (pas une nouvelle ligue).
+class ClubSummary {
+  final String id;
+  final String name;
+  final String? description;
+  final int memberCount;
+  final String? role;
+  const ClubSummary({required this.id, required this.name, this.description, required this.memberCount, this.role});
+
+  factory ClubSummary.fromJson(Map<String, dynamic> j) => ClubSummary(
+        id: j['id'] as String,
+        name: j['name'] as String? ?? 'Club',
+        description: j['description'] as String?,
+        memberCount: (j['memberCount'] as num?)?.toInt() ?? 0,
+        role: j['role'] as String?,
+      );
+}
+
+class ClubRosterEntry {
+  final int position;
+  final String userId;
+  final String displayName;
+  final String rank;
+  final int index;
+  final String role;
+  final bool isMe;
+  const ClubRosterEntry({
+    required this.position,
+    required this.userId,
+    required this.displayName,
+    required this.rank,
+    required this.index,
+    required this.role,
+    required this.isMe,
+  });
+
+  factory ClubRosterEntry.fromJson(Map<String, dynamic> j) => ClubRosterEntry(
+        position: (j['position'] as num).toInt(),
+        userId: j['userId'] as String,
+        displayName: j['displayName'] as String? ?? '—',
+        rank: j['rank'] as String? ?? 'rookie',
+        index: (j['index'] as num?)?.toInt() ?? 0,
+        role: j['role'] as String? ?? 'member',
+        isMe: j['isMe'] as bool? ?? false,
+      );
+}
+
+class ClubDetail {
+  final String id;
+  final String name;
+  final String? description;
+  final int memberCount;
+  final bool isMember;
+  final bool isOwner;
+  final List<ClubRosterEntry> roster;
+  const ClubDetail({
+    required this.id,
+    required this.name,
+    this.description,
+    required this.memberCount,
+    required this.isMember,
+    required this.isOwner,
+    required this.roster,
+  });
+
+  factory ClubDetail.fromJson(Map<String, dynamic> j) => ClubDetail(
+        id: j['id'] as String,
+        name: j['name'] as String? ?? 'Club',
+        description: j['description'] as String?,
+        memberCount: (j['memberCount'] as num?)?.toInt() ?? 0,
+        isMember: j['isMember'] as bool? ?? false,
+        isOwner: j['isOwner'] as bool? ?? false,
+        roster: (j['roster'] as List<dynamic>? ?? [])
+            .map((e) => ClubRosterEntry.fromJson(e as Map<String, dynamic>))
+            .toList(),
+      );
+}
+
+class ClubInvite {
+  final String inviteId;
+  final String clubId;
+  final String clubName;
+  final int memberCount;
+  const ClubInvite({required this.inviteId, required this.clubId, required this.clubName, required this.memberCount});
+
+  factory ClubInvite.fromJson(Map<String, dynamic> j) => ClubInvite(
+        inviteId: j['inviteId'] as String,
+        clubId: j['clubId'] as String,
+        clubName: j['clubName'] as String? ?? 'Club',
+        memberCount: (j['memberCount'] as num?)?.toInt() ?? 0,
+      );
+}
+
 /// Classement de PROGRESSION hebdomadaire (par effort) — distinct du classement Index.
 class ProgressEntry {
   final int position;

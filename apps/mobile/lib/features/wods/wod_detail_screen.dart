@@ -13,7 +13,11 @@ import 'wod_result_entry_screen.dart';
 class WodDetailScreen extends ConsumerStatefulWidget {
   final String wodId;
   final String wodName;
-  const WodDetailScreen({super.key, required this.wodId, required this.wodName});
+
+  /// Si fourni, un filtre « Mon club » devient disponible sur le classement de la séance.
+  final String? clubId;
+  final String? clubName;
+  const WodDetailScreen({super.key, required this.wodId, required this.wodName, this.clubId, this.clubName});
 
   @override
   ConsumerState<WodDetailScreen> createState() => _WodDetailScreenState();
@@ -23,17 +27,23 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
   late String _sex;
   late Future<WodDetail> _detail;
   late Future<List<WodLeaderboardEntry>> _leaderboard;
+  bool _clubScope = false;
 
   @override
   void initState() {
     super.initState();
     _sex = ref.read(sessionProvider).sex ?? 'male';
+    _clubScope = widget.clubId != null; // ouvert depuis un club → on montre le club par défaut
     _detail = ref.read(apiClientProvider).wodDetail(widget.wodId);
     _loadLeaderboard();
   }
 
   void _loadLeaderboard() {
-    _leaderboard = ref.read(apiClientProvider).wodLeaderboard(widget.wodId, _sex);
+    _leaderboard = ref.read(apiClientProvider).wodLeaderboard(
+      widget.wodId,
+      _sex,
+      clubId: _clubScope ? widget.clubId : null,
+    );
   }
 
   Future<void> _doWod(String scoreType) async {
@@ -87,6 +97,10 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
                 if (d.levels(_sex) != null) _tierCard(d) else Text('Paliers non disponibles pour cette séance.', style: TextStyle(color: HiColors.textTertiary)),
                 const SizedBox(height: HiSpace.lg),
                 Text('Classement', style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 16)),
+                if (widget.clubId != null) ...[
+                  const SizedBox(height: HiSpace.sm),
+                  _clubScopeToggle(),
+                ],
                 const SizedBox(height: HiSpace.sm),
                 _leaderboardSection(d.scoreType),
                 const SizedBox(height: HiSpace.lg),
@@ -182,6 +196,39 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
           Text(formatWodResult(value, scoreType),
               style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
         ],
+      ),
+    );
+  }
+
+  Widget _clubScopeToggle() {
+    return Row(
+      children: [
+        _scopeChip('🌍 Tous', false),
+        const SizedBox(width: 8),
+        _scopeChip('👥 ${widget.clubName ?? "Mon club"}', true),
+      ],
+    );
+  }
+
+  Widget _scopeChip(String label, bool club) {
+    final active = _clubScope == club;
+    return GestureDetector(
+      onTap: () => setState(() {
+        _clubScope = club;
+        _loadLeaderboard();
+      }),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        decoration: BoxDecoration(
+          gradient: active ? HiColors.brandGradient : null,
+          color: active ? null : HiColors.bgElevated2,
+          borderRadius: BorderRadius.circular(HiRadius.pill),
+        ),
+        child: Text(label,
+            style: TextStyle(
+                color: active ? HiColors.textOnBrand : HiColors.textSecondary,
+                fontWeight: FontWeight.w700,
+                fontSize: 12)),
       ),
     );
   }

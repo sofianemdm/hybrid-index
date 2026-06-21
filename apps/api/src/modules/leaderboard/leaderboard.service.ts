@@ -30,10 +30,21 @@ export class LeaderboardService {
     private readonly redis: RedisService,
   ) {}
 
-  async leaderboard(sex: string, limit: number, meUserId?: string): Promise<LeaderboardResponse> {
-    let rows = await this.redis.top(sex, limit);
-    if (rows.length === 0) {
-      rows = await this.pgTop(sex, limit);
+  async leaderboard(sex: string, limit: number, meUserId?: string, memberIds?: string[]): Promise<LeaderboardResponse> {
+    // Filtre club (C3) : on restreint à l'ensemble des membres via Postgres (la ligue globale, elle,
+    // reste entière côté Redis). Le club n'est PAS une nouvelle ligue, juste une vue filtrée.
+    let rows: Array<{ userId: string; value: number }>;
+    if (memberIds) {
+      const found = await this.prisma.hybridIndex.findMany({
+        where: { userId: { in: memberIds }, user: { profile: { sex: sex as Sex } } },
+        orderBy: { value: "desc" },
+        take: limit,
+        select: { userId: true, value: true },
+      });
+      rows = found.map((r) => ({ userId: r.userId, value: r.value }));
+    } else {
+      rows = await this.redis.top(sex, limit);
+      if (rows.length === 0) rows = await this.pgTop(sex, limit);
     }
 
     const names = await this.namesFor(rows.map((r) => r.userId));
@@ -46,12 +57,25 @@ export class LeaderboardService {
       isMe: r.userId === meUserId,
     }));
 
-    const total = (await this.redis.total(sex)) ?? (await this.pgCount(sex));
-
+    let total: number;
     let me: LeaderboardResponse["me"] = null;
-    if (meUserId) {
-      const pos = await this.positionOf(sex, meUserId);
-      if (pos !== null) me = { position: pos.position, value: pos.value };
+    if (memberIds) {
+      total = await this.prisma.hybridIndex.count({ where: { userId: { in: memberIds }, user: { profile: { sex: sex as Sex } } } });
+      if (meUserId) {
+        const mine = await this.prisma.hybridIndex.findUnique({ where: { userId: meUserId }, select: { value: true } });
+        if (mine) {
+          const above = await this.prisma.hybridIndex.count({
+            where: { userId: { in: memberIds }, value: { gt: mine.value }, user: { profile: { sex: sex as Sex } } },
+          });
+          me = { position: above + 1, value: mine.value };
+        }
+      }
+    } else {
+      total = (await this.redis.total(sex)) ?? (await this.pgCount(sex));
+      if (meUserId) {
+        const pos = await this.positionOf(sex, meUserId);
+        if (pos !== null) me = { position: pos.position, value: pos.value };
+      }
     }
 
     return { sex, total, entries, me };

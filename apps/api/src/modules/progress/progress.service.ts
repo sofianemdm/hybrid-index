@@ -109,9 +109,9 @@ export class ProgressService {
   }
 
   /** Classement de la semaine courante (par sexe). Personne n'est « dernier » : EP = 0 → absent. */
-  async board(sex: string, userId?: string): Promise<unknown> {
+  async board(sex: string, userId?: string, memberIds?: string[]): Promise<unknown> {
     const weekKey = isoWeekKey(new Date());
-    const where = { weekKey, sex: sex as Sex, ep: { gt: 0 } };
+    const where = { weekKey, sex: sex as Sex, ep: { gt: 0 }, ...(memberIds ? { userId: { in: memberIds } } : {}) };
     const [rows, total] = await Promise.all([
       this.prisma.progressWeekly.findMany({ where, orderBy: { ep: "desc" }, take: 50 }),
       this.prisma.progressWeekly.count({ where }),
@@ -134,7 +134,9 @@ export class ProgressService {
     if (userId) {
       const mine = await this.prisma.progressWeekly.findUnique({ where: { userId_weekKey: { userId, weekKey } } });
       if (mine && mine.ep > 0) {
-        const above = await this.prisma.progressWeekly.count({ where: { weekKey, sex: sex as Sex, ep: { gt: mine.ep } } });
+        const above = await this.prisma.progressWeekly.count({
+          where: { weekKey, sex: sex as Sex, ep: { gt: mine.ep }, ...(memberIds ? { userId: { in: memberIds } } : {}) },
+        });
         me = { position: above + 1, ep: mine.ep };
       }
     }

@@ -4,6 +4,7 @@ import { ZodValidationPipe } from "../../common/zod-validation.pipe";
 import { CurrentUser } from "../auth/current-user.decorator";
 import { OptionalJwtAuthGuard } from "../auth/optional-jwt-auth.guard";
 import { JwtAuthGuard, type AuthenticatedUser } from "../auth/jwt-auth.guard";
+import { ClubsService } from "../clubs/clubs.service";
 import { WodsService } from "./wods.service";
 import { EstimateWodRequest } from "./wod-estimate.dto";
 import { CreateWodRequest, LogWodResultRequest } from "./create-wod.dto";
@@ -11,7 +12,10 @@ import { CreateWodRequest, LogWodResultRequest } from "./create-wod.dto";
 @Controller("v1/wods")
 @UseGuards(OptionalJwtAuthGuard)
 export class WodsController {
-  constructor(private readonly wods: WodsService) {}
+  constructor(
+    private readonly wods: WodsService,
+    private readonly clubs: ClubsService,
+  ) {}
 
   /** Catalogue des WODs. Public. */
   @Get()
@@ -54,16 +58,18 @@ export class WodsController {
 
   /** Classement d'un WOD par sexe et variante (Rx par défaut, ou Scaled). */
   @Get(":id/leaderboard")
-  leaderboard(
+  async leaderboard(
     @Param("id") id: string,
     @Query("sex") sexParam: string,
     @Query("variant") variant: string | undefined,
+    @Query("clubId") clubId: string | undefined,
     @CurrentUser() user: AuthenticatedUser | undefined,
   ): Promise<unknown> {
     const sex = Sex.safeParse(sexParam);
     if (!sex.success) {
       throw new BadRequestException({ code: "VALIDATION_ERROR", message: "Paramètre sex requis : male|female." });
     }
-    return this.wods.leaderboard(id, sex.data, variant !== "scaled", user?.userId);
+    const memberIds = clubId && user ? await this.clubs.memberIds(clubId, user.userId) : undefined;
+    return this.wods.leaderboard(id, sex.data, variant !== "scaled", user?.userId, memberIds);
   }
 }

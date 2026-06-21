@@ -70,6 +70,78 @@ class _FollowButtonState extends ConsumerState<_FollowButton> {
   }
 }
 
+/// Bouton « Inviter dans mon club » : choisit parmi les clubs où je suis membre.
+class _InviteToClubButton extends ConsumerStatefulWidget {
+  final String userId;
+  const _InviteToClubButton({required this.userId});
+
+  @override
+  ConsumerState<_InviteToClubButton> createState() => _InviteToClubButtonState();
+}
+
+class _InviteToClubButtonState extends ConsumerState<_InviteToClubButton> {
+  bool _busy = false;
+
+  Future<void> _invite() async {
+    setState(() => _busy = true);
+    try {
+      final clubs = await ref.read(apiClientProvider).myClubs();
+      if (!mounted) return;
+      if (clubs.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Crée d\'abord un club pour inviter.')));
+        return;
+      }
+      final club = clubs.length == 1
+          ? clubs.first
+          : await showModalBottomSheet<ClubSummary>(
+              context: context,
+              backgroundColor: HiColors.bgElevated,
+              builder: (_) => SafeArea(
+                child: Column(mainAxisSize: MainAxisSize.min, children: [
+                  Padding(
+                    padding: const EdgeInsets.all(HiSpace.md),
+                    child: Text('Inviter dans…',
+                        style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
+                  ),
+                  ...clubs.map((c) => ListTile(
+                        leading: Icon(Icons.groups, color: HiColors.brandPrimary),
+                        title: Text(c.name, style: TextStyle(color: HiColors.textPrimary)),
+                        onTap: () => Navigator.of(context).pop(c),
+                      )),
+                ]),
+              ),
+            );
+      if (club == null || !mounted) return;
+      await ref.read(apiClientProvider).inviteToClub(club.id, widget.userId);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Invitation envoyée à « ${club.name} »')));
+      }
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 200,
+      child: OutlinedButton.icon(
+        style: OutlinedButton.styleFrom(
+          minimumSize: const Size.fromHeight(44),
+          side: BorderSide(color: HiColors.strokeStrong),
+          foregroundColor: HiColors.textSecondary,
+        ),
+        icon: const Icon(Icons.group_add, size: 18),
+        label: const Text('Inviter dans mon club'),
+        onPressed: _busy ? null : _invite,
+      ),
+    );
+  }
+}
+
 /// Profil public d'un autre athlète (tout est public) + comparaison avec le mien.
 class PublicProfileScreen extends ConsumerWidget {
   final String userId;
@@ -119,6 +191,8 @@ class PublicProfileScreen extends ConsumerWidget {
                     if (!p.isMe) ...[
                       const SizedBox(height: HiSpace.md),
                       _FollowButton(userId: p.userId, initial: p.isFollowing),
+                      const SizedBox(height: HiSpace.sm),
+                      _InviteToClubButton(userId: p.userId),
                     ],
                     const SizedBox(height: HiSpace.lg),
                     if (mine != null && p.index != null) _compareCard(mine, p),

@@ -9,7 +9,10 @@ import '../profile/public_profile_screen.dart';
 /// Classement de PROGRESSION de la semaine : on classe par EFFORT fourni, pas par niveau.
 /// Tout le monde peut briller (régularité, PR, exploration). Personne n'est « dernier ».
 class ProgressBoardScreen extends ConsumerStatefulWidget {
-  const ProgressBoardScreen({super.key});
+  /// Si fourni, le classement de progression est filtré aux membres de ce club.
+  final String? clubId;
+  final String? clubName;
+  const ProgressBoardScreen({super.key, this.clubId, this.clubName});
 
   @override
   ConsumerState<ProgressBoardScreen> createState() => _ProgressBoardScreenState();
@@ -26,7 +29,7 @@ class _ProgressBoardScreenState extends ConsumerState<ProgressBoardScreen> {
     _load();
   }
 
-  void _load() => _future = ref.read(apiClientProvider).progressBoard(_sex);
+  void _load() => _future = ref.read(apiClientProvider).progressBoard(_sex, clubId: widget.clubId);
 
   void _switch(String sex) {
     if (sex == _sex) return;
@@ -39,7 +42,10 @@ class _ProgressBoardScreenState extends ConsumerState<ProgressBoardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Progression de la semaine'), backgroundColor: Colors.transparent, elevation: 0),
+      appBar: AppBar(
+          title: Text(widget.clubName != null ? 'Progression · ${widget.clubName}' : 'Progression de la semaine'),
+          backgroundColor: Colors.transparent,
+          elevation: 0),
       body: SafeArea(
         child: Column(
           children: [

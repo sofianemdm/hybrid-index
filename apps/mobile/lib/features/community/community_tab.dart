@@ -5,6 +5,7 @@ import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/rank_badge.dart';
+import '../clubs/clubs_screen.dart';
 import '../profile/public_profile_screen.dart';
 import '../wods/wod_detail_screen.dart';
 import 'explore_screen.dart';
@@ -70,6 +71,12 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
                     const SizedBox(height: HiSpace.md),
                     Text('Suis des athlètes pour voir leur activité, ou logue une séance pour démarrer ton fil.',
                         textAlign: TextAlign.center, style: TextStyle(color: HiColors.textTertiary)),
+                    const SizedBox(height: HiSpace.md),
+                    OutlinedButton.icon(
+                      onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ClubsScreen())),
+                      icon: const Icon(Icons.groups, size: 18),
+                      label: const Text('Explorer les clubs'),
+                    ),
                   ]),
                 ),
               ]);
@@ -81,6 +88,11 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
                   Expanded(
                     child: Text('Communauté',
                         style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: HiColors.textPrimary)),
+                  ),
+                  IconButton(
+                    tooltip: 'Clubs',
+                    icon: Icon(Icons.groups, color: HiColors.textTertiary),
+                    onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ClubsScreen())),
                   ),
                   IconButton(
                     tooltip: 'Rechercher',

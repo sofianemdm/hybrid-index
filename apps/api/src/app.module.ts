@@ -16,6 +16,7 @@ import { WodsModule } from "./modules/wods/wods.module";
 import { SocialModule } from "./modules/social/social.module";
 import { ProgressModule } from "./modules/progress/progress.module";
 import { ModerationModule } from "./modules/moderation/moderation.module";
+import { ClubsModule } from "./modules/clubs/clubs.module";
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { ModerationModule } from "./modules/moderation/moderation.module";
     SocialModule,
     ProgressModule,
     ModerationModule,
+    ClubsModule,
     AuthModule,
     ProfileModule,
     MeModule,

@@ -503,6 +503,37 @@ describe("api — boucle complète persistée (e2e réel)", () => {
     expect(res.body.entries.some((e: { isMe: boolean }) => e.isMe)).toBe(true);
   });
 
+  it("club : créer → roster → filtre des classements par club (C2/C3)", async () => {
+    const create = await request(api.getHttpServer())
+      .post("/v1/clubs")
+      .set("authorization", `Bearer ${token}`)
+      .send({ name: `Club ${stamp}`, description: "Les testeurs" })
+      .expect(201);
+    const clubId = create.body.id as string;
+    expect(create.body.isOwner).toBe(true);
+    expect(create.body.isMember).toBe(true);
+    expect(create.body.roster.some((r: { isMe: boolean }) => r.isMe)).toBe(true);
+
+    // Je figure dans « mes clubs ».
+    const mine = await request(api.getHttpServer()).get("/v1/me/clubs").set("authorization", `Bearer ${token}`).expect(200);
+    expect(mine.body.some((c: { id: string }) => c.id === clubId)).toBe(true);
+
+    // Classement Index filtré « Mon club » : la ligue globale reste entière, ici on ne voit que les membres.
+    const lb = await request(api.getHttpServer())
+      .get(`/v1/leaderboard?sex=male&clubId=${clubId}`)
+      .set("authorization", `Bearer ${token}`)
+      .expect(200);
+    expect(lb.body.total).toBe(1);
+    expect(lb.body.entries.some((e: { isMe: boolean }) => e.isMe)).toBe(true);
+
+    // Classement par séance filtré club (l'utilisateur a loggé Fran).
+    const wlb = await request(api.getHttpServer())
+      .get(`/v1/wods/fran/leaderboard?sex=male&clubId=${clubId}`)
+      .set("authorization", `Bearer ${token}`)
+      .expect(200);
+    expect(wlb.body.entries.every((e: { isMe: boolean }) => e.isMe)).toBe(true);
+  });
+
   it("RGPD : suppression de compte (effacement) — DOIT être le dernier test", async () => {
     const deletedUserId = userId;
     const res = await request(api.getHttpServer())

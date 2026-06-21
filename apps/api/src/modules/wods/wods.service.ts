@@ -218,9 +218,16 @@ export class WodsService {
   }
 
   /** Classement d'un WOD (meilleur effort par utilisateur, par sexe, variante Rx ou Scaled). */
-  async leaderboard(id: string, sex: string, rx: boolean, userId?: string): Promise<unknown> {
+  async leaderboard(id: string, sex: string, rx: boolean, userId?: string, memberIds?: string[]): Promise<unknown> {
     const rows = await this.prisma.wodResult.findMany({
-      where: { wodId: id, sex: sex as Sex, review: "ok", subScore: { not: null }, rxCompliant: rx },
+      where: {
+        wodId: id,
+        sex: sex as Sex,
+        review: "ok",
+        subScore: { not: null },
+        rxCompliant: rx,
+        ...(memberIds ? { userId: { in: memberIds } } : {}), // filtre « Mon club » (C3)
+      },
       orderBy: [{ subScore: "desc" }],
       distinct: ["userId"], // meilleur effort par utilisateur (premier dans l'ordre subScore desc)
       take: 100,

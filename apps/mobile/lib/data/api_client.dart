@@ -138,10 +138,49 @@ class ApiClient {
     return Leaderboard.fromJson(j);
   }
 
-  Future<ProgressBoard> progressBoard(String sex) async {
-    final j = await _send('GET', '/v1/leaderboard/progress?sex=$sex') as Map<String, dynamic>;
+  Future<ProgressBoard> progressBoard(String sex, {String? clubId}) async {
+    final q = clubId != null ? '&clubId=$clubId' : '';
+    final j = await _send('GET', '/v1/leaderboard/progress?sex=$sex$q') as Map<String, dynamic>;
     return ProgressBoard.fromJson(j);
   }
+
+  // --- Clubs ---
+  Future<List<ClubSummary>> myClubs() async {
+    final j = await _send('GET', '/v1/me/clubs') as List<dynamic>;
+    return j.map((e) => ClubSummary.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  Future<List<ClubSummary>> searchClubs(String q) async {
+    final j = await _send('GET', '/v1/clubs?q=${Uri.encodeQueryComponent(q)}') as List<dynamic>;
+    return j.map((e) => ClubSummary.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  Future<ClubDetail> clubDetail(String id) async {
+    final j = await _send('GET', '/v1/clubs/$id') as Map<String, dynamic>;
+    return ClubDetail.fromJson(j);
+  }
+
+  Future<ClubDetail> createClub(String name, {String? description}) async {
+    final j = await _send('POST', '/v1/clubs', {'name': name, if (description != null && description.isNotEmpty) 'description': description}) as Map<String, dynamic>;
+    return ClubDetail.fromJson(j);
+  }
+
+  Future<ClubDetail> joinClub(String id) async {
+    final j = await _send('POST', '/v1/clubs/$id/join', {}) as Map<String, dynamic>;
+    return ClubDetail.fromJson(j);
+  }
+
+  Future<void> leaveClub(String id) async => _send('DELETE', '/v1/clubs/$id/members/me');
+
+  Future<void> inviteToClub(String clubId, String userId) async =>
+      _send('POST', '/v1/clubs/$clubId/invites', {'inviteeId': userId});
+
+  Future<List<ClubInvite>> myClubInvites() async {
+    final j = await _send('GET', '/v1/me/club-invites') as List<dynamic>;
+    return j.map((e) => ClubInvite.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  Future<void> declineClubInvite(String inviteId) async => _send('POST', '/v1/club-invites/$inviteId/decline', {});
 
   // --- Coach / profils publics ---
   Future<CoachResult> coach({String? attribute}) async {
@@ -238,8 +277,9 @@ class ApiClient {
     return WodDetail.fromJson(j);
   }
 
-  Future<List<WodLeaderboardEntry>> wodLeaderboard(String id, String sex, {String variant = 'rx'}) async {
-    final j = await _send('GET', '/v1/wods/$id/leaderboard?sex=$sex&variant=$variant') as Map<String, dynamic>;
+  Future<List<WodLeaderboardEntry>> wodLeaderboard(String id, String sex, {String variant = 'rx', String? clubId}) async {
+    final q = clubId != null ? '&clubId=$clubId' : '';
+    final j = await _send('GET', '/v1/wods/$id/leaderboard?sex=$sex&variant=$variant$q') as Map<String, dynamic>;
     return ((j['entries'] as List?) ?? []).map((e) => WodLeaderboardEntry.fromJson(e as Map<String, dynamic>)).toList();
   }
 
