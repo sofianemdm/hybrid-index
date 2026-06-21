@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../theme/tokens.dart';
 
 /// Anneau d'Index : grand chiffre central + anneau de progression gradient qui se remplit
-/// (animation du reveal). `value` ∈ [0, 1000].
+/// (animation du reveal). `value` = OVR ∈ [0, 100].
 class IndexRing extends StatelessWidget {
   final int value;
   final double percentile;
@@ -28,7 +28,7 @@ class IndexRing extends StatelessWidget {
           width: size,
           height: size,
           child: CustomPaint(
-            painter: _RingPainter(animated / 1000.0),
+            painter: _RingPainter(animated / 100.0),
             child: Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
