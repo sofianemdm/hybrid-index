@@ -262,6 +262,8 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
           const SizedBox(height: HiSpace.sm),
           Row(
             children: [
+              _kudos(a, '❤️'),
+              const SizedBox(width: 8),
               _kudos(a, '💪'),
               const SizedBox(width: 8),
               _kudos(a, '🔥'),

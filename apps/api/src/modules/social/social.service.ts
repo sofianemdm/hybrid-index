@@ -8,7 +8,7 @@ import { PostsService } from "../posts/posts.service";
 const ovr = (internal: number | null | undefined): number | null =>
   internal == null ? null : Math.round(ratingFromInternal(internal));
 
-const ALLOWED_EMOJIS = new Set(["💪", "🔥", "👏", "🚀"]);
+const ALLOWED_EMOJIS = new Set(["❤️", "💪", "🔥", "👏", "🚀"]);
 /** Feed FINI (pas de scroll infini) : fenêtre bornée des activités les plus récentes. */
 const FEED_LIMIT = 60;
 

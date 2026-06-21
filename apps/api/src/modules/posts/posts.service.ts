@@ -7,7 +7,7 @@ import { ModerationService } from "../moderation/moderation.service";
 const ovrSub = (v: number | null | undefined): number | null =>
   v == null ? null : Math.round(ratingFromInternal(v));
 
-const ALLOWED_EMOJIS = new Set(["💪", "🔥", "👏", "🚀"]);
+const ALLOWED_EMOJIS = new Set(["❤️", "💪", "🔥", "👏", "🚀"]);
 const MAX_BODY = 500;
 
 export interface CreatePostInput {
