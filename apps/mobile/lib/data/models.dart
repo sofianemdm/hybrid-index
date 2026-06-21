@@ -1018,6 +1018,41 @@ class WodHistoryEntry {
       );
 }
 
+/// Défi de la semaine : un WOD imposé qui change chaque semaine.
+class WeeklyChallenge {
+  final String weekKey;
+  final String theme;
+  final String wodId;
+  final String wodName;
+  final String scoreType;
+  final bool isFlagship;
+  final String endsAt;
+  final WodPrescription? prescription;
+  const WeeklyChallenge({
+    required this.weekKey,
+    required this.theme,
+    required this.wodId,
+    required this.wodName,
+    required this.scoreType,
+    required this.isFlagship,
+    required this.endsAt,
+    this.prescription,
+  });
+
+  factory WeeklyChallenge.fromJson(Map<String, dynamic> j) => WeeklyChallenge(
+        weekKey: j['weekKey'] as String? ?? '',
+        theme: j['theme'] as String? ?? '',
+        wodId: j['wodId'] as String? ?? '',
+        wodName: j['wodName'] as String? ?? 'Séance',
+        scoreType: j['scoreType'] as String? ?? 'time',
+        isFlagship: j['isFlagship'] as bool? ?? false,
+        endsAt: j['endsAt'] as String? ?? '',
+        prescription: j['prescription'] == null
+            ? null
+            : WodPrescription.fromJson((j['prescription'] as Map).cast<String, dynamic>()),
+      );
+}
+
 /// Cible « Référence Pro » (donnée publique) à viser sur une séance.
 class WodReference {
   final String tier; // 'record' | 'elite'

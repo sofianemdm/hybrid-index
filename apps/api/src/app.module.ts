@@ -19,6 +19,7 @@ import { ModerationModule } from "./modules/moderation/moderation.module";
 import { ClubsModule } from "./modules/clubs/clubs.module";
 import { PostsModule } from "./modules/posts/posts.module";
 import { MessagingModule } from "./modules/messaging/messaging.module";
+import { ChallengeModule } from "./modules/challenge/challenge.module";
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { MessagingModule } from "./modules/messaging/messaging.module";
     ProgressModule,
     ClubsModule,
     MessagingModule,
+    ChallengeModule,
     AuthModule,
     ProfileModule,
     MeModule,

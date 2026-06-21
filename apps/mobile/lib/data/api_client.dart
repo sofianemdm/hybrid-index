@@ -328,6 +328,17 @@ class ApiClient {
     return ((j['entries'] as List?) ?? []).map((e) => WodLeaderboardEntry.fromJson(e as Map<String, dynamic>)).toList();
   }
 
+  // --- Défi de la semaine ---
+  Future<WeeklyChallenge> currentChallenge() async {
+    final j = await _send('GET', '/v1/challenge') as Map<String, dynamic>;
+    return WeeklyChallenge.fromJson(j);
+  }
+
+  Future<List<WodLeaderboardEntry>> challengeLeaderboard(String sex) async {
+    final j = await _send('GET', '/v1/challenge/leaderboard?sex=$sex') as Map<String, dynamic>;
+    return ((j['entries'] as List?) ?? []).map((e) => WodLeaderboardEntry.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
   Future<List<MovementSummary>> movements() async {
     final j = await _send('GET', '/v1/movements') as List<dynamic>;
     return j.map((e) => MovementSummary.fromJson(e as Map<String, dynamic>)).toList();

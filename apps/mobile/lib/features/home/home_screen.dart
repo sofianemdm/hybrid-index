@@ -15,6 +15,7 @@ import '../avatar/avatar_editor_screen.dart';
 import '../coach/coach_screen.dart';
 import '../history/history_screen.dart';
 import '../notifications/notifications_screen.dart';
+import '../challenge/challenge_screen.dart';
 import '../settings/settings_screen.dart';
 import '../share/share_card_screen.dart';
 import 'score_v2_banner.dart';
@@ -94,6 +95,7 @@ class HomeScreen extends ConsumerWidget {
   Widget _content(BuildContext context, WidgetRef ref, Profile p) {
     return Column(
       children: [
+        const ChallengeBanner(),
         Center(child: IndexRing(value: p.index.value, percentile: p.index.percentile, size: 220)),
         const SizedBox(height: HiSpace.md),
         Center(child: RankBadge(rank: p.index.rank, fontSize: 15)),

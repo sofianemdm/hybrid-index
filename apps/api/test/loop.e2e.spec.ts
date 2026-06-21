@@ -680,6 +680,22 @@ describe("api — boucle complète persistée (e2e réel)", () => {
       .expect(403);
   });
 
+  it("défi de la semaine : WOD imposé + classement de la semaine (C)", async () => {
+    const cur = await request(api.getHttpServer()).get("/v1/challenge").expect(200);
+    expect(cur.body.weekKey).toMatch(/^\d{4}-W\d{2}$/);
+    expect(typeof cur.body.wodId).toBe("string");
+    expect(cur.body.wodName).toBeTruthy();
+    expect(new Date(cur.body.endsAt).getTime()).toBeGreaterThan(Date.now());
+    expect(cur.body.theme).toBeTruthy();
+
+    const lb = await request(api.getHttpServer())
+      .get("/v1/challenge/leaderboard?sex=male")
+      .set("authorization", `Bearer ${token}`)
+      .expect(200);
+    expect(lb.body.wodId).toBe(cur.body.wodId);
+    expect(Array.isArray(lb.body.entries)).toBe(true);
+  });
+
   it("RGPD : suppression de compte (effacement) — DOIT être le dernier test", async () => {
     const deletedUserId = userId;
     const res = await request(api.getHttpServer())
