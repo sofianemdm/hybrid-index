@@ -117,7 +117,7 @@ class _ProgressionScreenState extends ConsumerState<ProgressionScreen> {
           if (history.length < 2)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: HiSpace.md),
-              child: Text('Logue 2-3 WODs pour voir ta progression se dessiner.',
+              child: Text('Logue 2-3 séances pour voir ta progression se dessiner.',
                   style: TextStyle(color: HiColors.textTertiary)),
             )
           else
@@ -192,7 +192,7 @@ class _ProgressionScreenState extends ConsumerState<ProgressionScreen> {
             ],
           ),
           const SizedBox(height: HiSpace.md),
-          Text('Cette semaine : ${s.thisWeekCount}/${s.weeklyGoal} WODs'
+          Text('Cette semaine : ${s.thisWeekCount}/${s.weeklyGoal} séances'
               '${s.weekValidated ? ' ✓ validée' : ''}',
               style: TextStyle(color: HiColors.textSecondary)),
           const SizedBox(height: 6),

@@ -43,7 +43,7 @@ class _Block {
   _Block(this.movement, this.amount, this.loadKg);
 }
 
-/// Constructeur de WOD : format + mouvements + aperçu live de l'estimation, puis publication.
+/// Constructeur de séance : format + mouvements + aperçu live de l'estimation, puis publication.
 class WodBuilderScreen extends ConsumerStatefulWidget {
   const WodBuilderScreen({super.key});
 
@@ -133,7 +133,7 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
 
   Future<void> _save() async {
     if (_name.text.trim().length < 2) {
-      _toast('Donne un nom à ton WOD.');
+      _toast('Donne un nom à ta séance.');
       return;
     }
     if (_blocks.isEmpty) {
@@ -166,7 +166,7 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Construire un WOD'), backgroundColor: Colors.transparent, elevation: 0),
+      appBar: AppBar(title: const Text('Construire une séance'), backgroundColor: Colors.transparent, elevation: 0),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(HiSpace.lg),
@@ -175,7 +175,7 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                TextField(controller: _name, decoration: const InputDecoration(labelText: 'Nom du WOD')),
+                TextField(controller: _name, decoration: const InputDecoration(labelText: 'Nom de la séance')),
                 const SizedBox(height: HiSpace.md),
                 Text('Format', style: TextStyle(color: HiColors.textSecondary, fontSize: 13)),
                 const SizedBox(height: 8),
@@ -240,7 +240,7 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
                 const SizedBox(height: HiSpace.lg),
                 _estimateCard(),
                 const SizedBox(height: HiSpace.lg),
-                HiButton(label: 'Publier ce WOD', loading: _saving, onPressed: _save),
+                HiButton(label: 'Publier cette séance', loading: _saving, onPressed: _save),
               ],
             ),
           ),

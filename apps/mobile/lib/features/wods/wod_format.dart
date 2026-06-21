@@ -1,4 +1,4 @@
-/// Formatage d'un résultat de WOD selon son type de score.
+/// Formatage d'un résultat de séance selon son type de score.
 String formatWodResult(num value, String scoreType) {
   if (scoreType == 'time') {
     final s = value.round();

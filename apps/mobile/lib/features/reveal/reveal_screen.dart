@@ -37,7 +37,7 @@ class RevealScreen extends ConsumerWidget {
                   RankBadge(rank: idx.rank, fontSize: 15),
                   if (idx.isProvisional) ...[
                     const SizedBox(height: HiSpace.sm),
-                    Text('Index provisoire — affine-le en loggant plus de WODs.',
+                    Text('Index provisoire — affine-le en loggant plus de séances.',
                         textAlign: TextAlign.center, style: TextStyle(color: HiColors.warn, fontSize: 12)),
                   ],
                   if (idx.rankProgress != null) ...[

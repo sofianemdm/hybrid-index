@@ -8,7 +8,7 @@ import '../../widgets/rank_badge.dart';
 import '../profile/public_profile_screen.dart';
 import 'explore_screen.dart';
 
-/// Onglet Communauté : feed d'activité (PR, WODs, montées de rang, badges) + kudos.
+/// Onglet Communauté : feed d'activité (PR, séances, montées de rang, badges) + kudos.
 class CommunityTab extends ConsumerStatefulWidget {
   const CommunityTab({super.key});
 
@@ -67,7 +67,7 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
                   child: Column(children: [
                     Icon(Icons.groups_outlined, color: HiColors.textTertiary, size: 40),
                     const SizedBox(height: HiSpace.md),
-                    Text('Suis des athlètes pour voir leur activité, ou logue un WOD pour démarrer ton fil.',
+                    Text('Suis des athlètes pour voir leur activité, ou logue une séance pour démarrer ton fil.',
                         textAlign: TextAlign.center, style: TextStyle(color: HiColors.textTertiary)),
                   ]),
                 ),
@@ -100,9 +100,9 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
   String _message(FeedActivity a) {
     switch (a.type) {
       case 'pr':
-        return '🏆 Nouveau PR — ${a.payload['wodName'] ?? 'un WOD'}';
+        return '🏆 Nouveau PR — ${a.payload['wodName'] ?? 'une séance'}';
       case 'wod_logged':
-        return 'a fait ${a.payload['wodName'] ?? 'un WOD'}';
+        return 'a fait ${a.payload['wodName'] ?? 'une séance'}';
       case 'rank_up':
         return 'monte au rang ${HiLabels.rank(a.payload['rank']?.toString() ?? '')} 🎖️';
       case 'badge_unlocked':

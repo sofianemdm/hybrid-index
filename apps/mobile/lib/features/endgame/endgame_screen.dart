@@ -65,7 +65,7 @@ class _EndgameScreenState extends ConsumerState<EndgameScreen> {
                         ],
                       ),
                       const SizedBox(height: 4),
-                      Text('Bats le temps/score « pro » sur les 15 WODs de référence.',
+                      Text('Bats le temps/score « pro » sur les 15 séances de référence.',
                           style: TextStyle(color: HiColors.textSecondary, fontSize: 13)),
                       const SizedBox(height: HiSpace.md),
                       ClipRRect(

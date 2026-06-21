@@ -9,7 +9,7 @@ import '../../widgets/rank_badge.dart';
 import 'wod_format.dart';
 import 'wod_result_entry_screen.dart';
 
-/// Fiche WOD : paliers de référence (champion/intermédiaire/occasionnel) + classement + « Faire ce WOD ».
+/// Fiche WOD : paliers de référence (champion/intermédiaire/occasionnel) + classement + « Faire cette séance ».
 class WodDetailScreen extends ConsumerStatefulWidget {
   final String wodId;
   final String wodName;
@@ -84,13 +84,13 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
                 const SizedBox(height: HiSpace.lg),
                 _sexToggle(),
                 const SizedBox(height: HiSpace.md),
-                if (d.levels(_sex) != null) _tierCard(d) else Text('Paliers non disponibles pour ce WOD.', style: TextStyle(color: HiColors.textTertiary)),
+                if (d.levels(_sex) != null) _tierCard(d) else Text('Paliers non disponibles pour cette séance.', style: TextStyle(color: HiColors.textTertiary)),
                 const SizedBox(height: HiSpace.lg),
                 Text('Classement', style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 16)),
                 const SizedBox(height: HiSpace.sm),
                 _leaderboardSection(d.scoreType),
                 const SizedBox(height: HiSpace.lg),
-                HiButton(label: 'Faire ce WOD', onPressed: () => _doWod(d.scoreType)),
+                HiButton(label: 'Faire cette séance', onPressed: () => _doWod(d.scoreType)),
               ],
             );
           },

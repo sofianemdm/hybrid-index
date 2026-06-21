@@ -176,7 +176,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     ),
                     const SizedBox(height: HiSpace.md),
                     _ChoiceRow(
-                      label: 'Matériel (modifiable plus tard) — « Équipé » donne accès aussi aux WODs sans matériel',
+                      label: 'Matériel (modifiable plus tard) — « Équipé » donne accès aussi aux séances sans matériel',
                       options: const {'none': 'Sans matériel', 'equipped': 'Équipé'},
                       value: _equipment,
                       onChanged: (v) => setState(() => _equipment = v),

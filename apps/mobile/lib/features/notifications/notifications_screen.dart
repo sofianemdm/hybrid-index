@@ -56,7 +56,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
               return Center(
                 child: Padding(
                   padding: const EdgeInsets.all(HiSpace.lg),
-                  child: Text('Rien de neuf pour l’instant. Logue un WOD pour faire bouger les choses !',
+                  child: Text('Rien de neuf pour l’instant. Logue une séance pour faire bouger les choses !',
                       textAlign: TextAlign.center, style: TextStyle(color: HiColors.textTertiary)),
                 ),
               );

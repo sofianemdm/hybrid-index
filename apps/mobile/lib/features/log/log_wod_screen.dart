@@ -11,9 +11,9 @@ import '../../data/review_prompt.dart';
 import '../../widgets/attribute_gains.dart';
 import '../../widgets/hi_button.dart';
 
-/// Log d'un WOD : choisir un WOD + saisir le résultat → l'Index se recalcule.
+/// Log d'une séance : choisir une séance + saisir le résultat → l'Index se recalcule.
 class LogWodScreen extends ConsumerStatefulWidget {
-  /// Pré-sélectionne un WOD (ex. depuis « Faire ce WOD » sur la fiche).
+  /// Pré-sélectionne un WOD (ex. depuis « Faire cette séance » sur la fiche).
   final String? initialWodId;
   const LogWodScreen({super.key, this.initialWodId});
 
@@ -156,7 +156,7 @@ class _LogWodScreenState extends ConsumerState<LogWodScreen> {
     final bodyweight = wodCatalog.where((w) => !w.requiresEquipment).toList();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Logger un WOD'), backgroundColor: Colors.transparent, elevation: 0),
+      appBar: AppBar(title: const Text('Logger une séance'), backgroundColor: Colors.transparent, elevation: 0),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(HiSpace.lg),
@@ -165,7 +165,7 @@ class _LogWodScreenState extends ConsumerState<LogWodScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text('Choisis un WOD', style: TextStyle(color: HiColors.textSecondary)),
+                Text('Choisis une séance', style: TextStyle(color: HiColors.textSecondary)),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<WodCatalogItem>(
                   initialValue: _wod,

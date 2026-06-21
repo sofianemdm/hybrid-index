@@ -45,10 +45,10 @@ class _WodTabState extends ConsumerState<WodTab> {
             return ListView(
               padding: const EdgeInsets.fromLTRB(HiSpace.lg, HiSpace.lg, HiSpace.lg, 96),
               children: [
-                Text('WOD',
+                Text('Séances',
                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: HiColors.textPrimary)),
                 const SizedBox(height: 4),
-                Text('Choisis un WOD, vois les records et où tu te situes.',
+                Text('Choisis une séance (aussi appelée « WOD »), vois les records et où tu te situes.',
                     style: TextStyle(color: HiColors.textSecondary)),
                 const SizedBox(height: HiSpace.lg),
                 if (sansMateriel.isNotEmpty) ...[

@@ -10,7 +10,7 @@ import '../../theme/tokens.dart';
 import '../../widgets/attribute_gains.dart';
 import '../../widgets/hi_button.dart';
 
-/// Saisie d'un résultat sur un WOD (officiel ou custom) — note via le moteur si custom.
+/// Saisie d'un résultat sur une séance (officiel ou custom) — note via le moteur si custom.
 class WodResultEntryScreen extends ConsumerStatefulWidget {
   final String wodId;
   final String wodName;

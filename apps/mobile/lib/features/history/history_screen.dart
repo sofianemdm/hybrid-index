@@ -66,7 +66,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
               return Center(
                 child: Padding(
                   padding: const EdgeInsets.all(HiSpace.lg),
-                  child: Text('Aucun WOD loggé pour l’instant.',
+                  child: Text('Aucune séance loggée pour l’instant.',
                       textAlign: TextAlign.center, style: TextStyle(color: HiColors.textTertiary)),
                 ),
               );

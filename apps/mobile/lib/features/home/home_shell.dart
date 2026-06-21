@@ -11,7 +11,7 @@ import '../wods/wod_tab.dart';
 import '../wods/wod_builder_screen.dart';
 import 'home_screen.dart';
 
-/// Coquille principale : Accueil / Classement + bouton central « Logger un WOD ».
+/// Coquille principale : Accueil / Classement + bouton central « Logger une séance ».
 class HomeShell extends ConsumerStatefulWidget {
   const HomeShell({super.key});
 
@@ -32,14 +32,14 @@ class _HomeShellState extends ConsumerState<HomeShell> {
           children: [
             ListTile(
               leading: Icon(Icons.build, color: HiColors.brandPrimary),
-              title: Text('Construire un WOD', style: TextStyle(color: HiColors.textPrimary)),
-              subtitle: Text('Compose ton propre WOD, estimé automatiquement', style: TextStyle(color: HiColors.textTertiary)),
+              title: Text('Construire une séance', style: TextStyle(color: HiColors.textPrimary)),
+              subtitle: Text('Compose ta propre séance, estimée automatiquement', style: TextStyle(color: HiColors.textTertiary)),
               onTap: () => Navigator.of(context).pop('build'),
             ),
             ListTile(
               leading: Icon(Icons.timer_outlined, color: HiColors.brandPrimary),
-              title: Text('Logger un WOD rapidement', style: TextStyle(color: HiColors.textPrimary)),
-              subtitle: Text('Saisis un résultat sur un WOD de référence', style: TextStyle(color: HiColors.textTertiary)),
+              title: Text('Logger une séance rapidement', style: TextStyle(color: HiColors.textPrimary)),
+              subtitle: Text('Saisis un résultat sur une séance de référence', style: TextStyle(color: HiColors.textTertiary)),
               onTap: () => Navigator.of(context).pop('log'),
             ),
           ],
@@ -69,7 +69,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
         foregroundColor: HiColors.textOnBrand,
         onPressed: _openLog,
         icon: const Icon(Icons.add),
-        label: const Text('Ajouter un WOD', style: TextStyle(fontWeight: FontWeight.w700)),
+        label: const Text('Ajouter une séance', style: TextStyle(fontWeight: FontWeight.w700)),
       ),
       bottomNavigationBar: NavigationBar(
         backgroundColor: HiColors.bgElevated,
@@ -79,7 +79,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
         destinations: const [
           NavigationDestination(icon: Icon(Icons.bolt_outlined), selectedIcon: Icon(Icons.bolt), label: 'Accueil'),
           NavigationDestination(
-              icon: Icon(Icons.fitness_center_outlined), selectedIcon: Icon(Icons.fitness_center), label: 'WOD'),
+              icon: Icon(Icons.fitness_center_outlined), selectedIcon: Icon(Icons.fitness_center), label: 'Séances'),
           NavigationDestination(
               icon: Icon(Icons.groups_outlined), selectedIcon: Icon(Icons.groups), label: 'Communauté'),
           NavigationDestination(

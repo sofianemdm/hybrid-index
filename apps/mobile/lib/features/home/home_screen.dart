@@ -137,7 +137,7 @@ class HomeScreen extends ConsumerWidget {
             foregroundColor: HiColors.textPrimary,
           ),
           icon: const Icon(Icons.history),
-          label: const Text('Mon historique de WODs'),
+          label: const Text('Mon historique de séances'),
           onPressed: () => Navigator.of(context).push(
             MaterialPageRoute(builder: (_) => const HistoryScreen()),
           ),

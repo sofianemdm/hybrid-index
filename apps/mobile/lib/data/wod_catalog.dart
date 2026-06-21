@@ -1,6 +1,6 @@
 import 'models.dart';
 
-/// Catalogue des 15 WODs de référence (ids alignés sur le score-service / seed).
+/// Catalogue des 15 séances de référence (ids alignés sur le score-service / seed).
 /// 8 avec matériel, 7 sans. Utilisé par l'écran de log.
 const List<WodCatalogItem> wodCatalog = [
   // Avec matériel

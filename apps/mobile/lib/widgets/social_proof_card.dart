@@ -47,7 +47,7 @@ class SocialProofCard extends StatelessWidget {
           child: top == null
               // Sous la médiane : jamais dévalorisant, formulé en progression.
               ? Text(
-                  'Tu poses tes bases — chaque WOD te rapproche du haut du classement mondial.',
+                  'Tu poses tes bases — chaque séance te rapproche du haut du classement mondial.',
                   style: TextStyle(color: HiColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600),
                 )
               : RichText(
