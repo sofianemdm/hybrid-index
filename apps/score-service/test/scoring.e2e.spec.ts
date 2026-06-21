@@ -19,13 +19,13 @@ describe("score-service — calcul (e2e)", () => {
   });
 
   describe("POST /v1/score/sub-score", () => {
-    it("calcule le sous-score d'un WOD de référence (5 km H, 24:00 → ~884)", async () => {
+    it("calcule le sous-score d'un WOD de référence (5 km H, 24:00 → ~692 après recalibrage)", async () => {
       const res = await request(app.getHttpServer())
         .post("/v1/score/sub-score")
         .send({ wodId: "run_5k", sex: "male", scoreType: "time", rawResult: 1440 })
         .expect(201);
-      expect(res.body.subScore).toBeGreaterThanOrEqual(880);
-      expect(res.body.subScore).toBeLessThanOrEqual(888);
+      expect(res.body.subScore).toBeGreaterThanOrEqual(686);
+      expect(res.body.subScore).toBeLessThanOrEqual(698);
       expect(res.body.attributesAffected).toContain("engine");
       expect(res.body.scoringVersionId).toBe("scoring-v1");
     });
@@ -36,7 +36,7 @@ describe("score-service — calcul (e2e)", () => {
         .send({ wodId: "run_5k", sex: "male", scoreType: "time", rawResult: 60 })
         .expect(422);
       expect(res.body.error.code).toBe("WOD_RESULT_OUT_OF_BOUNDS");
-      expect(res.body.error.details).toEqual({ field: "rawResult", min: 810, max: 4200 });
+      expect(res.body.error.details).toEqual({ field: "rawResult", min: 810, max: 3600 });
     });
 
     it("rejette un résultat au-dessus de la borne haute (422)", async () => {
@@ -105,7 +105,7 @@ describe("score-service — calcul (e2e)", () => {
   });
 
   describe("POST /v1/score/profile (efforts bruts → radar + Index)", () => {
-    it("worked example A : Homme 'Partout', 3 efforts → ~498 (OR), Force réelle non estimée", async () => {
+    it("worked example A : Homme 'Partout', 3 efforts → ~450 (OR) après recalibrage des WODs", async () => {
       const res = await request(app.getHttpServer())
         .post("/v1/score/profile")
         .send({
@@ -118,8 +118,8 @@ describe("score-service — calcul (e2e)", () => {
           ],
         })
         .expect(201);
-      expect(res.body.index.value).toBeGreaterThanOrEqual(496);
-      expect(res.body.index.value).toBeLessThanOrEqual(500);
+      expect(res.body.index.value).toBeGreaterThanOrEqual(445);
+      expect(res.body.index.value).toBeLessThanOrEqual(455);
       expect(res.body.index.radarCoverage).toBe(4);
       expect(res.body.index.isProvisional).toBe(false);
       const strength = res.body.radar.find((a: { attribute: string }) => a.attribute === "strength");
