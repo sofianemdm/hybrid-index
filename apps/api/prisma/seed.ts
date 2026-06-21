@@ -259,6 +259,18 @@ async function main(): Promise<void> {
   }
 
   console.log(`Seed terminé : ${created} athlètes. Redis ${redisOk ? "peuplé" : "indisponible (fallback Postgres)"}.`);
+  // Backfill display-v1 : recale le rang stocké de TOUS les profils sur l'OVR /100
+  // (corrige les rangs écrits sous l'ancienne échelle /1000, vrais comptes inclus).
+  console.log("Seed: backfill des rangs sur l'échelle /100…");
+  const allIndexes = await prisma.hybridIndex.findMany({ select: { userId: true, value: true } });
+  let fixed = 0;
+  for (const hi of allIndexes) {
+    const rank = rankFromIndex(Math.round(ratingFromInternal(hi.value)));
+    const res = await prisma.profile.updateMany({ where: { userId: hi.userId, rank: { not: rank } }, data: { rank } });
+    fixed += res.count;
+  }
+  console.log(`Backfill rangs : ${fixed} profil(s) recalé(s).`);
+
   redis.disconnect();
   await prisma.$disconnect();
 }

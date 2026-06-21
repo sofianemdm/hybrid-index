@@ -1,8 +1,8 @@
 import { INDEX_MAX, INDEX_MIN, RANK_BANDS, type Rank, type RankBand } from "../enums";
 
 /**
- * Renvoie la bande de rang correspondant à une valeur d'Index (0–1000).
- * Bornes [min, max) ; elite inclusif à 1000. La valeur est clampée dans [0, 1000].
+ * Renvoie la bande de rang correspondant à une note d'affichage /100 (OVR, display-v1).
+ * Bornes [min, max) ; elite inclusif à 100. La valeur est clampée dans [INDEX_MIN, INDEX_MAX] = [40, 100].
  */
 export function rankBandFromIndex(index: number): RankBand {
   const v = clampIndex(index);

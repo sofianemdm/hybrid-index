@@ -24,8 +24,8 @@ const MIN_LEAGUE_FOR_APP = 200;
 /** Profil de score persisté renvoyé au mobile (index + radar lisible + preuve sociale). */
 export interface PersistedProfile {
   index: {
-    value: number | null; // OVR /100 (null si non mesuré)
-    rating?: number | null; // /100 à 1 décimale
+    value: number; // OVR /100 (toujours présent ; plancher si non mesuré)
+    rating?: number | null; // /100 à 1 décimale (null si non mesuré)
     internal?: number; // valeur interne /1000
 
     percentile: number;
@@ -353,18 +353,19 @@ export class ProfileScoringService {
     return {
       index: (() => {
         // `index` est une ligne DB (valeur interne /1000) → on dérive l'OVR /100.
-        const measured = index.radarCoverage > 0;
-        const ratingInt = measured ? Math.round(ratingFromInternal(index.value)) : null;
+        // `value` est TOUJOURS un entier non-null (contrat unique avec l'onboarding) ;
+        // un index sans aucun attribut tombe au plancher, pas à null.
+        const ratingInt = Math.round(ratingFromInternal(index.value));
         return {
           value: ratingInt, // OVR /100 affiché
-          rating: measured ? ratingFromInternal(index.value) : null,
+          rating: index.radarCoverage > 0 ? ratingFromInternal(index.value) : null,
           internal: index.value, // valeur interne /1000 (tri/debug)
           percentile: Number(index.percentile),
-          rank: rankFromIndex(ratingInt ?? 40),
+          rank: rankFromIndex(ratingInt),
           isProvisional: index.isProvisional,
           isEstimated: index.isEstimated,
           radarCoverage: index.radarCoverage,
-          rankProgress: rankProgress(ratingInt ?? 40),
+          rankProgress: rankProgress(ratingInt),
         };
       })(),
       // Attributs affichés en /100 (cohérence OVR / carte FIFA) ; l'interne reste /1000.
@@ -394,7 +395,7 @@ function toPersistedProfile(
 ): PersistedProfile {
   return {
     index: {
-      value: computed.index.ratingInt ?? null, // OVR /100 affiché
+      value: computed.index.ratingInt ?? Math.round(ratingFromInternal(computed.index.value)), // OVR /100, jamais null
       rating: computed.index.rating ?? null,
       internal: computed.index.value, // valeur interne /1000 (tri/debug)
       percentile: computed.index.percentile,
