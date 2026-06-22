@@ -200,7 +200,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> {
           ),
           if (e.role == 'owner')
             const Padding(padding: EdgeInsets.only(right: 6), child: Text('👑', style: TextStyle(fontSize: 13))),
-          RankBadge(rank: e.rank, fontSize: 10),
+          RankBadge(ovr: e.index, fontSize: 10),
           const SizedBox(width: HiSpace.sm),
           Text('${e.index}',
               style: TextStyle(color: HiColors.brandPrimary, fontWeight: FontWeight.w800)),

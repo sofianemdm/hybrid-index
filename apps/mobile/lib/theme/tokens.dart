@@ -220,6 +220,63 @@ class HiLabels {
       attrAbbr[k] ?? (k.length >= 3 ? k.substring(0, 3).toUpperCase() : k.toUpperCase());
 }
 
+/// Grades par paliers de 10 (« 40+ », « 50+ » … « 100 ») calés sur l'OVR /100.
+/// Remplace les rangs médailles (bronze/argent/or…). Calculés CÔTÉ FRONT à partir de l'Index.
+class HiGrade {
+  HiGrade._();
+
+  /// Borne basse du palier de l'Index (40 pour tout Index < 50, sinon la dizaine).
+  static int lowerBound(int ovr) => ovr < 50 ? 40 : (ovr ~/ 10) * 10;
+
+  /// Seuil du palier SUIVANT (null si déjà à 100).
+  static int? nextThreshold(int ovr) => ovr >= 100 ? null : lowerBound(ovr) + 10;
+
+  /// Libellé du grade courant : « 40+ », … « 90+ », ou « 100 ».
+  static String label(int ovr) => ovr >= 100 ? '100' : '${lowerBound(ovr)}+';
+
+  /// Libellé du grade suivant à viser (« 80+ »…), ou « 100 ».
+  static String nextLabel(int ovr) {
+    final t = nextThreshold(ovr);
+    if (t == null) return '100';
+    return t >= 100 ? '100' : '$t+';
+  }
+
+  /// Points restants avant le palier suivant (0 si au sommet).
+  static int pointsToNext(int ovr) {
+    final t = nextThreshold(ovr);
+    return t == null ? 0 : (t - ovr).clamp(0, 10);
+  }
+
+  /// Progression [0..1] dans le palier courant (pleine à 100).
+  static double progress(int ovr) {
+    if (ovr >= 100) return 1;
+    final lo = lowerBound(ovr);
+    return ((ovr - lo) / 10).clamp(0.0, 1.0);
+  }
+
+  /// Couleur signature du grade (bordure + texte du chip, remplissage de barre).
+  static Color color(int ovr) {
+    if (ovr >= 100) return const Color(0xFF3DE1FF); // diamant cyan (sommet)
+    switch (lowerBound(ovr)) {
+      case 90:
+        return const Color(0xFFB98CFF); // platine-violet
+      case 80:
+        return const Color(0xFFF3C13A); // or
+      case 70:
+        return const Color(0xFF6FB3FF); // azur
+      case 60:
+        return const Color(0xFF56C2A6); // laiton-jade
+      case 50:
+        return const Color(0xFF9FB0C3); // acier froid
+      default:
+        return const Color(0xFFC87E4F); // bronze (40+)
+    }
+  }
+
+  /// Couleur du palier suivant (pour le dégradé de la barre).
+  static Color nextColor(int ovr) => color((nextThreshold(ovr) ?? 100).clamp(40, 100));
+}
+
 class HiSpace {
   HiSpace._();
   static const xs = 4.0;

@@ -256,7 +256,7 @@ class PublicProfileScreen extends ConsumerWidget {
                     else
                       Text('Pas encore d’Index.', style: TextStyle(color: HiColors.textTertiary)),
                     const SizedBox(height: HiSpace.md),
-                    RankBadge(rank: p.rank, fontSize: 14),
+                    RankBadge(rank: p.rank, ovr: p.index?.value, fontSize: 14),
                     if (!p.isMe) ...[
                       const SizedBox(height: HiSpace.md),
                       _FollowButton(userId: p.userId, initial: p.isFollowing),

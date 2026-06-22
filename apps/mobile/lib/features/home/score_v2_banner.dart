@@ -49,7 +49,7 @@ class _ScoreV2BannerLauncherState extends ConsumerState<ScoreV2BannerLauncher> {
     await showDialog<void>(
       context: context,
       barrierColor: Colors.black.withValues(alpha: 0.7),
-      builder: (_) => _ScoreV2Dialog(ovr: profile.index.value, rank: profile.index.rank),
+      builder: (_) => _ScoreV2Dialog(ovr: profile.index.value),
     );
   }
 
@@ -59,8 +59,7 @@ class _ScoreV2BannerLauncherState extends ConsumerState<ScoreV2BannerLauncher> {
 
 class _ScoreV2Dialog extends StatelessWidget {
   final int ovr;
-  final String rank;
-  const _ScoreV2Dialog({required this.ovr, required this.rank});
+  const _ScoreV2Dialog({required this.ovr});
 
   @override
   Widget build(BuildContext context) {
@@ -100,7 +99,7 @@ class _ScoreV2Dialog extends StatelessWidget {
                 ),
                 Text('/ 100', style: TextStyle(color: HiColors.textTertiary, fontSize: 13)),
                 const SizedBox(height: 8),
-                RankBadge(rank: rank, fontSize: 13),
+                RankBadge(ovr: ovr, fontSize: 13),
               ]),
             ),
             const SizedBox(height: HiSpace.sm),
