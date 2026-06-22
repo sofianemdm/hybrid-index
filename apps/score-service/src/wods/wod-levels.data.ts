@@ -25,4 +25,13 @@ export const WOD_LEVELS: Record<string, { male: WodLevels; female: WodLevels }> 
   max_air_squats_2min: { male: { champion: 85, intermediate: 50, occasional: 30 }, female: { champion: 80, intermediate: 45, occasional: 28 } },
   burpees_7min: { male: { champion: 125, intermediate: 70, occasional: 40 }, female: { champion: 110, intermediate: 60, occasional: 35 } },
   ergo_skill: { male: { champion: 360, intermediate: 600, occasional: 900 }, female: { champion: 420, intermediate: 690, occasional: 1020 } },
+  // Épreuves « Autre » jouables (sport-science, 22 juin). champion = proReference (record/élite),
+  // intermédiaire = médiane amateur, occasionnel ≈ amateur plus lent (≈ P30 du classement, soit un
+  // temps PLUS élevé que la médiane — monotonie time : champion < intermédiaire < occasionnel).
+  hyrox_solo: { male: { champion: 3119, intermediate: 5400, occasional: 6030 }, female: { champion: 3265, intermediate: 6000, occasional: 6700 } },
+  isabel: { male: { champion: 55, intermediate: 150, occasional: 179 }, female: { champion: 70, intermediate: 190, occasional: 227 } },
+  murph: { male: { champion: 2000, intermediate: 3300, occasional: 3860 }, female: { champion: 2400, intermediate: 3600, occasional: 4212 } },
+  track_10000m: { male: { champion: 1571, intermediate: 3300, occasional: 3742 }, female: { champion: 1734, intermediate: 3600, occasional: 4082 } },
+  half_marathon: { male: { champion: 3440, intermediate: 7200, occasional: 8080 }, female: { champion: 3772, intermediate: 8100, occasional: 9090 } },
+  marathon: { male: { champion: 7235, intermediate: 16200, occasional: 18181 }, female: { champion: 7796, intermediate: 17400, occasional: 19527 } },
 };

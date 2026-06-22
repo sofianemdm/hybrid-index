@@ -18,6 +18,8 @@ const ovrSub = (v: number | null): number | null => (v == null ? null : Math.rou
 
 /** Les 4 séances PHARES (marquee benchmarks) — mises en avant, où tout le monde se mesure. */
 export const FLAGSHIP_WOD_IDS = ["hyrox_sprint", "grace", "benchmark_zero", "ergo_skill"];
+/** Épreuves « Autre » : jouables et classées, mais rangées à part de l'écran Séances. */
+export const OTHER_WOD_IDS = ["hyrox_solo", "isabel", "murph", "track_10000m", "half_marathon", "marathon"];
 
 @Injectable()
 export class WodsService {
@@ -179,6 +181,7 @@ export class WodsService {
       targetAttributes: w.targetAttributes,
       isBenchmark: w.isBenchmark,
       isFlagship: FLAGSHIP_WOD_IDS.includes(w.id),
+      isOther: OTHER_WOD_IDS.includes(w.id),
       isCustom: w.isCustom,
     }));
   }

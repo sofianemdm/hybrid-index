@@ -33,6 +33,13 @@ const WODS: Array<{
   { id: "ergo_skill", name: "Machine & Mur", scoreType: "time", requiresEquipment: true, targetAttributes: ["strength", "muscular_endurance", "engine", "power"] },
   { id: "run_free_distance", name: "Course distance libre", scoreType: "time", requiresEquipment: false, targetAttributes: ["engine", "speed"] },
   { id: "max_air_squats", name: "Max air squats (une série)", scoreType: "reps", requiresEquipment: false, targetAttributes: ["muscular_endurance", "strength"] },
+  // Épreuves « Autre » (réelles, jouables, rangées à part de l'écran Séances).
+  { id: "hyrox_solo", name: "HYROX (solo)", scoreType: "time", requiresEquipment: true, targetAttributes: ["engine", "power", "hybrid", "muscular_endurance"] },
+  { id: "isabel", name: "Isabel", scoreType: "time", requiresEquipment: true, targetAttributes: ["power", "strength"] },
+  { id: "murph", name: "Murph", scoreType: "time", requiresEquipment: true, targetAttributes: ["engine", "muscular_endurance", "hybrid"] },
+  { id: "track_10000m", name: "10 000 m (piste)", scoreType: "time", requiresEquipment: false, targetAttributes: ["engine"] },
+  { id: "half_marathon", name: "Semi-marathon", scoreType: "time", requiresEquipment: false, targetAttributes: ["engine"] },
+  { id: "marathon", name: "Marathon", scoreType: "time", requiresEquipment: false, targetAttributes: ["engine"] },
 ];
 
 const ATTRS: AttributeKey[] = ["engine", "speed", "strength", "power", "muscular_endurance", "hybrid"];

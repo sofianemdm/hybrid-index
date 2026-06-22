@@ -23,14 +23,15 @@ export const WOD_PRESCRIPTIONS: Record<string, WodPrescription> = {
   // ─────────────────────────────────────────────────────────────────────────
   hyrox_sprint: {
     summary:
-      "Séance cardio façon HYROX : alternance course, machine à ramer et wall balls. Effort " +
-      "soutenu et continu pour tester ton moteur et ta capacité à enchaîner sous fatigue.",
-    format: "3 tours, pour le temps",
+      "Séance cardio façon HYROX : 3 TOURS de (500 m course + 500 m rameur + 20 wall balls), enchaînés " +
+      "sans repos. Au total : 1500 m course + 1500 m rameur + 60 wall balls. Teste ton moteur sous fatigue.",
+    format: "3 tours pour le temps",
     timeCapSec: 1500,
     blocks: [
-      { reps: "500 m", movement: "Course" },
-      { reps: "500 m", movement: "Rameur", detail: "ou 400 m SkiErg" },
-      { reps: "20", movement: "Wall balls" },
+      { reps: "3 tours :", movement: "à enchaîner sans repos" },
+      { reps: "→ 500 m", movement: "Course" },
+      { reps: "→ 500 m", movement: "Rameur", detail: "ou 400 m SkiErg" },
+      { reps: "→ 20", movement: "Wall balls" },
     ],
     weights: [
       {
@@ -340,5 +341,67 @@ export const WOD_PRESCRIPTIONS: Record<string, WodPrescription> = {
     blocks: [{ reps: "Max", movement: "Air squats", detail: "une série non-stop" }],
     weights: [],
     scoringNote: SCORE_REPS,
+  },
+
+  // ───────────── Épreuves « Autre » (réelles, jouables) ─────────────
+  hyrox_solo: {
+    summary: "L'épreuve HYROX solo : 8 km de course fractionnés, entrelacés avec 8 stations fonctionnelles, le tout enchaîné pour le temps.",
+    format: "8 × 1 km + 8 stations, pour le temps",
+    blocks: [
+      { reps: "8 ×", movement: "1 km course", detail: "avant chaque station" },
+      { reps: "1000 m", movement: "SkiErg" },
+      { reps: "50 m", movement: "Poussée de traîneau" },
+      { reps: "50 m", movement: "Tirage de traîneau" },
+      { reps: "80 m", movement: "Burpee-sauts" },
+      { reps: "1000 m", movement: "Rameur" },
+      { reps: "200 m", movement: "Port de sacs (farmers)" },
+      { reps: "100 m", movement: "Fentes lestées" },
+      { reps: "100", movement: "Wall balls" },
+    ],
+    weights: [
+      { movement: "Wall ball", rxMale: 9, rxFemale: 6, scaledMale: 6, scaledFemale: 4, unit: "kg" },
+    ],
+    scoringNote: SCORE_TIME,
+  },
+  isabel: {
+    summary: "Benchmark CrossFit : 30 arrachés (snatch) le plus vite possible. Puissance et technique d'haltérophilie sous fatigue.",
+    format: "30 répétitions, pour le temps",
+    blocks: [{ reps: "30", movement: "Arrachés (snatch)" }],
+    weights: [{ movement: "Snatch", rxMale: 61, rxFemale: 43, scaledMale: 43, scaledFemale: 30, unit: "kg", note: "barre" }],
+    scoringNote: SCORE_TIME,
+  },
+  murph: {
+    summary: "Hero WOD : course, puis tractions/pompes/squats (fractionnés librement), puis course — classiquement avec gilet lesté.",
+    format: "Pour le temps (gilet conseillé)",
+    blocks: [
+      { reps: "1,6 km", movement: "Course" },
+      { reps: "100", movement: "Tractions" },
+      { reps: "200", movement: "Pompes" },
+      { reps: "300", movement: "Air squats" },
+      { reps: "1,6 km", movement: "Course" },
+    ],
+    weights: [{ movement: "Gilet lesté", rxMale: 9, rxFemale: 6, scaledMale: 0, scaledFemale: 0, unit: "kg", note: "0 = sans gilet" }],
+    scoringNote: SCORE_TIME,
+  },
+  track_10000m: {
+    summary: "10 000 mètres sur piste : 25 tours, l'épreuve reine du fond.",
+    format: "10 000 m, pour le temps",
+    blocks: [{ reps: "10 000 m", movement: "Course (piste)" }],
+    weights: [],
+    scoringNote: SCORE_TIME,
+  },
+  half_marathon: {
+    summary: "Le semi-marathon : 21,1 km sur route, l'équilibre vitesse/endurance.",
+    format: "21,0975 km, pour le temps",
+    blocks: [{ reps: "21,1 km", movement: "Course (route)" }],
+    weights: [],
+    scoringNote: SCORE_TIME,
+  },
+  marathon: {
+    summary: "Le marathon : 42,195 km sur route, l'épreuve mythique de l'endurance.",
+    format: "42,195 km, pour le temps",
+    blocks: [{ reps: "42,195 km", movement: "Course (route)" }],
+    weights: [],
+    scoringNote: SCORE_TIME,
   },
 };

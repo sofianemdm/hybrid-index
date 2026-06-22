@@ -48,4 +48,28 @@ export const WOD_REFERENCES: Record<string, WodReference[]> = {
   karen: [{ tier: "elite", sex: "male", athlete: null, result: 300, note: "~5:00 (haut niveau)", source: "estimation élite" }],
   jackie: [{ tier: "elite", sex: "male", athlete: null, result: 300, note: "~5:00 (haut niveau)", source: "estimation élite" }],
   cindy: [{ tier: "elite", sex: "male", athlete: null, result: 30, note: "~30 tours (haut niveau)", source: "estimation élite" }],
+
+  // Épreuves « Autre » — vrais records/élite publics.
+  hyrox_solo: [
+    { tier: "record", sex: "male", athlete: "Alexander Roncevic", result: 3119, note: "51:59 · record du monde", source: "Rox Lyfe" },
+    { tier: "record", sex: "female", athlete: "Joanna Wietrzyk", result: 3265, note: "54:25 · record du monde", source: "Rox Lyfe" },
+  ],
+  isabel: [
+    { tier: "record", sex: "male", athlete: "Eddie Hall", result: 51, note: "0:51 · record (strongman)", source: "BarBend" },
+  ],
+  murph: [
+    { tier: "record", sex: "male", athlete: "Alec Blenis", result: 1961, note: "32:41 · record (avec gilet)", source: "alecblenis.com" },
+  ],
+  track_10000m: [
+    { tier: "record", sex: "male", athlete: "Joshua Cheptegei", result: 1571, note: "26:11 · record du monde", source: "World Athletics" },
+    { tier: "record", sex: "female", athlete: "Beatrice Chebet", result: 1734, note: "28:54 · record du monde", source: "World Athletics" },
+  ],
+  half_marathon: [
+    { tier: "record", sex: "male", athlete: "Jacob Kiplimo", result: 3440, note: "57:20 · record du monde", source: "World Athletics" },
+    { tier: "record", sex: "female", athlete: "Letesenbet Gidey", result: 3772, note: "1:02:52 · record du monde", source: "World Athletics" },
+  ],
+  marathon: [
+    { tier: "record", sex: "male", athlete: "Kelvin Kiptum", result: 7235, note: "2:00:35 · record du monde", source: "World Athletics" },
+    { tier: "record", sex: "female", athlete: "Ruth Chepngetich", result: 7796, note: "2:09:56 · record du monde", source: "World Athletics" },
+  ],
 };
