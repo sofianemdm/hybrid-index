@@ -39,7 +39,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
             ListTile(
               leading: Icon(Icons.timer_outlined, color: HiColors.brandPrimary),
               title: Text('Ajouter une séance rapidement', style: TextStyle(color: HiColors.textPrimary)),
-              subtitle: Text('Choisis une séance de référence, vois comment la faire et enregistre ton résultat', style: TextStyle(color: HiColors.textTertiary)),
+              subtitle: Text('Choisis une séance de référence', style: TextStyle(color: HiColors.textTertiary)),
               onTap: () => Navigator.of(context).pop('log'),
             ),
           ],

@@ -18,6 +18,7 @@ class LeaderboardScreen extends ConsumerStatefulWidget {
 
 class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
   late String _sex;
+  bool _manual = false; // l'utilisateur a choisi un onglet manuellement → on ne le force plus.
   late Future<Leaderboard> _future;
 
   @override
@@ -32,6 +33,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
   }
 
   void _switch(String sex) {
+    _manual = true;
     if (sex == _sex) return;
     setState(() {
       _sex = sex;
@@ -41,6 +43,15 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Ouvre par défaut l'onglet du sexe de l'utilisateur (le sexe de session peut n'arriver
+    // qu'après le 1er build). On ne force plus dès que l'utilisateur a choisi un onglet.
+    if (!_manual) {
+      final s = ref.watch(sessionProvider).sex;
+      if (s != null && s != _sex) {
+        _sex = s;
+        _load();
+      }
+    }
     return SafeArea(
       child: Column(
         children: [

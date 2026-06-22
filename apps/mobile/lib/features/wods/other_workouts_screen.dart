@@ -26,6 +26,7 @@ class OtherWorkoutsScreen extends ConsumerWidget {
             final others = (snap.data ?? []).where((w) => w.isOther).toList();
             final sans = others.where((w) => !w.requiresEquipment).toList();
             final avec = others.where((w) => w.requiresEquipment).toList();
+            final community = (snap.data ?? []).where((w) => w.isCustom).toList();
             return ListView(
               padding: const EdgeInsets.fromLTRB(HiSpace.lg, HiSpace.lg, HiSpace.lg, 96),
               children: [
@@ -41,7 +42,17 @@ class OtherWorkoutsScreen extends ConsumerWidget {
                 if (avec.isNotEmpty) ...[
                   _section('Avec matériel'),
                   ...avec.map((w) => _tile(context, w)),
+                  const SizedBox(height: HiSpace.lg),
                 ],
+                _section('Séances de la communauté'),
+                if (community.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: HiSpace.sm),
+                    child: Text('Aucune séance créée par les utilisateurs pour l\'instant. Crée la tienne via « Construire une séance ».',
+                        style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
+                  )
+                else
+                  ...community.map((w) => _tile(context, w)),
               ],
             );
           },

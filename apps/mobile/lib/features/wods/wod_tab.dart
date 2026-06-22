@@ -41,7 +41,8 @@ class _WodTabState extends ConsumerState<WodTab> {
                 Padding(padding: const EdgeInsets.all(HiSpace.lg), child: Text('${snap.error}', style: TextStyle(color: HiColors.error))),
               ]);
             }
-            final all = snap.data!.where((w) => !w.isOther).toList(); // « Autre » rangé à part
+            // « Autre » et séances communautaires (custom) sont rangées à part (écran « Autres épreuves »).
+            final all = snap.data!.where((w) => !w.isOther && !w.isCustom).toList();
             final phares = all.where((w) => w.isFlagship).toList();
             final sansMateriel = all.where((w) => !w.requiresEquipment && !w.isFlagship).toList();
             final avecMateriel = all.where((w) => w.requiresEquipment && !w.isFlagship).toList();

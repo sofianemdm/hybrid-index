@@ -52,7 +52,6 @@ class WodBuilderScreen extends ConsumerStatefulWidget {
 }
 
 class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
-  final _name = TextEditingController();
   String _type = 'for_time';
   bool _requiresEquipment = false;
   final _timeCap = TextEditingController();
@@ -72,12 +71,34 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
 
   @override
   void dispose() {
-    _name.dispose();
     _timeCap.dispose();
     super.dispose();
   }
 
   String get _scoreType => _scoreTypeFor(_type);
+
+  /// Nom généré automatiquement : format (For Time, EMOM…) + mouvements clés.
+  /// L'utilisateur ne choisit pas le nom — l'app en propose un cohérent.
+  String get _generatedName {
+    if (_blocks.isEmpty) return 'Séance personnalisée';
+    final fmt = _formats[_type] ?? 'Séance';
+    final seen = <String>{};
+    final names = <String>[];
+    for (final b in _blocks) {
+      if (seen.add(b.movement.name.toLowerCase())) names.add(b.movement.name);
+    }
+    String part;
+    if (names.length == 1) {
+      part = names[0];
+    } else if (names.length == 2) {
+      part = '${names[0]} & ${names[1]}';
+    } else if (names.length == 3) {
+      part = '${names[0]}, ${names[1]} & ${names[2]}';
+    } else {
+      part = '${names[0]}, ${names[1]} +${names.length - 2}';
+    }
+    return '$fmt · $part';
+  }
 
   Map<String, dynamic> _payload({double? userResult}) {
     String amountKey(String unit) =>
@@ -132,25 +153,22 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
   }
 
   Future<void> _save() async {
-    if (_name.text.trim().length < 2) {
-      _toast('Donne un nom à ta séance.');
-      return;
-    }
     if (_blocks.isEmpty) {
       _toast('Ajoute au moins un mouvement.');
       return;
     }
+    final name = _generatedName;
     setState(() => _saving = true);
     try {
       final payload = _payload()
-        ..['name'] = _name.text.trim()
+        ..['name'] = name
         ..['requiresEquipment'] = _requiresEquipment;
       payload.remove('sex');
       payload.remove('userResult');
       final id = await ref.read(apiClientProvider).createWod(payload);
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => WodDetailScreen(wodId: id, wodName: _name.text.trim())),
+        MaterialPageRoute(builder: (_) => WodDetailScreen(wodId: id, wodName: name)),
       );
     } on ApiException catch (e) {
       _toast(e.message);
@@ -175,8 +193,6 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                TextField(controller: _name, decoration: const InputDecoration(labelText: 'Nom de la séance')),
-                const SizedBox(height: HiSpace.md),
                 Text('Format', style: TextStyle(color: HiColors.textSecondary, fontSize: 13)),
                 const SizedBox(height: 8),
                 Wrap(
@@ -240,6 +256,8 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
                 const SizedBox(height: HiSpace.lg),
                 _estimateCard(),
                 const SizedBox(height: HiSpace.lg),
+                _nameCard(),
+                const SizedBox(height: HiSpace.md),
                 HiButton(label: 'Publier cette séance', loading: _saving, onPressed: _save),
               ],
             ),
@@ -297,6 +315,34 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  /// Aperçu du nom auto-attribué (l'utilisateur ne le saisit pas).
+  Widget _nameCard() {
+    return Container(
+      padding: const EdgeInsets.all(HiSpace.md),
+      decoration: BoxDecoration(
+        color: HiColors.bgElevated,
+        borderRadius: BorderRadius.circular(HiRadius.md),
+        border: Border.all(color: HiColors.strokeSubtle),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.auto_awesome, color: HiColors.brandPrimary, size: 20),
+          const SizedBox(width: HiSpace.sm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Nom attribué', style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
+                const SizedBox(height: 2),
+                Text(_generatedName, style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 15)),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
