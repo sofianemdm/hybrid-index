@@ -245,7 +245,7 @@ export const WOD_PRESCRIPTIONS: Record<string, WodPrescription> = {
   },
 
   // ─────────────────────────────────────────────────────────────────────────
-  // 11. 1 km Course (sans matériel).
+  // 11. 3 km Course (sans matériel) — entre la vitesse du 1 km et l'endurance du 5 km.
   // ─────────────────────────────────────────────────────────────────────────
   run_3k: {
     summary:
@@ -256,6 +256,10 @@ export const WOD_PRESCRIPTIONS: Record<string, WodPrescription> = {
     weights: [],
     scoringNote: SCORE_TIME,
   },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // 11b. 1 km Course (sans matériel).
+  // ─────────────────────────────────────────────────────────────────────────
   run_1k: {
     summary:
       "1 kilomètre en course à pied à pleine intensité. Test de vitesse et de moteur sur effort court.",

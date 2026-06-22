@@ -15,6 +15,7 @@ const List<WodCatalogItem> wodCatalog = [
   // Sans matériel
   WodCatalogItem(id: 'benchmark_zero', name: 'Benchmark Zéro', scoreType: 'time', requiresEquipment: false),
   WodCatalogItem(id: 'run_5k', name: '5 km Course', scoreType: 'time', requiresEquipment: false),
+  WodCatalogItem(id: 'run_3k', name: '3 km Course', scoreType: 'time', requiresEquipment: false),
   WodCatalogItem(id: 'run_1k', name: '1 km Course', scoreType: 'time', requiresEquipment: false),
   WodCatalogItem(id: 'max_pushups', name: 'Max pompes strictes (une série)', scoreType: 'reps', requiresEquipment: false),
   WodCatalogItem(id: 'max_air_squats', name: 'Max air squats (une série)', scoreType: 'reps', requiresEquipment: false),

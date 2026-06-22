@@ -55,6 +55,7 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
   String _type = 'for_time';
   bool _requiresEquipment = false;
   final _timeCap = TextEditingController();
+  final _rounds = TextEditingController(text: '1'); // nb de tours (la séance répète les mouvements)
   final List<_Block> _blocks = [];
   List<MovementSummary> _catalog = [];
   EstimateResult? _estimate;
@@ -72,6 +73,7 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
   @override
   void dispose() {
     _timeCap.dispose();
+    _rounds.dispose();
     super.dispose();
   }
 
@@ -108,6 +110,7 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
       'scoreType': _scoreType,
       'wodType': _type,
       if (int.tryParse(_timeCap.text) != null) 'timeCapSec': int.parse(_timeCap.text) * 60,
+      if ((int.tryParse(_rounds.text) ?? 1) > 1) 'rounds': int.parse(_rounds.text),
       'blocks': _blocks
           .map((b) => {
                 'movementId': b.movement.id,
@@ -218,6 +221,28 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
                     );
                   }).toList(),
                 ),
+                if (const ['for_time', 'chipper', 'interval'].contains(_type)) ...[
+                  const SizedBox(height: HiSpace.md),
+                  Row(children: [
+                    Text('Nombre de tours : ', style: TextStyle(color: HiColors.textSecondary)),
+                    SizedBox(
+                      width: 64,
+                      child: TextField(
+                        controller: _rounds,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                        textAlign: TextAlign.center,
+                        onChanged: (_) => _refreshEstimate(),
+                        decoration: const InputDecoration(hintText: 'ex. 3', isDense: true),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text('(les mouvements se répètent N fois)',
+                          style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
+                    ),
+                  ]),
+                ],
                 if (_scoreType == 'time') ...[
                   const SizedBox(height: HiSpace.sm),
                   Text('Pas de temps à saisir ici : le score est le chrono que tu mettras à finir, '

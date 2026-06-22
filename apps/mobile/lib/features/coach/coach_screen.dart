@@ -69,7 +69,18 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
                       return const Padding(padding: EdgeInsets.all(40), child: Center(child: CircularProgressIndicator()));
                     }
                     if (snap.hasError) {
-                      return Text('${snap.error}', style: TextStyle(color: HiColors.error));
+                      return Column(
+                        children: [
+                          Text('Impossible de charger les conseils pour le moment.',
+                              textAlign: TextAlign.center, style: TextStyle(color: HiColors.textSecondary)),
+                          const SizedBox(height: HiSpace.sm),
+                          OutlinedButton.icon(
+                            icon: const Icon(Icons.refresh, size: 18),
+                            label: const Text('Réessayer'),
+                            onPressed: () => setState(_load),
+                          ),
+                        ],
+                      );
                     }
                     return _content(snap.data!);
                   },

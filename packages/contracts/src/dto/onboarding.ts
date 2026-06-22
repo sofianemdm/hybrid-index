@@ -43,7 +43,7 @@ export type RevealRadarAttribute = z.infer<typeof RevealRadarAttribute>;
 /** La réponse du reveal : l'Index provisoire + son rang + le radar de départ. */
 export const RevealResponse = z.object({
   index: z.object({
-    value: z.number().min(0).max(1000),
+    value: z.number().min(0).max(100), // OVR /100 affiché (display-v1), pas la valeur interne /1000
     percentile: z.number().min(0).max(1),
     rank: Rank,
     isProvisional: z.boolean(),

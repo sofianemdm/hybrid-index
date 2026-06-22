@@ -301,7 +301,7 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
             ),
             child: Text(
               '${formatWodResult(raw, scoreType)}'
-              '${a.payload['subScore'] is num ? '  ·  ${a.payload['subScore']} pts' : ''}',
+              '${a.payload['subScore'] is num ? '  ·  ${a.payload['subScore']}/100' : ''}',
               style: TextStyle(color: HiColors.brandPrimary, fontWeight: FontWeight.w800),
             ),
           ),
