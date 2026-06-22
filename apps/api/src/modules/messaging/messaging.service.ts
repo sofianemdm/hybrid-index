@@ -27,17 +27,6 @@ export class MessagingService {
     return a < b ? { userAId: a, userBId: b } : { userAId: b, userBId: a };
   }
 
-  /** Lien social requis : abonnement MUTUEL ou appartenance à un club commun. */
-  private async areConnected(me: string, other: string): Promise<boolean> {
-    const mutual = await this.prisma.follow.count({
-      where: { OR: [{ followerId: me, followeeId: other }, { followerId: other, followeeId: me }] },
-    });
-    if (mutual >= 2) return true;
-    const sharedClub = await this.prisma.clubMember.count({
-      where: { userId: me, club: { members: { some: { userId: other } } } },
-    });
-    return sharedClub > 0;
-  }
 
   async eligibility(me: string, other: string): Promise<DmEligibility> {
     if (me === other) return { allowed: false, reason: "self" };
@@ -48,8 +37,10 @@ export class MessagingService {
     ]);
     if (!meUser || !otherUser) return { allowed: false, reason: "not_connected" };
     if (await this.moderation.isBlockedBetween(me, other)) return { allowed: false, reason: "blocked" };
+    // App 100 % publique : on peut écrire à n'importe quel compte actif, SANS se suivre ni partager
+    // de club. On conserve uniquement les garde-fous de sécurité : blocage et compatibilité d'âge
+    // (protection des mineurs, cf. age-gating ≥ 13 ans) — jamais retirés.
     if (!dmAgeAllowed(meUser.dateOfBirth, otherUser.dateOfBirth, new Date())) return { allowed: false, reason: "age" };
-    if (!(await this.areConnected(me, other))) return { allowed: false, reason: "not_connected" };
     return { allowed: true };
   }
 

@@ -14,7 +14,9 @@ export class ProfilesService {
 
   async publicProfile(userId: string, viewerId?: string): Promise<unknown> {
     const profile = await this.prisma.profile.findUnique({ where: { userId } });
-    if (!profile || profile.visibility !== "public") {
+    // App 100 % publique (décision verrouillée) : tous les profils sont visibles. Le champ
+    // `visibility` reste en base pour un usage futur mais N'EST PAS appliqué pour l'instant.
+    if (!profile) {
       throw new NotFoundException({ code: "NOT_FOUND", message: "Profil introuvable ou privé." });
     }
     const scoring = await this.profileScoring.getMyProfile(userId);

@@ -613,14 +613,13 @@ describe("api — boucle complète persistée (e2e réel)", () => {
       .expect(200);
   });
 
-  it("DM : portée prudente (lien requis), séparation stricte par âge, échange autorisé (C5)", async () => {
-    // À ce stade je suis l'overtaker mais il ne me suit pas → pas de lien → DM refusé.
+  it("DM : ouvert à tous (app publique), séparation stricte par âge, échange autorisé (C5)", async () => {
+    // App 100 % publique : je peux écrire à l'overtaker SANS qu'on se suive (adulte, même tranche d'âge).
     const before = await request(api.getHttpServer())
       .get(`/v1/users/${overtakerUserId}/can-dm`)
       .set("authorization", `Bearer ${token}`)
       .expect(200);
-    expect(before.body.allowed).toBe(false);
-    expect(before.body.reason).toBe("not_connected");
+    expect(before.body.allowed).toBe(true);
 
     // Séparation stricte par âge : un mineur (14 ans) ↔ adulte → refus « age » même sans lien.
     const minor = await request(api.getHttpServer())
@@ -642,7 +641,7 @@ describe("api — boucle complète persistée (e2e réel)", () => {
     expect(ageCheck.body.allowed).toBe(false);
     expect(ageCheck.body.reason).toBe("age");
 
-    // L'overtaker me suit en retour → abonnement mutuel → DM autorisé.
+    // L'overtaker me suit en retour (sans impact : l'éligibilité est déjà ouverte).
     await request(api.getHttpServer())
       .post(`/v1/follow/${userId}`)
       .set("authorization", `Bearer ${overtakerToken}`)
