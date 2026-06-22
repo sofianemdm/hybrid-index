@@ -62,7 +62,7 @@ class SocialProofCard extends StatelessWidget {
                         children: [
                           const TextSpan(text: 'Tu fais partie des '),
                           TextSpan(text: '$top%', style: TextStyle(color: HiColors.brandPrimary)),
-                          const TextSpan(text: ' les plus en forme'),
+                          const TextSpan(text: ' des humains les plus en forme'),
                         ],
                       ),
                     ),

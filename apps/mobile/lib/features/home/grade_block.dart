@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../data/models.dart';
 import '../../theme/tokens.dart';
+import '../coach/coach_screen.dart';
 
 /// Bloc accueil sous l'Index : chip de grade (« 70+ »), barre de progression vers le palier
 /// suivant, notice « Index estimé » tant que le radar n'est pas complet, et message d'action.
@@ -22,7 +23,7 @@ class GradeBlock extends StatelessWidget {
         const SizedBox(height: HiSpace.md),
         _progressBar(ovr, color),
         const SizedBox(height: HiSpace.sm),
-        if (incomplete) _estimationNotice(coverage) else _actionMessage(ovr),
+        if (incomplete) _estimationNotice(context, coverage) else _actionMessage(ovr),
       ],
     );
   }
@@ -55,14 +56,18 @@ class GradeBlock extends StatelessWidget {
       return Text('Sommet atteint — 100',
           style: TextStyle(color: color, fontSize: 13, fontWeight: FontWeight.w800));
     }
-    final next = HiGrade.nextColor(ovr);
-    final pts = HiGrade.pointsToNext(ovr);
+    // Paliers de 5 (plus de jalons, progression plus lisible) : prochaine cible = multiple de 5.
+    final lower5 = (ovr ~/ 5) * 5;
+    final next5 = (lower5 + 5).clamp(0, 100);
+    final pts = (next5 - ovr).clamp(1, 5);
+    final fill = ((ovr - lower5) / 5).clamp(0.0, 1.0);
+    final nextColor = HiGrade.color(next5); // couleur du palier de grade visé (peut être identique)
     return Column(
       children: [
         Align(
           alignment: Alignment.centerRight,
-          child: Text('${pts == 1 ? '1 pt' : '$pts pts'} → ${HiGrade.nextLabel(ovr)}',
-              style: TextStyle(color: next, fontSize: 12, fontWeight: FontWeight.w700)),
+          child: Text('${pts == 1 ? '1 pt' : '$pts pts'} → $next5',
+              style: TextStyle(color: nextColor, fontSize: 12, fontWeight: FontWeight.w700)),
         ),
         const SizedBox(height: 4),
         ClipRRect(
@@ -71,11 +76,11 @@ class GradeBlock extends StatelessWidget {
             children: [
               Container(height: 10, color: HiColors.bgElevated2),
               FractionallySizedBox(
-                widthFactor: HiGrade.progress(ovr).clamp(0.02, 1.0),
+                widthFactor: fill.clamp(0.02, 1.0),
                 child: Container(
                   height: 10,
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(colors: [color, next]),
+                    gradient: LinearGradient(colors: [color, nextColor]),
                     borderRadius: BorderRadius.circular(HiRadius.pill),
                   ),
                 ),
@@ -87,8 +92,8 @@ class GradeBlock extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(HiGrade.label(ovr), style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w700)),
-            Text(HiGrade.nextLabel(ovr), style: TextStyle(color: HiColors.textTertiary, fontSize: 11, fontWeight: FontWeight.w600)),
+            Text('$ovr', style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w700)),
+            Text('$next5', style: TextStyle(color: HiColors.textTertiary, fontSize: 11, fontWeight: FontWeight.w600)),
           ],
         ),
       ],
@@ -96,7 +101,7 @@ class GradeBlock extends StatelessWidget {
   }
 
   /// Tant que les 6 attributs ne sont pas débloqués : on précise que l'Index est une ESTIMATION.
-  Widget _estimationNotice(int coverage) {
+  Widget _estimationNotice(BuildContext context, int coverage) {
     final missing = profile.radar.where((a) => !a.unlocked).map((a) => HiLabels.attribute(a.attribute)).toList();
     final missingTxt = missing.length <= 3
         ? missing.join(', ')
@@ -130,6 +135,23 @@ class GradeBlock extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(sub, style: TextStyle(color: HiColors.textSecondary, fontSize: 12, height: 1.3)),
+                const SizedBox(height: 6),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton.icon(
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      foregroundColor: HiColors.warn,
+                    ),
+                    icon: const Icon(Icons.fitness_center, size: 16),
+                    label: const Text('Quelles séances faire ?', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 12)),
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const CoachScreen()),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
