@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../app.dart';
 import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../data/wod_catalog.dart';
@@ -47,6 +48,30 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
   }
 
   String _date(DateTime d) => '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+
+  Future<void> _delete(WodResultItem r) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: HiColors.bgElevated,
+        title: Text('Supprimer cette séance ?', style: TextStyle(color: HiColors.textPrimary)),
+        content: Text('${_name(r.wodId)} · ${_date(r.performedAt)}\nTon Index sera recalculé.',
+            style: TextStyle(color: HiColors.textSecondary)),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Annuler')),
+          TextButton(onPressed: () => Navigator.of(context).pop(true), child: Text('Supprimer', style: TextStyle(color: HiColors.error))),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    try {
+      await ref.read(apiClientProvider).deleteResult(r.id);
+      ref.invalidate(myProfileProvider);
+      if (mounted) setState(() => _future = ref.read(apiClientProvider).results());
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -118,6 +143,11 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
               child: Text('${r.subScore}',
                   style: TextStyle(color: HiColors.brandPrimary, fontWeight: FontWeight.w800)),
             ),
+          IconButton(
+            tooltip: 'Supprimer',
+            icon: Icon(Icons.delete_outline, color: HiColors.textTertiary, size: 20),
+            onPressed: () => _delete(r),
+          ),
           ],
         ),
       ),

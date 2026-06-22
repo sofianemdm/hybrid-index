@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Post, UseGuards } from "@nestjs/common";
 import { ZodValidationPipe } from "../../common/zod-validation.pipe";
 import { CurrentUser } from "../auth/current-user.decorator";
 import { JwtAuthGuard, type AuthenticatedUser } from "../auth/jwt-auth.guard";
@@ -23,5 +23,11 @@ export class ResultsController {
   @Get()
   list(@CurrentUser() user: AuthenticatedUser): Promise<unknown[]> {
     return this.results.list(user.userId);
+  }
+
+  /** Supprime un de mes résultats → recalcule l'Index. */
+  @Delete(":id")
+  remove(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string): Promise<unknown> {
+    return this.results.remove(user.userId, id);
   }
 }

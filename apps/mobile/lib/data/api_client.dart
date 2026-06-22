@@ -127,6 +127,9 @@ class ApiClient {
     return j.map((e) => WodResultItem.fromJson(e as Map<String, dynamic>)).toList();
   }
 
+  /// Supprime un de mes résultats (l'Index est recalculé côté serveur).
+  Future<void> deleteResult(String id) async => _send('DELETE', '/v1/results/$id');
+
   Future<List<IndexPoint>> history() async {
     final j = await _send('GET', '/v1/me/history') as List<dynamic>;
     return j.map((e) => IndexPoint.fromJson(e as Map<String, dynamic>)).toList();

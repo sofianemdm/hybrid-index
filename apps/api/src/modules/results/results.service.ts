@@ -128,6 +128,17 @@ export class ResultsService {
     };
   }
 
+  /** Supprime un résultat (propriété vérifiée) puis recalcule l'Index/radar (no-drop respecté). */
+  async remove(userId: string, id: string): Promise<{ deleted: true; profile: PersistedProfile | null }> {
+    const res = await this.prisma.wodResult.findUnique({ where: { id }, select: { userId: true } });
+    if (!res || res.userId !== userId) {
+      throw new NotFoundException({ code: "NOT_FOUND", message: "Résultat introuvable." });
+    }
+    await this.prisma.wodResult.delete({ where: { id } });
+    const profile = await this.profileScoring.recomputeForUser(userId);
+    return { deleted: true, profile };
+  }
+
   async list(userId: string): Promise<unknown[]> {
     const rows = await this.prisma.wodResult.findMany({
       where: { userId },

@@ -696,6 +696,33 @@ describe("api — boucle complète persistée (e2e réel)", () => {
     expect(Array.isArray(lb.body.entries)).toBe(true);
   });
 
+  it("historique : supprimer un de mes résultats → disparaît + Index recalculé", async () => {
+    await request(api.getHttpServer())
+      .post("/v1/results")
+      .set("authorization", `Bearer ${token}`)
+      .send({ wodId: "cindy", scoreType: "reps", rawResult: 12 })
+      .expect(201);
+    const before = (await request(api.getHttpServer()).get("/v1/results").set("authorization", `Bearer ${token}`)).body;
+    const target = before.find((r: { wodId: string }) => r.wodId === "cindy");
+    expect(target).toBeTruthy();
+
+    // Un autre utilisateur ne peut pas supprimer mon résultat.
+    await request(api.getHttpServer())
+      .delete(`/v1/results/${target.id}`)
+      .set("authorization", `Bearer ${overtakerToken}`)
+      .expect(404);
+
+    // Le propriétaire le supprime → recalcul.
+    const del = await request(api.getHttpServer())
+      .delete(`/v1/results/${target.id}`)
+      .set("authorization", `Bearer ${token}`)
+      .expect(200);
+    expect(del.body.deleted).toBe(true);
+
+    const after = (await request(api.getHttpServer()).get("/v1/results").set("authorization", `Bearer ${token}`)).body;
+    expect(after.some((r: { id: string }) => r.id === target.id)).toBe(false);
+  });
+
   it("RGPD : suppression de compte (effacement) — DOIT être le dernier test", async () => {
     const deletedUserId = userId;
     const res = await request(api.getHttpServer())
