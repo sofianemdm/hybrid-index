@@ -155,18 +155,21 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
                   ])
                 else
                   _num(_value, 'résultat', decimal: widget.scoreType == 'load'),
-                const SizedBox(height: HiSpace.lg),
-                Text('Échelle', style: TextStyle(color: HiColors.textSecondary)),
-                const SizedBox(height: 8),
-                Row(children: [
-                  _scaleChip('Rx (prescrit)', true),
-                  const SizedBox(width: 8),
-                  _scaleChip('Scaled (adapté)', false),
-                ]),
-                if (pref != null) ...[
-                  const SizedBox(height: HiSpace.sm),
-                  Text('Le classement Rx et Scaled sont séparés.',
-                      style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
+                // Échelle Rx/Scaled : sans objet pour une course à distance libre (on court, point).
+                if (!_isFreeRun) ...[
+                  const SizedBox(height: HiSpace.lg),
+                  Text('Échelle', style: TextStyle(color: HiColors.textSecondary)),
+                  const SizedBox(height: 8),
+                  Row(children: [
+                    _scaleChip('Rx (prescrit)', true),
+                    const SizedBox(width: 8),
+                    _scaleChip('Scaled (adapté)', false),
+                  ]),
+                  if (pref != null) ...[
+                    const SizedBox(height: HiSpace.sm),
+                    Text('Le classement Rx et Scaled sont séparés.',
+                        style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
+                  ],
                 ],
                 const SizedBox(height: HiSpace.xl),
                 HiButton(label: 'Enregistrer', loading: _loading, onPressed: _submit),
