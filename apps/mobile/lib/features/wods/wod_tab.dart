@@ -5,6 +5,7 @@ import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../theme/tokens.dart';
 import 'wod_detail_screen.dart';
+import 'other_workouts_screen.dart';
 
 /// Onglet WOD : catalogue des WODs (15 références + communautaires à venir).
 class WodTab extends ConsumerStatefulWidget {
@@ -71,6 +72,22 @@ class _WodTabState extends ConsumerState<WodTab> {
                   _section('Avec matériel'),
                   ...avecMateriel.map(_card),
                 ],
+                const SizedBox(height: HiSpace.lg),
+                Builder(
+                  builder: (context) => Card(
+                    color: HiColors.bgElevated,
+                    child: ListTile(
+                      leading: const Text('🌍', style: TextStyle(fontSize: 20)),
+                      title: Text('Autre', style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
+                      subtitle: Text('Épreuves réelles (HYROX, compét CrossFit, courses) + vrais temps des pros',
+                          style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
+                      trailing: Icon(Icons.chevron_right, color: HiColors.textTertiary),
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const OtherWorkoutsScreen()),
+                      ),
+                    ),
+                  ),
+                ),
               ],
             );
           },

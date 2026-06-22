@@ -1080,6 +1080,50 @@ class WeeklyChallenge {
       );
 }
 
+/// Épreuve réelle « Autre » (HYROX, WOD de compét, course) + vrais temps pros sourcés.
+class OtherRef {
+  final String athlete;
+  final String sex;
+  final String note;
+  final String source;
+  const OtherRef({required this.athlete, required this.sex, required this.note, required this.source});
+
+  factory OtherRef.fromJson(Map<String, dynamic> j) => OtherRef(
+        athlete: j['athlete'] as String? ?? '',
+        sex: j['sex'] as String? ?? 'male',
+        note: j['note'] as String? ?? '',
+        source: j['source'] as String? ?? '',
+      );
+}
+
+class OtherWorkout {
+  final String id;
+  final String name;
+  final String category; // hyrox | crossfit | course
+  final String format;
+  final String description;
+  final List<OtherRef> records;
+  const OtherWorkout({
+    required this.id,
+    required this.name,
+    required this.category,
+    required this.format,
+    required this.description,
+    required this.records,
+  });
+
+  factory OtherWorkout.fromJson(Map<String, dynamic> j) => OtherWorkout(
+        id: j['id'] as String? ?? '',
+        name: j['name'] as String? ?? '',
+        category: j['category'] as String? ?? 'crossfit',
+        format: j['format'] as String? ?? '',
+        description: j['description'] as String? ?? '',
+        records: ((j['records'] as List?) ?? [])
+            .map((e) => OtherRef.fromJson((e as Map).cast<String, dynamic>()))
+            .toList(),
+      );
+}
+
 /// Cible « Référence Pro » (donnée publique) à viser sur une séance.
 class WodReference {
   final String tier; // 'record' | 'elite'
