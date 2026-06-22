@@ -36,7 +36,7 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
   bool get _isHyrox => widget.wodId == 'hyrox_solo';
   // WODs purement cardio (course / rameur) : l'échelle Rx/Scaled n'a aucun sens (on court/rame, point).
   static const _noScaleWods = {
-    'run_1k', 'run_5k', 'run_free_distance', 'row_2k', 'track_10000m', 'half_marathon', 'marathon',
+    'run_1k', 'run_3k', 'run_5k', 'run_free_distance', 'row_2k', 'track_10000m', 'half_marathon', 'marathon',
   };
   bool get _noScale => _noScaleWods.contains(widget.wodId);
 

@@ -40,6 +40,10 @@ export const WOD_REFERENCES: Record<string, WodReference[]> = {
     { tier: "record", sex: "male", athlete: "Joshua Cheptegei", result: 755, note: "12:35 · record du monde (piste)", source: "World Athletics" },
     { tier: "record", sex: "female", athlete: "Gudaf Tsegay", result: 840, note: "14:00 · record du monde (piste)", source: "World Athletics" },
   ],
+  run_3k: [
+    { tier: "record", sex: "male", athlete: "Daniel Komen", result: 441, note: "7:20.67 · record du monde", source: "World Athletics" },
+    { tier: "record", sex: "female", athlete: "Wang Junxia", result: 486, note: "8:06.11 · record du monde", source: "World Athletics" },
+  ],
   run_1k: [
     { tier: "record", sex: "male", athlete: "Noah Ngeny", result: 132, note: "2:11.96 · record du monde", source: "World Athletics" },
     { tier: "record", sex: "female", athlete: "Svetlana Masterkova", result: 149, note: "2:28.98 · record du monde", source: "World Athletics" },

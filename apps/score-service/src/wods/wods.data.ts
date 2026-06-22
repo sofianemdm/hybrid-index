@@ -274,6 +274,19 @@ export const WODS: ReadonlyArray<WodDefinition> = [
     },
   },
   {
+    // 3 km : ~9-16 min d'effort aérobie soutenu = moteur pur (comme le 5 km). sport-science 22 juin.
+    id: "run_3k",
+    name: "3 km Course",
+    scoreType: "time",
+    requiresEquipment: false,
+    isBenchmark: true,
+    targetAttributes: [{ attribute: "engine", estimated: false }],
+    bySex: {
+      male: { model: lognormalFromMedian(990, 0.22), hardMin: 430, hardMax: 2400, proReference: 600 },
+      female: { model: lognormalFromMedian(1170, 0.22), hardMin: 480, hardMax: 2700, proReference: 690 },
+    },
+  },
+  {
     id: "run_1k",
     name: "1 km Course",
     scoreType: "time",

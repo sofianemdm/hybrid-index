@@ -21,6 +21,10 @@ export const FLAGSHIP_WOD_IDS = ["hyrox_sprint", "grace", "benchmark_zero", "erg
 /** Épreuves « Autre » : jouables et classées, mais rangées à part de l'écran Séances. */
 export const OTHER_WOD_IDS = ["hyrox_solo", "isabel", "murph", "track_10000m", "half_marathon", "marathon"];
 
+/** WODs présents en base (FK des résultats) mais MASQUÉS du catalogue/des séances. `run_free_distance`
+ *  reste le mécanisme interne de la course d'onboarding (distance libre + Riegel), pas une séance. */
+export const HIDDEN_WOD_IDS = ["run_free_distance"];
+
 @Injectable()
 export class WodsService {
   constructor(
@@ -184,7 +188,7 @@ export class WodsService {
     if (remaining.size === 0) return { missing: [], sessions: [] };
 
     const wods = await this.prisma.wod.findMany({
-      where: { isCustom: false, id: { notIn: OTHER_WOD_IDS } },
+      where: { isCustom: false, id: { notIn: [...OTHER_WOD_IDS, ...HIDDEN_WOD_IDS] } },
       select: { id: true, name: true, requiresEquipment: true, targetAttributes: true },
       orderBy: { requiresEquipment: "asc" }, // à couverture égale, le sans-matériel d'abord
     });
@@ -211,7 +215,10 @@ export class WodsService {
   }
 
   async catalog(): Promise<unknown[]> {
-    const wods = await this.prisma.wod.findMany({ orderBy: [{ requiresEquipment: "asc" }, { name: "asc" }] });
+    const wods = await this.prisma.wod.findMany({
+      where: { id: { notIn: HIDDEN_WOD_IDS } },
+      orderBy: [{ requiresEquipment: "asc" }, { name: "asc" }],
+    });
     return wods.map((w) => ({
       id: w.id,
       name: w.name,

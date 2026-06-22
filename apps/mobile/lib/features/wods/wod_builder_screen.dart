@@ -165,6 +165,9 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
         ..['requiresEquipment'] = _requiresEquipment;
       payload.remove('sex');
       payload.remove('userResult');
+      // L'estimation utilise `wodType` ; la création attend `type` (CreateWodRequest) → on convertit.
+      payload['type'] = _type;
+      payload.remove('wodType');
       final id = await ref.read(apiClientProvider).createWod(payload);
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
@@ -215,6 +218,12 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
                     );
                   }).toList(),
                 ),
+                if (_scoreType == 'time') ...[
+                  const SizedBox(height: HiSpace.sm),
+                  Text('Pas de temps à saisir ici : le score est le chrono que tu mettras à finir, '
+                      'tu l\'enregistreras en faisant la séance.',
+                      style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
+                ],
                 if (_scoreType == 'reps') ...[
                   const SizedBox(height: HiSpace.md),
                   Row(children: [
@@ -267,6 +276,11 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
     );
   }
 
+  String _unitHint(String unit) =>
+      unit == 'meter' ? 'ex. 2000' : unit == 'calorie' ? 'ex. 15' : unit == 'second' ? 'ex. 30' : 'ex. 10';
+  String _unitSuffix(String unit) =>
+      unit == 'meter' ? 'm' : unit == 'calorie' ? 'cal' : unit == 'second' ? 'sec' : 'reps';
+
   Widget _blockRow(int i, _Block b) {
     final isLoaded = b.movement.category == 'weightlifting';
     return Card(
@@ -277,12 +291,17 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
           children: [
             Expanded(child: Text(b.movement.name, style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w600))),
             SizedBox(
-              width: 60,
+              width: 116,
               child: TextField(
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 textAlign: TextAlign.center,
-                decoration: InputDecoration(hintText: b.movement.unit == 'meter' ? 'm' : b.movement.unit == 'calorie' ? 'cal' : 'reps'),
+                decoration: InputDecoration(
+                  // Unité visible en permanence (suffixe) → ex. « mètres » pour la course.
+                  hintText: _unitHint(b.movement.unit),
+                  suffixText: _unitSuffix(b.movement.unit),
+                  isDense: true,
+                ),
                 controller: TextEditingController(text: '${b.amount}'),
                 onChanged: (v) {
                   b.amount = int.tryParse(v) ?? b.amount;

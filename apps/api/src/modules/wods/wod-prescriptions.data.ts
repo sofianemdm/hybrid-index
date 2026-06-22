@@ -247,6 +247,15 @@ export const WOD_PRESCRIPTIONS: Record<string, WodPrescription> = {
   // ─────────────────────────────────────────────────────────────────────────
   // 11. 1 km Course (sans matériel).
   // ─────────────────────────────────────────────────────────────────────────
+  run_3k: {
+    summary:
+      "3 kilomètres en course à pied, le plus vite possible. Effort aérobie soutenu entre la vitesse " +
+      "du 1 km et l'endurance du 5 km — un excellent test de moteur.",
+    format: "3 km, pour le temps",
+    blocks: [{ reps: "3 km", movement: "Course" }],
+    weights: [],
+    scoringNote: SCORE_TIME,
+  },
   run_1k: {
     summary:
       "1 kilomètre en course à pied à pleine intensité. Test de vitesse et de moteur sur effort court.",

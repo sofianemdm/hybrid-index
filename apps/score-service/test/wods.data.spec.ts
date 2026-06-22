@@ -2,18 +2,18 @@ import { WODS, WODS_BY_ID } from "../src/wods/wods.data";
 import { percentile } from "@hybrid-index/scoring-core";
 
 describe("Registre des WODs (intégrité)", () => {
-  it("contient 23 WODs : 17 de référence + 6 épreuves « Autre » (12 avec matériel + 11 sans)", () => {
-    expect(WODS).toHaveLength(23);
-    // 17 séances de référence (9 avec / 8 sans) + 6 épreuves « Autre » jouables :
+  it("contient 24 WODs : 18 de référence + 6 épreuves « Autre » (12 avec matériel + 12 sans)", () => {
+    expect(WODS).toHaveLength(24);
+    // 18 séances de référence (9 avec / 9 sans, dont le 3 km) + 6 épreuves « Autre » jouables :
     // hyrox_solo, isabel, murph (avec matériel) ; track_10000m, half_marathon, marathon (sans).
     expect(WODS.filter((w) => w.requiresEquipment)).toHaveLength(12);
-    expect(WODS.filter((w) => !w.requiresEquipment)).toHaveLength(11);
+    expect(WODS.filter((w) => !w.requiresEquipment)).toHaveLength(12);
   });
 
   it("a des identifiants uniques et un index cohérent", () => {
     const ids = new Set(WODS.map((w) => w.id));
-    expect(ids.size).toBe(23);
-    expect(WODS_BY_ID.size).toBe(23);
+    expect(ids.size).toBe(24);
+    expect(WODS_BY_ID.size).toBe(24);
   });
 
   it("chaque WOD a une référence pour les deux sexes avec bornes valides", () => {
