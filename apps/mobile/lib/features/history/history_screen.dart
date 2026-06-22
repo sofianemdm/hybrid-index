@@ -7,6 +7,7 @@ import '../../data/session.dart';
 import '../../data/wod_catalog.dart';
 import '../../theme/tokens.dart';
 import '../wods/wod_detail_screen.dart';
+import '../wods/wod_format.dart';
 
 /// Journal : historique des WODs loggés (résultat + sous-score + date).
 class HistoryScreen extends ConsumerStatefulWidget {
@@ -36,12 +37,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
 
   String _formatResult(WodResultItem r) {
     final type = _catalog(r.wodId)?.scoreType ?? (r.wodId == 'run_free_distance' ? 'time' : 'reps');
-    if (type == 'time') {
-      final s = r.rawResult.round();
-      final m = s ~/ 60;
-      final sec = s % 60;
-      return '$m:${sec.toString().padLeft(2, '0')}';
-    }
+    if (type == 'time') return formatDuration(r.rawResult.round());
     if (type == 'load') return '${r.rawResult.round()} kg';
     if (type == 'distance') return '${r.rawResult.round()} m';
     return '${r.rawResult.round()} reps';

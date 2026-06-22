@@ -8,7 +8,7 @@ import { BADGES, type BadgeContext, type BadgeDef, matchesCondition } from "./ba
 
 /** Population minimale d'une ligue pour que les badges « Top X% » aient du sens (cf. décision
  *  verrouillée : classements crédibles à partir de ~200 users). En dessous, on ne les attribue pas. */
-const MIN_LEAGUE_FOR_PERCENTILE = 100;
+const MIN_LEAGUE_FOR_PERCENTILE = 20;
 
 export interface BadgeView extends BadgeDef {
   unlocked: boolean;
@@ -32,7 +32,7 @@ export class BadgesService {
 
     const [logCount, followsCount, distinct, equipmentFreeCount, unlockedAttrs, streakState] = await Promise.all([
       this.prisma.wodResult.count({ where: { userId } }),
-      this.prisma.follow.count({ where: { followerId: userId } }),
+      this.prisma.follow.count({ where: { followeeId: userId } }), // followers (suivi PAR)
       this.prisma.wodResult.findMany({ where: { userId }, distinct: ["wodId"], select: { wodId: true } }),
       this.prisma.wodResult.count({ where: { userId, wod: { requiresEquipment: false } } }),
       this.prisma.attributeScore.count({ where: { userId, unlocked: true } }),

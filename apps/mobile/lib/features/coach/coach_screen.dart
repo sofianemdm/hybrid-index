@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../theme/tokens.dart';
+import '../log/log_wod_screen.dart';
 
 const _attributes = ['engine', 'speed', 'strength', 'power', 'muscular_endurance', 'hybrid'];
 
@@ -124,6 +125,15 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
           Text('Aucune séance pour cet axe avec ton matériel.', style: TextStyle(color: HiColors.textTertiary))
         else
           ...r.sessions.map((s) => _sessionCard(s, color)),
+        const SizedBox(height: HiSpace.md),
+        Builder(
+          builder: (context) => OutlinedButton.icon(
+            style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+            icon: const Icon(Icons.timer_outlined, size: 18),
+            label: const Text('Faire une séance notée & enregistrer mon temps'),
+            onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const LogWodScreen())),
+          ),
+        ),
       ],
     );
   }

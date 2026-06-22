@@ -30,7 +30,7 @@ export class ProfilesService {
 
     const [resultCount, followCount] = await Promise.all([
       this.prisma.wodResult.count({ where: { userId } }),
-      this.prisma.follow.count({ where: { followerId: userId } }),
+      this.prisma.follow.count({ where: { followeeId: userId } }), // followers (suivi PAR)
     ]);
 
     return {

@@ -69,7 +69,7 @@ export const WOD_REFERENCES: Record<string, WodReference[]> = {
     { tier: "record", sex: "female", athlete: "Letesenbet Gidey", result: 3772, note: "1:02:52 · record du monde", source: "World Athletics" },
   ],
   marathon: [
-    { tier: "record", sex: "male", athlete: "Kelvin Kiptum", result: 7235, note: "2:00:35 · record du monde", source: "World Athletics" },
+    { tier: "record", sex: "male", athlete: "Sabastian Sawe", result: 7170, note: "1:59:30 · record du monde (Londres 2026)", source: "World Athletics" },
     { tier: "record", sex: "female", athlete: "Ruth Chepngetich", result: 7796, note: "2:09:56 · record du monde", source: "World Athletics" },
   ],
 };

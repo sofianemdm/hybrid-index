@@ -4,9 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../theme/tokens.dart';
+import '../challenge/challenge_screen.dart';
 import '../endgame/endgame_screen.dart';
 
-/// Progression : série hebdomadaire (streak) + badges débloqués.
+/// Progression : défi de la semaine + Grand Chelem + badges débloqués.
 class ProgressionScreen extends ConsumerStatefulWidget {
   const ProgressionScreen({super.key});
 
@@ -15,7 +16,7 @@ class ProgressionScreen extends ConsumerStatefulWidget {
 }
 
 class _ProgressionScreenState extends ConsumerState<ProgressionScreen> {
-  late Future<({StreakState streak, List<BadgeModel> badges})> _future;
+  late Future<List<BadgeModel>> _future;
 
   @override
   void initState() {
@@ -24,14 +25,7 @@ class _ProgressionScreenState extends ConsumerState<ProgressionScreen> {
   }
 
   void _load() {
-    final api = ref.read(apiClientProvider);
-    _future = () async {
-      final results = await Future.wait([api.streak(), api.badges()]);
-      return (
-        streak: results[0] as StreakState,
-        badges: results[1] as List<BadgeModel>,
-      );
-    }();
+    _future = ref.read(apiClientProvider).badges();
   }
 
   @override
@@ -39,7 +33,7 @@ class _ProgressionScreenState extends ConsumerState<ProgressionScreen> {
     return SafeArea(
       child: RefreshIndicator(
         onRefresh: () async => setState(_load),
-        child: FutureBuilder<({StreakState streak, List<BadgeModel> badges})>(
+        child: FutureBuilder<List<BadgeModel>>(
           future: _future,
           builder: (context, snap) {
             if (snap.connectionState == ConnectionState.waiting) {
@@ -53,15 +47,14 @@ class _ProgressionScreenState extends ConsumerState<ProgressionScreen> {
                 ),
               ]);
             }
-            final data = snap.data!;
+            final badges = snap.data!;
             return ListView(
               padding: const EdgeInsets.fromLTRB(HiSpace.lg, HiSpace.lg, HiSpace.lg, 96),
               children: [
                 Text('Progression',
                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: HiColors.textPrimary)),
                 const SizedBox(height: HiSpace.md),
-                _streakCard(data.streak),
-                const SizedBox(height: HiSpace.md),
+                const ChallengeBanner(),
                 OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(
                     minimumSize: const Size.fromHeight(48),
@@ -75,7 +68,7 @@ class _ProgressionScreenState extends ConsumerState<ProgressionScreen> {
                   ),
                 ),
                 const SizedBox(height: HiSpace.lg),
-                Text('Badges (${data.badges.where((b) => b.unlocked).length}/${data.badges.length})',
+                Text('Badges (${badges.where((b) => b.unlocked).length}/${badges.length})',
                     style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 16)),
                 const SizedBox(height: HiSpace.sm),
                 GridView.count(
@@ -85,7 +78,7 @@ class _ProgressionScreenState extends ConsumerState<ProgressionScreen> {
                   childAspectRatio: 2.6,
                   crossAxisSpacing: 8,
                   mainAxisSpacing: 8,
-                  children: data.badges.map(_badgeTile).toList(),
+                  children: badges.map(_badgeTile).toList(),
                 ),
               ],
             );
@@ -95,99 +88,6 @@ class _ProgressionScreenState extends ConsumerState<ProgressionScreen> {
     );
   }
 
-
-  Widget _streakCard(StreakState s) {
-    final progress = s.weeklyGoal == 0 ? 0.0 : (s.thisWeekCount / s.weeklyGoal).clamp(0.0, 1.0);
-    return Container(
-      padding: const EdgeInsets.all(HiSpace.lg),
-      decoration: BoxDecoration(
-        color: HiColors.bgElevated,
-        borderRadius: BorderRadius.circular(HiRadius.lg),
-        border: Border.all(color: HiColors.warn.withValues(alpha: 0.4)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.local_fire_department, color: HiColors.warn, size: 32),
-              const SizedBox(width: HiSpace.sm),
-              Text('${s.current} sem.',
-                  style: TextStyle(color: HiColors.textPrimary, fontSize: 28, fontWeight: FontWeight.w800)),
-              const SizedBox(width: 8),
-              Text('série en cours · record ${s.best}',
-                  style: TextStyle(color: HiColors.textSecondary, fontSize: 13)),
-            ],
-          ),
-          const SizedBox(height: HiSpace.md),
-          Text('Cette semaine : ${s.thisWeekCount}/${s.weeklyGoal} séances'
-              '${s.weekValidated ? ' ✓ validée' : ''}',
-              style: TextStyle(color: HiColors.textSecondary)),
-          const SizedBox(height: 6),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(HiRadius.pill),
-            child: LinearProgressIndicator(
-              value: progress,
-              minHeight: 10,
-              backgroundColor: HiColors.bgElevated2,
-              valueColor: AlwaysStoppedAnimation(s.weekValidated ? HiColors.success : HiColors.brandPrimary),
-            ),
-          ),
-          const SizedBox(height: HiSpace.md),
-          Row(
-            children: [
-              Icon(Icons.ac_unit, color: HiColors.info, size: 18),
-              const SizedBox(width: 6),
-              Text('${s.freezeTokens} jeton(s) de gel (protègent une semaine ratée)',
-                  style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
-            ],
-          ),
-          const SizedBox(height: HiSpace.md),
-          Row(
-            children: [
-              Expanded(child: Text('Objectif hebdo', style: TextStyle(color: HiColors.textSecondary, fontSize: 13))),
-              IconButton(
-                icon: Icon(Icons.remove_circle_outline, color: HiColors.textSecondary, size: 20),
-                onPressed: s.weeklyGoal > 2 ? () => _setGoal(s.weeklyGoal - 1) : null,
-              ),
-              Text('${s.weeklyGoal}', style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
-              IconButton(
-                icon: Icon(Icons.add_circle_outline, color: HiColors.textSecondary, size: 20),
-                onPressed: s.weeklyGoal < 5 ? () => _setGoal(s.weeklyGoal + 1) : null,
-              ),
-            ],
-          ),
-          TextButton.icon(
-            icon: Icon(Icons.beach_access, size: 18, color: HiColors.info),
-            label: Text('Marquer une semaine de repos', style: TextStyle(color: HiColors.info)),
-            onPressed: _planRest,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _setGoal(int goal) async {
-    try {
-      await ref.read(apiClientProvider).updateStreak(weeklyGoal: goal);
-      setState(_load);
-    } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
-    }
-  }
-
-  Future<void> _planRest() async {
-    try {
-      await ref.read(apiClientProvider).updateStreak(plannedRest: true);
-      if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Semaine de repos planifiée — ta série est protégée.')));
-        setState(_load);
-      }
-    } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
-    }
-  }
 
   Widget _badgeTile(BadgeModel b) {
     final color = _rarityColor(b.rarity);
