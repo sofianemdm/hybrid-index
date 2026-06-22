@@ -1,7 +1,7 @@
 import type { AttributeKey, Goal } from "@hybrid-index/contracts";
 import { normalCdf } from "./math/normal";
 import { clampPercentile } from "./distribution";
-import { ratingFromInternal } from "./curve";
+import { percentileFromInternal, ratingFromPercentile } from "./curve";
 import { WEIGHTS_V1 } from "./weights";
 import type { AttributeResult } from "./attribute";
 
@@ -9,14 +9,29 @@ import type { AttributeResult } from "./attribute";
  * Agrégation HYBRID INDEX (cf. sport-science §6) :
  *   INDEX = Σ_{A débloqués} w_A · score(A) / Σ_{A débloqués} w_A
  * - Moyenne pondérée sur les attributs DÉBLOQUÉS uniquement (un verrouillé ne tire pas vers le bas).
- * - `isProvisional` tant que couverture insuffisante (< 4 attributs ET < 3 efforts).
+ * - `isProvisional` tant que couverture insuffisante (< 3 attributs ET < 3 efforts).
  * - `isEstimated` si au moins un attribut entrant est estimé (proxy Force).
+ *
+ * AFFICHAGE — shrinkage de couverture (display-v2, cf. sport-science §6) : un seul attribut mesuré
+ * ne doit pas afficher un Index global égal à cet attribut (trompeur : 5/6 du profil est inconnu).
+ * L'absence de mesure n'est pas neutre — son espérance est la médiane population, pas le meilleur
+ * attribut testé. On calcule donc l'Index affiché comme la moyenne, EN ESPACE PERCENTILE, des 6
+ * attributs où les NON MESURÉS sont présumés à la médiane (P_base = 0.5) :
+ *   P_shrunk = (c · P_obs + (N − c) · P_base) / N      (N = 6 attributs, c = couverture)
+ * À couverture pleine (c = N) le terme baseline s'annule → l'affichage rejoint EXACTEMENT la note
+ * no-drop (pas de déflation permanente). À couverture faible, l'Index est tiré vers la médiane et
+ * remonte à chaque attribut mesuré. La valeur INTERNE /1000 (clé de tri des classements) reste la
+ * moyenne no-drop pure : le shrinkage n'affecte QUE l'affichage /100.
  */
 
 export const INDEX_MU = 450;
 export const INDEX_SIGMA = 140;
-export const PROVISIONAL_MIN_ATTRIBUTES = 4;
+export const PROVISIONAL_MIN_ATTRIBUTES = 3;
 export const PROVISIONAL_MIN_EFFORTS = 3;
+/** Nombre total d'attributs du radar (dénominateur du shrinkage de couverture). */
+export const RADAR_ATTRIBUTE_COUNT = 6;
+/** Baseline = médiane population (percentile 0.5) présumée pour un attribut non mesuré. */
+export const SHRINK_P_BASE = 0.5;
 
 export interface IndexResult {
   /** Valeur interne [0,1000] (cœur de calcul, clé de tri des classements). NE PAS afficher. */
@@ -31,10 +46,25 @@ export interface IndexResult {
   radarCoverage: number;
 }
 
-/** Construit la note d'affichage /100 à partir de la valeur interne (null si non mesuré). */
+/**
+ * Note d'affichage /100 de l'INDEX à partir de la valeur interne /1000 et de la couverture du
+ * radar. Applique le shrinkage de couverture (display-v2) : à couverture faible, l'Index affiché
+ * est tiré vers la médiane ; à couverture complète il rejoint la note no-drop. À utiliser PARTOUT
+ * où l'on affiche l'Index (profil, classement, clubs, badges) pour rester cohérent — JAMAIS pour
+ * un sous-score de WOD ou un attribut isolé (eux gardent `ratingFromInternal`).
+ */
+export function indexDisplayRating(value: number, coverage: number): number {
+  const pObs = percentileFromInternal(value);
+  const c = Math.max(0, Math.min(coverage, RADAR_ATTRIBUTE_COUNT));
+  if (c <= 0) return ratingFromPercentile(pObs);
+  const pShrunk = (c * pObs + (RADAR_ATTRIBUTE_COUNT - c) * SHRINK_P_BASE) / RADAR_ATTRIBUTE_COUNT;
+  return ratingFromPercentile(pShrunk);
+}
+
+/** Note d'affichage /100 (null si non mesuré). Voir `indexDisplayRating`. */
 function display(value: number, coverage: number): { rating: number | null; ratingInt: number | null } {
   if (coverage === 0) return { rating: null, ratingInt: null };
-  const rating = ratingFromInternal(value);
+  const rating = indexDisplayRating(value, coverage);
   return { rating, ratingInt: Math.round(rating) };
 }
 

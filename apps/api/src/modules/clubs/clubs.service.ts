@@ -1,5 +1,5 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
-import { ratingFromInternal } from "@hybrid-index/scoring-core";
+import { indexDisplayRating } from "@hybrid-index/scoring-core";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { ModerationService } from "../moderation/moderation.service";
 
@@ -113,7 +113,7 @@ export class ClubsService {
     const members = await this.prisma.clubMember.findMany({
       where: { clubId },
       include: {
-        user: { include: { profile: { select: { displayName: true, rank: true } }, hybridIndex: { select: { value: true } } } },
+        user: { include: { profile: { select: { displayName: true, rank: true } }, hybridIndex: { select: { value: true, radarCoverage: true } } } },
       },
     });
     const roster = members
@@ -121,7 +121,7 @@ export class ClubsService {
         userId: m.userId,
         displayName: m.user.profile?.displayName ?? "—",
         rank: m.user.profile?.rank ?? "rookie",
-        index: m.user.hybridIndex ? Math.round(ratingFromInternal(m.user.hybridIndex.value)) : 0, // OVR /100
+        index: m.user.hybridIndex ? Math.round(indexDisplayRating(m.user.hybridIndex.value, m.user.hybridIndex.radarCoverage)) : 0, // OVR /100 (shrinkage inclus)
         role: m.role,
         isMe: m.userId === me,
       }))

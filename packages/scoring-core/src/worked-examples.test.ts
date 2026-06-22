@@ -67,8 +67,9 @@ describe("Worked example A — Homme, objectif 'Partout', 3 efforts → ~499 (OR
     expect(index.value).toBeLessThanOrEqual(500);
     expect(index.radarCoverage).toBe(4);
     expect(index.isProvisional).toBe(false);
-    // Affichage /100 (display-v1) : index interne ~499 → OVR 67 = silver.
-    expect(index.ratingInt).toBe(67);
+    // Affichage /100 (display-v2, shrinkage couverture=4) : interne ~499 (≈ médiane) → OVR 66 = silver.
+    // Proche de la médiane, le shrinkage ne déplace presque pas (67 → 66).
+    expect(index.ratingInt).toBe(66);
     expect(rankFromIndex(index.ratingInt!)).toBe("silver");
   });
 });
@@ -101,8 +102,10 @@ describe("Worked example B — Femme, objectif 'HYROX', 3 efforts → ~775 (DIAM
     expect(index.value).toBeGreaterThanOrEqual(772);
     expect(index.value).toBeLessThanOrEqual(778);
     expect(index.isEstimated).toBe(true);
-    // Affichage /100 (display-v1) : index interne ~775 → OVR 82 = platinum.
-    expect(index.ratingInt).toBe(82);
-    expect(rankFromIndex(index.ratingInt!)).toBe("platinum");
+    // Affichage /100 (display-v2, shrinkage couverture=4) : interne ~775 → OVR 77 = gold.
+    // Bien au-dessus de la médiane, le shrinkage tire vers le bas (82 → 77) tant que 2/6
+    // attributs restent non mesurés ; l'OVR remontera en complétant le radar. Tri interne inchangé.
+    expect(index.ratingInt).toBe(77);
+    expect(rankFromIndex(index.ratingInt!)).toBe("gold");
   });
 });

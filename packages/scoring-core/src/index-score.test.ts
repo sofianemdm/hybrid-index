@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { AttributeResult } from "./attribute";
 import { hybridIndex, indexPercentile, projectedIndex } from "./index-score";
+import { ratingFromInternal } from "./curve";
 
 const attr = (
   attribute: AttributeResult["attribute"],
@@ -37,13 +38,12 @@ describe("hybridIndex", () => {
     expect(r.value).toBe(775); // (1.5·825+0.7·871+1.3·871+1.5·597)/5
   });
 
-  it("provisoire : < 4 attributs ET < 3 efforts", () => {
+  it("provisoire : < 3 attributs ET < 3 efforts", () => {
     expect(hybridIndex([attr("engine", 500)], "all_round", 1).isProvisional).toBe(true);
     expect(hybridIndex([attr("engine", 500)], "all_round", 3).isProvisional).toBe(false); // 3 efforts
     expect(
-      hybridIndex([attr("engine", 1), attr("speed", 1), attr("strength", 1), attr("power", 1)], "all_round", 1)
-        .isProvisional,
-    ).toBe(false); // 4 attributs
+      hybridIndex([attr("engine", 1), attr("speed", 1), attr("strength", 1)], "all_round", 1).isProvisional,
+    ).toBe(false); // 3 attributs (seuil abaissé 4→3, cf. « 3 séances = Index complet »)
   });
 
   it("isEstimated si un attribut entrant est estimé (proxy Force)", () => {
@@ -55,6 +55,32 @@ describe("hybridIndex", () => {
     const r = hybridIndex([], "all_round", 0);
     expect(r.value).toBe(0);
     expect(r.isProvisional).toBe(true);
+  });
+});
+
+describe("shrinkage de couverture (display-v2)", () => {
+  const ATTRS = ["engine", "speed", "strength", "power", "muscular_endurance", "hybrid"] as const;
+
+  it("1 seul attribut : l'OVR n'est PAS la valeur de l'attribut (tiré vers la médiane)", () => {
+    const r = hybridIndex([attr("engine", 832)], "all_round", 1);
+    expect(r.value).toBe(832); // interne inchangé (clé de tri du classement)
+    // 832 vaudrait ~84 à couverture pleine ; à 1/6 mesuré il s'affiche nettement plus bas.
+    expect(r.ratingInt!).toBeGreaterThan(55);
+    expect(r.ratingInt!).toBeLessThan(78);
+  });
+
+  it("monotone : ajouter un attribut au même niveau fait monter l'OVR (jamais chuter)", () => {
+    const one = hybridIndex([attr("engine", 832)], "all_round", 1).ratingInt!;
+    const three = hybridIndex([attr("engine", 832), attr("power", 832), attr("hybrid", 832)], "all_round", 3).ratingInt!;
+    const six = hybridIndex(ATTRS.map((a) => attr(a, 832)), "all_round", 6).ratingInt!;
+    expect(three).toBeGreaterThanOrEqual(one);
+    expect(six).toBeGreaterThanOrEqual(three);
+  });
+
+  it("couverture pleine (6/6) : converge EXACTEMENT vers la note no-drop (pas de déflation)", () => {
+    const full = hybridIndex(ATTRS.map((a) => attr(a, 832)), "all_round", 6); // value=832, couverture=6
+    // À 6/6 le terme baseline s'annule → l'OVR affiché = la note no-drop brute de la valeur interne.
+    expect(full.ratingInt).toBe(Math.round(ratingFromInternal(832)));
   });
 });
 

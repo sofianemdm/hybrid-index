@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { ATTRIBUTE_KEYS, type AttributeKey, type Goal, type Sex, type internalScore, rankFromIndex, rankProgress } from "@hybrid-index/contracts";
-import { type AttributeResult, bandFromP, popPercentileIndex, ratingFromInternal } from "@hybrid-index/scoring-core";
+import { type AttributeResult, bandFromP, indexDisplayRating, popPercentileIndex, ratingFromInternal } from "@hybrid-index/scoring-core";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { RedisService } from "../../infra/redis/redis.service";
 import { ScoreClient } from "../../infra/score-client/score-client.service";
@@ -88,7 +88,12 @@ export class ProfileScoringService {
         wod: { select: { isCustom: true } },
       },
     });
-    if (results.length === 0) return null;
+    // Plus aucun résultat → on REMET À ZÉRO le profil (sinon l'Index resterait figé après
+    // suppression de toutes les séances). Supprime Index + attributs + entrée de classement.
+    if (results.length === 0) {
+      await this.resetProfile(userId, profile.sex);
+      return null;
+    }
 
     // Snapshot du radar AVANT recalcul → feedback de compétence « +X sur l'attribut » (H1).
     const before = await this.prisma.attributeScore.findMany({
@@ -148,7 +153,10 @@ export class ProfileScoringService {
     const attributeScores = mergedRadar
       .filter((a) => a.unlocked)
       .map((a) => ({ attribute: a.attribute, score: a.score, isEstimated: a.isEstimated }));
-    if (attributeScores.length === 0) return null;
+    if (attributeScores.length === 0) {
+      await this.resetProfile(userId, profile.sex);
+      return null;
+    }
     const index = await this.scoreClient.computeIndex({ sex: profile.sex, goal: profile.goal, attributeScores });
 
     const computedProfile: internalScore.ComputeProfileResponse = { index, radar: mergedRadar };
@@ -175,6 +183,18 @@ export class ProfileScoringService {
       ? { from: previousBand, to: socialProof.population.band }
       : null;
     return result;
+  }
+
+  /** Remet le profil de score à l'état « aucune donnée » (plus de séance) : supprime l'Index,
+   *  les attributs et l'entrée de classement. Le profil (sexe/objectif/rang) reste, le rang
+   *  repasse à « rookie ». Idempotent. */
+  private async resetProfile(userId: string, sex: string): Promise<void> {
+    await this.prisma.$transaction([
+      this.prisma.hybridIndex.deleteMany({ where: { userId } }),
+      this.prisma.attributeScore.deleteMany({ where: { userId } }),
+      this.prisma.profile.update({ where: { userId }, data: { rank: "rookie" } }),
+    ]);
+    await this.redis.remove(sex, userId).catch(() => undefined);
   }
 
   /** Construit la preuve sociale (population toujours ; app seulement si top 30% ET ligue ≥ 200). */
@@ -355,10 +375,10 @@ export class ProfileScoringService {
         // `index` est une ligne DB (valeur interne /1000) → on dérive l'OVR /100.
         // `value` est TOUJOURS un entier non-null (contrat unique avec l'onboarding) ;
         // un index sans aucun attribut tombe au plancher, pas à null.
-        const ratingInt = Math.round(ratingFromInternal(index.value));
+        const ratingInt = Math.round(indexDisplayRating(index.value, index.radarCoverage));
         return {
-          value: ratingInt, // OVR /100 affiché
-          rating: index.radarCoverage > 0 ? ratingFromInternal(index.value) : null,
+          value: ratingInt, // OVR /100 affiché (shrinkage de couverture inclus)
+          rating: index.radarCoverage > 0 ? indexDisplayRating(index.value, index.radarCoverage) : null,
           internal: index.value, // valeur interne /1000 (tri/debug)
           percentile: Number(index.percentile),
           rank: rankFromIndex(ratingInt),

@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { Prisma, type Sex } from "@prisma/client";
-import { popPercentileIndex, ratingFromInternal, type AttributeResult } from "@hybrid-index/scoring-core";
+import { indexDisplayRating, popPercentileIndex, type AttributeResult } from "@hybrid-index/scoring-core";
 import type { AttributeKey, Goal } from "@hybrid-index/contracts";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { FeedEventsService } from "../social/feed-events.service";
@@ -74,7 +74,7 @@ export class BadgesService {
       distinctWods: distinct.length,
       equipmentFreeCount,
       rank: profile?.rank ?? "rookie",
-      index: idx ? Math.round(ratingFromInternal(idx.value)) : 0, // OVR /100 (cohérent avec l'affichage)
+      index: idx ? Math.round(indexDisplayRating(idx.value, idx.radarCoverage)) : 0, // OVR /100 affiché (shrinkage inclus)
       percentile,
       humanityTopPercent,
       attributesAllUnlocked: unlockedAttrs >= 6,
