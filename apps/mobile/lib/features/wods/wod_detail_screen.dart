@@ -94,6 +94,10 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
                       .toList(),
                 ),
                 const SizedBox(height: HiSpace.lg),
+                Text('Temps de référence', style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 16)),
+                const SizedBox(height: 2),
+                Text('Débutant · intermédiaire · champion, selon le sexe', style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
+                const SizedBox(height: HiSpace.sm),
                 _sexToggle(),
                 const SizedBox(height: HiSpace.md),
                 if (d.levels(_sex) != null) _tierCard(d) else Text('Paliers non disponibles pour cette séance.', style: TextStyle(color: HiColors.textTertiary)),
@@ -167,11 +171,11 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
       ),
       child: Column(
         children: [
-          _tierRow('🏆 Champion', t.champion, d.scoreType, HiColors.attrSpeed),
+          _tierRow('🏆 Champion (élite)', t.champion, d.scoreType, HiColors.attrSpeed),
           Divider(color: HiColors.strokeSubtle),
           _tierRow('Intermédiaire', t.intermediate, d.scoreType, HiColors.textSecondary),
           Divider(color: HiColors.strokeSubtle),
-          _tierRow('Occasionnel', t.occasional, d.scoreType, HiColors.textTertiary),
+          _tierRow('Débutant', t.occasional, d.scoreType, HiColors.textTertiary),
           if (d.myBestRaw != null) ...[
             const SizedBox(height: HiSpace.sm),
             Container(

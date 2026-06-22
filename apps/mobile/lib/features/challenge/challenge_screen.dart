@@ -6,6 +6,7 @@ import '../../data/session.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/hi_button.dart';
 import '../../widgets/rank_badge.dart';
+import '../wods/wod_detail_screen.dart';
 import '../wods/wod_format.dart';
 import '../wods/wod_result_entry_screen.dart';
 
@@ -111,8 +112,21 @@ class _ChallengeScreenState extends ConsumerState<ChallengeScreen> {
               padding: const EdgeInsets.fromLTRB(HiSpace.lg, HiSpace.lg, HiSpace.lg, 96),
               children: [
                 _hero(c),
+                if (c.prescription != null) ...[
+                  const SizedBox(height: HiSpace.md),
+                  _whatToDo(c.prescription!),
+                ],
                 const SizedBox(height: HiSpace.md),
                 HiButton(label: 'Faire le défi 🔥', onPressed: () => _doChallenge(c)),
+                const SizedBox(height: HiSpace.sm),
+                OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(46)),
+                  icon: const Icon(Icons.info_outline, size: 18),
+                  label: const Text('Paliers, références pro & détails'),
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => WodDetailScreen(wodId: c.wodId, wodName: c.wodName)),
+                  ),
+                ),
                 const SizedBox(height: HiSpace.lg),
                 Row(children: [_tab('Hommes', 'male'), const SizedBox(width: 8), _tab('Femmes', 'female')]),
                 const SizedBox(height: HiSpace.md),
@@ -158,6 +172,49 @@ class _ChallengeScreenState extends ConsumerState<ChallengeScreen> {
           const SizedBox(height: HiSpace.sm),
           Text('Tout le monde se mesure sur cette séance cette semaine. Donne tout 💪',
               style: TextStyle(color: HiColors.textOnBrand.withValues(alpha: 0.85), fontSize: 13)),
+        ],
+      ),
+    );
+  }
+
+  Widget _whatToDo(WodPrescription p) {
+    return Container(
+      padding: const EdgeInsets.all(HiSpace.md),
+      decoration: BoxDecoration(
+        color: HiColors.bgElevated,
+        borderRadius: BorderRadius.circular(HiRadius.md),
+        border: Border.all(color: HiColors.strokeSubtle),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Ce qu\'il faut faire',
+              style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 15)),
+          if (p.summary != null && p.summary!.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Text(p.summary!, style: TextStyle(color: HiColors.textSecondary, fontSize: 13, height: 1.4)),
+          ],
+          const SizedBox(height: HiSpace.sm),
+          ...p.blocks.map((b) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  SizedBox(
+                    width: 64,
+                    child: Text(b.reps,
+                        style: TextStyle(color: HiColors.brandPrimary, fontSize: 14, fontWeight: FontWeight.w800)),
+                  ),
+                  Expanded(
+                    child: Text(b.detail != null && b.detail!.isNotEmpty ? '${b.movement} · ${b.detail}' : b.movement,
+                        style: TextStyle(color: HiColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600)),
+                  ),
+                ]),
+              )),
+          const SizedBox(height: HiSpace.sm),
+          Row(children: [
+            Icon(Icons.flag_outlined, size: 14, color: HiColors.brandPrimary),
+            const SizedBox(width: 6),
+            Expanded(child: Text(p.scoringNote, style: TextStyle(color: HiColors.textTertiary, fontSize: 12))),
+          ]),
         ],
       ),
     );
