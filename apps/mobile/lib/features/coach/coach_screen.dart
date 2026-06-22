@@ -98,41 +98,27 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Carte Index projeté
+        // En-tête actionnable (pas de projection d'Index : on parle de l'attribut ciblé).
         Container(
           padding: const EdgeInsets.all(HiSpace.lg),
           decoration: BoxDecoration(
-            color: HiColors.bgElevated,
+            color: color.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(HiRadius.lg),
-            border: Border.all(color: color.withValues(alpha: 0.4)),
+            border: Border.all(color: color.withValues(alpha: 0.45)),
           ),
-          child: Column(
+          child: Row(
             children: [
-              Text('Si tu progresses sur ${HiLabels.attribute(r.targetAttribute)}',
-                  style: TextStyle(color: HiColors.textSecondary)),
-              const SizedBox(height: HiSpace.md),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text('${r.current}',
-                      style: TextStyle(color: HiColors.textSecondary, fontSize: 28, fontWeight: FontWeight.w700)),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    child: Icon(Icons.arrow_forward, color: HiColors.textTertiary),
-                  ),
-                  Text('${r.projected}',
-                      style: TextStyle(color: HiColors.brandPrimary, fontSize: 40, fontWeight: FontWeight.w800)),
-                ],
+              Icon(Icons.trending_up, color: color),
+              const SizedBox(width: HiSpace.md),
+              Expanded(
+                child: Text('Fais ces séances pour progresser sur ${HiLabels.attribute(r.targetAttribute)}',
+                    style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w800, fontSize: 16, height: 1.3)),
               ),
-              if (r.delta > 0)
-                Text('+${r.delta} points potentiels',
-                    style: TextStyle(color: HiColors.success, fontWeight: FontWeight.w600)),
             ],
           ),
         ),
         const SizedBox(height: HiSpace.lg),
-        Text('Séances pour ${HiLabels.attribute(r.targetAttribute)}',
+        Text('Séances ciblées',
             style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 16)),
         const SizedBox(height: HiSpace.sm),
         if (r.sessions.isEmpty)
