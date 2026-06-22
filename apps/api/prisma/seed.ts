@@ -81,6 +81,39 @@ const SEED_PERF: Record<string, { time: boolean; m: [number, number]; f: [number
   max_air_squats: { time: false, m: [100, 40], f: [95, 38] },
 };
 
+/**
+ * Athlètes d'ÉLITE — personas FICTIFS (noms publics inventés). Les performances s'inspirent
+ * de repères PUBLICS réels ; le nom réel d'inspiration reste UNIQUEMENT en commentaire interne
+ * (jamais affiché). Aucun compte n'usurpe l'identité d'une personne réelle. cf. mémoire projet.
+ */
+type EliteDiscipline = { goal: (typeof GOALS)[number]; wods: string[]; males: string[]; females: string[]; captions: string[] };
+const ELITE_DISCIPLINES: EliteDiscipline[] = [
+  {
+    // insp. : Hunter McIntyre, Lauren Weeks, Alexander Roncevic, Megan Jacoby… (HYROX)
+    goal: "hyrox",
+    wods: ["hyrox_sprint", "row_2k", "run_5k", "karen"],
+    males: ["Marcus Vance", "Kayden Roth", "Dorian Sael", "Bjorn Halvik", "Tomas Reier"],
+    females: ["Lena Brandt", "Sofia Marchetti", "Nora Eklund", "Aisha Vermeer", "Cara Donnelly"],
+    captions: ["Sprint HYROX bouclé, jambes en feu 🔥", "Negative split sur le rameur 🚣", "On lâche rien jusqu'au mur 💪", "Semaine d'attaque terminée."],
+  },
+  {
+    // insp. : Mat Fraser, Tia-Clair Toomey, Rich Froning, Laura Horvath… (CrossFit)
+    goal: "crossfit_strength",
+    wods: ["fran", "grace", "jackie", "helen", "cindy"],
+    males: ["Cole Ferran", "Dane Kovac", "Rhys Calder", "Mateo Silva", "Owen Brandt"],
+    females: ["Tess Halloran", "Mira Sorstad", "Iris Lambert", "Paige Novak", "Yara Haddad"],
+    captions: ["Fran sous la barre des 2:30 💀", "Grace en mode métronome.", "PR sur Jackie aujourd'hui 🙌", "Le pain-cave habituel 😅"],
+  },
+  {
+    // insp. : Jakob Ingebrigtsen, Sifan Hassan, Joshua Cheptegei… (course)
+    goal: "all_round",
+    wods: ["run_5k", "run_1k", "row_2k"],
+    males: ["Elias Karlsen", "Samuel Mwangi", "Samir Oualid", "Finn Carrick", "Noe Dubois"],
+    females: ["Hana Bekele", "Lucia Romero", "Mei Tanaka", "Astrid Vik", "Zoe Lefevre"],
+    captions: ["Sortie tempo parfaite ce matin 🏃", "Fractionné qui pique 🔥", "Objectif chrono validé.", "Les jambes tournent bien cette semaine."],
+  },
+];
+
 function rand(min: number, max: number): number {
   return Math.floor(min + Math.random() * (max - min + 1));
 }
@@ -255,6 +288,112 @@ async function main(): Promise<void> {
         });
       }
       created++;
+    }
+  }
+
+  // --- Athlètes d'élite (personas fictifs, perfs réalistes, posts publics qui animent le feed) ---
+  console.log("Seed: athlètes d'élite (personas fictifs)…");
+  let eliteIdx = 0;
+  for (const disc of ELITE_DISCIPLINES) {
+    const roster: Array<{ name: string; sex: Sex }> = [
+      ...disc.males.map((name) => ({ name, sex: "male" as Sex })),
+      ...disc.females.map((name) => ({ name, sex: "female" as Sex })),
+    ];
+    for (const a of roster) {
+      const value = Math.max(910, 985 - eliteIdx * 2 - rand(0, 6)); // élite, légère variation
+      const percentile = Math.min(0.9999, value / 1000);
+      const rank = rankFromIndex(Math.round(ratingFromInternal(value)));
+      const email = `seed_elite_${eliteIdx}@hybrid.local`;
+      const user = await prisma.user.upsert({
+        where: { email },
+        create: {
+          email,
+          dateOfBirth: new Date(`${rand(1990, 2002)}-0${rand(1, 9)}-1${rand(0, 8)}`),
+          ageVerified: true,
+          consents: { seed: true },
+          profile: { create: { displayName: a.name, sex: a.sex, goal: disc.goal, equipmentPref: "both", rank } },
+        },
+        update: { profile: { update: { rank } } },
+      });
+      await prisma.hybridIndex.upsert({
+        where: { userId: user.id },
+        create: {
+          userId: user.id,
+          value,
+          percentile,
+          isProvisional: false,
+          isEstimated: false,
+          radarCoverage: 6,
+          confidenceLevel: "medium",
+          scoringVersionId: SCORING_VERSION_UUID,
+        },
+        update: { value, percentile, scoringVersionId: SCORING_VERSION_UUID },
+      });
+      for (const attribute of ATTRS) {
+        const score = Math.min(1000, Math.max(700, value + rand(-40, 25)));
+        await prisma.attributeScore.upsert({
+          where: { userId_attribute: { userId: user.id, attribute } },
+          create: {
+            userId: user.id,
+            attribute,
+            score,
+            percentile: Math.min(0.9999, score / 1000),
+            unlocked: true,
+            isEstimated: false,
+            isStale: false,
+            scoringVersionId: SCORING_VERSION_UUID,
+          },
+          update: { score, scoringVersionId: SCORING_VERSION_UUID },
+        });
+      }
+      // Résultats au niveau élite sur les WODs de la discipline ; le 1er daté cette semaine.
+      let signatureResultId: string | null = null;
+      let di = 0;
+      for (const wodId of disc.wods) {
+        const perf = SEED_PERF[wodId];
+        const meta = WODS.find((w) => w.id === wodId);
+        if (!perf || !meta) {
+          di++;
+          continue;
+        }
+        const [elite] = a.sex === "male" ? perf.m : perf.f;
+        const raw = perf.time ? Math.max(1, elite + rand(-8, 15)) : Math.max(1, elite + rand(-3, 4));
+        const sub = Math.min(995, Math.max(900, value + rand(-20, 25)));
+        const daysAgo = di === 0 ? rand(0, 5) : rand(7, 120);
+        const res = await prisma.wodResult.create({
+          data: {
+            userId: user.id,
+            wodId,
+            sex: a.sex,
+            rawResult: raw,
+            subScore: sub,
+            percentile: Math.min(0.9999, sub / 1000),
+            attributesAffected: meta.targetAttributes as AttributeKey[],
+            rxCompliant: true,
+            scoringVersionId: SCORING_VERSION_UUID,
+            idempotencyKey: `seed_elite_${wodId}`,
+            performedAt: new Date(Date.now() - daysAgo * 86400000),
+          },
+        });
+        if (di === 0) signatureResultId = res.id;
+        di++;
+      }
+      // Posts publics : partage de la perf signature + un message court.
+      if (signatureResultId) {
+        await prisma.post.create({
+          data: { authorId: user.id, kind: "perf_share", wodResultId: signatureResultId, body: disc.captions[eliteIdx % disc.captions.length] },
+        });
+      }
+      await prisma.post.create({
+        data: { authorId: user.id, kind: "text", body: disc.captions[(eliteIdx + 1) % disc.captions.length] },
+      });
+      if (redisOk) {
+        await redis.zadd(`leaderboard:${a.sex}`, value, user.id).catch(() => {
+          redisOk = false;
+        });
+      }
+      created++;
+      eliteIdx++;
     }
   }
 
