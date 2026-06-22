@@ -320,6 +320,12 @@ class ApiClient {
     return j.map((e) => WodCatalogEntry.fromJson(e as Map<String, dynamic>)).toList();
   }
 
+  /// Séances minimales à faire pour compléter le radar (révéler le vrai Index).
+  Future<CompletionPlan> completionPlan() async {
+    final j = await _send('GET', '/v1/wods/completion-plan') as Map<String, dynamic>;
+    return CompletionPlan.fromJson(j);
+  }
+
   Future<WodDetail> wodDetail(String id) async {
     final j = await _send('GET', '/v1/wods/$id') as Map<String, dynamic>;
     return WodDetail.fromJson(j);

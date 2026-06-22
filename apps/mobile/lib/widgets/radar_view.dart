@@ -5,9 +5,11 @@ import '../data/models.dart';
 import '../theme/tokens.dart';
 
 /// Radar des 6 attributs + liste lisible dessous (alternative non-couleur, a11y).
+/// `onTapAttribute` : clic sur une qualité (radar ou liste) → séances pour la booster.
 class RadarView extends StatelessWidget {
   final List<RadarAttribute> radar;
-  const RadarView({super.key, required this.radar});
+  final void Function(String attribute)? onTapAttribute;
+  const RadarView({super.key, required this.radar, this.onTapAttribute});
 
   @override
   Widget build(BuildContext context) {
@@ -52,8 +54,8 @@ class RadarView extends StatelessWidget {
 
   Widget _attrRow(RadarAttribute a) {
     final color = a.unlocked ? HiColors.attribute(a.attribute) : HiColors.attrLocked;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+    final row = Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
       child: Row(
         children: [
           Icon(a.unlocked ? Icons.circle : Icons.lock, size: 12, color: color),
@@ -73,8 +75,18 @@ class RadarView extends StatelessWidget {
             a.unlocked ? '${a.score}' : '—',
             style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 14),
           ),
+          if (onTapAttribute != null) ...[
+            const SizedBox(width: 4),
+            Icon(Icons.chevron_right, size: 18, color: HiColors.textTertiary),
+          ],
         ],
       ),
+    );
+    if (onTapAttribute == null) return row;
+    return InkWell(
+      borderRadius: BorderRadius.circular(HiRadius.sm),
+      onTap: () => onTapAttribute!(a.attribute),
+      child: row,
     );
   }
 }

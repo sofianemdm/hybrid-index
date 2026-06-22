@@ -303,14 +303,16 @@ export const WOD_PRESCRIPTIONS: Record<string, WodPrescription> = {
   // ─────────────────────────────────────────────────────────────────────────
   ergo_skill: {
     summary:
-      "Séance gymnastique et machine : calories au rameur, montées au mur (wall walks) et relevés " +
-      "de jambes à la barre. Teste ton gainage, ton tirage et ton moteur en même temps.",
+      "Séance gymnastique et machine : 3 TOURS de (20 cal rameur + 5 wall walks + 10 relevés de " +
+      "jambes à la barre), enchaînés sans repos. Au total : 60 cal + 15 wall walks + 30 toes-to-bar. " +
+      "Teste ton gainage, ton tirage et ton moteur en même temps.",
     format: "3 tours, pour le temps",
     timeCapSec: 1200,
     blocks: [
-      { reps: "20 cal", movement: "Rameur", detail: "ou SkiErg / Assault Bike" },
-      { reps: "5", movement: "Wall walks", detail: "montées au mur" },
-      { reps: "10", movement: "Relevés de jambes à la barre", detail: "toes-to-bar" },
+      { reps: "3 tours :", movement: "à enchaîner sans repos" },
+      { reps: "→ 20 cal", movement: "Rameur", detail: "ou SkiErg / Assault Bike" },
+      { reps: "→ 5", movement: "Wall walks", detail: "montées au mur" },
+      { reps: "→ 10", movement: "Relevés de jambes à la barre", detail: "toes-to-bar" },
     ],
     weights: [],
     scoringNote: SCORE_TIME,

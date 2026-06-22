@@ -1,17 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models.dart';
+import '../../data/session.dart';
 import '../../theme/tokens.dart';
-import '../coach/coach_screen.dart';
+import '../wods/wod_detail_screen.dart';
+
+/// Séances pour compléter le radar (révéler le vrai Index). autoDispose : rechargé à chaque
+/// ouverture de l'accueil, libéré ensuite.
+final completionPlanProvider =
+    FutureProvider.autoDispose<CompletionPlan>((ref) => ref.read(apiClientProvider).completionPlan());
 
 /// Bloc accueil sous l'Index : chip de grade (« 70+ »), barre de progression vers le palier
-/// suivant, notice « Index estimé » tant que le radar n'est pas complet, et message d'action.
-class GradeBlock extends StatelessWidget {
+/// suivant, notice « Index estimé » + séances à faire tant que le radar n'est pas complet.
+class GradeBlock extends ConsumerWidget {
   final Profile profile;
   const GradeBlock({super.key, required this.profile});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final ovr = profile.index.value;
     final coverage = profile.index.radarCoverage;
     final incomplete = coverage < 6;
@@ -23,7 +30,7 @@ class GradeBlock extends StatelessWidget {
         const SizedBox(height: HiSpace.md),
         _progressBar(ovr, color),
         const SizedBox(height: HiSpace.sm),
-        if (incomplete) _estimationNotice(context, coverage) else _actionMessage(ovr),
+        if (incomplete) _estimationNotice(context, ref, coverage) else _actionMessage(ovr),
       ],
     );
   }
@@ -100,16 +107,11 @@ class GradeBlock extends StatelessWidget {
     );
   }
 
-  /// Tant que les 6 attributs ne sont pas débloqués : on précise que l'Index est une ESTIMATION.
-  Widget _estimationNotice(BuildContext context, int coverage) {
-    final missing = profile.radar.where((a) => !a.unlocked).map((a) => HiLabels.attribute(a.attribute)).toList();
-    final missingTxt = missing.length <= 3
-        ? missing.join(', ')
-        : '${missing.take(2).join(', ')} et ${missing.length - 2} autres';
+  /// Tant que les 6 attributs ne sont pas débloqués : on précise que l'Index est une ESTIMATION,
+  /// et on RECOMMANDE les séances minimales à faire pour révéler le vrai Index.
+  Widget _estimationNotice(BuildContext context, WidgetRef ref, int coverage) {
     final title = coverage >= 5 ? 'Presque ton vrai Index' : 'Index estimé';
-    final sub = coverage >= 5
-        ? 'Un dernier attribut — $missingTxt — et ton Index devient définitif.'
-        : 'Estimation sur $coverage/6 attributs. Débloque $missingTxt pour révéler ton vrai Index (2-3 séances suffisent).';
+    final planAsync = ref.watch(completionPlanProvider);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(HiSpace.md),
@@ -118,44 +120,88 @@ class GradeBlock extends StatelessWidget {
         borderRadius: BorderRadius.circular(HiRadius.md),
         border: Border.all(color: HiColors.warn.withValues(alpha: 0.28)),
       ),
-      child: Row(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.auto_graph, color: HiColors.warn, size: 18),
-          const SizedBox(width: HiSpace.sm),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(child: Text(title, style: TextStyle(color: HiColors.warn, fontWeight: FontWeight.w800, fontSize: 13))),
-                    _coverageDots(coverage),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(sub, style: TextStyle(color: HiColors.textSecondary, fontSize: 12, height: 1.3)),
-                const SizedBox(height: 6),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: TextButton.icon(
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      foregroundColor: HiColors.warn,
-                    ),
-                    icon: const Icon(Icons.fitness_center, size: 16),
-                    label: const Text('Quelles séances faire ?', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 12)),
-                    onPressed: () => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const CoachScreen()),
+          Row(
+            children: [
+              Icon(Icons.auto_graph, color: HiColors.warn, size: 18),
+              const SizedBox(width: HiSpace.sm),
+              Expanded(child: Text(title, style: TextStyle(color: HiColors.warn, fontWeight: FontWeight.w800, fontSize: 13))),
+              _coverageDots(coverage),
+            ],
+          ),
+          const SizedBox(height: 8),
+          planAsync.when(
+            loading: () => Text('Estimation sur $coverage/6 attributs…', style: TextStyle(color: HiColors.textSecondary, fontSize: 12)),
+            error: (_, __) => Text(
+              'Estimation sur $coverage/6 attributs. Complète ton radar pour révéler ton vrai Index.',
+              style: TextStyle(color: HiColors.textSecondary, fontSize: 12, height: 1.3),
+            ),
+            data: (plan) {
+              final n = plan.sessions.length;
+              if (n == 0) {
+                return Text('Continue à logger des séances pour finaliser ton Index.',
+                    style: TextStyle(color: HiColors.textSecondary, fontSize: 12));
+              }
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  RichText(
+                    text: TextSpan(
+                      style: TextStyle(color: HiColors.textSecondary, fontSize: 12, height: 1.3),
+                      children: [
+                        const TextSpan(text: 'Complète '),
+                        TextSpan(text: n == 1 ? 'cette séance' : 'ces $n séances',
+                            style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w800)),
+                        const TextSpan(text: ' pour révéler ton vrai Index :'),
+                      ],
                     ),
                   ),
+                  const SizedBox(height: 8),
+                  ...plan.sessions.map((s) => _sessionRow(context, s)),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Une séance recommandée (clic → fiche pour la faire).
+  Widget _sessionRow(BuildContext context, CompletionSession s) {
+    final covers = s.covers.map((c) => HiLabels.attribute(c)).join(' · ');
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Material(
+        color: HiColors.bgElevated,
+        borderRadius: BorderRadius.circular(HiRadius.sm),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(HiRadius.sm),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => WodDetailScreen(wodId: s.wodId, wodName: s.name)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            child: Row(
+              children: [
+                Icon(s.requiresEquipment ? Icons.fitness_center : Icons.self_improvement, size: 16, color: HiColors.warn),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(s.name, style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 13)),
+                      Text('Débloque : $covers', style: TextStyle(color: HiColors.textTertiary, fontSize: 11)),
+                    ],
+                  ),
                 ),
+                Icon(Icons.chevron_right, size: 18, color: HiColors.textTertiary),
               ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }

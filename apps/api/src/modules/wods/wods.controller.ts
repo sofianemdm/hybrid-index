@@ -23,6 +23,13 @@ export class WodsController {
     return this.wods.catalog();
   }
 
+  /** Plan pour compléter l'Index : séances minimales couvrant les attributs encore non débloqués. */
+  @Get("completion-plan")
+  @UseGuards(JwtAuthGuard)
+  completionPlan(@CurrentUser() user: AuthenticatedUser): Promise<unknown> {
+    return this.wods.completionPlan(user.userId);
+  }
+
   /** Estimation ad-hoc d'un WOD décomposé (aperçu du builder). */
   @Post("estimate")
   estimate(@Body(new ZodValidationPipe(EstimateWodRequest)) body: EstimateWodRequest): Promise<unknown> {

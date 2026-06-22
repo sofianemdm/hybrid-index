@@ -151,8 +151,15 @@ class HomeScreen extends ConsumerWidget {
               children: [
                 Text('Ton radar',
                     style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 16)),
+                Text('Touche une qualité pour voir les séances qui la boostent.',
+                    style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
                 const SizedBox(height: HiSpace.sm),
-                RadarView(radar: p.radar),
+                RadarView(
+                  radar: p.radar,
+                  onTapAttribute: (attr) => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => CoachScreen(initialAttribute: attr)),
+                  ),
+                ),
               ],
             ),
           ),

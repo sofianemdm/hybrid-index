@@ -10,7 +10,9 @@ const _attributes = ['engine', 'speed', 'strength', 'power', 'muscular_endurance
 
 /// Coach : choisis un axe à améliorer → Index projeté + séances ciblées (avec/sans matériel).
 class CoachScreen extends ConsumerStatefulWidget {
-  const CoachScreen({super.key});
+  /// Axe pré-sélectionné (ex. clic sur « Hybride » dans le radar) ; null = point faible auto.
+  final String? initialAttribute;
+  const CoachScreen({super.key, this.initialAttribute});
 
   @override
   ConsumerState<CoachScreen> createState() => _CoachScreenState();
@@ -23,6 +25,7 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
   @override
   void initState() {
     super.initState();
+    _attribute = widget.initialAttribute;
     _load();
   }
 

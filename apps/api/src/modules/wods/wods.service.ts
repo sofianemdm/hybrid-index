@@ -170,6 +170,46 @@ export class WodsService {
   }
 
   /** Catalogue des WODs (15 références + communautaires à venir). */
+  /** Séances minimales (set cover glouton) couvrant les attributs encore NON débloqués, afin de
+   *  révéler l'Index complet. Exclut les épreuves « Autre » et les WODs custom ; privilégie le
+   *  sans-matériel à couverture égale. */
+  async completionPlan(
+    userId: string,
+  ): Promise<{ missing: string[]; sessions: Array<{ wodId: string; name: string; requiresEquipment: boolean; covers: string[] }> }> {
+    const ATTRS: AttributeKey[] = ["engine", "speed", "strength", "power", "muscular_endurance", "hybrid"];
+    const attrs = await this.prisma.attributeScore.findMany({ where: { userId }, select: { attribute: true, unlocked: true } });
+    const unlocked = new Set(attrs.filter((a) => a.unlocked).map((a) => a.attribute));
+    const remaining = new Set<string>(ATTRS.filter((a) => !unlocked.has(a)));
+    const missing = [...remaining];
+    if (remaining.size === 0) return { missing: [], sessions: [] };
+
+    const wods = await this.prisma.wod.findMany({
+      where: { isCustom: false, id: { notIn: OTHER_WOD_IDS } },
+      select: { id: true, name: true, requiresEquipment: true, targetAttributes: true },
+      orderBy: { requiresEquipment: "asc" }, // à couverture égale, le sans-matériel d'abord
+    });
+
+    const sessions: Array<{ wodId: string; name: string; requiresEquipment: boolean; covers: string[] }> = [];
+    const chosen = new Set<string>();
+    while (remaining.size > 0) {
+      let best: (typeof wods)[number] | null = null;
+      let bestCover: string[] = [];
+      for (const w of wods) {
+        if (chosen.has(w.id)) continue;
+        const cover = (w.targetAttributes as string[]).filter((t) => remaining.has(t));
+        if (cover.length > bestCover.length) {
+          best = w;
+          bestCover = cover;
+        }
+      }
+      if (!best || bestCover.length === 0) break;
+      chosen.add(best.id);
+      sessions.push({ wodId: best.id, name: best.name, requiresEquipment: best.requiresEquipment, covers: bestCover });
+      bestCover.forEach((c) => remaining.delete(c));
+    }
+    return { missing, sessions };
+  }
+
   async catalog(): Promise<unknown[]> {
     const wods = await this.prisma.wod.findMany({ orderBy: [{ requiresEquipment: "asc" }, { name: "asc" }] });
     return wods.map((w) => ({

@@ -1308,3 +1308,32 @@ class WodCatalogItem {
     required this.requiresEquipment,
   });
 }
+
+/// Plan pour compléter l'Index : séances minimales couvrant les attributs non débloqués.
+class CompletionPlan {
+  final List<String> missing; // attributs encore non mesurés
+  final List<CompletionSession> sessions;
+  const CompletionPlan({required this.missing, required this.sessions});
+
+  factory CompletionPlan.fromJson(Map<String, dynamic> j) => CompletionPlan(
+        missing: (j['missing'] as List<dynamic>? ?? []).map((e) => e as String).toList(),
+        sessions: (j['sessions'] as List<dynamic>? ?? [])
+            .map((e) => CompletionSession.fromJson(e as Map<String, dynamic>))
+            .toList(),
+      );
+}
+
+class CompletionSession {
+  final String wodId;
+  final String name;
+  final bool requiresEquipment;
+  final List<String> covers; // attributs manquants couverts par cette séance
+  const CompletionSession({required this.wodId, required this.name, required this.requiresEquipment, required this.covers});
+
+  factory CompletionSession.fromJson(Map<String, dynamic> j) => CompletionSession(
+        wodId: j['wodId'] as String,
+        name: j['name'] as String,
+        requiresEquipment: j['requiresEquipment'] as bool? ?? false,
+        covers: (j['covers'] as List<dynamic>? ?? []).map((e) => e as String).toList(),
+      );
+}
