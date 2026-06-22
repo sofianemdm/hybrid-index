@@ -749,20 +749,41 @@ class WodResultItem {
       );
 }
 
+class SlamFlagship {
+  final String wodId;
+  final String name;
+  final bool done;
+  final int? score; // /100
+  const SlamFlagship({required this.wodId, required this.name, required this.done, this.score});
+
+  factory SlamFlagship.fromJson(Map<String, dynamic> j) => SlamFlagship(
+        wodId: j['wodId'] as String? ?? '',
+        name: j['name'] as String? ?? '',
+        done: j['done'] as bool? ?? false,
+        score: (j['score'] as num?)?.toInt(),
+      );
+}
+
 class EndgameInfo {
-  final int beaten;
+  final String tier; // none | bronze | silver | gold
+  final int completed;
   final int total;
-  final bool grandSlamComplete;
-  final List<String> remaining;
+  final int minScore;
+  final int silverMin;
+  final int goldMin;
+  final List<SlamFlagship> flagship;
   final int? globalRank;
   final int globalTotal;
   final bool isTop100;
   final bool ambassador;
   const EndgameInfo({
-    required this.beaten,
+    required this.tier,
+    required this.completed,
     required this.total,
-    required this.grandSlamComplete,
-    required this.remaining,
+    required this.minScore,
+    required this.silverMin,
+    required this.goldMin,
+    required this.flagship,
     required this.globalRank,
     required this.globalTotal,
     required this.isTop100,
@@ -771,11 +792,17 @@ class EndgameInfo {
 
   factory EndgameInfo.fromJson(Map<String, dynamic> j) {
     final gs = j['grandSlam'] as Map<String, dynamic>;
+    final thr = (gs['thresholds'] as Map?)?.cast<String, dynamic>() ?? {};
     return EndgameInfo(
-      beaten: (gs['beaten'] as num).toInt(),
-      total: (gs['total'] as num).toInt(),
-      grandSlamComplete: gs['complete'] as bool? ?? false,
-      remaining: ((gs['remaining'] as List?) ?? []).map((e) => e.toString()).toList(),
+      tier: gs['tier'] as String? ?? 'none',
+      completed: (gs['completed'] as num?)?.toInt() ?? 0,
+      total: (gs['total'] as num?)?.toInt() ?? 4,
+      minScore: (gs['minScore'] as num?)?.toInt() ?? 0,
+      silverMin: (thr['silver'] as num?)?.toInt() ?? 75,
+      goldMin: (thr['gold'] as num?)?.toInt() ?? 90,
+      flagship: ((gs['flagship'] as List?) ?? [])
+          .map((e) => SlamFlagship.fromJson((e as Map).cast<String, dynamic>()))
+          .toList(),
       globalRank: (j['globalRank'] as num?)?.toInt(),
       globalTotal: (j['globalTotal'] as num?)?.toInt() ?? 0,
       isTop100: j['isTop100'] as bool? ?? false,

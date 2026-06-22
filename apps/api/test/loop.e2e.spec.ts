@@ -294,9 +294,12 @@ describe("api — boucle complète persistée (e2e réel)", () => {
       .get("/v1/me/endgame")
       .set("authorization", `Bearer ${token}`)
       .expect(200);
-    expect(res.body.grandSlam.total).toBe(15);
-    expect(res.body.grandSlam.beaten).toBeGreaterThanOrEqual(0);
-    expect(res.body.grandSlam.beaten).toBeLessThanOrEqual(15);
+    // Grand Chelem = 4 séances phares, paliers bronze/argent/or.
+    expect(res.body.grandSlam.total).toBe(4);
+    expect(["none", "bronze", "silver", "gold"]).toContain(res.body.grandSlam.tier);
+    expect(res.body.grandSlam.flagship).toHaveLength(4);
+    expect(res.body.grandSlam.completed).toBeGreaterThanOrEqual(0);
+    expect(res.body.grandSlam.thresholds).toEqual({ silver: 75, gold: 90 });
     expect(res.body.globalRank).toBeGreaterThanOrEqual(1);
   });
 
