@@ -11,6 +11,10 @@ export interface BadgeDef {
   rarity: Rarity;
   condition: string;
   cosmeticUnlock: string | null;
+  /** Série progressive (index/rank/league/humanity) → l'app n'affiche que le palier atteint + le suivant. */
+  series?: string;
+  /** Position dans la série (croissante) pour ordonner les paliers. */
+  seriesOrder?: number;
 }
 
 export const BADGES: BadgeDef[] = [
@@ -38,10 +42,18 @@ export const BADGES: BadgeDef[] = [
   { id: "all-attributes", category: "collection", name: "Profil complet", description: "Débloque les 6 attributs du radar.", rarity: "rare", condition: "attribute_unlocked:all", cosmeticUnlock: "radar_skin_full" },
   { id: "full-arsenal", category: "collection", name: "Arsenal complet", description: "Complète 15 WODs de référence.", rarity: "epic", condition: "wods_distinct>=15", cosmeticUnlock: "avatar_badge_arsenal" },
   { id: "no-gear-hero", category: "collection", name: "Sans matériel", description: "Logue 7 WODs sans matériel. Aucune excuse.", rarity: "rare", condition: "equipment_free_count>=7", cosmeticUnlock: null },
-  // PERFORMANCE
+  // PERFORMANCE — classement de ligue (top X% de ta ligue)
+  { id: "top-50", category: "performance", name: "Top 50 %", description: "Entre dans la moitié haute de ta ligue.", rarity: "common", condition: "percentile>=50", cosmeticUnlock: null },
   { id: "top-25", category: "performance", name: "Top 25 %", description: "Entre dans le top 25 % de ta ligue.", rarity: "rare", condition: "percentile>=75", cosmeticUnlock: null },
   { id: "top-5", category: "performance", name: "Top 5 %", description: "Entre dans le top 5 % de ta ligue.", rarity: "epic", condition: "percentile>=95", cosmeticUnlock: "avatar_aura_top5" },
   { id: "top-1", category: "performance", name: "Top 1 %", description: "Le très haut du panier. Top 1 % de ta ligue.", rarity: "legendary", condition: "percentile>=99", cosmeticUnlock: "avatar_aura_top1" },
+  // PERFORMANCE — % des humains les plus en forme (normes de population)
+  { id: "humanity-25", category: "performance", name: "Top 25 % mondial", description: "Plus en forme que 75 % des humains.", rarity: "rare", condition: "humanity<=25", cosmeticUnlock: null },
+  { id: "humanity-15", category: "performance", name: "Top 15 % mondial", description: "Tu fais partie des 15 % des humains les plus en forme.", rarity: "rare", condition: "humanity<=15", cosmeticUnlock: null },
+  { id: "humanity-10", category: "performance", name: "Top 10 % mondial", description: "Tu fais partie des 10 % des humains les plus en forme.", rarity: "epic", condition: "humanity<=10", cosmeticUnlock: null },
+  { id: "humanity-5", category: "performance", name: "Top 5 % mondial", description: "Tu fais partie des 5 % des humains les plus en forme.", rarity: "epic", condition: "humanity<=5", cosmeticUnlock: null },
+  { id: "humanity-2", category: "performance", name: "Top 2 % mondial", description: "Tu fais partie des 2 % des humains les plus en forme.", rarity: "legendary", condition: "humanity<=2", cosmeticUnlock: null },
+  { id: "humanity-1", category: "performance", name: "Top 1 % mondial", description: "Tu fais partie des 1 % des humains les plus en forme.", rarity: "legendary", condition: "humanity<=1", cosmeticUnlock: null },
 ];
 
 const RANK_ORDER = ["rookie", "bronze", "silver", "gold", "platinum", "diamond", "elite"];
@@ -53,7 +65,8 @@ export interface BadgeContext {
   equipmentFreeCount: number;
   rank: string;
   index: number;
-  percentile: number; // 0..100
+  percentile: number; // 0..100 — rang dans la ligue (app)
+  humanityTopPercent: number; // 1..100 — « top X% » de la population générale (normes)
   attributesAllUnlocked: boolean;
   streakCurrent: number;
   streakBest: number;
@@ -64,6 +77,10 @@ export function matchesCondition(condition: string, ctx: BadgeContext): boolean 
   if (condition === "attribute_unlocked:all") return ctx.attributesAllUnlocked;
   // « Athlète confirmé » : membre actif et réel (anti-bot) — 5 séances + 5 relations.
   if (condition === "confirmed") return ctx.logCount >= 5 && ctx.followsCount >= 5;
+
+  // « humanity<=X » : faire partie des X% des humains les plus en forme.
+  const le = condition.match(/^humanity<=(.+)$/);
+  if (le) return ctx.humanityTopPercent <= Number(le[1]);
 
   const ge = condition.match(/^(\w+)>=(.+)$/);
   if (ge) {

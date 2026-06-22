@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../theme/tokens.dart';
+import '../wods/wod_detail_screen.dart';
 
 /// Grand Chelem : réussir les 4 séances phares — Bronze (terminées), Argent (bonnes notes),
 /// Or (notes excellentes). + classement mondial.
@@ -49,6 +50,8 @@ class _EndgameScreenState extends ConsumerState<EndgameScreen> {
                 _hero(e),
                 const SizedBox(height: HiSpace.lg),
                 Text('Les 4 séances phares', style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 16)),
+                Text('Touche une séance pour voir en quoi elle consiste et la faire.',
+                    style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
                 const SizedBox(height: HiSpace.sm),
                 ...e.flagship.map((f) => _flagshipRow(f, e)),
                 const SizedBox(height: HiSpace.lg),
@@ -105,20 +108,33 @@ class _EndgameScreenState extends ConsumerState<EndgameScreen> {
     }
     return Container(
       margin: const EdgeInsets.only(bottom: 6),
-      padding: const EdgeInsets.symmetric(horizontal: HiSpace.md, vertical: 12),
       decoration: BoxDecoration(
         color: HiColors.bgElevated,
         borderRadius: BorderRadius.circular(HiRadius.md),
         border: Border.all(color: HiColors.strokeSubtle),
       ),
-      child: Row(
-        children: [
-          Icon(f.done ? Icons.check_circle : Icons.radio_button_unchecked, color: f.done ? sc : HiColors.textTertiary, size: 20),
-          const SizedBox(width: HiSpace.sm),
-          Expanded(child: Text(f.name, style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700))),
-          Text(f.done ? '${f.score}/100' : '—',
-              style: TextStyle(color: f.done ? sc : HiColors.textTertiary, fontWeight: FontWeight.w800)),
-        ],
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(HiRadius.md),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => WodDetailScreen(wodId: f.wodId, wodName: f.name)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: HiSpace.md, vertical: 12),
+            child: Row(
+              children: [
+                Icon(f.done ? Icons.check_circle : Icons.radio_button_unchecked, color: f.done ? sc : HiColors.textTertiary, size: 20),
+                const SizedBox(width: HiSpace.sm),
+                Expanded(child: Text(f.name, style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700))),
+                Text(f.done ? '${f.score}/100' : '—',
+                    style: TextStyle(color: f.done ? sc : HiColors.textTertiary, fontWeight: FontWeight.w800)),
+                const SizedBox(width: 4),
+                Icon(Icons.chevron_right, color: HiColors.textTertiary, size: 20),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

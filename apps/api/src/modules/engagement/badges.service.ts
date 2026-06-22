@@ -1,6 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { Prisma, type Sex } from "@prisma/client";
-import { ratingFromInternal } from "@hybrid-index/scoring-core";
+import { popPercentileIndex, ratingFromInternal, type AttributeResult } from "@hybrid-index/scoring-core";
+import type { AttributeKey, Goal } from "@hybrid-index/contracts";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { FeedEventsService } from "../social/feed-events.service";
 import { StreakService } from "./streak.service";
@@ -30,7 +31,7 @@ export class BadgesService {
     const idx = await this.prisma.hybridIndex.findUnique({ where: { userId } });
     const sex = (profile?.sex ?? "male") as Sex;
 
-    const [logCount, followsCount, distinct, equipmentFreeCount, unlockedAttrs, streakState] = await Promise.all([
+    const [logCount, followsCount, distinct, equipmentFreeCount, unlockedAttrs, streakState, attrRows] = await Promise.all([
       this.prisma.wodResult.count({ where: { userId } }),
       this.prisma.follow.count({ where: { followeeId: userId } }), // followers (suivi PAR)
       this.prisma.wodResult.findMany({ where: { userId }, distinct: ["wodId"], select: { wodId: true } }),
@@ -40,7 +41,20 @@ export class BadgesService {
         this.logger.warn(`Streak indisponible pour les badges (${userId}) : ${e}`);
         return { current: 0, best: 0 };
       }),
+      this.prisma.attributeScore.findMany({ where: { userId }, select: { attribute: true, score: true, unlocked: true } }),
     ]);
+
+    // Percentile « humanité » (normes de population) : top X% des humains les plus en forme.
+    const radar: AttributeResult[] = attrRows.map((a) => ({
+      attribute: a.attribute as AttributeKey,
+      score: a.score,
+      unlocked: a.unlocked,
+      isEstimated: false,
+      isStale: false,
+      bestAgeWeeks: null,
+    }));
+    const popP = popPercentileIndex(sex, (profile?.goal ?? "all_round") as Goal, radar);
+    const humanityTopPercent = Math.max(1, Math.round((1 - popP) * 100));
 
     // Percentile de ligue : seulement si la population est suffisante (sinon « Top 1% » trivial).
     let percentile = 0;
@@ -62,6 +76,7 @@ export class BadgesService {
       rank: profile?.rank ?? "rookie",
       index: idx ? Math.round(ratingFromInternal(idx.value)) : 0, // OVR /100 (cohérent avec l'affichage)
       percentile,
+      humanityTopPercent,
       attributesAllUnlocked: unlockedAttrs >= 6,
       streakCurrent: streakState.current,
       streakBest: streakState.best,

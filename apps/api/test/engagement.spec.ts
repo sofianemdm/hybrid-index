@@ -33,6 +33,7 @@ describe("matchesCondition (moteur de badges)", () => {
     rank: "gold",
     index: 760,
     percentile: 96,
+    humanityTopPercent: 4,
     attributesAllUnlocked: true,
     streakCurrent: 5,
     streakBest: 12,
@@ -42,6 +43,12 @@ describe("matchesCondition (moteur de badges)", () => {
     expect(matchesCondition("confirmed", base)).toBe(true); // 10 séances, 6 relations
     expect(matchesCondition("confirmed", { ...base, followsCount: 4 })).toBe(false);
     expect(matchesCondition("confirmed", { ...base, logCount: 3 })).toBe(false);
+  });
+
+  it("« humanity<=X » : top X% des humains", () => {
+    expect(matchesCondition("humanity<=5", base)).toBe(true); // top 4%
+    expect(matchesCondition("humanity<=2", base)).toBe(false);
+    expect(matchesCondition("humanity<=25", base)).toBe(true);
   });
 
   it("comparateurs >= sur rang/index/percentile/streak/wods", () => {

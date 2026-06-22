@@ -647,6 +647,29 @@ class BadgeModel {
         rarity: j['rarity'] as String,
         unlocked: j['unlocked'] as bool? ?? false,
       );
+
+  /// Série progressive à laquelle ce badge appartient (sinon null = badge isolé).
+  /// L'app n'affiche, par série, que le palier atteint + le palier suivant.
+  String? get series {
+    if (id.startsWith('index-')) return 'index';
+    if (id.startsWith('rank-')) return 'rank';
+    if (id.startsWith('top-')) return 'league';
+    if (id.startsWith('humanity-')) return 'humanity';
+    return null;
+  }
+
+  /// Rang du palier dans sa série (croissant = plus difficile).
+  int get seriesOrder {
+    if (id.startsWith('index-')) return int.tryParse(id.substring(6)) ?? 0;
+    if (id.startsWith('rank-')) {
+      const order = {'rookie': 0, 'bronze': 1, 'silver': 2, 'gold': 3, 'platinum': 4, 'diamond': 5, 'elite': 6};
+      return order[id.substring(5)] ?? 0;
+    }
+    // league (top-50→25→5→1) & humanity (25→…→1) : plus le % est petit, plus c'est élevé.
+    if (id.startsWith('top-')) return 100 - (int.tryParse(id.substring(4)) ?? 100);
+    if (id.startsWith('humanity-')) return 100 - (int.tryParse(id.substring(9)) ?? 100);
+    return 0;
+  }
 }
 
 class AvatarConfig {

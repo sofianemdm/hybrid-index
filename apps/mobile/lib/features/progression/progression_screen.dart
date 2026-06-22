@@ -48,6 +48,7 @@ class _ProgressionScreenState extends ConsumerState<ProgressionScreen> {
               ]);
             }
             final badges = snap.data!;
+            final visible = _visibleBadges(badges);
             return ListView(
               padding: const EdgeInsets.fromLTRB(HiSpace.lg, HiSpace.lg, HiSpace.lg, 96),
               children: [
@@ -68,8 +69,10 @@ class _ProgressionScreenState extends ConsumerState<ProgressionScreen> {
                   ),
                 ),
                 const SizedBox(height: HiSpace.lg),
-                Text('Badges (${badges.where((b) => b.unlocked).length}/${badges.length})',
+                Text('Badges (${badges.where((b) => b.unlocked).length}/${badges.length} débloqués)',
                     style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 16)),
+                Text('Pour chaque série, ton palier actuel et le prochain à viser.',
+                    style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
                 const SizedBox(height: HiSpace.sm),
                 GridView.count(
                   crossAxisCount: 2,
@@ -78,7 +81,7 @@ class _ProgressionScreenState extends ConsumerState<ProgressionScreen> {
                   childAspectRatio: 2.6,
                   crossAxisSpacing: 8,
                   mainAxisSpacing: 8,
-                  children: badges.map(_badgeTile).toList(),
+                  children: visible.map(_badgeTile).toList(),
                 ),
               ],
             );
@@ -88,6 +91,34 @@ class _ProgressionScreenState extends ConsumerState<ProgressionScreen> {
     );
   }
 
+
+  /// Réduit les séries progressives : par série, on ne montre que le palier le plus haut
+  /// atteint + le prochain à débloquer. Les badges isolés (sans série) sont tous affichés.
+  List<BadgeModel> _visibleBadges(List<BadgeModel> all) {
+    final result = <BadgeModel>[];
+    final bySeries = <String, List<BadgeModel>>{};
+    for (final b in all) {
+      final s = b.series;
+      if (s == null) {
+        result.add(b);
+      } else {
+        bySeries.putIfAbsent(s, () => []).add(b);
+      }
+    }
+    for (final group in bySeries.values) {
+      group.sort((a, b) => a.seriesOrder.compareTo(b.seriesOrder));
+      final unlocked = group.where((b) => b.unlocked).toList();
+      if (unlocked.isEmpty) {
+        result.add(group.first); // aucun atteint → premier palier à viser
+        continue;
+      }
+      final current = unlocked.last; // plus haut palier atteint
+      result.add(current);
+      final next = group.where((b) => !b.unlocked && b.seriesOrder > current.seriesOrder);
+      if (next.isNotEmpty) result.add(next.first); // prochain à débloquer
+    }
+    return result;
+  }
 
   Widget _badgeTile(BadgeModel b) {
     final color = _rarityColor(b.rarity);
