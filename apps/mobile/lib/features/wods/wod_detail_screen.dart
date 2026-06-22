@@ -458,7 +458,7 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
           if (!h.rxCompliant)
             Padding(
               padding: const EdgeInsets.only(right: 8),
-              child: Text('Scaled', style: TextStyle(color: HiColors.textTertiary, fontSize: 11)),
+              child: Text(widget.wodId == 'hyrox_solo' ? 'Open' : 'Scaled', style: TextStyle(color: HiColors.textTertiary, fontSize: 11)),
             ),
           if (h.subScore != null)
             Text('${h.subScore} pts', style: TextStyle(color: HiColors.brandPrimary, fontWeight: FontWeight.w800)),

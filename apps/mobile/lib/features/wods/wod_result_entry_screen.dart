@@ -31,6 +31,15 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
 
   bool get _isTime => widget.scoreType == 'time';
   bool get _isFreeRun => widget.wodId == 'run_free_distance';
+  // HYROX (solo) se court en catégorie Pro ou Open (poids/obstacles différents) → on mappe
+  // Pro = "prescrit" (rxCompliant true) et Open = "adapté" (false), classements séparés.
+  bool get _isHyrox => widget.wodId == 'hyrox_solo';
+
+  @override
+  void initState() {
+    super.initState();
+    if (_isHyrox) _rx = false; // défaut HYROX : Open (catégorie la plus courante).
+  }
 
   @override
   void dispose() {
@@ -158,16 +167,16 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
                 // Échelle Rx/Scaled : sans objet pour une course à distance libre (on court, point).
                 if (!_isFreeRun) ...[
                   const SizedBox(height: HiSpace.lg),
-                  Text('Échelle', style: TextStyle(color: HiColors.textSecondary)),
+                  Text(_isHyrox ? 'Catégorie' : 'Échelle', style: TextStyle(color: HiColors.textSecondary)),
                   const SizedBox(height: 8),
                   Row(children: [
-                    _scaleChip('Rx (prescrit)', true),
+                    _scaleChip(_isHyrox ? 'Pro' : 'Rx (prescrit)', true),
                     const SizedBox(width: 8),
-                    _scaleChip('Scaled (adapté)', false),
+                    _scaleChip(_isHyrox ? 'Open' : 'Scaled (adapté)', false),
                   ]),
-                  if (pref != null) ...[
+                  if (_isHyrox || pref != null) ...[
                     const SizedBox(height: HiSpace.sm),
-                    Text('Le classement Rx et Scaled sont séparés.',
+                    Text(_isHyrox ? 'Les classements Pro et Open sont séparés.' : 'Le classement Rx et Scaled sont séparés.',
                         style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
                   ],
                 ],
