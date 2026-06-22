@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { AttributeResult } from "./attribute";
-import { hybridIndex, indexPercentile, projectedIndex } from "./index-score";
+import { coverageAdjustedValue, hybridIndex, indexPercentile, projectedIndex } from "./index-score";
 import { ratingFromInternal } from "./curve";
 
 const attr = (
@@ -58,29 +58,25 @@ describe("hybridIndex", () => {
   });
 });
 
-describe("shrinkage de couverture (display-v2)", () => {
-  const ATTRS = ["engine", "speed", "strength", "power", "muscular_endurance", "hybrid"] as const;
-
-  it("1 seul attribut : l'OVR n'est PAS la valeur de l'attribut (tiré vers la médiane)", () => {
-    const r = hybridIndex([attr("engine", 832)], "all_round", 1);
-    expect(r.value).toBe(832); // interne inchangé (clé de tri du classement)
-    // 832 vaudrait ~84 à couverture pleine ; à 1/6 mesuré il s'affiche nettement plus bas.
-    expect(r.ratingInt!).toBeGreaterThan(55);
-    expect(r.ratingInt!).toBeLessThan(78);
+describe("coverageAdjustedValue (ajustement de couverture, appliqué à la persistance)", () => {
+  it("1 seul attribut : la valeur est tirée vers la médiane (l'OVR n'est plus la valeur brute)", () => {
+    const adj = coverageAdjustedValue(832, 1);
+    expect(adj).toBeLessThan(832); // tiré vers le bas (5/6 du profil présumé médian)
+    // 832 vaut ~84 à couverture pleine ; à 1/6 mesuré l'OVR ajusté est nettement plus bas.
+    expect(Math.round(ratingFromInternal(adj))).toBeGreaterThan(55);
+    expect(Math.round(ratingFromInternal(adj))).toBeLessThan(78);
   });
 
-  it("monotone : ajouter un attribut au même niveau fait monter l'OVR (jamais chuter)", () => {
-    const one = hybridIndex([attr("engine", 832)], "all_round", 1).ratingInt!;
-    const three = hybridIndex([attr("engine", 832), attr("power", 832), attr("hybrid", 832)], "all_round", 3).ratingInt!;
-    const six = hybridIndex(ATTRS.map((a) => attr(a, 832)), "all_round", 6).ratingInt!;
-    expect(three).toBeGreaterThanOrEqual(one);
-    expect(six).toBeGreaterThanOrEqual(three);
+  it("monotone : plus la couverture est élevée, plus la valeur ajustée remonte", () => {
+    const c1 = coverageAdjustedValue(832, 1);
+    const c3 = coverageAdjustedValue(832, 3);
+    const c6 = coverageAdjustedValue(832, 6);
+    expect(c3).toBeGreaterThanOrEqual(c1);
+    expect(c6).toBeGreaterThanOrEqual(c3);
   });
 
-  it("couverture pleine (6/6) : converge EXACTEMENT vers la note no-drop (pas de déflation)", () => {
-    const full = hybridIndex(ATTRS.map((a) => attr(a, 832)), "all_round", 6); // value=832, couverture=6
-    // À 6/6 le terme baseline s'annule → l'OVR affiché = la note no-drop brute de la valeur interne.
-    expect(full.ratingInt).toBe(Math.round(ratingFromInternal(832)));
+  it("couverture pleine (6/6) : AUCUN ajustement (valeur inchangée, pas de déflation)", () => {
+    expect(coverageAdjustedValue(832, 6)).toBe(832);
   });
 });
 

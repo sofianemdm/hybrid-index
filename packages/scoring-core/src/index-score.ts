@@ -1,7 +1,7 @@
 import type { AttributeKey, Goal } from "@hybrid-index/contracts";
 import { normalCdf } from "./math/normal";
 import { clampPercentile } from "./distribution";
-import { percentileFromInternal, ratingFromPercentile } from "./curve";
+import { percentileFromInternal, ratingFromInternal, subScoreFromPercentile } from "./curve";
 import { WEIGHTS_V1 } from "./weights";
 import type { AttributeResult } from "./attribute";
 
@@ -12,16 +12,19 @@ import type { AttributeResult } from "./attribute";
  * - `isProvisional` tant que couverture insuffisante (< 3 attributs ET < 3 efforts).
  * - `isEstimated` si au moins un attribut entrant est estimé (proxy Force).
  *
- * AFFICHAGE — shrinkage de couverture (display-v2, cf. sport-science §6) : un seul attribut mesuré
- * ne doit pas afficher un Index global égal à cet attribut (trompeur : 5/6 du profil est inconnu).
- * L'absence de mesure n'est pas neutre — son espérance est la médiane population, pas le meilleur
- * attribut testé. On calcule donc l'Index affiché comme la moyenne, EN ESPACE PERCENTILE, des 6
- * attributs où les NON MESURÉS sont présumés à la médiane (P_base = 0.5) :
- *   P_shrunk = (c · P_obs + (N − c) · P_base) / N      (N = 6 attributs, c = couverture)
- * À couverture pleine (c = N) le terme baseline s'annule → l'affichage rejoint EXACTEMENT la note
- * no-drop (pas de déflation permanente). À couverture faible, l'Index est tiré vers la médiane et
- * remonte à chaque attribut mesuré. La valeur INTERNE /1000 (clé de tri des classements) reste la
- * moyenne no-drop pure : le shrinkage n'affecte QUE l'affichage /100.
+ * COUVERTURE PARTIELLE (cf. sport-science §6) : un seul attribut mesuré ne doit pas produire un
+ * Index global égal à cet attribut (trompeur : 5/6 du profil est inconnu). L'absence de mesure
+ * n'est pas neutre — son espérance est la médiane population. `coverageAdjustedValue(value, c)`
+ * mélange donc, EN ESPACE PERCENTILE, les attributs mesurés avec une baseline médiane pour les NON
+ * mesurés, puis re-convertit en valeur interne /1000 :
+ *   P_shrunk = (c · P_obs + (N − c) · P_base) / N   →   value_ajustée = subScoreFromPercentile(P_shrunk)
+ * À couverture pleine (c = N) le terme baseline s'annule → AUCUN ajustement. À couverture faible,
+ * la valeur est tirée vers la médiane et remonte à chaque attribut mesuré.
+ *
+ * IMPORTANT : `hybridIndex()` renvoie la valeur no-drop PURE (ses tests/le score-service en
+ * dépendent). C'est la couche de PERSISTANCE (API `recomputeForUser`) qui applique
+ * `coverageAdjustedValue` AVANT de stocker → la valeur stockée (= clé de tri Redis/PG, affichage,
+ * rang, badges) est l'Index ajusté, UNIQUE source de vérité, cohérente entre classement et OVR.
  */
 
 export const INDEX_MU = 450;
@@ -53,18 +56,19 @@ export interface IndexResult {
  * où l'on affiche l'Index (profil, classement, clubs, badges) pour rester cohérent — JAMAIS pour
  * un sous-score de WOD ou un attribut isolé (eux gardent `ratingFromInternal`).
  */
-export function indexDisplayRating(value: number, coverage: number): number {
-  const pObs = percentileFromInternal(value);
+export function coverageAdjustedValue(value: number, coverage: number): number {
   const c = Math.max(0, Math.min(coverage, RADAR_ATTRIBUTE_COUNT));
-  if (c <= 0) return ratingFromPercentile(pObs);
+  if (c >= RADAR_ATTRIBUTE_COUNT || c <= 0) return value; // 6/6 → aucun shrinkage ; 0 → value (0) tel quel
+  const pObs = percentileFromInternal(value);
   const pShrunk = (c * pObs + (RADAR_ATTRIBUTE_COUNT - c) * SHRINK_P_BASE) / RADAR_ATTRIBUTE_COUNT;
-  return ratingFromPercentile(pShrunk);
+  return subScoreFromPercentile(pShrunk); // re-convertit en valeur interne /1000 (clé de tri cohérente)
 }
 
-/** Note d'affichage /100 (null si non mesuré). Voir `indexDisplayRating`. */
+/** Note d'affichage /100 d'une valeur interne /1000 (null si non mesuré). PURE : pas de shrinkage
+ *  ici — l'ajustement de couverture est déjà appliqué à la valeur stockée via `coverageAdjustedValue`. */
 function display(value: number, coverage: number): { rating: number | null; ratingInt: number | null } {
   if (coverage === 0) return { rating: null, ratingInt: null };
-  const rating = indexDisplayRating(value, coverage);
+  const rating = ratingFromInternal(value);
   return { rating, ratingInt: Math.round(rating) };
 }
 

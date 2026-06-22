@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { ATTRIBUTE_KEYS, type AttributeKey, type Goal, type Sex, type internalScore, rankFromIndex, rankProgress } from "@hybrid-index/contracts";
-import { type AttributeResult, bandFromP, indexDisplayRating, popPercentileIndex, ratingFromInternal } from "@hybrid-index/scoring-core";
+import { type AttributeResult, bandFromP, coverageAdjustedValue, indexPercentile, popPercentileIndex, ratingFromInternal } from "@hybrid-index/scoring-core";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { RedisService } from "../../infra/redis/redis.service";
 import { ScoreClient } from "../../infra/score-client/score-client.service";
@@ -159,11 +159,25 @@ export class ProfileScoringService {
     }
     const index = await this.scoreClient.computeIndex({ sex: profile.sex, goal: profile.goal, attributeScores });
 
-    const computedProfile: internalScore.ComputeProfileResponse = { index, radar: mergedRadar };
+    // Ajustement de couverture partielle : la valeur STOCKÉE (clé de tri du classement + OVR + rang)
+    // intègre la pénalité tant que le radar n'est pas complet (à 6/6 c'est un no-op). On garantit
+    // ainsi que classement et note affichée sont cohérents (un profil incomplet ne « dépasse » plus
+    // un profil complet au score inférieur). cf. coverageAdjustedValue (scoring-core).
+    const adjValue = coverageAdjustedValue(index.value, index.radarCoverage);
+    const unlocked = index.radarCoverage > 0;
+    const adjIndex: internalScore.ComputeIndexResponse = {
+      ...index,
+      value: adjValue,
+      percentile: indexPercentile(adjValue),
+      rating: unlocked ? ratingFromInternal(adjValue) : null,
+      ratingInt: unlocked ? Math.round(ratingFromInternal(adjValue)) : null,
+    };
+
+    const computedProfile: internalScore.ComputeProfileResponse = { index: adjIndex, radar: mergedRadar };
     const previousBand =
       (await this.prisma.hybridIndex.findUnique({ where: { userId }, select: { populationBand: true } }))
         ?.populationBand ?? null;
-    const socialProof = await this.buildSocialProof(profile.sex, profile.goal, mergedRadar, index.percentile);
+    const socialProof = await this.buildSocialProof(profile.sex, profile.goal, mergedRadar, adjIndex.percentile);
     await this.persist(userId, profile.sex, computedProfile, socialProof.population);
     const result = toPersistedProfile(computedProfile, socialProof);
 
@@ -375,10 +389,11 @@ export class ProfileScoringService {
         // `index` est une ligne DB (valeur interne /1000) → on dérive l'OVR /100.
         // `value` est TOUJOURS un entier non-null (contrat unique avec l'onboarding) ;
         // un index sans aucun attribut tombe au plancher, pas à null.
-        const ratingInt = Math.round(indexDisplayRating(index.value, index.radarCoverage));
+        // `index.value` est DÉJÀ la valeur ajustée par couverture (appliquée à la persistance).
+        const ratingInt = Math.round(ratingFromInternal(index.value));
         return {
-          value: ratingInt, // OVR /100 affiché (shrinkage de couverture inclus)
-          rating: index.radarCoverage > 0 ? indexDisplayRating(index.value, index.radarCoverage) : null,
+          value: ratingInt, // OVR /100 affiché
+          rating: index.radarCoverage > 0 ? ratingFromInternal(index.value) : null,
           internal: index.value, // valeur interne /1000 (tri/debug)
           percentile: Number(index.percentile),
           rank: rankFromIndex(ratingInt),

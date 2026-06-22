@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { type internalScore, type onboardingDto, rankFromIndex } from "@hybrid-index/contracts";
-import { ratingFromInternal } from "@hybrid-index/scoring-core";
+import { coverageAdjustedValue, indexPercentile, ratingFromInternal } from "@hybrid-index/scoring-core";
 import { ScoreClient } from "../../infra/score-client/score-client.service";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { ProfileScoringService, type PersistedProfile } from "../profile/profile-scoring.service";
@@ -31,12 +31,16 @@ export class OnboardingService {
 
     const profile = await this.scoreClient.computeProfile({ sex: req.sex, goal: req.goal, efforts });
 
+    // Ajustement de couverture (cohérent avec le profil persisté après onboarding) : la révélation
+    // affiche déjà l'Index ajusté, qui remontera à mesure que le radar se complète.
+    const adjValue = coverageAdjustedValue(profile.index.value, profile.index.radarCoverage);
+    const ovr = Math.round(ratingFromInternal(adjValue));
+
     return {
       index: {
-        // OVR /100 révélé (toujours mesuré ici ; fallback dérivé par sécurité de typage).
-        value: profile.index.ratingInt ?? Math.round(ratingFromInternal(profile.index.value)),
-        percentile: profile.index.percentile,
-        rank: rankFromIndex(profile.index.ratingInt ?? Math.round(ratingFromInternal(profile.index.value))),
+        value: ovr, // OVR /100 révélé (ajusté par couverture)
+        percentile: indexPercentile(adjValue),
+        rank: rankFromIndex(ovr),
         isProvisional: profile.index.isProvisional,
         isEstimated: profile.index.isEstimated,
         radarCoverage: profile.index.radarCoverage,

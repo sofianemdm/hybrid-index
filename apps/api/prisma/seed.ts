@@ -2,7 +2,7 @@
 import { PrismaClient, type AttributeKey, type Sex, type ScoreType, type WodType } from "@prisma/client";
 import Redis from "ioredis";
 import { rankFromIndex } from "@hybrid-index/contracts";
-import { ratingFromInternal, indexDisplayRating } from "@hybrid-index/scoring-core";
+import { ratingFromInternal } from "@hybrid-index/scoring-core";
 import { BADGES } from "../src/modules/engagement/badges.data";
 
 const SCORING_VERSION_UUID = "11111111-1111-1111-1111-111111111111";
@@ -232,7 +232,7 @@ async function main(): Promise<void> {
           percentile,
           isProvisional: false,
           isEstimated: false,
-          radarCoverage: rand(3, 6),
+          radarCoverage: 6, // les seeds ont leurs 6 attributs débloqués → couverture pleine (pas d'ajustement)
           confidenceLevel: "medium",
           scoringVersionId: SCORING_VERSION_UUID,
         },
@@ -391,10 +391,10 @@ async function main(): Promise<void> {
   // Backfill display-v1 : recale le rang stocké de TOUS les profils sur l'OVR /100
   // (corrige les rangs écrits sous l'ancienne échelle /1000, vrais comptes inclus).
   console.log("Seed: backfill des rangs sur l'échelle /100…");
-  const allIndexes = await prisma.hybridIndex.findMany({ select: { userId: true, value: true, radarCoverage: true } });
+  const allIndexes = await prisma.hybridIndex.findMany({ select: { userId: true, value: true } });
   let fixed = 0;
   for (const hi of allIndexes) {
-    const rank = rankFromIndex(Math.round(indexDisplayRating(hi.value, hi.radarCoverage)));
+    const rank = rankFromIndex(Math.round(ratingFromInternal(hi.value)));
     const res = await prisma.profile.updateMany({ where: { userId: hi.userId, rank: { not: rank } }, data: { rank } });
     fixed += res.count;
   }

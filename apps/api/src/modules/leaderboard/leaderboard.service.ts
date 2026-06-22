@@ -1,12 +1,12 @@
 import { Injectable } from "@nestjs/common";
 import type { Sex } from "@prisma/client";
-import { indexDisplayRating } from "@hybrid-index/scoring-core";
+import { ratingFromInternal } from "@hybrid-index/scoring-core";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { RedisService } from "../../infra/redis/redis.service";
 
-/** Valeur interne /1000 → OVR /100 affiché (shrinkage de couverture inclus ; le tri reste sur la
- *  valeur interne). `coverage` = nb d'attributs débloqués ; 6 par défaut (aucun shrinkage). */
-const ovr = (internal: number, coverage = 6): number => Math.round(indexDisplayRating(internal, coverage));
+/** Valeur interne stockée (déjà ajustée par couverture) → OVR /100 affiché. Le tri (Redis/PG) se
+ *  fait sur cette même valeur ajustée → classement et OVR cohérents. */
+const ovr = (internal: number): number => Math.round(ratingFromInternal(internal));
 
 export interface LeaderboardEntry {
   position: number; // 1-indexé
@@ -53,12 +53,11 @@ export class LeaderboardService {
     }
 
     const names = await this.namesFor(rows.map((r) => r.userId));
-    const coverage = await this.coverageFor(rows.map((r) => r.userId));
     const entries: LeaderboardEntry[] = rows.map((r, i) => ({
       position: i + 1,
       userId: r.userId,
       displayName: names.get(r.userId)?.displayName ?? "—",
-      value: ovr(r.value, coverage.get(r.userId) ?? 6),
+      value: ovr(r.value),
       rank: names.get(r.userId)?.rank ?? "rookie",
       isMe: r.userId === meUserId,
     }));
@@ -84,11 +83,7 @@ export class LeaderboardService {
       }
     }
 
-    let meCoverage = 6;
-    if (me && meUserId) {
-      meCoverage = coverage.get(meUserId) ?? (await this.coverageFor([meUserId])).get(meUserId) ?? 6;
-    }
-    return { sex, total, entries, me: me ? { position: me.position, value: ovr(me.value, meCoverage) } : null };
+    return { sex, total, entries, me: me ? { position: me.position, value: ovr(me.value) } : null };
   }
 
   /** Position 1-indexée + valeur d'un utilisateur, via Redis puis Postgres. */
@@ -118,16 +113,6 @@ export class LeaderboardService {
 
   private async pgCount(sex: string): Promise<number> {
     return this.prisma.hybridIndex.count({ where: { user: { profile: { sex: sex as Sex } } } });
-  }
-
-  /** Couverture du radar (nb d'attributs débloqués) par userId — pour le shrinkage d'affichage. */
-  private async coverageFor(userIds: string[]): Promise<Map<string, number>> {
-    if (userIds.length === 0) return new Map();
-    const rows = await this.prisma.hybridIndex.findMany({
-      where: { userId: { in: userIds } },
-      select: { userId: true, radarCoverage: true },
-    });
-    return new Map(rows.map((r) => [r.userId, r.radarCoverage]));
   }
 
   private async namesFor(userIds: string[]): Promise<Map<string, { displayName: string; rank: string }>> {
