@@ -34,11 +34,13 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
   // HYROX (solo) se court en catégorie Pro ou Open (poids/obstacles différents) → on mappe
   // Pro = "prescrit" (rxCompliant true) et Open = "adapté" (false), classements séparés.
   bool get _isHyrox => widget.wodId == 'hyrox_solo';
-  // WODs purement cardio (course / rameur) : l'échelle Rx/Scaled n'a aucun sens (on court/rame, point).
-  static const _noScaleWods = {
-    'run_1k', 'run_3k', 'run_5k', 'run_free_distance', 'row_2k', 'track_10000m', 'half_marathon', 'marathon',
+  // L'échelle Rx/Scaled n'a de sens que pour les WODs à CHARGE (barre/haltère/KB/wall ball).
+  // Les épreuves cardio (course, rameur) et au poids du corps (pompes, squats, burpees, Cindy,
+  // Benchmark Zéro, Machine & Mur…) n'ont rien à « scaler » → on masque l'échelle.
+  static const _scaleWods = {
+    'fran', 'grace', 'jackie', 'karen', 'helen', 'hyrox_sprint', 'isabel', 'murph',
   };
-  bool get _noScale => _noScaleWods.contains(widget.wodId);
+  bool get _hasScale => _scaleWods.contains(widget.wodId);
 
   @override
   void initState() {
@@ -87,6 +89,7 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
       };
       final profile = await ref.read(apiClientProvider).logWodResult(widget.wodId, payload);
       ref.invalidate(myProfileProvider);
+      ref.invalidate(completionPlanProvider); // un attribut vient peut-être d'être débloqué
       if (!mounted) return;
       if (profile != null) {
         await showDialog<void>(
@@ -169,8 +172,8 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
                   ])
                 else
                   _num(_value, 'résultat', decimal: widget.scoreType == 'load'),
-                // Échelle Rx/Scaled : sans objet pour les épreuves cardio (course, rameur).
-                if (!_noScale) ...[
+                // Échelle Rx/Scaled : uniquement pour les WODs à charge ; Pro/Open pour HYROX solo.
+                if (_isHyrox || _hasScale) ...[
                   const SizedBox(height: HiSpace.lg),
                   Text(_isHyrox ? 'Catégorie' : 'Échelle', style: TextStyle(color: HiColors.textSecondary)),
                   const SizedBox(height: 8),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app.dart';
+import '../../data/session.dart';
 import '../../theme/tokens.dart';
 import '../leaderboard/leaderboard_screen.dart';
 import '../log/log_wod_screen.dart';
@@ -107,6 +108,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     final changed = await Navigator.of(context).push<bool>(route);
     if (changed == true || choice == 'build') {
       ref.invalidate(myProfileProvider);
+      ref.invalidate(completionPlanProvider);
     }
   }
 

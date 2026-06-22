@@ -6,11 +6,6 @@ import '../../data/session.dart';
 import '../../theme/tokens.dart';
 import '../wods/wod_detail_screen.dart';
 
-/// Séances pour compléter le radar (révéler le vrai Index). autoDispose : rechargé à chaque
-/// ouverture de l'accueil, libéré ensuite.
-final completionPlanProvider =
-    FutureProvider.autoDispose<CompletionPlan>((ref) => ref.read(apiClientProvider).completionPlan());
-
 /// Bloc accueil sous l'Index : chip de grade (« 70+ »), barre de progression vers le palier
 /// suivant, notice « Index estimé » + séances à faire tant que le radar n'est pas complet.
 class GradeBlock extends ConsumerWidget {

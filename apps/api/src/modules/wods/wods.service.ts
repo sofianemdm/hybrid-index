@@ -292,6 +292,12 @@ export class WodsService {
 
   /** Classement d'un WOD (meilleur effort par utilisateur, par sexe, variante Rx ou Scaled). */
   async leaderboard(id: string, sex: string, rx: boolean, userId?: string, memberIds?: string[]): Promise<unknown> {
+    // Classement par PERFORMANCE RÉELLE (même WOD, même sexe, même variante) : le temps le plus bas
+    // gagne pour un WOD chronométré, le plus de reps/charge sinon. On NE trie PAS sur subScore : il
+    // peut diverger du temps réel pour les comptes de démonstration → l'ordre paraîtrait incohérent
+    // avec les temps affichés. Le tri sur la perf brute est toujours cohérent avec l'affichage.
+    const wod = await this.prisma.wod.findUnique({ where: { id }, select: { scoreType: true } });
+    const better: "asc" | "desc" = wod?.scoreType === "time" ? "asc" : "desc";
     const rows = await this.prisma.wodResult.findMany({
       where: {
         wodId: id,
@@ -301,8 +307,8 @@ export class WodsService {
         rxCompliant: rx,
         ...(memberIds ? { userId: { in: memberIds } } : {}), // filtre « Mon club » (C3)
       },
-      orderBy: [{ subScore: "desc" }],
-      distinct: ["userId"], // meilleur effort par utilisateur (premier dans l'ordre subScore desc)
+      orderBy: [{ rawResult: better }],
+      distinct: ["userId"], // meilleur effort par utilisateur (premier dans l'ordre = sa meilleure perf)
       take: 100,
       select: { userId: true, subScore: true, rawResult: true },
     });

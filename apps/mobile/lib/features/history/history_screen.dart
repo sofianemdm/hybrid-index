@@ -63,6 +63,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     try {
       await ref.read(apiClientProvider).deleteResult(r.id);
       ref.invalidate(myProfileProvider);
+      ref.invalidate(completionPlanProvider); // suppression → un attribut peut redevenir verrouillé
       if (mounted) setState(() => _future = ref.read(apiClientProvider).results());
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));

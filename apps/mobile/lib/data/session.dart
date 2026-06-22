@@ -7,6 +7,11 @@ import 'models.dart';
 /// Client API partagé (singleton applicatif).
 final apiClientProvider = Provider<ApiClient>((ref) => ApiClient());
 
+/// Plan de séances pour compléter le radar (révéler le vrai Index). À invalider après tout log/suppression
+/// de résultat (les attributs débloqués changent). autoDispose : rechargé à l'ouverture de l'accueil.
+final completionPlanProvider =
+    FutureProvider.autoDispose<CompletionPlan>((ref) => ref.read(apiClientProvider).completionPlan());
+
 enum AuthStatus { loading, loggedOut, loggedIn }
 
 class SessionState {
