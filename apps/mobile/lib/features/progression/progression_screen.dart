@@ -6,6 +6,7 @@ import '../../data/session.dart';
 import '../../theme/tokens.dart';
 import '../challenge/challenge_screen.dart';
 import '../endgame/endgame_screen.dart';
+import '../history/history_screen.dart';
 
 /// Progression : défi de la semaine + Grand Chelem + badges débloqués.
 class ProgressionScreen extends ConsumerStatefulWidget {
@@ -54,6 +55,19 @@ class _ProgressionScreenState extends ConsumerState<ProgressionScreen> {
               children: [
                 Text('Progression',
                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: HiColors.textPrimary)),
+                const SizedBox(height: HiSpace.md),
+                OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(48),
+                    side: BorderSide(color: HiColors.strokeStrong),
+                    foregroundColor: HiColors.textPrimary,
+                  ),
+                  icon: const Icon(Icons.history),
+                  label: const Text('Mon historique de séance'),
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const HistoryScreen()),
+                  ),
+                ),
                 const SizedBox(height: HiSpace.md),
                 const ChallengeBanner(),
                 OutlinedButton.icon(

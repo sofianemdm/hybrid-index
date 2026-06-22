@@ -6,6 +6,7 @@ import '../../data/session.dart';
 import '../../theme/tokens.dart';
 import 'wod_detail_screen.dart';
 import 'other_workouts_screen.dart';
+import '../history/history_screen.dart';
 
 /// Onglet WOD : catalogue des WODs (15 références + communautaires à venir).
 class WodTab extends ConsumerStatefulWidget {
@@ -52,6 +53,8 @@ class _WodTabState extends ConsumerState<WodTab> {
                 const SizedBox(height: 4),
                 Text('Choisis une séance (aussi appelée « WOD »), vois les records et où tu te situes.',
                     style: TextStyle(color: HiColors.textSecondary)),
+                const SizedBox(height: HiSpace.md),
+                _historyButton(context),
                 const SizedBox(height: HiSpace.lg),
                 if (phares.isNotEmpty) ...[
                   _section('⭐ Séances phares'),
@@ -95,6 +98,20 @@ class _WodTabState extends ConsumerState<WodTab> {
       ),
     );
   }
+
+  /// Raccourci vers l'historique des séances loggées (avec suppression).
+  Widget _historyButton(BuildContext context) => OutlinedButton.icon(
+        style: OutlinedButton.styleFrom(
+          minimumSize: const Size.fromHeight(48),
+          side: BorderSide(color: HiColors.strokeStrong),
+          foregroundColor: HiColors.textPrimary,
+        ),
+        icon: const Icon(Icons.history),
+        label: const Text('Mon historique de séance'),
+        onPressed: () => Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const HistoryScreen()),
+        ),
+      );
 
   Widget _section(String t) => Padding(
         padding: const EdgeInsets.only(bottom: HiSpace.sm),

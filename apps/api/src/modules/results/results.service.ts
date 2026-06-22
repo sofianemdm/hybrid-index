@@ -135,7 +135,14 @@ export class ResultsService {
       throw new NotFoundException({ code: "NOT_FOUND", message: "Résultat introuvable." });
     }
     await this.prisma.wodResult.delete({ where: { id } });
-    const profile = await this.profileScoring.recomputeForUser(userId);
+    // Le recalcul de l'Index (2 appels HTTP au score-service) est best-effort : la suppression a
+    // déjà réussi, on ne doit JAMAIS renvoyer une erreur à l'utilisateur si le recalcul blip.
+    let profile: PersistedProfile | null = null;
+    try {
+      profile = await this.profileScoring.recomputeForUser(userId);
+    } catch (e) {
+      this.logger.warn(`Recalcul après suppression échoué (${userId}/${id}) : ${e}`);
+    }
     return { deleted: true, profile };
   }
 

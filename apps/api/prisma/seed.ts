@@ -203,7 +203,7 @@ async function main(): Promise<void> {
   const sexes: Sex[] = ["male", "female"];
   let created = 0;
   for (const sex of sexes) {
-    for (let i = 0; i < 40; i++) {
+    for (let i = 0; i < 10; i++) {
       const email = `seed_${sex}_${i}@hybrid.local`;
       const displayName = displayNameFor(i, sex);
       const goal = GOALS[i % GOALS.length];
@@ -308,7 +308,6 @@ async function main(): Promise<void> {
     ];
     for (const a of roster) {
       const value = Math.max(910, 985 - eliteIdx * 2 - rand(0, 6)); // élite, légère variation
-      const percentile = Math.min(0.9999, value / 1000);
       const rank = rankFromIndex(Math.round(ratingFromInternal(value)));
       const email = `seed_elite_${eliteIdx}@hybrid.local`;
       const user = await prisma.user.upsert({
@@ -322,20 +321,8 @@ async function main(): Promise<void> {
         },
         update: { profile: { update: { rank } } },
       });
-      await prisma.hybridIndex.upsert({
-        where: { userId: user.id },
-        create: {
-          userId: user.id,
-          value,
-          percentile,
-          isProvisional: false,
-          isEstimated: false,
-          radarCoverage: 6,
-          confidenceLevel: "medium",
-          scoringVersionId: SCORING_VERSION_UUID,
-        },
-        update: { value, percentile, scoringVersionId: SCORING_VERSION_UUID },
-      });
+      // Pas de HybridIndex pour les pros : ils animent le feed (posts publics) mais
+      // N'APPARAISSENT PAS au classement (décision : pas de pros dans la ligue).
       for (const attribute of ATTRS) {
         const score = Math.min(1000, Math.max(700, value + rand(-40, 25)));
         await prisma.attributeScore.upsert({
@@ -394,11 +381,7 @@ async function main(): Promise<void> {
       await prisma.post.create({
         data: { authorId: user.id, kind: "text", body: disc.captions[(eliteIdx + 1) % disc.captions.length] },
       });
-      if (redisOk) {
-        await redis.zadd(`leaderboard:${a.sex}`, value, user.id).catch(() => {
-          redisOk = false;
-        });
-      }
+      // (pas de zadd Redis : les pros sont hors classement)
       created++;
       eliteIdx++;
     }

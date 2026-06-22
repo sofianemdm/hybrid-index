@@ -37,6 +37,7 @@ export const BADGES: BadgeDef[] = [
   { id: "index-85", category: "progression", name: "Seuil 85", description: "Franchis un HYBRID INDEX de 85.", rarity: "epic", condition: "index>=85", cosmeticUnlock: null },
   { id: "index-90", category: "progression", name: "Seuil 90", description: "Franchis un HYBRID INDEX de 90.", rarity: "epic", condition: "index>=90", cosmeticUnlock: null },
   { id: "index-95", category: "progression", name: "Seuil 95", description: "Franchis un HYBRID INDEX de 95. L'élite mondiale.", rarity: "legendary", condition: "index>=95", cosmeticUnlock: null },
+  { id: "index-100", category: "progression", name: "Seuil 100", description: "Le 100/100 absolu. La perfection théorique de l'Index.", rarity: "legendary", condition: "index>=100", cosmeticUnlock: null },
   // COLLECTION
   { id: "explorer-5", category: "collection", name: "Explorateur", description: "Complète 5 WODs différents.", rarity: "common", condition: "wods_distinct>=5", cosmeticUnlock: null },
   { id: "all-attributes", category: "collection", name: "Profil complet", description: "Débloque les 6 attributs du radar.", rarity: "rare", condition: "attribute_unlocked:all", cosmeticUnlock: "radar_skin_full" },
