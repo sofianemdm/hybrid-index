@@ -39,10 +39,10 @@ export const BADGES: BadgeDef[] = [
   { id: "index-95", category: "progression", name: "Seuil 95", description: "Franchis un HYBRID INDEX de 95. L'élite mondiale.", rarity: "legendary", condition: "index>=95", cosmeticUnlock: null },
   { id: "index-100", category: "progression", name: "Seuil 100", description: "Le 100/100 absolu. La perfection théorique de l'Index.", rarity: "legendary", condition: "index>=100", cosmeticUnlock: null },
   // COLLECTION
-  { id: "explorer-5", category: "collection", name: "Explorateur", description: "Complète 5 WODs différents.", rarity: "common", condition: "wods_distinct>=5", cosmeticUnlock: null },
+  { id: "explorer-5", category: "collection", name: "Explorateur", description: "Complète 5 séances différentes.", rarity: "common", condition: "wods_distinct>=5", cosmeticUnlock: null },
   { id: "all-attributes", category: "collection", name: "Profil complet", description: "Débloque les 6 attributs du radar.", rarity: "rare", condition: "attribute_unlocked:all", cosmeticUnlock: "radar_skin_full" },
-  { id: "full-arsenal", category: "collection", name: "Arsenal complet", description: "Complète 15 WODs de référence.", rarity: "epic", condition: "wods_distinct>=15", cosmeticUnlock: "avatar_badge_arsenal" },
-  { id: "no-gear-hero", category: "collection", name: "Sans matériel", description: "Logue 7 WODs sans matériel. Aucune excuse.", rarity: "rare", condition: "equipment_free_count>=7", cosmeticUnlock: null },
+  { id: "full-arsenal", category: "collection", name: "Arsenal complet", description: "Complète 15 séances de référence.", rarity: "epic", condition: "wods_distinct>=15", cosmeticUnlock: "avatar_badge_arsenal" },
+  { id: "no-gear-hero", category: "collection", name: "Sans matériel", description: "Logue 7 séances sans matériel. Aucune excuse.", rarity: "rare", condition: "equipment_free_count>=7", cosmeticUnlock: null },
   // PERFORMANCE — classement de ligue (top X% de ta ligue)
   { id: "top-50", category: "performance", name: "Top 50 %", description: "Entre dans la moitié haute de ta ligue.", rarity: "common", condition: "percentile>=50", cosmeticUnlock: null },
   { id: "top-25", category: "performance", name: "Top 25 %", description: "Entre dans le top 25 % de ta ligue.", rarity: "rare", condition: "percentile>=75", cosmeticUnlock: null },

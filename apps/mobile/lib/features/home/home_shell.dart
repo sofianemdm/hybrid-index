@@ -22,27 +22,81 @@ class HomeShell extends ConsumerStatefulWidget {
 class _HomeShellState extends ConsumerState<HomeShell> {
   int _tab = 0;
 
+  /// Carte de choix bien visible (dialogue centré « Ajouter une séance »).
+  Widget _choiceCard(BuildContext ctx,
+      {required IconData icon, required String title, required String subtitle, required String value}) {
+    return Material(
+      color: HiColors.bgElevated2,
+      borderRadius: BorderRadius.circular(HiRadius.md),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(HiRadius.md),
+        onTap: () => Navigator.of(ctx).pop(value),
+        child: Container(
+          padding: const EdgeInsets.all(HiSpace.md),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(HiRadius.md),
+            border: Border.all(color: HiColors.brandPrimary.withValues(alpha: 0.45), width: 1.4),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: HiColors.brandPrimary.withValues(alpha: 0.16),
+                  borderRadius: BorderRadius.circular(HiRadius.sm),
+                ),
+                child: Icon(icon, color: HiColors.brandPrimary),
+              ),
+              const SizedBox(width: HiSpace.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w800, fontSize: 15)),
+                    const SizedBox(height: 2),
+                    Text(subtitle, style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right, color: HiColors.textTertiary),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<void> _openLog() async {
-    final choice = await showModalBottomSheet<String>(
+    final choice = await showDialog<String>(
       context: context,
-      backgroundColor: HiColors.bgElevated,
-      builder: (_) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: Icon(Icons.build, color: HiColors.brandPrimary),
-              title: Text('Construire une séance', style: TextStyle(color: HiColors.textPrimary)),
-              subtitle: Text('Compose ta propre séance, estimée automatiquement', style: TextStyle(color: HiColors.textTertiary)),
-              onTap: () => Navigator.of(context).pop('build'),
-            ),
-            ListTile(
-              leading: Icon(Icons.timer_outlined, color: HiColors.brandPrimary),
-              title: Text('Ajouter une séance rapidement', style: TextStyle(color: HiColors.textPrimary)),
-              subtitle: Text('Choisis une séance de référence', style: TextStyle(color: HiColors.textTertiary)),
-              onTap: () => Navigator.of(context).pop('log'),
-            ),
-          ],
+      builder: (ctx) => Dialog(
+        backgroundColor: HiColors.bgElevated,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(HiRadius.lg)),
+        child: Padding(
+          padding: const EdgeInsets.all(HiSpace.lg),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text('Ajouter une séance',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w800, fontSize: 18)),
+              const SizedBox(height: HiSpace.lg),
+              _choiceCard(ctx,
+                  icon: Icons.timer_outlined,
+                  title: 'Ajouter une séance rapidement',
+                  subtitle: 'Choisis une séance de référence',
+                  value: 'log'),
+              const SizedBox(height: HiSpace.md),
+              _choiceCard(ctx,
+                  icon: Icons.build,
+                  title: 'Construire une séance',
+                  subtitle: 'Compose ta propre séance, estimée automatiquement',
+                  value: 'build'),
+            ],
+          ),
         ),
       ),
     );

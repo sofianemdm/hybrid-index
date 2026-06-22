@@ -223,7 +223,7 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
                   child: Row(
                     children: [
                       Flexible(
-                        child: Text(a.isMe ? 'Toi' : a.actorName,
+                        child: Text(a.actorName,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
                       ),
