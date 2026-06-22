@@ -188,6 +188,8 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
         return 'monte au rang ${HiLabels.rank(a.payload['rank']?.toString() ?? '')} 🎖️';
       case 'badge_unlocked':
         return 'badge débloqué : ${a.payload['name'] ?? ''}';
+      case 'member_joined':
+        return 'vient de nous rejoindre avec un HYBRID INDEX de ${a.payload['index'] ?? '—'} 👋';
       case 'post_text':
         return a.payload['body']?.toString() ?? '';
       case 'post_perf':

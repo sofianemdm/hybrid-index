@@ -34,6 +34,11 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
   // HYROX (solo) se court en catégorie Pro ou Open (poids/obstacles différents) → on mappe
   // Pro = "prescrit" (rxCompliant true) et Open = "adapté" (false), classements séparés.
   bool get _isHyrox => widget.wodId == 'hyrox_solo';
+  // WODs purement cardio (course / rameur) : l'échelle Rx/Scaled n'a aucun sens (on court/rame, point).
+  static const _noScaleWods = {
+    'run_1k', 'run_5k', 'run_free_distance', 'row_2k', 'track_10000m', 'half_marathon', 'marathon',
+  };
+  bool get _noScale => _noScaleWods.contains(widget.wodId);
 
   @override
   void initState() {
@@ -164,8 +169,8 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
                   ])
                 else
                   _num(_value, 'résultat', decimal: widget.scoreType == 'load'),
-                // Échelle Rx/Scaled : sans objet pour une course à distance libre (on court, point).
-                if (!_isFreeRun) ...[
+                // Échelle Rx/Scaled : sans objet pour les épreuves cardio (course, rameur).
+                if (!_noScale) ...[
                   const SizedBox(height: HiSpace.lg),
                   Text(_isHyrox ? 'Catégorie' : 'Échelle', style: TextStyle(color: HiColors.textSecondary)),
                   const SizedBox(height: 8),

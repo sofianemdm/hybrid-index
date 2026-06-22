@@ -174,12 +174,17 @@ export class ProfileScoringService {
     };
 
     const computedProfile: internalScore.ComputeProfileResponse = { index: adjIndex, radar: mergedRadar };
-    const previousBand =
-      (await this.prisma.hybridIndex.findUnique({ where: { userId }, select: { populationBand: true } }))
-        ?.populationBand ?? null;
+    const existingIndex = await this.prisma.hybridIndex.findUnique({ where: { userId }, select: { populationBand: true } });
+    const previousBand = existingIndex?.populationBand ?? null;
+    const isFirstIndex = existingIndex === null; // tout premier Index de ce compte → arrivée en communauté
     const socialProof = await this.buildSocialProof(profile.sex, profile.goal, mergedRadar, adjIndex.percentile);
     await this.persist(userId, profile.sex, computedProfile, socialProof.population);
     const result = toPersistedProfile(computedProfile, socialProof);
+
+    // Annonce d'arrivée : UN seul événement de feed (jamais la grappe de badges du 1er calcul).
+    if (isFirstIndex && adjIndex.ratingInt != null) {
+      await this.feedEvents.emit(userId, "member_joined", { index: adjIndex.ratingInt }).catch(() => undefined);
+    }
 
     // Gains de compétence : no-drop ⇒ delta ≥ 0 ; on n'expose QUE les vrais gains (delta > 0).
     result.gains = mergedRadar

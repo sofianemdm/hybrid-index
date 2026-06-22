@@ -143,6 +143,7 @@ enum FeedEventType {
   wod_logged
   rank_up
   badge_unlocked
+  member_joined
 
   @@schema("app")
 }

@@ -89,6 +89,10 @@ export class BadgesService {
     const owned = new Set(
       (await this.prisma.userBadge.findMany({ where: { userId }, select: { badgeId: true } })).map((b) => b.badgeId),
     );
+    // Première évaluation (compte neuf) : un athlète déjà fort débloque d'un coup une grappe de
+    // badges. On les ATTRIBUE mais SANS inonder le feed — l'arrivée est annoncée par un unique
+    // événement « member_joined » (cf. onboarding). Les déblocages ultérieurs s'annoncent un par un.
+    const isFirstBatch = owned.size === 0;
     const newly: BadgeDef[] = [];
     for (const badge of BADGES) {
       if (owned.has(badge.id)) continue;
@@ -96,7 +100,7 @@ export class BadgesService {
       try {
         await this.prisma.userBadge.create({ data: { userId, badgeId: badge.id } });
         newly.push(badge); // poussé UNIQUEMENT si l'attribution a réussi (anti double-célébration).
-        if (badge.rarity !== "common") {
+        if (badge.rarity !== "common" && !isFirstBatch) {
           await this.feedEvents.emit(userId, "badge_unlocked", { badgeId: badge.id, name: badge.name, rarity: badge.rarity });
         }
       } catch (e) {
