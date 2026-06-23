@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'analytics.dart';
 import 'api_client.dart';
 import 'models.dart';
+import 'ui_state.dart';
 
 /// Client API partagé (singleton applicatif).
 final apiClientProvider = Provider<ApiClient>((ref) => ApiClient());
@@ -61,6 +62,7 @@ class SessionNotifier extends StateNotifier<SessionState> {
         goal: me['goal'] as String?,
       );
     } catch (_) {
+      Analytics.reset();
       await prefs.remove(_kToken);
       _api.setToken(null);
       state = const SessionState(status: AuthStatus.loggedOut);
@@ -129,6 +131,7 @@ class SessionNotifier extends StateNotifier<SessionState> {
 
   Future<void> logout() async {
     Analytics.reset();
+    _ref.read(homeTabProvider.notifier).state = 0; // l'onglet ne doit pas « fuir » au compte suivant
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_kToken);
     _api.setToken(null);

@@ -13,8 +13,10 @@ class IndexProjection {
 IndexProjection? projectIndex(List<IndexPoint> history, int currentOvr) {
   if (currentOvr >= 100) return null;
   if (history.length < 2) return null;
-  final now = history.last.at;
-  final recent = history.where((p) => now.difference(p.at).inDays <= 56).toList();
+  // Tri chronologique défensif : ne pas dépendre silencieusement de l'ordre renvoyé par l'API.
+  final sorted = [...history]..sort((a, b) => a.at.compareTo(b.at));
+  final now = sorted.last.at;
+  final recent = sorted.where((p) => now.difference(p.at).inDays <= 56).toList();
   if (recent.length < 2) return null;
   final first = recent.first;
   final last = recent.last;

@@ -7,6 +7,7 @@ import '../../data/analytics.dart';
 import '../../data/api_client.dart';
 import '../../data/models.dart';
 import '../../data/session.dart';
+import '../../data/ui_state.dart';
 import '../../data/review_prompt.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/attribute_gains.dart';
@@ -149,6 +150,10 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
         }
       }
       // Après l'enregistrement : on bascule sur l'accueil (onglet 0) et on dépile jusqu'à la racine.
+      // CONTRAT : cet écran est AUTO-SUFFISANT pour rafraîchir l'accueil — toutes les invalidations
+      // utiles (profil, plan, série, récap) sont déjà faites ci-dessus AVANT de dépiler. Le `await`
+      // du FAB se résout donc à null (route dépilée), ce qui est volontaire. ATTENTION : tout point
+      // d'entrée qui logge un résultat sera renvoyé à l'accueil (comportement voulu aujourd'hui).
       if (mounted) {
         ref.read(homeTabProvider.notifier).state = 0;
         Navigator.of(context).popUntil((r) => r.isFirst);

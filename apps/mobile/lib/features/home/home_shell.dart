@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app.dart';
 import '../../data/session.dart';
+import '../../data/ui_state.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/haptics.dart';
 import '../../theme/tokens.dart';
