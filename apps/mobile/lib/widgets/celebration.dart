@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../theme/haptics.dart';
 import '../theme/tokens.dart';
+import 'hi_button.dart';
 
 /// Intensité d'une célébration (règle anti-fatigue : une seule « forte » par session).
 enum CelebrationIntensity { light, medium, strong }
@@ -22,6 +23,8 @@ class Celebration {
     IconData? icon,
     Color? accent,
     CelebrationIntensity intensity = CelebrationIntensity.medium,
+    String? actionLabel,
+    VoidCallback? onAction,
   }) async {
     // Anti-fatigue : on rétrograde une 2e « forte » de la session en « moyenne ».
     var eff = intensity;
@@ -50,6 +53,8 @@ class Celebration {
         icon: icon,
         accent: accent ?? (eff == CelebrationIntensity.strong ? HiColors.accentVictory : HiColors.brandPrimary),
         strong: eff == CelebrationIntensity.strong,
+        actionLabel: actionLabel,
+        onAction: onAction,
       ),
       transitionBuilder: (ctx, anim, _, child) => FadeTransition(opacity: anim, child: child),
     );
@@ -66,6 +71,8 @@ class _CelebrationView extends StatefulWidget {
   final IconData? icon;
   final Color accent;
   final bool strong;
+  final String? actionLabel;
+  final VoidCallback? onAction;
   const _CelebrationView({
     required this.title,
     required this.subtitle,
@@ -73,6 +80,8 @@ class _CelebrationView extends StatefulWidget {
     required this.icon,
     required this.accent,
     required this.strong,
+    this.actionLabel,
+    this.onAction,
   });
 
   @override
@@ -89,10 +98,12 @@ class _CelebrationViewState extends State<_CelebrationView> with TickerProviderS
   @override
   void initState() {
     super.initState();
-    // Auto-fermeture.
-    Future.delayed(const Duration(milliseconds: 2600), () {
-      if (mounted) Navigator.of(context).maybePop();
-    });
+    // Auto-fermeture — sauf si une action (ex. Partager) est proposée : on laisse l'utilisateur choisir.
+    if (widget.actionLabel == null) {
+      Future.delayed(const Duration(milliseconds: 2600), () {
+        if (mounted) Navigator.of(context).maybePop();
+      });
+    }
   }
 
   @override
@@ -163,7 +174,19 @@ class _CelebrationViewState extends State<_CelebrationView> with TickerProviderS
                           textAlign: TextAlign.center, style: HiType.body.copyWith(color: HiColors.textSecondary)),
                     ],
                     const SizedBox(height: HiSpace.md),
-                    Text('Touche pour continuer', style: HiType.caption.copyWith(color: HiColors.textTertiary)),
+                    if (widget.actionLabel != null) ...[
+                      HiButton(
+                        label: widget.actionLabel!,
+                        icon: Icons.ios_share_rounded,
+                        onPressed: () {
+                          Navigator.of(context).maybePop();
+                          widget.onAction?.call();
+                        },
+                      ),
+                      const SizedBox(height: HiSpace.sm),
+                      Text('Continuer', style: HiType.caption.copyWith(color: HiColors.textTertiary)),
+                    ] else
+                      Text('Touche pour continuer', style: HiType.caption.copyWith(color: HiColors.textTertiary)),
                   ],
                 ),
               ),

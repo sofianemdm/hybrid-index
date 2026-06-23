@@ -11,6 +11,7 @@ import '../../theme/tokens.dart';
 import '../../widgets/attribute_gains.dart';
 import '../../widgets/celebration.dart';
 import '../../widgets/hi_button.dart';
+import '../share/share_card_screen.dart';
 
 /// Saisie d'un résultat sur une séance (officiel ou custom) — note via le moteur si custom.
 class WodResultEntryScreen extends ConsumerStatefulWidget {
@@ -99,13 +100,19 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
         final bandText = _bandUpText(profile.bandCelebration);
         final hasGains = profile.gains.isNotEmpty;
         if (bandText != null) {
-          // Montée de bande population → célébration FORTE (le moment dopamine maximal).
+          // Montée de bande population → célébration FORTE (le moment dopamine maximal) + partage.
           await Celebration.show(
             context,
             value: '${profile.index.value}',
             title: bandText,
             subtitle: hasGains ? _gainsLine(profile.gains) : 'Ton HYBRID INDEX grimpe.',
             intensity: CelebrationIntensity.strong,
+            actionLabel: 'Partager mon exploit',
+            onAction: () {
+              if (mounted) {
+                Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ShareCardScreen()));
+              }
+            },
           );
         } else if (hasGains) {
           // Progression d'un ou plusieurs axes → célébration MOYENNE.

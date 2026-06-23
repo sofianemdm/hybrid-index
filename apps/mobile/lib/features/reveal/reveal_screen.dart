@@ -12,6 +12,7 @@ import '../../widgets/radar_view.dart';
 import '../../widgets/rank_badge.dart';
 import '../../widgets/rank_progress_bar.dart';
 import '../../widgets/social_proof_card.dart';
+import '../share/share_card_screen.dart';
 
 /// L'écran « waouh » : séquence orchestrée (suspense → l'Index se remplit en comptant → le rang
 /// et la preuve sociale apparaissent → le radar → CTA). Tap n'importe où pour tout révéler.
@@ -130,18 +131,33 @@ class _RevealScreenState extends ConsumerState<RevealScreen> {
                         ),
                       ),
                     ),
-                    // Phase 4 : CTA.
+                    // Phase 4 : CTA + partage (moment de fierté → on propose de montrer sa carte).
                     _staged(
                       visible: _step >= 4,
                       child: Padding(
                         padding: const EdgeInsets.only(top: HiSpace.lg),
-                        child: HiButton(
-                          label: 'Découvrir mon profil',
-                          icon: Icons.arrow_forward_rounded,
-                          onPressed: () {
-                            ref.invalidate(myProfileProvider);
-                            Navigator.of(context).popUntil((r) => r.isFirst);
-                          },
+                        child: Column(
+                          children: [
+                            HiButton(
+                              label: 'Découvrir mon profil',
+                              icon: Icons.arrow_forward_rounded,
+                              onPressed: () {
+                                ref.invalidate(myProfileProvider);
+                                Navigator.of(context).popUntil((r) => r.isFirst);
+                              },
+                            ),
+                            const SizedBox(height: HiSpace.sm),
+                            HiButtonSecondary(
+                              label: 'Partager ma carte',
+                              icon: Icons.ios_share_rounded,
+                              onPressed: () {
+                                ref.invalidate(myProfileProvider);
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(builder: (_) => const ShareCardScreen()),
+                                );
+                              },
+                            ),
+                          ],
                         ),
                       ),
                     ),

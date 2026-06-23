@@ -10,6 +10,7 @@ import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../data/web_download.dart';
 import '../../theme/tokens.dart';
+import '../../widgets/hi_button.dart';
 import '../../widgets/rank_badge.dart';
 
 /// Carte partageable : un visuel soigné de ton HYBRID INDEX, téléchargeable en image (Web).
@@ -89,29 +90,24 @@ class _ShareCardScreenState extends ConsumerState<ShareCardScreen> {
                     child: _Card(profile: profile, name: name, sex: ref.watch(sessionProvider).sex, exporting: _exporting),
                   ),
                   const SizedBox(height: HiSpace.lg),
+                  Text('Montre ton niveau — défie tes amis 🔥',
+                      textAlign: TextAlign.center, style: HiType.caption.copyWith(color: HiColors.textTertiary)),
+                  const SizedBox(height: HiSpace.sm),
                   SizedBox(
                     width: 300,
-                    child: FilledButton.icon(
-                      style: FilledButton.styleFrom(
-                        backgroundColor: HiColors.brandPrimary,
-                        foregroundColor: HiColors.textOnBrand,
-                        minimumSize: const Size.fromHeight(50),
-                      ),
-                      icon: _exporting
-                          ? SizedBox(
-                              width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: HiColors.textOnBrand))
-                          : const Icon(Icons.ios_share),
-                      label: const Text('Partager ma carte'),
+                    child: HiButton(
+                      label: 'Partager ma carte',
+                      icon: Icons.ios_share_rounded,
+                      loading: _exporting,
                       onPressed: _exporting ? null : _share,
                     ),
                   ),
                   const SizedBox(height: HiSpace.sm),
                   SizedBox(
                     width: 300,
-                    child: OutlinedButton.icon(
-                      style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(46)),
-                      icon: const Icon(Icons.download, size: 18),
-                      label: const Text('Télécharger'),
+                    child: HiButtonSecondary(
+                      label: 'Télécharger',
+                      icon: Icons.download_rounded,
                       onPressed: _exporting ? null : _export,
                     ),
                   ),
