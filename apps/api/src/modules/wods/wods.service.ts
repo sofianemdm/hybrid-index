@@ -11,6 +11,7 @@ import type { EstimateWodRequest } from "./wod-estimate.dto";
 import type { CreateWodRequest, LogWodResultRequest } from "./create-wod.dto";
 import { ratingFromInternal } from "@hybrid-index/scoring-core";
 import { WOD_PRESCRIPTIONS } from "./wod-prescriptions.data";
+import type { WodPrescription } from "./wod-prescription.types";
 import { WOD_REFERENCES } from "./wod-references.data";
 
 /** Sous-score interne /1000 → note d'affichage /100 (null si absent). */
@@ -214,6 +215,52 @@ export class WodsService {
     return { missing, sessions };
   }
 
+  /** Reconstruit l'énoncé (« déroulé ») d'un WOD communautaire à partir de ses mouvements stockés,
+   *  pour que les autres utilisateurs voient comment le faire. */
+  private async buildCustomPrescription(wod: {
+    type: string;
+    rounds: number | null;
+    timeCapSec: number | null;
+    scoreType: string;
+    movements: unknown;
+  }): Promise<WodPrescription> {
+    const movements = await this.scoreClient.getMovements();
+    const nameById = new Map(movements.map((m) => [m.id, m.name]));
+    const FMT: Record<string, string> = {
+      for_time: "Pour le temps",
+      amrap: "AMRAP",
+      emom: "EMOM",
+      chipper: "Chipper",
+      interval: "Intervalles",
+      tabata: "Tabata",
+      strength: "Force",
+      distance: "Distance / temps",
+    };
+    const roundsPrefix = wod.rounds && wod.rounds > 1 ? `${wod.rounds} tours · ` : "";
+    const capSuffix = wod.timeCapSec ? ` · cap ${Math.round(wod.timeCapSec / 60)} min` : "";
+    const blocks = (wod.movements as Array<{ movementId: string; reps?: number; distanceMeters?: number; calories?: number; durationSec?: number; loadKg?: number }>).map((b) => {
+      const reps =
+        b.distanceMeters != null ? `${b.distanceMeters} m` : b.calories != null ? `${b.calories} cal` : b.durationSec != null ? `${b.durationSec} s` : `${b.reps ?? 0}`;
+      return { reps, movement: nameById.get(b.movementId) ?? b.movementId, detail: b.loadKg ? `${b.loadKg} kg` : undefined };
+    });
+    const scoringNote =
+      wod.scoreType === "time"
+        ? "Tu enregistres ton temps total."
+        : wod.scoreType === "load"
+          ? "Tu enregistres la charge (kg)."
+          : wod.scoreType === "distance"
+            ? "Tu enregistres la distance / le temps."
+            : "Tu enregistres ton nombre total de répétitions.";
+    return {
+      summary: `Séance créée par la communauté${wod.rounds && wod.rounds > 1 ? `, ${wod.rounds} tours` : ""}. Enchaîne les mouvements ci-dessous.`,
+      format: `${roundsPrefix}${FMT[wod.type] ?? wod.type}${capSuffix}`,
+      timeCapSec: wod.timeCapSec ?? undefined,
+      blocks,
+      weights: [],
+      scoringNote,
+    };
+  }
+
   async catalog(): Promise<unknown[]> {
     const wods = await this.prisma.wod.findMany({
       where: { id: { notIn: HIDDEN_WOD_IDS } },
@@ -309,8 +356,9 @@ export class WodsService {
       levels,
       myBest,
       myHistory, // mes prestations passées sur cette séance (récent → ancien)
-      // Énoncé concret de la séance (mouvements + poids) pour les WODs de référence.
-      prescription: WOD_PRESCRIPTIONS[wod.id] ?? null,
+      // Énoncé concret de la séance (mouvements + poids) : barème de référence, ou reconstruit
+      // depuis les mouvements enregistrés pour un WOD communautaire (« comment faire la séance »).
+      prescription: WOD_PRESCRIPTIONS[wod.id] ?? (wod.isCustom ? await this.buildCustomPrescription(wod).catch(() => null) : null),
       // Cibles « Référence Pro » (données publiques) à viser sur cette séance.
       references: WOD_REFERENCES[wod.id] ?? [],
     };
