@@ -224,6 +224,12 @@ abstract class AppLocalizations {
   /// **'You must be at least 13.'**
   String get ageRestricted;
 
+  /// No description provided for @homeProjection.
+  ///
+  /// In en, this message translates to:
+  /// **'At this rate: {grade}+ in ~{weeks} wk.'**
+  String homeProjection(int grade, int weeks);
+
   /// No description provided for @commonContinue.
   ///
   /// In en, this message translates to:

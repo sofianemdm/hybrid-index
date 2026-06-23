@@ -21,6 +21,7 @@
   "authChoose": "Choisir…",
   "authOr": "ou",
   "ageRestricted": "Tu dois avoir au moins 13 ans.",
+  "homeProjection": "À ce rythme : {grade}+ dans ~{weeks} sem.",
   "commonContinue": "Continuer",
   "commonLogout": "Déconnexion",
   "onbAvatarTitle": "Crée ton avatar",

@@ -21,6 +21,13 @@
   "authChoose": "Choose…",
   "authOr": "or",
   "ageRestricted": "You must be at least 13.",
+  "homeProjection": "At this rate: {grade}+ in ~{weeks} wk.",
+  "@homeProjection": {
+    "placeholders": {
+      "grade": { "type": "int" },
+      "weeks": { "type": "int" }
+    }
+  },
   "commonContinue": "Continue",
   "commonLogout": "Log out",
   "onbAvatarTitle": "Create your avatar",

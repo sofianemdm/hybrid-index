@@ -72,6 +72,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ageRestricted => 'You must be at least 13.';
 
   @override
+  String homeProjection(int grade, int weeks) {
+    return 'At this rate: $grade+ in ~$weeks wk.';
+  }
+
+  @override
   String get commonContinue => 'Continue';
 
   @override

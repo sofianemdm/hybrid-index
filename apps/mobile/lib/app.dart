@@ -51,6 +51,17 @@ final weeklyRecapProvider = FutureProvider<WeeklyRecap?>((ref) async {
   }
 });
 
+/// Historique de l'Index (pour la projection « à ce rythme, X+ dans N sem »). Tolérant.
+final indexHistoryProvider = FutureProvider<List<IndexPoint>>((ref) async {
+  final session = ref.watch(sessionProvider);
+  if (session.status != AuthStatus.loggedIn) return const [];
+  try {
+    return await ref.read(apiClientProvider).history();
+  } catch (_) {
+    return const [];
+  }
+});
+
 /// Point d'entrée logique : décide quel écran montrer selon l'état d'auth + onboarding.
 class AuthGate extends ConsumerWidget {
   const AuthGate({super.key});

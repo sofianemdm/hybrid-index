@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app.dart';
 import '../../data/models.dart';
+import '../../data/projection.dart';
 import '../../data/session.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
@@ -116,6 +117,18 @@ class HomeScreen extends ConsumerWidget {
         // (translation négative → on lit « Index + grade » comme un seul bloc).
         Center(child: IndexRing(value: p.index.value, percentile: p.index.percentile)),
         Transform.translate(offset: const Offset(0, -10), child: GradeBlock(profile: p)),
+        // Projection motivante (« à ce rythme, X+ dans N sem ») — seulement si tendance positive.
+        ref.watch(indexHistoryProvider).maybeWhen(
+              data: (h) {
+                final proj = projectIndex(h, p.index.value);
+                if (proj == null) return const SizedBox.shrink();
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: HiSpace.md),
+                  child: _projectionChip(proj, t),
+                );
+              },
+              orElse: () => const SizedBox.shrink(),
+            ),
         const SizedBox(height: HiSpace.lg),
         // Rival amical (ou état meneur) — la comparaison sociale, ton bienveillant.
         if (p.leaguePosition != null) ...[
@@ -227,6 +240,28 @@ class HomeScreen extends ConsumerWidget {
             ),
           ),
           Icon(Icons.chevron_right_rounded, color: HiColors.textTertiary),
+        ],
+      ),
+    );
+  }
+
+  /// Chip de projection (« À ce rythme : 80+ dans ~3 sem »).
+  Widget _projectionChip(IndexProjection proj, AppLocalizations t) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: HiSpace.md, vertical: 10),
+      decoration: BoxDecoration(
+        color: HiColors.success.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(HiRadius.md),
+        border: Border.all(color: HiColors.success.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.trending_up_rounded, color: HiColors.success, size: 18),
+          const SizedBox(width: HiSpace.sm),
+          Expanded(
+            child: Text(t.homeProjection(proj.targetGrade, proj.weeks),
+                style: HiType.bodyStrong.copyWith(color: HiColors.textPrimary)),
+          ),
         ],
       ),
     );
