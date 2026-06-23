@@ -67,12 +67,14 @@ const kHiDark = HiPalette(
   error: Color(0xFFFF5470),
   warn: Color(0xFFFFB23F),
   info: Color(0xFF6FB3FF),
-  attrEngine: Color(0xFFFF6B4A),
-  attrSpeed: Color(0xFFFFD23F),
-  attrStrength: Color(0xFFFF4D7E),
-  attrPower: Color(0xFFA05CFF),
-  attrEndurance: Color(0xFF2EE6C6),
-  attrHybrid: Color(0xFF46E6A0),
+  // Teintes d'attributs LÉGÈREMENT DÉSATURÉES (~15% vers le neutre) : moins « arc-en-ciel »,
+  // plus premium ; le cyan signature reste la couleur dominante de l'app.
+  attrEngine: Color(0xFFEB7A5E),
+  attrSpeed: Color(0xFFE6C758),
+  attrStrength: Color(0xFFEA6389),
+  attrPower: Color(0xFF9D6CE0),
+  attrEndurance: Color(0xFF45D6C0),
+  attrHybrid: Color(0xFF5BD49B),
   attrLocked: Color(0xFF3A4256),
 );
 

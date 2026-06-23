@@ -33,6 +33,17 @@ ThemeData buildHiTheme(Brightness brightness) {
     scaffoldBackgroundColor: pal.bgBase,
     colorScheme: scheme,
     textTheme: textTheme,
+    // Transition d'écran « zoom » (scale + fade) sur toutes les plateformes → feel premium et
+    // cohérent, fini le slide Material par défaut.
+    pageTransitionsTheme: const PageTransitionsTheme(
+      builders: {
+        TargetPlatform.android: ZoomPageTransitionsBuilder(),
+        TargetPlatform.iOS: ZoomPageTransitionsBuilder(),
+        TargetPlatform.macOS: ZoomPageTransitionsBuilder(),
+        TargetPlatform.windows: ZoomPageTransitionsBuilder(),
+        TargetPlatform.linux: ZoomPageTransitionsBuilder(),
+      },
+    ),
     cardTheme: CardThemeData(
       color: pal.bgElevated,
       elevation: 0,

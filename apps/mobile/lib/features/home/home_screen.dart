@@ -22,7 +22,6 @@ import '../coach/coach_screen.dart';
 import '../history/history_screen.dart';
 import '../leaderboard/leaderboard_screen.dart';
 import '../notifications/notifications_screen.dart';
-import '../challenge/challenge_screen.dart';
 import '../settings/settings_screen.dart';
 import '../share/share_card_screen.dart';
 import 'score_v2_banner.dart';
@@ -110,11 +109,10 @@ class HomeScreen extends ConsumerWidget {
     final stale = p.radar.where((a) => a.unlocked && a.isStale).toList();
     return Column(
       children: [
-        const ChallengeBanner(),
-        // HÉROS : l'Index domine l'écran (264 + glow), le grade chevauche le bas de l'anneau.
+        // HÉROS : l'Index domine l'écran (264 + glow), le grade chevauche le bas de l'anneau
+        // (translation négative → on lit « Index + grade » comme un seul bloc).
         Center(child: IndexRing(value: p.index.value, percentile: p.index.percentile)),
-        const SizedBox(height: HiSpace.md),
-        GradeBlock(profile: p),
+        Transform.translate(offset: const Offset(0, -10), child: GradeBlock(profile: p)),
         const SizedBox(height: HiSpace.lg),
         // Rival amical (ou état meneur) — la comparaison sociale, ton bienveillant.
         if (p.leaguePosition != null) ...[
