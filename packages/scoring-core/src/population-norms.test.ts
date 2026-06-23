@@ -103,7 +103,8 @@ describe("bandFromP — paliers honnêtes", () => {
     expect(bandFromP(0.985)).toEqual({ topPercent: 2, band: "pop_top_2" });
     expect(bandFromP(0.962)).toEqual({ topPercent: 5, band: "pop_top_5" });
     expect(bandFromP(0.91)).toEqual({ topPercent: 10, band: "pop_top_10" });
-    expect(bandFromP(0.7)).toEqual({ topPercent: 30, band: "pop_top_30" });
+    expect(bandFromP(0.88)).toEqual({ topPercent: 15, band: "pop_top_15" }); // palier 15 (recalibrage population)
+    expect(bandFromP(0.7)).toEqual({ topPercent: 35, band: "pop_top_35" }); // bandes affinées : 30 → 35
     expect(bandFromP(0.5)).toEqual({ topPercent: 50, band: "pop_top_50" });
   });
 
