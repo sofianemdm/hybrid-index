@@ -15,7 +15,9 @@ class RivalCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isLeader = rival == null && leaguePosition == 1;
+    // Robuste : pas de rival au-dessus ⇒ état « meneur » (on ne dépend PAS de leaguePosition,
+    // qui pourrait diverger et provoquer un `rival!` sur null → crash « Unexpected null value »).
+    final r = rival;
     return HiHeroCard(
       onTap: onTap,
       gradient: LinearGradient(
@@ -26,7 +28,7 @@ class RivalCard extends StatelessWidget {
           HiColors.brandPrimary.withValues(alpha: 0.08),
         ],
       ),
-      child: isLeader ? _leader(context) : _chasing(context, rival!),
+      child: r == null ? _leader(context) : _chasing(context, r),
     );
   }
 
