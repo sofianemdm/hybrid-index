@@ -16,7 +16,9 @@ class GradeBlock extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final ovr = profile.index.value;
     final coverage = profile.index.radarCoverage;
-    final incomplete = coverage < 6;
+    // Notice « estimé » si le radar est incomplet OU si l'Index est encore estimé (ex. après
+    // Profil Express : 6/6 mais tout estimé → on incite à faire de vraies séances).
+    final incomplete = coverage < 6 || profile.index.isEstimated;
     final color = HiGrade.color(ovr);
 
     return Column(
@@ -106,7 +108,7 @@ class GradeBlock extends ConsumerWidget {
   /// Tant que les 6 attributs ne sont pas débloqués : on précise que l'Index est une ESTIMATION,
   /// et on RECOMMANDE les séances minimales à faire pour révéler le vrai Index.
   Widget _estimationNotice(BuildContext context, WidgetRef ref, int coverage) {
-    final title = coverage >= 5 ? 'Presque ton vrai Index' : 'Index estimé';
+    final title = coverage == 5 ? 'Presque ton vrai Index' : 'Index estimé';
     final planAsync = ref.watch(completionPlanProvider);
     return Container(
       width: double.infinity,

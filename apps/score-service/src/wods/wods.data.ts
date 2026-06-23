@@ -202,6 +202,48 @@ export const WODS: ReadonlyArray<WodDefinition> = [
 
   // ---------------- 7 WODs SANS matériel ----------------
   {
+    // « Profil Express » : séance d'entrée SANS MATÉRIEL couvrant les 6 qualités → débloque le
+    // radar COMPLET mais en ESTIMÉ. Chaque attribut sera ensuite affiné/écrasé par une vraie
+    // séance ciblée (réel > estimé, D2). Distribution calée sur le moteur d'estimation recalibré.
+    id: "profil_express",
+    name: "Profil Express",
+    scoreType: "time",
+    requiresEquipment: false,
+    isBenchmark: true,
+    targetAttributes: [
+      { attribute: "engine", estimated: true },
+      { attribute: "speed", estimated: true },
+      { attribute: "strength", estimated: true },
+      { attribute: "power", estimated: true },
+      { attribute: "muscular_endurance", estimated: true },
+      { attribute: "hybrid", estimated: true },
+    ],
+    bySex: {
+      male: {
+        model: points([
+          [0.1, 600],
+          [0.5, 342],
+          [0.9, 235],
+          [0.99, 205],
+        ]),
+        hardMin: 185,
+        hardMax: 1340,
+        proReference: 210,
+      },
+      female: {
+        model: points([
+          [0.1, 740],
+          [0.5, 401],
+          [0.9, 270],
+          [0.99, 232],
+        ]),
+        hardMin: 210,
+        hardMax: 1670,
+        proReference: 238,
+      },
+    },
+  },
+  {
     id: "benchmark_zero",
     name: "Benchmark Zéro",
     scoreType: "time",

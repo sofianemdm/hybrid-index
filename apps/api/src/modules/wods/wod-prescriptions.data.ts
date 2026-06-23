@@ -216,6 +216,24 @@ export const WOD_PRESCRIPTIONS: Record<string, WodPrescription> = {
   // 9. Benchmark Zéro (maison, SANS matériel) — médiane H ~480 s / F ~570 s.
   //    Poids du corps uniquement. Triplet engine / endurance musculaire / hybride.
   // ─────────────────────────────────────────────────────────────────────────
+  profil_express: {
+    summary:
+      "Ta séance d'ENTRÉE, 100 % sans matériel : elle touche les 6 qualités d'un coup et te donne " +
+      "un HYBRID INDEX ESTIMÉ en une séance. Cours fort, enchaîne sans traîner. Refais ensuite des " +
+      "séances ciblées pour affiner chaque note (ton vrai Index se précise au fil du temps).",
+    format: "Pour le temps",
+    blocks: [
+      { reps: "200 m", movement: "Course" },
+      { reps: "15", movement: "Burpees" },
+      { reps: "20", movement: "Pompes" },
+      { reps: "30", movement: "Air squats" },
+      { reps: "5", movement: "Wall walks" },
+      { reps: "200 m", movement: "Course" },
+    ],
+    weights: [],
+    scoringNote: SCORE_TIME,
+  },
+
   benchmark_zero: {
     summary:
       "La séance test 100 % sans matériel : burpees, pompes et air squats en dégressif, sans rien " +

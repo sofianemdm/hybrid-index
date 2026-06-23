@@ -2,18 +2,17 @@ import { WODS, WODS_BY_ID } from "../src/wods/wods.data";
 import { percentile } from "@hybrid-index/scoring-core";
 
 describe("Registre des WODs (intégrité)", () => {
-  it("contient 24 WODs : 18 de référence + 6 épreuves « Autre » (12 avec matériel + 12 sans)", () => {
-    expect(WODS).toHaveLength(24);
-    // 18 séances de référence (9 avec / 9 sans, dont le 3 km) + 6 épreuves « Autre » jouables :
-    // hyrox_solo, isabel, murph (avec matériel) ; track_10000m, half_marathon, marathon (sans).
+  it("contient 25 WODs : 19 de référence + 6 épreuves « Autre » (12 avec matériel + 13 sans)", () => {
+    expect(WODS).toHaveLength(25);
+    // 19 séances de référence (9 avec / 10 sans, dont le 3 km et Profil Express) + 6 « Autre ».
     expect(WODS.filter((w) => w.requiresEquipment)).toHaveLength(12);
-    expect(WODS.filter((w) => !w.requiresEquipment)).toHaveLength(12);
+    expect(WODS.filter((w) => !w.requiresEquipment)).toHaveLength(13);
   });
 
   it("a des identifiants uniques et un index cohérent", () => {
     const ids = new Set(WODS.map((w) => w.id));
-    expect(ids.size).toBe(24);
-    expect(WODS_BY_ID.size).toBe(24);
+    expect(ids.size).toBe(25);
+    expect(WODS_BY_ID.size).toBe(25);
   });
 
   it("chaque WOD a une référence pour les deux sexes avec bornes valides", () => {
@@ -28,11 +27,13 @@ describe("Registre des WODs (intégrité)", () => {
     }
   });
 
-  it("seuls les proxies bodyweight portent un attribut Force estimé (D2)", () => {
-    const proxiesForceEstimee = new Set(["max_pushups", "max_air_squats"]);
+  it("attributs estimés : seulement les proxies bodyweight (D2) + la séance d'estimation globale", () => {
+    // max_pushups/max_air_squats : Force estimée par proxy. profil_express : séance d'entrée qui
+    // DONNE un Index estimé sur les 6 qualités (sera affiné par les vraies séances).
+    const estimatedWods = new Set(["max_pushups", "max_air_squats", "profil_express"]);
     for (const wod of WODS) {
       const hasEstimated = wod.targetAttributes.some((t) => t.estimated);
-      expect(hasEstimated).toBe(proxiesForceEstimee.has(wod.id));
+      expect(hasEstimated).toBe(estimatedWods.has(wod.id));
     }
   });
 

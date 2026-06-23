@@ -182,14 +182,17 @@ export class WodsService {
     userId: string,
   ): Promise<{ missing: string[]; sessions: Array<{ wodId: string; name: string; requiresEquipment: boolean; covers: string[] }> }> {
     const ATTRS: AttributeKey[] = ["engine", "speed", "strength", "power", "muscular_endurance", "hybrid"];
-    const attrs = await this.prisma.attributeScore.findMany({ where: { userId }, select: { attribute: true, unlocked: true } });
-    const unlocked = new Set(attrs.filter((a) => a.unlocked).map((a) => a.attribute));
-    const remaining = new Set<string>(ATTRS.filter((a) => !unlocked.has(a)));
+    const attrs = await this.prisma.attributeScore.findMany({ where: { userId }, select: { attribute: true, unlocked: true, isEstimated: true } });
+    // « À faire » = attribut verrouillé OU encore ESTIMÉ (ex. après Profil Express) : on propose des
+    // séances ciblées pour le mesurer pour de vrai et préciser la note.
+    const done = new Set(attrs.filter((a) => a.unlocked && !a.isEstimated).map((a) => a.attribute));
+    const remaining = new Set<string>(ATTRS.filter((a) => !done.has(a)));
     const missing = [...remaining];
     if (remaining.size === 0) return { missing: [], sessions: [] };
 
     const wods = await this.prisma.wod.findMany({
-      where: { isCustom: false, id: { notIn: [...OTHER_WOD_IDS, ...HIDDEN_WOD_IDS] } },
+      // On exclut « Autre », masqués, ET profil_express (il ne donne que de l'ESTIMÉ → ne précise rien).
+      where: { isCustom: false, id: { notIn: [...OTHER_WOD_IDS, ...HIDDEN_WOD_IDS, "profil_express"] } },
       select: { id: true, name: true, requiresEquipment: true, targetAttributes: true },
       orderBy: { requiresEquipment: "asc" }, // à couverture égale, le sans-matériel d'abord
     });
