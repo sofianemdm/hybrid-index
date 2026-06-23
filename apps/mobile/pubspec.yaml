@@ -16,7 +16,6 @@ dependencies:
   http: ^1.2.2
   flutter_riverpod: ^2.5.1
   fl_chart: ^0.69.0
-  google_fonts: ^6.2.1
   shared_preferences: ^2.3.2
   google_sign_in: ^6.2.1
   google_sign_in_web: ^0.12.4
@@ -46,6 +45,8 @@ flutter:
           weight: 600
         - asset: assets/fonts/Rajdhani-Bold.ttf
           weight: 700
+    # Inter est une police VARIABLE (axe wght 100–900) : un seul fichier couvre tous les poids
+    # utilisés par HiType (w500→w800). NE PAS remplacer par un static Regular (écraserait tout en 400).
     - family: Inter
       fonts:
         - asset: assets/fonts/Inter.ttf

@@ -7,6 +7,7 @@ import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/hi_empty_state.dart';
 import '../../widgets/rank_badge.dart';
+import '../community/explore_screen.dart';
 import 'chat_screen.dart';
 
 /// Boîte de réception : liste des conversations privées (les plus récentes d'abord).
@@ -62,6 +63,11 @@ class _ConversationsScreenState extends ConsumerState<ConversationsScreen> {
                     icon: Icons.forum_rounded,
                     title: t.conversationsTitle,
                     message: t.conversationsEmpty,
+                    ctaLabel: t.communityTooltipSearch,
+                    ctaIcon: Icons.search_rounded,
+                    onCta: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const ExploreScreen()),
+                    ),
                   ),
                 ]);
               }
