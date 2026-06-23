@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app.dart';
+import 'data/push_service.dart';
 import 'data/session.dart';
 import 'data/theme_mode.dart';
 import 'theme/app_theme.dart';
@@ -28,6 +29,8 @@ class _HybridIndexAppState extends ConsumerState<HybridIndexApp> with WidgetsBin
     WidgetsBinding.instance.addObserver(this);
     // Restaure la session (token persisté) au démarrage.
     Future.microtask(() => ref.read(sessionProvider.notifier).bootstrap());
+    // Push : prêt mais inactif (no-op tant que Env.pushEnabled est faux).
+    Future.microtask(() => PushService(ref.read(apiClientProvider)).init());
   }
 
   @override

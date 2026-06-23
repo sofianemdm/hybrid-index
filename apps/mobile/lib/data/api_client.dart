@@ -235,6 +235,12 @@ class ApiClient {
     return WeeklyRecap.fromJson(j);
   }
 
+  /// Enregistre le device token push (FCM). Renvoie l'état d'activation côté serveur.
+  Future<bool> registerPushToken(String token) async {
+    final j = await _send('POST', '/v1/me/push-token', {'token': token}) as Map<String, dynamic>;
+    return j['enabled'] as bool? ?? false;
+  }
+
   Future<StreakState> updateStreak({int? weeklyGoal, bool? plannedRest}) async {
     final body = <String, dynamic>{
       if (weeklyGoal != null) 'weeklyGoal': weeklyGoal,

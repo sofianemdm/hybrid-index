@@ -17,4 +17,8 @@ class Env {
   );
 
   static bool get googleEnabled => googleClientId.isNotEmpty;
+
+  /// Notifications push : OFF par défaut tant que Firebase n'est pas configuré (« prêt mais
+  /// inactif »). Activable via --dart-define=PUSH_ENABLED=true une fois les credentials FCM en place.
+  static const bool pushEnabled = bool.fromEnvironment('PUSH_ENABLED', defaultValue: false);
 }

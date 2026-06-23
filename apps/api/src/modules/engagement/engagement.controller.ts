@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Patch, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Patch, Post, UseGuards } from "@nestjs/common";
 import { z } from "zod";
 import { ZodValidationPipe } from "../../common/zod-validation.pipe";
 import { CurrentUser } from "../auth/current-user.decorator";
@@ -6,6 +6,9 @@ import { JwtAuthGuard, type AuthenticatedUser } from "../auth/jwt-auth.guard";
 import { StreakService, type StreakState } from "./streak.service";
 import { BadgesService, type BadgeView } from "./badges.service";
 import { EngagementService, type FeedItem, type WeeklyRecap } from "./engagement.service";
+import { PushService } from "./push.service";
+
+const RegisterPushTokenRequest = z.object({ token: z.string().min(8).max(4096) });
 
 const UpdateStreakRequest = z
   .object({
@@ -27,7 +30,19 @@ export class EngagementController {
     private readonly streak: StreakService,
     private readonly badges: BadgesService,
     private readonly engagement: EngagementService,
+    private readonly push: PushService,
   ) {}
+
+  /** Enregistre le device token push (FCM). « Prêt mais inactif » : stocké, envoyé seulement
+   *  quand FCM_SERVER_KEY est configuré. */
+  @Post("push-token")
+  registerPushToken(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body(new ZodValidationPipe(RegisterPushTokenRequest)) body: z.infer<typeof RegisterPushTokenRequest>,
+  ): { enabled: boolean } {
+    this.push.registerToken(user.userId, body.token);
+    return { enabled: this.push.enabled };
+  }
 
   /** Série hebdomadaire (current/best, jetons de gel, progression de la semaine). */
   @Get("streak")
