@@ -55,10 +55,13 @@ class HomeScreen extends ConsumerWidget {
                     MaterialPageRoute(builder: (_) => const AvatarEditorScreen()),
                   ),
                   child: ref.watch(avatarProvider).maybeWhen(
-                        data: (a) => HiAvatar(
-                          config: a,
-                          rank: profileAsync.value?.index.rank ?? 'rookie',
-                          size: 48,
+                        data: (a) => Hero(
+                          tag: 'me-avatar',
+                          child: HiAvatar(
+                            config: a,
+                            rank: profileAsync.value?.index.rank ?? 'rookie',
+                            size: 48,
+                          ),
                         ),
                         orElse: () => const SizedBox(width: 48, height: 48),
                       ),

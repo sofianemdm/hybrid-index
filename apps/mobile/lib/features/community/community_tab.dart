@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../l10n/app_localizations.dart';
+import '../../theme/haptics.dart';
 import '../../theme/tokens.dart';
+import '../../widgets/hi_skeleton.dart';
 import '../../widgets/rank_badge.dart';
 import '../clubs/clubs_screen.dart';
 import '../messaging/conversations_screen.dart';
@@ -36,6 +38,7 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
   }
 
   Future<void> _react(FeedActivity a, String emoji) async {
+    HiHaptics.tap();
     try {
       final api = ref.read(apiClientProvider);
       if (a.myReactions.contains(emoji)) {
@@ -105,7 +108,12 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
           future: _future,
           builder: (context, snap) {
             if (snap.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
+              return ListView.separated(
+                padding: const EdgeInsets.fromLTRB(HiSpace.lg, HiSpace.md, HiSpace.lg, 96),
+                itemCount: 5,
+                separatorBuilder: (_, __) => const SizedBox(height: HiSpace.md),
+                itemBuilder: (_, __) => const HiSkeleton(height: 96, radius: HiRadius.lg),
+              );
             }
             if (snap.hasError) {
               return ListView(children: [

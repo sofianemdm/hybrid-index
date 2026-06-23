@@ -99,7 +99,7 @@ class _AvatarEditorScreenState extends ConsumerState<AvatarEditorScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Center(child: HiAvatar(config: _config, rank: rank, size: 160)),
+                      Center(child: Hero(tag: 'me-avatar', child: HiAvatar(config: _config, rank: rank, size: 160))),
                       const SizedBox(height: HiSpace.md),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
