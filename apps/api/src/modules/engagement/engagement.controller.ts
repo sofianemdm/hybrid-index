@@ -5,7 +5,7 @@ import { CurrentUser } from "../auth/current-user.decorator";
 import { JwtAuthGuard, type AuthenticatedUser } from "../auth/jwt-auth.guard";
 import { StreakService, type StreakState } from "./streak.service";
 import { BadgesService, type BadgeView } from "./badges.service";
-import { EngagementService, type FeedItem } from "./engagement.service";
+import { EngagementService, type FeedItem, type WeeklyRecap } from "./engagement.service";
 
 const UpdateStreakRequest = z
   .object({
@@ -60,6 +60,12 @@ export class EngagementController {
   @Get("notifications/feed")
   getFeed(@CurrentUser() user: AuthenticatedUser): Promise<FeedItem[]> {
     return this.engagement.feed(user.userId);
+  }
+
+  /** Récap de la semaine en cours (séances, gain d'Index, série). */
+  @Get("weekly-recap")
+  getWeeklyRecap(@CurrentUser() user: AuthenticatedUser): Promise<WeeklyRecap> {
+    return this.engagement.weeklyRecap(user.userId);
   }
 
   @Patch("notifications")

@@ -92,6 +92,8 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
       final profile = await ref.read(apiClientProvider).logWodResult(widget.wodId, payload);
       ref.invalidate(myProfileProvider);
       ref.invalidate(completionPlanProvider); // un attribut vient peut-être d'être débloqué
+      ref.invalidate(streakProvider); // la semaine vient peut-être d'être validée
+      ref.invalidate(weeklyRecapProvider);
       if (!mounted) return;
       if (profile != null) {
         final bandText = _bandUpText(profile.bandCelebration);

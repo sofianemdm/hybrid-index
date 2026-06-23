@@ -662,6 +662,33 @@ class StreakState {
       );
 }
 
+/// Récap de la semaine en cours (séances, gain d'Index, série).
+class WeeklyRecap {
+  final int sessions;
+  final int? indexNow;
+  final int deltaIndex;
+  final int streakCurrent;
+  final bool weekValidated;
+  const WeeklyRecap({
+    required this.sessions,
+    required this.indexNow,
+    required this.deltaIndex,
+    required this.streakCurrent,
+    required this.weekValidated,
+  });
+
+  factory WeeklyRecap.fromJson(Map<String, dynamic> j) => WeeklyRecap(
+        sessions: (j['sessions'] as num?)?.toInt() ?? 0,
+        indexNow: (j['indexNow'] as num?)?.toInt(),
+        deltaIndex: (j['deltaIndex'] as num?)?.toInt() ?? 0,
+        streakCurrent: (j['streakCurrent'] as num?)?.toInt() ?? 0,
+        weekValidated: j['weekValidated'] as bool? ?? false,
+      );
+
+  /// Y a-t-il quelque chose à montrer (évite une carte vide en début de semaine) ?
+  bool get hasContent => sessions > 0 || deltaIndex > 0;
+}
+
 class BadgeModel {
   final String id;
   final String category;

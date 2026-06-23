@@ -12,8 +12,10 @@ import '../../widgets/hi_skeleton.dart';
 import '../../widgets/index_ring.dart';
 import '../../widgets/radar_view.dart';
 import '../../widgets/social_proof_card.dart';
+import '../../widgets/streak_chip.dart';
 import 'grade_block.dart';
 import 'rival_card.dart';
+import 'weekly_recap_card.dart';
 import '../avatar/avatar_editor_screen.dart';
 import '../coach/coach_screen.dart';
 import '../history/history_screen.dart';
@@ -37,6 +39,8 @@ class HomeScreen extends ConsumerWidget {
       child: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(myProfileProvider);
+          ref.invalidate(streakProvider);
+          ref.invalidate(weeklyRecapProvider);
           await ref.read(myProfileProvider.future);
         },
         child: ListView(
@@ -65,6 +69,12 @@ class HomeScreen extends ConsumerWidget {
                     style: HiType.titleL.copyWith(color: HiColors.textPrimary),
                   ),
                 ),
+                // Flamme de série hebdomadaire (discrète, non bloquante).
+                ref.watch(streakProvider).maybeWhen(
+                      data: (s) => s == null ? const SizedBox.shrink() : StreakChip(streak: s),
+                      orElse: () => const SizedBox.shrink(),
+                    ),
+                const SizedBox(width: HiSpace.xs),
                 IconButton(
                   tooltip: 'Notifications',
                   icon: Icon(Icons.notifications_rounded, color: HiColors.textSecondary),
@@ -114,6 +124,16 @@ class HomeScreen extends ConsumerWidget {
           ),
           const SizedBox(height: HiSpace.md),
         ],
+        // Récap « Ta semaine » (affiché seulement s'il y a du contenu).
+        ref.watch(weeklyRecapProvider).maybeWhen(
+              data: (r) => r != null && r.hasContent
+                  ? Padding(
+                      padding: const EdgeInsets.only(bottom: HiSpace.md),
+                      child: WeeklyRecapCard(recap: r),
+                    )
+                  : const SizedBox.shrink(),
+              orElse: () => const SizedBox.shrink(),
+            ),
         // Fraîcheur : incite au re-test sans culpabiliser (le score ne baisse jamais).
         if (stale.isNotEmpty) ...[
           _freshnessBanner(context, stale),

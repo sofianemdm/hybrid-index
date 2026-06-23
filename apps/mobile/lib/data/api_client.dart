@@ -230,6 +230,11 @@ class ApiClient {
     return j.map((e) => BadgeModel.fromJson(e as Map<String, dynamic>)).toList();
   }
 
+  Future<WeeklyRecap> weeklyRecap() async {
+    final j = await _send('GET', '/v1/me/weekly-recap') as Map<String, dynamic>;
+    return WeeklyRecap.fromJson(j);
+  }
+
   Future<StreakState> updateStreak({int? weeklyGoal, bool? plannedRest}) async {
     final body = <String, dynamic>{
       if (weeklyGoal != null) 'weeklyGoal': weeklyGoal,

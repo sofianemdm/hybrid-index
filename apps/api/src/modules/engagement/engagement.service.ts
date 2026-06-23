@@ -1,9 +1,21 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { RANK_BANDS } from "@hybrid-index/contracts";
+import { ratingFromInternal } from "@hybrid-index/scoring-core";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { RedisService } from "../../infra/redis/redis.service";
 import { StreakService } from "./streak.service";
+import { addWeeks, weekStart } from "./iso-week";
 import { NOTIFICATION_TRIGGERS } from "./notifications.data";
+
+/** Récap hebdomadaire (non compétitif) : ce que tu as accompli cette semaine. */
+export interface WeeklyRecap {
+  weekStart: string;
+  sessions: number;
+  indexNow: number | null;
+  deltaIndex: number; // points d'Index gagnés depuis lundi (>= 0, no-drop)
+  streakCurrent: number;
+  weekValidated: boolean;
+}
 
 export interface FeedItem {
   key: string;
@@ -26,6 +38,37 @@ export class EngagementService {
     private readonly redis: RedisService,
     private readonly streak: StreakService,
   ) {}
+
+  /**
+   * Récap de la semaine en cours (lundi → maintenant, UTC) : nb de séances, gain d'Index depuis
+   * lundi (no-drop ⇒ ≥ 0), état de la série. Non compétitif, toujours valorisant.
+   */
+  async weeklyRecap(userId: string): Promise<WeeklyRecap> {
+    const monday = weekStart(new Date());
+    const nextMonday = addWeeks(monday, 1);
+    const [sessions, idx, before, streak] = await Promise.all([
+      this.prisma.wodResult.count({ where: { userId, performedAt: { gte: monday, lt: nextMonday } } }),
+      this.prisma.hybridIndex.findUnique({ where: { userId }, select: { value: true } }),
+      // Dernier point d'historique AVANT lundi = Index de référence du début de semaine.
+      this.prisma.hybridIndexHistory.findFirst({
+        where: { userId, computedAt: { lt: monday } },
+        orderBy: { computedAt: "desc" },
+        select: { value: true },
+      }),
+      this.streak.evaluateAndGet(userId),
+    ]);
+    const indexNow = idx ? Math.round(ratingFromInternal(idx.value)) : null;
+    const indexStart = before ? Math.round(ratingFromInternal(before.value)) : indexNow;
+    const deltaIndex = Math.max(0, (indexNow ?? 0) - (indexStart ?? 0));
+    return {
+      weekStart: monday.toISOString(),
+      sessions,
+      indexNow,
+      deltaIndex,
+      streakCurrent: streak.current,
+      weekValidated: streak.weekValidated,
+    };
+  }
 
   /**
    * Flux de notifications IN-APP : évalue les déclencheurs pertinents contre l'état courant

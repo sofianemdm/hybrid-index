@@ -24,6 +24,29 @@ final avatarProvider = FutureProvider<AvatarConfig>((ref) async {
   return ref.read(apiClientProvider).getAvatar();
 });
 
+/// Série hebdomadaire (semaines actives). `null` si déconnecté. Tolérant : renvoie null en cas
+/// d'erreur réseau (la flamme est non bloquante, jamais une raison d'échec d'écran).
+final streakProvider = FutureProvider<StreakState?>((ref) async {
+  final session = ref.watch(sessionProvider);
+  if (session.status != AuthStatus.loggedIn) return null;
+  try {
+    return await ref.read(apiClientProvider).streak();
+  } catch (_) {
+    return null;
+  }
+});
+
+/// Récap de la semaine en cours. Non bloquant (null si erreur/déconnecté).
+final weeklyRecapProvider = FutureProvider<WeeklyRecap?>((ref) async {
+  final session = ref.watch(sessionProvider);
+  if (session.status != AuthStatus.loggedIn) return null;
+  try {
+    return await ref.read(apiClientProvider).weeklyRecap();
+  } catch (_) {
+    return null;
+  }
+});
+
 /// Point d'entrée logique : décide quel écran montrer selon l'état d'auth + onboarding.
 class AuthGate extends ConsumerWidget {
   const AuthGate({super.key});
