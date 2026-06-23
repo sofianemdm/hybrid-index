@@ -35,5 +35,19 @@
   "onbEstimatedIndexHere": "Your estimated Index will appear here.",
   "onbEstimatedIndexLabel": "ESTIMATED INDEX",
   "onbNeedEffort": "Add a run, push-ups or squats.",
-  "onbRunNeedsBoth": "Distance (0.4–42 km) and time required for the run."
+  "onbRunNeedsBoth": "Distance (0.4–42 km) and time required for the run.",
+  "commonCancel": "Cancel",
+  "commonDelete": "Delete",
+  "settingsTitle": "Settings",
+  "settingsAppearance": "Appearance",
+  "themeSystem": "System",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "settingsCustomizeAvatar": "Customize my avatar",
+  "settingsPrivacy": "Data & privacy (GDPR)",
+  "settingsExport": "Export my data",
+  "settingsDeleteAccount": "Delete my account",
+  "settingsSignOut": "Sign out",
+  "deleteAccountTitle": "Delete account?",
+  "deleteAccountBody": "This action is permanent: all your data will be erased."
 }

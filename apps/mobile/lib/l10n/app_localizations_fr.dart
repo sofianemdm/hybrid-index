@@ -120,4 +120,47 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get onbRunNeedsBoth =>
       'Distance (0,4–42 km) et temps requis pour la course.';
+
+  @override
+  String get commonCancel => 'Annuler';
+
+  @override
+  String get commonDelete => 'Supprimer';
+
+  @override
+  String get settingsTitle => 'Paramètres';
+
+  @override
+  String get settingsAppearance => 'Apparence';
+
+  @override
+  String get themeSystem => 'Système';
+
+  @override
+  String get themeLight => 'Clair';
+
+  @override
+  String get themeDark => 'Sombre';
+
+  @override
+  String get settingsCustomizeAvatar => 'Personnaliser mon avatar';
+
+  @override
+  String get settingsPrivacy => 'Données & confidentialité (RGPD)';
+
+  @override
+  String get settingsExport => 'Exporter mes données';
+
+  @override
+  String get settingsDeleteAccount => 'Supprimer mon compte';
+
+  @override
+  String get settingsSignOut => 'Se déconnecter';
+
+  @override
+  String get deleteAccountTitle => 'Supprimer le compte ?';
+
+  @override
+  String get deleteAccountBody =>
+      'Cette action est définitive : toutes tes données seront effacées.';
 }

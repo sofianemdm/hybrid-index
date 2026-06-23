@@ -96,14 +96,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: HiColors.bgElevated,
-        title: Text('Supprimer le compte ?', style: TextStyle(color: HiColors.textPrimary)),
-        content: Text('Cette action est définitive : toutes tes données seront effacées.',
+        title: Text(AppLocalizations.of(context).deleteAccountTitle, style: TextStyle(color: HiColors.textPrimary)),
+        content: Text(AppLocalizations.of(context).deleteAccountBody,
             style: TextStyle(color: HiColors.textSecondary)),
         actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Annuler')),
+          TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(AppLocalizations.of(context).commonCancel)),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: Text('Supprimer', style: TextStyle(color: HiColors.error)),
+            child: Text(AppLocalizations.of(context).commonDelete, style: TextStyle(color: HiColors.error)),
           ),
         ],
       ),
@@ -123,10 +125,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Widget _themeSelector() {
     final mode = ref.watch(themeModeProvider);
     return SegmentedButton<ThemeMode>(
-      segments: const [
-        ButtonSegment(value: ThemeMode.system, icon: Icon(Icons.brightness_auto), label: Text('Système')),
-        ButtonSegment(value: ThemeMode.light, icon: Icon(Icons.light_mode), label: Text('Clair')),
-        ButtonSegment(value: ThemeMode.dark, icon: Icon(Icons.dark_mode), label: Text('Sombre')),
+      segments: [
+        ButtonSegment(
+            value: ThemeMode.system,
+            icon: const Icon(Icons.brightness_auto),
+            label: Text(AppLocalizations.of(context).themeSystem)),
+        ButtonSegment(
+            value: ThemeMode.light,
+            icon: const Icon(Icons.light_mode),
+            label: Text(AppLocalizations.of(context).themeLight)),
+        ButtonSegment(
+            value: ThemeMode.dark,
+            icon: const Icon(Icons.dark_mode),
+            label: Text(AppLocalizations.of(context).themeDark)),
       ],
       selected: {mode},
       showSelectedIcon: false,
@@ -153,8 +164,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Paramètres'), backgroundColor: Colors.transparent, elevation: 0),
+      appBar: AppBar(
+          title: Text(t.settingsTitle), backgroundColor: Colors.transparent, elevation: 0),
       body: SafeArea(
         child: _loading
             ? const Center(child: CircularProgressIndicator())
@@ -165,7 +178,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Text('Pseudo', style: TextStyle(color: HiColors.textSecondary)),
+                      Text(t.authUsername, style: TextStyle(color: HiColors.textSecondary)),
                       const SizedBox(height: 8),
                       TextField(controller: _displayName),
                       const SizedBox(height: HiSpace.lg),
@@ -192,7 +205,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           foregroundColor: HiColors.textPrimary,
                         ),
                         icon: const Icon(Icons.face),
-                        label: const Text('Personnaliser mon avatar'),
+                        label: Text(t.settingsCustomizeAvatar),
                         onPressed: () => Navigator.of(context).push(
                           MaterialPageRoute(builder: (_) => const AvatarEditorScreen()),
                         ),
@@ -200,7 +213,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       const SizedBox(height: HiSpace.xl),
                       Divider(color: HiColors.strokeSubtle),
                       const SizedBox(height: HiSpace.md),
-                      Text('Apparence', style: TextStyle(color: HiColors.textSecondary, fontSize: 13)),
+                      Text(t.settingsAppearance, style: TextStyle(color: HiColors.textSecondary, fontSize: 13)),
                       const SizedBox(height: HiSpace.sm),
                       _themeSelector(),
                       const SizedBox(height: HiSpace.xl),
@@ -213,8 +226,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       const SizedBox(height: HiSpace.xl),
                       Divider(color: HiColors.strokeSubtle),
                       const SizedBox(height: HiSpace.md),
-                      Text('Données & confidentialité (RGPD)',
-                          style: TextStyle(color: HiColors.textSecondary, fontSize: 13)),
+                      Text(t.settingsPrivacy, style: TextStyle(color: HiColors.textSecondary, fontSize: 13)),
                       const SizedBox(height: HiSpace.sm),
                       OutlinedButton.icon(
                         style: OutlinedButton.styleFrom(
@@ -223,7 +235,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           foregroundColor: HiColors.textPrimary,
                         ),
                         icon: const Icon(Icons.download),
-                        label: const Text('Exporter mes données'),
+                        label: Text(t.settingsExport),
                         onPressed: _exportData,
                       ),
                       const SizedBox(height: HiSpace.sm),
@@ -234,13 +246,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           foregroundColor: HiColors.error,
                         ),
                         icon: const Icon(Icons.delete_forever),
-                        label: const Text('Supprimer mon compte'),
+                        label: Text(t.settingsDeleteAccount),
                         onPressed: _confirmDelete,
                       ),
                       const SizedBox(height: HiSpace.md),
                       TextButton(
                         onPressed: () => ref.read(sessionProvider.notifier).logout(),
-                        child: Text('Se déconnecter', style: TextStyle(color: HiColors.textTertiary)),
+                        child: Text(t.settingsSignOut, style: TextStyle(color: HiColors.textTertiary)),
                       ),
                     ],
                   ),

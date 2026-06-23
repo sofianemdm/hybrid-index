@@ -119,4 +119,47 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get onbRunNeedsBoth =>
       'Distance (0.4–42 km) and time required for the run.';
+
+  @override
+  String get commonCancel => 'Cancel';
+
+  @override
+  String get commonDelete => 'Delete';
+
+  @override
+  String get settingsTitle => 'Settings';
+
+  @override
+  String get settingsAppearance => 'Appearance';
+
+  @override
+  String get themeSystem => 'System';
+
+  @override
+  String get themeLight => 'Light';
+
+  @override
+  String get themeDark => 'Dark';
+
+  @override
+  String get settingsCustomizeAvatar => 'Customize my avatar';
+
+  @override
+  String get settingsPrivacy => 'Data & privacy (GDPR)';
+
+  @override
+  String get settingsExport => 'Export my data';
+
+  @override
+  String get settingsDeleteAccount => 'Delete my account';
+
+  @override
+  String get settingsSignOut => 'Sign out';
+
+  @override
+  String get deleteAccountTitle => 'Delete account?';
+
+  @override
+  String get deleteAccountBody =>
+      'This action is permanent: all your data will be erased.';
 }

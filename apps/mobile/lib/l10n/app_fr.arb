@@ -35,5 +35,19 @@
   "onbEstimatedIndexHere": "Ton Index estimé s’affichera ici.",
   "onbEstimatedIndexLabel": "INDEX ESTIMÉ",
   "onbNeedEffort": "Ajoute une course, des pompes ou des squats.",
-  "onbRunNeedsBoth": "Distance (0,4–42 km) et temps requis pour la course."
+  "onbRunNeedsBoth": "Distance (0,4–42 km) et temps requis pour la course.",
+  "commonCancel": "Annuler",
+  "commonDelete": "Supprimer",
+  "settingsTitle": "Paramètres",
+  "settingsAppearance": "Apparence",
+  "themeSystem": "Système",
+  "themeLight": "Clair",
+  "themeDark": "Sombre",
+  "settingsCustomizeAvatar": "Personnaliser mon avatar",
+  "settingsPrivacy": "Données & confidentialité (RGPD)",
+  "settingsExport": "Exporter mes données",
+  "settingsDeleteAccount": "Supprimer mon compte",
+  "settingsSignOut": "Se déconnecter",
+  "deleteAccountTitle": "Supprimer le compte ?",
+  "deleteAccountBody": "Cette action est définitive : toutes tes données seront effacées."
 }
