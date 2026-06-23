@@ -146,6 +146,9 @@ class HiColors {
   static Color get attrHybrid => active.attrHybrid;
   static Color get attrLocked => active.attrLocked;
 
+  /// Orange de la flamme de série (constant, indépendant du thème).
+  static const Color streakFlame = Color(0xFFFF8A3D);
+
   /// Dégradé marque « métal cyan » (primary → deep) pour boutons/anneaux : plus premium et
   /// moins « arc-en-ciel » que primary→secondary.
   static LinearGradient get brandGradient => LinearGradient(

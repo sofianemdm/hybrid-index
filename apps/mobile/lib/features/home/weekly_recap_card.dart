@@ -34,7 +34,7 @@ class WeeklyRecapCard extends StatelessWidget {
               _stat(recap.deltaIndex > 0 ? '+${recap.deltaIndex}' : '—', 'points d\'Index', HiColors.success),
               _divider(),
               _stat('${recap.streakCurrent}', recap.streakCurrent > 1 ? 'semaines 🔥' : 'semaine 🔥',
-                  const Color(0xFFFF8A3D)),
+                  HiColors.streakFlame),
             ],
           ),
           const SizedBox(height: HiSpace.sm),

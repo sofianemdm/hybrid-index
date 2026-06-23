@@ -5,6 +5,7 @@ import { PrismaService } from "../../infra/prisma/prisma.service";
 import { RedisService } from "../../infra/redis/redis.service";
 import { StreakService } from "./streak.service";
 import { addWeeks, weekStart } from "./iso-week";
+import { weeklyRecapDelta } from "./recap.logic";
 import { NOTIFICATION_TRIGGERS } from "./notifications.data";
 
 /** Récap hebdomadaire (non compétitif) : ce que tu as accompli cette semaine. */
@@ -59,7 +60,7 @@ export class EngagementService {
     ]);
     const indexNow = idx ? Math.round(ratingFromInternal(idx.value)) : null;
     const indexStart = before ? Math.round(ratingFromInternal(before.value)) : indexNow;
-    const deltaIndex = Math.max(0, (indexNow ?? 0) - (indexStart ?? 0));
+    const deltaIndex = weeklyRecapDelta(indexNow, indexStart);
     return {
       weekStart: monday.toISOString(),
       sessions,

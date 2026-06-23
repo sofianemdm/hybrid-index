@@ -16,7 +16,7 @@ class StreakChip extends StatelessWidget {
     final hidden = streak.current == 0 && streak.thisWeekCount == 0;
     if (hidden) return const SizedBox.shrink();
 
-    const orange = Color(0xFFFF8A3D);
+    const orange = HiColors.streakFlame;
     final active = streak.current > 0;
     final color = active ? orange : HiColors.textTertiary;
     return Tooltip(
@@ -70,7 +70,7 @@ class StreakChip extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Icon(Icons.local_fire_department_rounded, color: Color(0xFFFF8A3D), size: 28),
+                const Icon(Icons.local_fire_department_rounded, color: HiColors.streakFlame, size: 28),
                 const SizedBox(width: HiSpace.sm),
                 Text('Ta série', style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
               ],

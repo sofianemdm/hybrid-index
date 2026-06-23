@@ -106,8 +106,17 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                   return Center(
                     child: Padding(
                       padding: const EdgeInsets.all(HiSpace.lg),
-                      child: Text('${snap.error}',
-                          textAlign: TextAlign.center, style: TextStyle(color: HiColors.error)),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.leaderboard_rounded, color: HiColors.textTertiary, size: 40),
+                          const SizedBox(height: HiSpace.md),
+                          Text('Classement indisponible pour le moment.',
+                              textAlign: TextAlign.center, style: HiType.body.copyWith(color: HiColors.textSecondary)),
+                          const SizedBox(height: HiSpace.md),
+                          TextButton(onPressed: () => setState(_load), child: const Text('Réessayer')),
+                        ],
+                      ),
                     ),
                   );
                 }
