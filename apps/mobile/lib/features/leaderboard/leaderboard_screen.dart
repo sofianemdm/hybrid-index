@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models.dart';
 import '../../data/session.dart';
+import '../../theme/haptics.dart';
 import '../../theme/tokens.dart';
+import '../../widgets/hi_skeleton.dart';
 import '../../widgets/rank_badge.dart';
 import '../profile/public_profile_screen.dart';
 import 'progress_board_screen.dart';
@@ -59,8 +61,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
             padding: const EdgeInsets.fromLTRB(HiSpace.lg, HiSpace.lg, HiSpace.lg, HiSpace.sm),
             child: Align(
               alignment: Alignment.centerLeft,
-              child: Text('Classement',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: HiColors.textPrimary)),
+              child: Text('Classement', style: HiType.titleL.copyWith(color: HiColors.textPrimary)),
             ),
           ),
           Padding(
@@ -94,7 +95,12 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
               future: _future,
               builder: (context, snap) {
                 if (snap.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
+                  return ListView.separated(
+                    padding: const EdgeInsets.fromLTRB(HiSpace.lg, 0, HiSpace.lg, 96),
+                    itemCount: 10,
+                    separatorBuilder: (_, __) => const SizedBox(height: 10),
+                    itemBuilder: (_, __) => const HiSkeleton(height: 44, radius: HiRadius.sm),
+                  );
                 }
                 if (snap.hasError) {
                   return Center(
@@ -149,38 +155,43 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
   }
 
   Widget _row(LeaderboardEntry e) {
+    final podium = e.position <= 3;
+    final posColor = podium ? HiColors.rank(e.position == 1 ? 'gold' : e.position == 2 ? 'silver' : 'bronze') : HiColors.textTertiary;
     return InkWell(
-      onTap: () => Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => PublicProfileScreen(userId: e.userId)),
-      ),
+      borderRadius: BorderRadius.circular(HiRadius.sm),
+      onTap: () {
+        HiHaptics.tap();
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => PublicProfileScreen(userId: e.userId)),
+        );
+      },
       child: Container(
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
-      color: e.isMe ? HiColors.brandPrimary.withValues(alpha: 0.12) : Colors.transparent,
-      child: Row(
-        children: [
-          SizedBox(
-            width: 36,
-            child: Text('#${e.position}',
-                style: TextStyle(
-                    color: e.position <= 3 ? HiColors.brandPrimary : HiColors.textTertiary,
-                    fontWeight: FontWeight.w700)),
-          ),
-          Expanded(
-            child: Text(
-              e.isMe ? '${e.displayName}  (toi)' : e.displayName,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: HiColors.textPrimary,
-                fontWeight: e.isMe ? FontWeight.w800 : FontWeight.w500,
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+        decoration: BoxDecoration(
+          color: e.isMe ? HiColors.brandPrimary.withValues(alpha: 0.12) : Colors.transparent,
+          borderRadius: BorderRadius.circular(HiRadius.sm),
+          border: e.isMe ? Border.all(color: HiColors.brandPrimary.withValues(alpha: 0.5)) : null,
+        ),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 40,
+              child: podium
+                  ? Icon(Icons.workspace_premium_rounded, color: posColor, size: 22)
+                  : Text('#${e.position}', style: HiType.numericM.copyWith(color: posColor, fontSize: 16)),
+            ),
+            Expanded(
+              child: Text(
+                e.isMe ? '${e.displayName}  (toi)' : e.displayName,
+                overflow: TextOverflow.ellipsis,
+                style: (e.isMe ? HiType.bodyStrong : HiType.body).copyWith(color: HiColors.textPrimary),
               ),
             ),
-          ),
-          RankBadge(rank: e.rank, fontSize: 11),
-          const SizedBox(width: HiSpace.md),
-          Text('${e.value}',
-              style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w800, fontFeatures: const [])),
-        ],
-      ),
+            RankBadge(rank: e.rank, fontSize: 11),
+            const SizedBox(width: HiSpace.md),
+            Text('${e.value}', style: HiType.numericM.copyWith(color: HiColors.textPrimary)),
+          ],
+        ),
       ),
     );
   }
