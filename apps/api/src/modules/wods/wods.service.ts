@@ -26,6 +26,15 @@ export const OTHER_WOD_IDS = ["hyrox_solo", "isabel", "murph", "track_10000m", "
  *  reste le mécanisme interne de la course d'onboarding (distance libre + Riegel), pas une séance. */
 export const HIDDEN_WOD_IDS = ["run_free_distance"];
 
+/** Attributs qu'un WOD ne donne qu'en ESTIMÉ (proxy poids du corps, ou séance d'estimation
+ *  globale) : ils ne « comptent » donc PAS pour préciser cette qualité dans le plan de complétion
+ *  (sinon on re-proposerait à l'infini une séance qui ne mesure pas vraiment l'attribut). */
+const ESTIMATED_COVERAGE: Record<string, string[]> = {
+  max_pushups: ["strength"],
+  max_air_squats: ["strength"],
+  profil_express: ["engine", "speed", "strength", "power", "muscular_endurance", "hybrid"],
+};
+
 @Injectable()
 export class WodsService {
   constructor(
@@ -204,7 +213,8 @@ export class WodsService {
       let bestCover: string[] = [];
       for (const w of wods) {
         if (chosen.has(w.id)) continue;
-        const cover = (w.targetAttributes as string[]).filter((t) => remaining.has(t));
+        const estOnly = ESTIMATED_COVERAGE[w.id] ?? [];
+        const cover = (w.targetAttributes as string[]).filter((t) => remaining.has(t) && !estOnly.includes(t));
         if (cover.length > bestCover.length) {
           best = w;
           bestCover = cover;
