@@ -18,11 +18,13 @@ class RadarAttribute {
   final int score;
   final bool unlocked;
   final bool isEstimated;
+  final bool isStale; // mesure ancienne (>10 sem) → « à rafraîchir »
   const RadarAttribute({
     required this.attribute,
     required this.score,
     required this.unlocked,
     required this.isEstimated,
+    this.isStale = false,
   });
 
   factory RadarAttribute.fromJson(Map<String, dynamic> j) => RadarAttribute(
@@ -30,6 +32,31 @@ class RadarAttribute {
         score: (j['score'] as num).toInt(),
         unlocked: j['unlocked'] as bool? ?? false,
         isEstimated: j['isEstimated'] as bool? ?? false,
+        isStale: j['isStale'] as bool? ?? false,
+      );
+}
+
+/// Rival amical : l'athlète juste au-dessus dans la ligue. Ton toujours bienveillant côté UI.
+class Rival {
+  final String displayName;
+  final String rank;
+  final int ovr;
+  final int position;
+  final int gapPoints; // points d'Index pour le dépasser (>= 1)
+  const Rival({
+    required this.displayName,
+    required this.rank,
+    required this.ovr,
+    required this.position,
+    required this.gapPoints,
+  });
+
+  factory Rival.fromJson(Map<String, dynamic> j) => Rival(
+        displayName: j['displayName'] as String? ?? '—',
+        rank: j['rank'] as String? ?? 'rookie',
+        ovr: (j['ovr'] as num?)?.toInt() ?? 0,
+        position: (j['position'] as num?)?.toInt() ?? 0,
+        gapPoints: (j['gapPoints'] as num?)?.toInt() ?? 1,
       );
 }
 
@@ -146,6 +173,7 @@ class Profile {
   final String? weakest;
   final int? leaguePosition; // place dans la ligue (sexe), 1 = premier
   final int? leagueTotal;
+  final Rival? rival; // athlète juste au-dessus (null si leader)
   /// Renseigné quand le dernier recalcul a fait MONTER de bande population (déclenche la célébration).
   final List<String>? bandCelebration; // [from, to] où from peut être '' (null)
   const Profile({
@@ -156,12 +184,14 @@ class Profile {
     this.weakest,
     this.leaguePosition,
     this.leagueTotal,
+    this.rival,
     this.bandCelebration,
   });
 
   factory Profile.fromJson(Map<String, dynamic> j) {
     final celeb = j['bandCelebration'] as Map<String, dynamic>?;
     return Profile(
+      rival: j['rival'] == null ? null : Rival.fromJson(j['rival'] as Map<String, dynamic>),
       gains: (j['gains'] as List<dynamic>?)
               ?.map((e) => AttributeGain.fromJson(e as Map<String, dynamic>))
               .toList() ??

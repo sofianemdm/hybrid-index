@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'tokens.dart';
 
 /// ThemeData HYBRID INDEX pour une luminosité donnée (sombre par défaut, clair disponible).
@@ -23,17 +24,19 @@ ThemeData buildHiTheme(Brightness brightness) {
           onPrimary: pal.textOnBrand,
           onSurface: pal.textPrimary,
         );
+  // Corps de l'app en Inter (les chiffres data passent en Rajdhani via HiType au point d'usage).
+  final textTheme = GoogleFonts.interTextTheme(base.textTheme).apply(
+    bodyColor: pal.textPrimary,
+    displayColor: pal.textPrimary,
+  );
   return base.copyWith(
     scaffoldBackgroundColor: pal.bgBase,
     colorScheme: scheme,
-    textTheme: base.textTheme.apply(
-      bodyColor: pal.textPrimary,
-      displayColor: pal.textPrimary,
-      fontFamily: 'Roboto',
-    ),
+    textTheme: textTheme,
     cardTheme: CardThemeData(
       color: pal.bgElevated,
       elevation: 0,
+      shadowColor: Colors.transparent,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(HiRadius.lg),
         side: BorderSide(color: pal.strokeSubtle),

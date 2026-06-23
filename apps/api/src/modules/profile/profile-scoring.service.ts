@@ -36,8 +36,18 @@ export interface PersistedProfile {
     /** Progression vers le rang suivant (goal-gradient). next null = rang max. */
     rankProgress: { current: string; next: string | null; pointsToNext: number | null; progress: number };
   };
-  radar: Array<{ attribute: string; score: number; unlocked: boolean; isEstimated: boolean }>;
+  radar: Array<{ attribute: string; score: number; unlocked: boolean; isEstimated: boolean; isStale?: boolean }>;
   socialProof: SocialProof;
+  /** Rival amical : l'athlète juste AU-DESSUS dans la ligue (même sexe). null si leader ou ligue
+   *  d'une personne. Ton toujours bienveillant côté UI ; jamais de honte. (Réintroduit sur décision
+   *  du fondateur du 2026-06-23, annule D19 — cf. decisions-log.) */
+  rival?: {
+    displayName: string;
+    rank: string;
+    ovr: number; // OVR /100 du rival
+    position: number; // place du rival dans la ligue
+    gapPoints: number; // points d'Index pour le dépasser (>= 1)
+  } | null;
   /** Attributs ayant PROGRESSÉ au dernier recalcul (no-drop ⇒ delta > 0). Vide sur un simple GET. */
   gains: Array<{ attribute: string; delta: number }>;
   /** Attribut débloqué le plus faible (= point faible à cibler), ou null si aucun débloqué. */
@@ -373,6 +383,36 @@ export class ProfileScoringService {
       });
   }
 
+  /** Rival amical : l'athlète immédiatement au-dessus dans la ligue (même sexe). `above` = nb
+   *  d'athlètes au-dessus de moi (donc 0 = je suis leader → pas de rival). Données brutes ; la
+   *  copie bienveillante est composée côté UI. */
+  private async computeRival(
+    sex: string,
+    myValue: number,
+    above: number,
+  ): Promise<PersistedProfile["rival"]> {
+    if (above <= 0) return null; // leader de la ligue : pas de rival au-dessus
+    const rivalIdx = await this.prisma.hybridIndex.findFirst({
+      where: { value: { gt: myValue }, user: { profile: { sex: sex as never } } },
+      orderBy: { value: "asc" },
+      select: { userId: true, value: true },
+    });
+    if (!rivalIdx) return null;
+    const rp = await this.prisma.profile.findUnique({
+      where: { userId: rivalIdx.userId },
+      select: { displayName: true, rank: true },
+    });
+    const rivalOvr = Math.round(ratingFromInternal(rivalIdx.value));
+    const myOvr = Math.round(ratingFromInternal(myValue));
+    return {
+      displayName: rp?.displayName ?? "—",
+      rank: rp?.rank ?? "rookie",
+      ovr: rivalOvr,
+      position: above, // le rival occupe la place juste devant la mienne (above + 1)
+      gapPoints: Math.max(1, rivalOvr - myOvr),
+    };
+  }
+
   async getMyProfile(userId: string): Promise<PersistedProfile | null> {
     const [profile, index, scores] = await Promise.all([
       this.prisma.profile.findUnique({ where: { userId }, select: { sex: true, goal: true } }),
@@ -389,6 +429,7 @@ export class ProfileScoringService {
         score: s?.score ?? 0,
         unlocked: s?.unlocked ?? false,
         isEstimated: s?.isEstimated ?? false,
+        isStale: s?.isStale ?? false,
       };
     });
     const socialProof = await this.buildSocialProof(profile.sex, profile.goal, radar, Number(index.percentile));
@@ -397,9 +438,11 @@ export class ProfileScoringService {
       this.prisma.hybridIndex.count({ where: { value: { gt: index.value }, user: { profile: { sex: profile.sex } } } }),
       this.prisma.hybridIndex.count({ where: { user: { profile: { sex: profile.sex } } } }),
     ]);
+    const rival = await this.computeRival(profile.sex, index.value, above);
     return {
       leaguePosition: above + 1,
       leagueTotal,
+      rival,
       index: (() => {
         // `index` est une ligne DB (valeur interne /1000) → on dérive l'OVR /100.
         // `value` est TOUJOURS un entier non-null (contrat unique avec l'onboarding) ;

@@ -1,50 +1,86 @@
 import 'package:flutter/material.dart';
 import '../theme/tokens.dart';
+import 'hi_card.dart';
 
-/// Bouton héro : gradient marque + glow léger. Affiche un spinner si `loading`.
+/// Bouton héro : gradient « métal cyan » + glow + micro-scale au press. Spinner si `loading`.
+/// Icône optionnelle. C'est le CTA primaire (un seul par écran de repos).
 class HiButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
   final bool loading;
-  const HiButton({super.key, required this.label, this.onPressed, this.loading = false});
+  final IconData? icon;
+  const HiButton({super.key, required this.label, this.onPressed, this.loading = false, this.icon});
 
   @override
   Widget build(BuildContext context) {
     final enabled = onPressed != null && !loading;
-    return Opacity(
-      opacity: enabled ? 1 : 0.5,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: HiColors.brandGradient,
-          borderRadius: BorderRadius.circular(HiRadius.md),
-          boxShadow: enabled
-              ? [const BoxShadow(color: Color(0x593DE1FF), blurRadius: 20, spreadRadius: -2)]
-              : null,
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
+    return HiPressable(
+      onTap: enabled ? onPressed : null,
+      pressedScale: 0.96,
+      child: Opacity(
+        opacity: enabled ? 1 : 0.5,
+        child: Container(
+          height: 52,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            gradient: HiColors.brandGradient,
             borderRadius: BorderRadius.circular(HiRadius.md),
-            onTap: enabled ? onPressed : null,
-            child: Container(
-              height: 52,
-              alignment: Alignment.center,
-              child: loading
-                  ? SizedBox(
-                      width: 22,
-                      height: 22,
-                      child: CircularProgressIndicator(strokeWidth: 2.5, color: HiColors.textOnBrand),
-                    )
-                  : Text(
-                      label,
-                      style: TextStyle(
-                        color: HiColors.textOnBrand,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 16,
-                        letterSpacing: 0.3,
-                      ),
-                    ),
-            ),
+            boxShadow: enabled ? HiShadow.glowBrand(0.28) : null,
+          ),
+          child: loading
+              ? SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(strokeWidth: 2.5, color: HiColors.textOnBrand),
+                )
+              : Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (icon != null) ...[
+                      Icon(icon, color: HiColors.textOnBrand, size: 20),
+                      const SizedBox(width: HiSpace.sm),
+                    ],
+                    Text(label, style: HiType.button.copyWith(color: HiColors.textOnBrand)),
+                  ],
+                ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Bouton secondaire : fond élevé, contour, micro-scale au press. Icône optionnelle.
+class HiButtonSecondary extends StatelessWidget {
+  final String label;
+  final VoidCallback? onPressed;
+  final IconData? icon;
+  const HiButtonSecondary({super.key, required this.label, this.onPressed, this.icon});
+
+  @override
+  Widget build(BuildContext context) {
+    final enabled = onPressed != null;
+    return HiPressable(
+      onTap: onPressed,
+      pressedScale: 0.97,
+      child: Opacity(
+        opacity: enabled ? 1 : 0.5,
+        child: Container(
+          height: 52,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: HiColors.bgElevated,
+            borderRadius: BorderRadius.circular(HiRadius.md),
+            border: Border.all(color: HiColors.strokeStrong, width: 1.5),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (icon != null) ...[
+                Icon(icon, color: HiColors.brandPrimary, size: 20),
+                const SizedBox(width: HiSpace.sm),
+              ],
+              Text(label, style: HiType.button.copyWith(color: HiColors.textPrimary, fontSize: 15)),
+            ],
           ),
         ),
       ),
@@ -52,23 +88,31 @@ class HiButton extends StatelessWidget {
   }
 }
 
-/// Bouton secondaire : contour, fond transparent.
-class HiButtonSecondary extends StatelessWidget {
+/// Bouton fantôme : pas de fond ni bordure, texte marque. Actions discrètes (historique, partage).
+class HiGhostButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
-  const HiButtonSecondary({super.key, required this.label, this.onPressed});
+  final IconData? icon;
+  const HiGhostButton({super.key, required this.label, this.onPressed, this.icon});
 
   @override
   Widget build(BuildContext context) {
-    return OutlinedButton(
-      style: OutlinedButton.styleFrom(
-        minimumSize: const Size.fromHeight(52),
-        side: BorderSide(color: HiColors.strokeStrong),
-        foregroundColor: HiColors.textPrimary,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(HiRadius.md)),
+    return HiPressable(
+      onTap: onPressed,
+      pressedScale: 0.96,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: HiSpace.sm, vertical: HiSpace.sm),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[
+              Icon(icon, color: HiColors.brandPrimary, size: 18),
+              const SizedBox(width: 6),
+            ],
+            Text(label, style: HiType.label.copyWith(color: HiColors.brandPrimary)),
+          ],
+        ),
       ),
-      onPressed: onPressed,
-      child: Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
     );
   }
 }

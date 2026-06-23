@@ -2,9 +2,9 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../theme/tokens.dart';
 
-/// Anneau d'Index : grand chiffre central + anneau de progression gradient qui se remplit
-/// (animation du reveal). `value` = OVR ∈ [0, 100].
-class IndexRing extends StatelessWidget {
+/// Anneau d'Index : LE point focal. Grand chiffre central (Rajdhani tabular) + anneau gradient
+/// qui se remplit (count-up easeOutExpo) + halo cyan qui respire derrière. `value` = OVR ∈ [0,100].
+class IndexRing extends StatefulWidget {
   final int value;
   final double percentile;
   final double size;
@@ -13,44 +13,83 @@ class IndexRing extends StatelessWidget {
     super.key,
     required this.value,
     required this.percentile,
-    this.size = 240,
-    this.duration = const Duration(milliseconds: 1600),
+    this.size = 264,
+    this.duration = HiMotion.reveal,
   });
 
   @override
+  State<IndexRing> createState() => _IndexRingState();
+}
+
+class _IndexRingState extends State<IndexRing> with SingleTickerProviderStateMixin {
+  late final AnimationController _glow =
+      AnimationController(vsync: this, duration: const Duration(milliseconds: 2600))..repeat(reverse: true);
+
+  @override
+  void dispose() {
+    _glow.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final top = (100 - widget.percentile * 100).clamp(1, 100).round();
     return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0, end: value.toDouble()),
-      duration: duration,
-      curve: Curves.easeOutCubic,
+      tween: Tween(begin: 0, end: widget.value.toDouble()),
+      duration: widget.duration,
+      curve: HiMotion.countUp,
       builder: (context, animated, _) {
-        return SizedBox(
-          width: size,
-          height: size,
-          child: CustomPaint(
-            painter: _RingPainter(animated / 100.0),
-            child: Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
+        return AnimatedBuilder(
+          animation: _glow,
+          builder: (context, child) {
+            final glowAlpha = 0.18 + 0.17 * _glow.value; // respiration 0.18 → 0.35
+            return SizedBox(
+              width: widget.size,
+              height: widget.size,
+              child: Stack(
+                alignment: Alignment.center,
                 children: [
-                  Text(
-                    animated.round().toString(),
-                    style: TextStyle(
-                      fontSize: size * 0.28,
-                      fontWeight: FontWeight.w800,
-                      color: HiColors.textPrimary,
-                      height: 1,
+                  // Halo radial derrière l'anneau.
+                  Container(
+                    width: widget.size * 1.05,
+                    height: widget.size * 1.05,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: HiColors.brandPrimary.withValues(alpha: glowAlpha),
+                          blurRadius: 48,
+                          spreadRadius: 4,
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Text('HYBRID INDEX',
-                      style: TextStyle(color: HiColors.textSecondary, fontSize: 11, letterSpacing: 2)),
-                  const SizedBox(height: 6),
-                  Text(
-                    'TOP ${(100 - percentile * 100).clamp(1, 100).round()} %',
-                    style: TextStyle(color: HiColors.brandPrimary, fontSize: 13, fontWeight: FontWeight.w600),
-                  ),
+                  child!,
                 ],
+              ),
+            );
+          },
+          child: CustomPaint(
+            painter: _RingPainter(animated / 100.0),
+            child: SizedBox(
+              width: widget.size,
+              height: widget.size,
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      animated.round().toString(),
+                      style: HiType.displayXL.copyWith(
+                        fontSize: widget.size * 0.34,
+                        color: HiColors.textPrimary,
+                      ),
+                    ),
+                    Text('HYBRID INDEX', style: HiType.overline.copyWith(color: HiColors.textSecondary)),
+                    const SizedBox(height: 6),
+                    Text('TOP $top %', style: HiType.numericM.copyWith(color: HiColors.brandPrimary, fontSize: 16)),
+                  ],
+                ),
               ),
             ),
           ),
@@ -67,8 +106,8 @@ class _RingPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2 - 8;
-    const stroke = 12.0;
+    final radius = size.width / 2 - 10;
+    const stroke = 14.0;
     const start = -math.pi / 2;
 
     final track = Paint()
@@ -83,7 +122,7 @@ class _RingPainter extends CustomPainter {
       ..shader = SweepGradient(
         startAngle: 0,
         endAngle: 2 * math.pi,
-        colors: [HiColors.brandPrimary, HiColors.brandSecondary, HiColors.brandPrimary],
+        colors: [HiColors.brandPrimaryDeep, HiColors.brandPrimary, HiColors.brandPrimaryBright],
         transform: const GradientRotation(start),
       ).createShader(Rect.fromCircle(center: center, radius: radius))
       ..style = PaintingStyle.stroke

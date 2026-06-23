@@ -4,10 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app.dart';
 import '../../data/api_client.dart';
+import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../data/review_prompt.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/attribute_gains.dart';
+import '../../widgets/celebration.dart';
 import '../../widgets/hi_button.dart';
 
 /// Saisie d'un résultat sur une séance (officiel ou custom) — note via le moteur si custom.
@@ -92,30 +94,46 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
       ref.invalidate(completionPlanProvider); // un attribut vient peut-être d'être débloqué
       if (!mounted) return;
       if (profile != null) {
-        await showDialog<void>(
-          context: context,
-          builder: (_) => AlertDialog(
-            backgroundColor: HiColors.bgElevated,
-            title: Text('Résultat enregistré 💪', style: TextStyle(color: HiColors.textPrimary)),
-            content: Column(mainAxisSize: MainAxisSize.min, children: [
-              Text('HYBRID INDEX', style: TextStyle(color: HiColors.textSecondary)),
-              const SizedBox(height: 8),
-              Text('${profile.index.value}',
-                  style: TextStyle(color: HiColors.brandPrimary, fontSize: 44, fontWeight: FontWeight.w800)),
-              const SizedBox(height: 12),
-              AttributeGains(gains: profile.gains, weakest: profile.weakest),
-              if (_bandUpText(profile.bandCelebration) != null) ...[
+        final bandText = _bandUpText(profile.bandCelebration);
+        final hasGains = profile.gains.isNotEmpty;
+        if (bandText != null) {
+          // Montée de bande population → célébration FORTE (le moment dopamine maximal).
+          await Celebration.show(
+            context,
+            value: '${profile.index.value}',
+            title: bandText,
+            subtitle: hasGains ? _gainsLine(profile.gains) : 'Ton HYBRID INDEX grimpe.',
+            intensity: CelebrationIntensity.strong,
+          );
+        } else if (hasGains) {
+          // Progression d'un ou plusieurs axes → célébration MOYENNE.
+          await Celebration.show(
+            context,
+            value: '${profile.index.value}',
+            title: 'Tu progresses 💪',
+            subtitle: _gainsLine(profile.gains),
+            intensity: CelebrationIntensity.medium,
+          );
+        } else {
+          // Aucun gain (no-drop) → retour léger + détail discret.
+          await showDialog<void>(
+            context: context,
+            builder: (_) => AlertDialog(
+              backgroundColor: HiColors.bgElevated,
+              title: Text('Résultat enregistré 💪', style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
+              content: Column(mainAxisSize: MainAxisSize.min, children: [
+                Text('HYBRID INDEX', style: HiType.overline.copyWith(color: HiColors.textSecondary)),
+                const SizedBox(height: 8),
+                Text('${profile.index.value}', style: HiType.displayL.copyWith(color: HiColors.brandPrimary)),
                 const SizedBox(height: 12),
-                Text(_bandUpText(profile.bandCelebration)!,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: HiColors.brandPrimary, fontWeight: FontWeight.w700)),
-              ],
-            ]),
-            actions: [TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Continuer'))],
-          ),
-        );
+                AttributeGains(gains: profile.gains, weakest: profile.weakest),
+              ]),
+              actions: [TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Continuer'))],
+            ),
+          );
+        }
         // Moment de réussite (PR / montée de bande) → demande d'avis natif (OS-plafonné, no-op web).
-        if (profile.gains.isNotEmpty || profile.bandCelebration != null) {
+        if (hasGains || profile.bandCelebration != null) {
           maybeAskForReview();
         }
       }
@@ -127,6 +145,12 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
     } finally {
       if (mounted) setState(() => _loading = false);
     }
+  }
+
+  /// Résumé des gains d'attributs (« Engine +3 · Force +2 »).
+  String _gainsLine(List<AttributeGain> gains) {
+    if (gains.isEmpty) return 'Ton HYBRID INDEX grimpe.';
+    return gains.map((g) => '${HiLabels.attribute(g.attribute)} +${g.delta}').join(' · ');
   }
 
   /// Message de célébration quand on monte de bande population (« pop_top_3 » → « top 3% »).

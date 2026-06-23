@@ -6,13 +6,18 @@ import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/hi_avatar.dart';
+import '../../widgets/hi_button.dart';
+import '../../widgets/hi_card.dart';
+import '../../widgets/hi_skeleton.dart';
 import '../../widgets/index_ring.dart';
 import '../../widgets/radar_view.dart';
 import '../../widgets/social_proof_card.dart';
 import 'grade_block.dart';
+import 'rival_card.dart';
 import '../avatar/avatar_editor_screen.dart';
 import '../coach/coach_screen.dart';
 import '../history/history_screen.dart';
+import '../leaderboard/leaderboard_screen.dart';
 import '../notifications/notifications_screen.dart';
 import '../challenge/challenge_screen.dart';
 import '../settings/settings_screen.dart';
@@ -57,19 +62,19 @@ class HomeScreen extends ConsumerWidget {
                 Expanded(
                   child: Text(
                     'Salut, ${session.user?.displayName ?? ''}',
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: HiColors.textPrimary),
+                    style: HiType.titleL.copyWith(color: HiColors.textPrimary),
                   ),
                 ),
                 IconButton(
                   tooltip: 'Notifications',
-                  icon: Icon(Icons.notifications_none, color: HiColors.textTertiary),
+                  icon: Icon(Icons.notifications_rounded, color: HiColors.textSecondary),
                   onPressed: () => Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const NotificationsScreen()),
                   ),
                 ),
                 IconButton(
                   tooltip: 'Paramètres',
-                  icon: Icon(Icons.settings_outlined, color: HiColors.textTertiary),
+                  icon: Icon(Icons.settings_rounded, color: HiColors.textSecondary),
                   onPressed: () => Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const SettingsScreen()),
                   ),
@@ -78,10 +83,7 @@ class HomeScreen extends ConsumerWidget {
             ),
             const SizedBox(height: HiSpace.md),
             profileAsync.when(
-              loading: () => const Padding(
-                padding: EdgeInsets.all(40),
-                child: Center(child: CircularProgressIndicator()),
-              ),
+              loading: () => const HomeSkeleton(),
               error: (e, _) => _errorBox('$e'),
               data: (p) => p == null ? _errorBox('Profil indisponible.') : _content(context, ref, p),
             ),
@@ -92,128 +94,114 @@ class HomeScreen extends ConsumerWidget {
   }
 
   Widget _content(BuildContext context, WidgetRef ref, Profile p) {
+    final stale = p.radar.where((a) => a.unlocked && a.isStale).toList();
     return Column(
       children: [
         const ChallengeBanner(),
-        Center(child: IndexRing(value: p.index.value, percentile: p.index.percentile, size: 220)),
-        const SizedBox(height: HiSpace.md),
+        // HÉROS : l'Index domine l'écran (264 + glow), le grade chevauche le bas de l'anneau.
+        Center(child: IndexRing(value: p.index.value, percentile: p.index.percentile)),
         const SizedBox(height: HiSpace.md),
         GradeBlock(profile: p),
-        const SizedBox(height: HiSpace.md),
+        const SizedBox(height: HiSpace.lg),
+        // Rival amical (ou état meneur) — la comparaison sociale, ton bienveillant.
         if (p.leaguePosition != null) ...[
-          _leagueRankCard(p.leaguePosition!, p.leagueTotal),
+          RivalCard(
+            rival: p.rival,
+            leaguePosition: p.leaguePosition,
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const LeaderboardScreen()),
+            ),
+          ),
+          const SizedBox(height: HiSpace.md),
+        ],
+        // Fraîcheur : incite au re-test sans culpabiliser (le score ne baisse jamais).
+        if (stale.isNotEmpty) ...[
+          _freshnessBanner(context, stale),
           const SizedBox(height: HiSpace.md),
         ],
         if (p.socialProof != null) ...[
           SocialProofCard(proof: p.socialProof!),
           const SizedBox(height: HiSpace.md),
         ],
-        OutlinedButton.icon(
-          style: OutlinedButton.styleFrom(
-            minimumSize: const Size.fromHeight(48),
-            side: BorderSide(color: HiColors.strokeStrong),
-            foregroundColor: HiColors.brandPrimary,
+        // Radar (touchable → coach de l'axe).
+        HiCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('TON RADAR', style: HiType.overline.copyWith(color: HiColors.textSecondary)),
+              const SizedBox(height: 2),
+              Text('Touche une qualité pour voir les séances qui la boostent.',
+                  style: HiType.caption.copyWith(color: HiColors.textTertiary)),
+              const SizedBox(height: HiSpace.sm),
+              RadarView(
+                radar: p.radar,
+                onTapAttribute: (attr) => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => CoachScreen(initialAttribute: attr)),
+                ),
+              ),
+            ],
           ),
-          icon: const Icon(Icons.fitness_center),
-          label: const Text('Coach — progresser sur un axe'),
+        ),
+        const SizedBox(height: HiSpace.lg),
+        // CTA principal unique (un seul élément plein par écran de repos).
+        HiButton(
+          label: 'Coach — progresser sur un axe',
+          icon: Icons.fitness_center_rounded,
           onPressed: () => Navigator.of(context).push(
             MaterialPageRoute(builder: (_) => const CoachScreen()),
           ),
         ),
         const SizedBox(height: HiSpace.sm),
-        OutlinedButton.icon(
-          style: OutlinedButton.styleFrom(
-            minimumSize: const Size.fromHeight(48),
-            side: BorderSide(color: HiColors.strokeStrong),
-            foregroundColor: HiColors.textPrimary,
-          ),
-          icon: const Icon(Icons.ios_share),
-          label: const Text('Partager ma carte'),
-          onPressed: () => Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const ShareCardScreen()),
-          ),
-        ),
-        const SizedBox(height: HiSpace.sm),
-        OutlinedButton.icon(
-          style: OutlinedButton.styleFrom(
-            minimumSize: const Size.fromHeight(48),
-            side: BorderSide(color: HiColors.strokeStrong),
-            foregroundColor: HiColors.textPrimary,
-          ),
-          icon: const Icon(Icons.history),
-          label: const Text('Mon historique de séances'),
-          onPressed: () => Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const HistoryScreen()),
-          ),
-        ),
-        const SizedBox(height: HiSpace.md),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(HiSpace.md),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Ton radar',
-                    style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 16)),
-                Text('Touche une qualité pour voir les séances qui la boostent.',
-                    style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
-                const SizedBox(height: HiSpace.sm),
-                RadarView(
-                  radar: p.radar,
-                  onTapAttribute: (attr) => Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => CoachScreen(initialAttribute: attr)),
-                  ),
-                ),
-              ],
+        // Actions secondaires discrètes (fantômes) sur une ligne.
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            HiGhostButton(
+              label: 'Mon historique',
+              icon: Icons.history_rounded,
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const HistoryScreen()),
+              ),
             ),
-          ),
+            const SizedBox(width: HiSpace.md),
+            HiGhostButton(
+              label: 'Partager ma carte',
+              icon: Icons.ios_share_rounded,
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const ShareCardScreen()),
+              ),
+            ),
+          ],
         ),
       ],
     );
   }
 
-  /// Place dans la ligue mise en avant (le classement compte plus que « X% des humains » pour un
-  /// athlète bien classé).
-  Widget _leagueRankCard(int position, int? total) {
-    final medal = position == 1
-        ? '🥇'
-        : position == 2
-            ? '🥈'
-            : position == 3
-                ? '🥉'
-                : '🏆';
-    return Container(
-      padding: const EdgeInsets.all(HiSpace.md),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [HiColors.brandPrimary.withValues(alpha: 0.18), HiColors.brandSecondary.withValues(alpha: 0.10)],
-        ),
-        borderRadius: BorderRadius.circular(HiRadius.md),
-        border: Border.all(color: HiColors.brandPrimary.withValues(alpha: 0.5)),
+  /// Bandeau « fraîcheur » : un ou plusieurs axes datent → on propose un re-test, ton positif.
+  Widget _freshnessBanner(BuildContext context, List<RadarAttribute> stale) {
+    final names = stale.map((a) => HiLabels.attribute(a.attribute)).join(', ');
+    final one = stale.length == 1;
+    return HiCard(
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => CoachScreen(initialAttribute: stale.first.attribute)),
       ),
       child: Row(
         children: [
-          Text(medal, style: const TextStyle(fontSize: 28)),
+          Icon(Icons.update_rounded, color: HiColors.warn, size: 22),
           const SizedBox(width: HiSpace.md),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                RichText(
-                  text: TextSpan(
-                    style: TextStyle(color: HiColors.textPrimary, fontSize: 18, fontWeight: FontWeight.w800),
-                    children: [
-                      const TextSpan(text: 'Tu es '),
-                      TextSpan(text: '#$position', style: TextStyle(color: HiColors.brandPrimary)),
-                      const TextSpan(text: ' de ta ligue'),
-                    ],
-                  ),
-                ),
-                if (total != null)
-                  Text('sur $total athlètes de ta ligue', style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
+                Text(one ? 'Un axe à rafraîchir' : 'Des axes à rafraîchir',
+                    style: HiType.bodyStrong.copyWith(color: HiColors.textPrimary)),
+                const SizedBox(height: 2),
+                Text('$names : ta mesure date un peu. Un re-test peut la faire grimper.',
+                    style: HiType.caption.copyWith(color: HiColors.textSecondary)),
               ],
             ),
           ),
+          Icon(Icons.chevron_right_rounded, color: HiColors.textTertiary),
         ],
       ),
     );

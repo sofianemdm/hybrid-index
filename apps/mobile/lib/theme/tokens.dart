@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
-/// Tokens du design system HYBRID INDEX (cf. docs/design-system.md). Mode sombre prioritaire,
-/// « feel jeu » : profondeur par surfaces + glow, cyan électrique en couleur signature.
-/// Palette de couleurs (sombre ou claire). Les tokens d'accès restent `HiColors.x` (getters)
-/// → on bascule la palette à l'exécution. Voir [kHiDark] / [kHiLight].
+/// Tokens du design system HYBRID INDEX (cf. docs/design/design-system.md). Mode sombre
+/// prioritaire, « feel jeu » façon Whoop + carte FIFA : profondeur par surfaces + glow,
+/// cyan électrique en couleur signature, lime « victoire » réservé aux moments de dopamine.
+/// Les tokens d'accès restent `HiColors.x` (getters) → on bascule la palette à l'exécution.
+/// Voir [kHiDark] / [kHiLight].
 class HiPalette {
-  final Color bgBase, bgElevated, bgElevated2, strokeSubtle, strokeStrong;
-  final Color brandPrimary, brandPrimaryDeep, brandSecondary, brandSecondaryText;
+  final Color bgBase, bgElevated, bgElevated2, bgElevatedHi, strokeSubtle, strokeStrong, strokeBrand;
+  final Color brandPrimary, brandPrimaryBright, brandPrimaryDeep, brandSecondary, brandSecondaryText, accentVictory;
   final Color textPrimary, textSecondary, textTertiary, textOnBrand;
   final Color success, error, warn, info;
   final Color attrEngine, attrSpeed, attrStrength, attrPower, attrEndurance, attrHybrid, attrLocked;
@@ -14,12 +16,16 @@ class HiPalette {
     required this.bgBase,
     required this.bgElevated,
     required this.bgElevated2,
+    required this.bgElevatedHi,
     required this.strokeSubtle,
     required this.strokeStrong,
+    required this.strokeBrand,
     required this.brandPrimary,
+    required this.brandPrimaryBright,
     required this.brandPrimaryDeep,
     required this.brandSecondary,
     required this.brandSecondaryText,
+    required this.accentVictory,
     required this.textPrimary,
     required this.textSecondary,
     required this.textTertiary,
@@ -38,22 +44,27 @@ class HiPalette {
   });
 }
 
-/// Thème sombre (par défaut) — « feel jeu », cyan signature.
+/// Thème sombre (par défaut) — « feel jeu », cyan signature, fond plus profond pour que
+/// l'Index « flotte ». `accentVictory` (lime) n'apparaît JAMAIS en UI de repos.
 const kHiDark = HiPalette(
-  bgBase: Color(0xFF0B0E14),
-  bgElevated: Color(0xFF121724),
-  bgElevated2: Color(0xFF1A2030),
+  bgBase: Color(0xFF090B11),
+  bgElevated: Color(0xFF11151F),
+  bgElevated2: Color(0xFF1A1F2D),
+  bgElevatedHi: Color(0xFF232A3B),
   strokeSubtle: Color(0x14FFFFFF),
   strokeStrong: Color(0x29FFFFFF),
-  brandPrimary: Color(0xFF3DE1FF),
+  strokeBrand: Color(0x732BD4F5),
+  brandPrimary: Color(0xFF2BD4F5),
+  brandPrimaryBright: Color(0xFF6BECFF),
   brandPrimaryDeep: Color(0xFF0A8FB3),
   brandSecondary: Color(0xFF7C5CFF),
   brandSecondaryText: Color(0xFFA98CFF),
+  accentVictory: Color(0xFFC6FF4A),
   textPrimary: Color(0xFFF2F5FA),
   textSecondary: Color(0xFFA7B0C0),
   textTertiary: Color(0xFF6B7488),
   textOnBrand: Color(0xFF04121A),
-  success: Color(0xFF46E6A0),
+  success: Color(0xFF34E29B),
   error: Color(0xFFFF5470),
   warn: Color(0xFFFFB23F),
   info: Color(0xFF6FB3FF),
@@ -61,7 +72,7 @@ const kHiDark = HiPalette(
   attrSpeed: Color(0xFFFFD23F),
   attrStrength: Color(0xFFFF4D7E),
   attrPower: Color(0xFFA05CFF),
-  attrEndurance: Color(0xFF3DE1FF),
+  attrEndurance: Color(0xFF2EE6C6),
   attrHybrid: Color(0xFF46E6A0),
   attrLocked: Color(0xFF3A4256),
 );
@@ -69,18 +80,22 @@ const kHiDark = HiPalette(
 /// Thème clair — couleurs assombries pour rester lisibles sur fond clair (WCAG AA), utile en
 /// plein soleil/salle (les études montrent que le dark mode est le pire en extérieur).
 const kHiLight = HiPalette(
-  bgBase: Color(0xFFF4F6FA),
+  bgBase: Color(0xFFEEF1F7),
   bgElevated: Color(0xFFFFFFFF),
-  bgElevated2: Color(0xFFEAEEF5),
+  bgElevated2: Color(0xFFE4E9F2),
+  bgElevatedHi: Color(0xFFD8DEEA),
   strokeSubtle: Color(0x14000000),
-  strokeStrong: Color(0x29000000),
-  brandPrimary: Color(0xFF0A7CA0),
+  strokeStrong: Color(0x24000000),
+  strokeBrand: Color(0x730A7CA0),
+  brandPrimary: Color(0xFF0789AE),
+  brandPrimaryBright: Color(0xFF14A6CE),
   brandPrimaryDeep: Color(0xFF06536C),
   brandSecondary: Color(0xFF6B43E0),
   brandSecondaryText: Color(0xFF5A33D6),
-  textPrimary: Color(0xFF14181F),
-  textSecondary: Color(0xFF4A5160),
-  textTertiary: Color(0xFF7B8494),
+  accentVictory: Color(0xFF5F9B00),
+  textPrimary: Color(0xFF11161F),
+  textSecondary: Color(0xFF46506A),
+  textTertiary: Color(0xFF6E778C),
   textOnBrand: Color(0xFFFFFFFF),
   success: Color(0xFF0E9E66),
   error: Color(0xFFD32F4A),
@@ -90,7 +105,7 @@ const kHiLight = HiPalette(
   attrSpeed: Color(0xFFB58600),
   attrStrength: Color(0xFFD8255C),
   attrPower: Color(0xFF7A3FE0),
-  attrEndurance: Color(0xFF0A7CA0),
+  attrEndurance: Color(0xFF0E9E84),
   attrHybrid: Color(0xFF0E9E66),
   attrLocked: Color(0xFFC2C9D6),
 );
@@ -105,12 +120,16 @@ class HiColors {
   static Color get bgBase => active.bgBase;
   static Color get bgElevated => active.bgElevated;
   static Color get bgElevated2 => active.bgElevated2;
+  static Color get bgElevatedHi => active.bgElevatedHi;
   static Color get strokeSubtle => active.strokeSubtle;
   static Color get strokeStrong => active.strokeStrong;
+  static Color get strokeBrand => active.strokeBrand;
   static Color get brandPrimary => active.brandPrimary;
+  static Color get brandPrimaryBright => active.brandPrimaryBright;
   static Color get brandPrimaryDeep => active.brandPrimaryDeep;
   static Color get brandSecondary => active.brandSecondary;
   static Color get brandSecondaryText => active.brandSecondaryText;
+  static Color get accentVictory => active.accentVictory;
   static Color get textPrimary => active.textPrimary;
   static Color get textSecondary => active.textSecondary;
   static Color get textTertiary => active.textTertiary;
@@ -127,10 +146,26 @@ class HiColors {
   static Color get attrHybrid => active.attrHybrid;
   static Color get attrLocked => active.attrLocked;
 
+  /// Dégradé marque « métal cyan » (primary → deep) pour boutons/anneaux : plus premium et
+  /// moins « arc-en-ciel » que primary→secondary.
   static LinearGradient get brandGradient => LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
+        colors: [active.brandPrimary, active.brandPrimaryDeep],
+      );
+
+  /// Dégradé bi-ton (primary → secondary) pour accents décoratifs (carte ligue, bulles chat).
+  static LinearGradient get brandGradientDuo => LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
         colors: [active.brandPrimary, active.brandSecondary],
+      );
+
+  /// Dégradé « victoire » (lime → cyan) — UNIQUEMENT célébrations.
+  static LinearGradient get victoryGradient => LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [active.accentVictory, active.brandPrimaryBright],
       );
 
   /// Couleur d'un attribut par sa clé (snake_case côté API).
@@ -256,7 +291,7 @@ class HiGrade {
 
   /// Couleur signature du grade (bordure + texte du chip, remplissage de barre).
   static Color color(int ovr) {
-    if (ovr >= 100) return const Color(0xFF3DE1FF); // diamant cyan (sommet)
+    if (ovr >= 100) return const Color(0xFF6BECFF); // cyan lumineux (sommet)
     switch (lowerBound(ovr)) {
       case 90:
         return const Color(0xFFB98CFF); // platine-violet
@@ -279,18 +314,106 @@ class HiGrade {
 
 class HiSpace {
   HiSpace._();
+  static const xxs = 2.0;
   static const xs = 4.0;
   static const sm = 8.0;
   static const md = 16.0;
+  static const gutter = 20.0; // marge d'écran (plus respirante que lg partout)
   static const lg = 24.0;
   static const xl = 32.0;
+  static const xxl = 48.0;
+  static const xxxl = 64.0;
 }
 
 class HiRadius {
   HiRadius._();
+  static const xs = 8.0;
   static const sm = 12.0;
-  static const md = 16.0;
-  static const lg = 24.0;
-  static const xl = 32.0;
+  static const md = 16.0; // boutons
+  static const lg = 20.0; // cartes
+  static const xl = 28.0; // cartes héros
+  static const xxl = 36.0; // bottom sheets
   static const pill = 999.0;
+}
+
+/// Ombres premium : sur fond sombre, l'ombre noire seule est invisible → on combine
+/// profondeur + halo coloré. En clair, on adoucit (bleu-gris).
+class HiShadow {
+  HiShadow._();
+
+  static bool get _light => HiColors.active.bgBase.computeLuminance() > 0.5;
+
+  /// Cartes standard.
+  static List<BoxShadow> get e1 => _light
+      ? const [BoxShadow(color: Color(0x142A3550), blurRadius: 12, offset: Offset(0, 5))]
+      : const [BoxShadow(color: Color(0x66000000), blurRadius: 16, offset: Offset(0, 6))];
+
+  /// Cartes héros / éléments saillants.
+  static List<BoxShadow> get e2 => _light
+      ? const [
+          BoxShadow(color: Color(0x1F2A3550), blurRadius: 22, offset: Offset(0, 10)),
+          BoxShadow(color: Color(0x0A000000), blurRadius: 2, offset: Offset(0, 1)),
+        ]
+      : const [
+          BoxShadow(color: Color(0x80000000), blurRadius: 28, offset: Offset(0, 12)),
+          BoxShadow(color: Color(0x14000000), blurRadius: 2, offset: Offset(0, 1)),
+        ];
+
+  /// Bottom sheets / modales (ombre vers le haut).
+  static List<BoxShadow> get e3 => _light
+      ? const [BoxShadow(color: Color(0x332A3550), blurRadius: 30, offset: Offset(0, -6))]
+      : const [BoxShadow(color: Color(0xB3000000), blurRadius: 40, offset: Offset(0, -8))];
+
+  /// Halo cyan (anneau d'Index, bouton primaire focus). [alpha] 0..1.
+  static List<BoxShadow> glowBrand([double alpha = 0.35]) =>
+      [BoxShadow(color: HiColors.brandPrimary.withValues(alpha: alpha), blurRadius: 32, spreadRadius: 2)];
+
+  /// Burst de célébration — lime, uniquement franchissements.
+  static List<BoxShadow> glowVictory([double alpha = 0.45]) =>
+      [BoxShadow(color: HiColors.accentVictory.withValues(alpha: alpha), blurRadius: 40, spreadRadius: 4)];
+}
+
+/// Durées et courbes du langage de motion.
+class HiMotion {
+  HiMotion._();
+  static const instant = Duration(milliseconds: 90);
+  static const fast = Duration(milliseconds: 180);
+  static const base = Duration(milliseconds: 280);
+  static const slow = Duration(milliseconds: 480);
+  static const reveal = Duration(milliseconds: 1600);
+  static const celebrate = Duration(milliseconds: 900);
+
+  static const enter = Curves.easeOutCubic;
+  static const exit = Curves.easeInCubic;
+  static const emphasis = Curves.easeOutBack; // overshoot léger (reveal, montée de palier)
+  static const countUp = Curves.easeOutExpo; // grimpe puis se pose
+}
+
+/// Échelle typographique « instrument de sport » : Rajdhani (chiffres/titres data, figures
+/// tabulaires pour des count-up sans saut) + Inter (corps, lisible en FR). Via google_fonts.
+class HiType {
+  HiType._();
+
+  static const _tabular = [FontFeature.tabularFigures()];
+
+  // ---- Data / chiffres (Rajdhani) ----
+  static TextStyle get displayXL =>
+      GoogleFonts.rajdhani(fontSize: 88, fontWeight: FontWeight.w700, letterSpacing: -1.5, height: 0.92, fontFeatures: _tabular);
+  static TextStyle get displayL =>
+      GoogleFonts.rajdhani(fontSize: 56, fontWeight: FontWeight.w700, letterSpacing: -1.0, height: 0.95, fontFeatures: _tabular);
+  static TextStyle get numericL =>
+      GoogleFonts.rajdhani(fontSize: 34, fontWeight: FontWeight.w700, letterSpacing: -0.5, height: 1.0, fontFeatures: _tabular);
+  static TextStyle get numericM =>
+      GoogleFonts.rajdhani(fontSize: 22, fontWeight: FontWeight.w600, height: 1.0, fontFeatures: _tabular);
+  static TextStyle get overline =>
+      GoogleFonts.rajdhani(fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 2.5, height: 1.0);
+
+  // ---- Corps / UI (Inter) ----
+  static TextStyle get titleL => GoogleFonts.inter(fontSize: 22, fontWeight: FontWeight.w800, letterSpacing: -0.2, height: 1.15);
+  static TextStyle get titleM => GoogleFonts.inter(fontSize: 17, fontWeight: FontWeight.w700, letterSpacing: -0.1, height: 1.2);
+  static TextStyle get body => GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w500, height: 1.4);
+  static TextStyle get bodyStrong => GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w700, height: 1.4);
+  static TextStyle get label => GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, letterSpacing: 0.2, height: 1.3);
+  static TextStyle get caption => GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500, letterSpacing: 0.2, height: 1.3);
+  static TextStyle get button => GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700, letterSpacing: 0.3, height: 1.0);
 }
