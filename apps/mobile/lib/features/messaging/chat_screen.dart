@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models.dart';
@@ -156,13 +157,25 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       child: Row(
         children: [
           Expanded(
-            child: TextField(
-              controller: _input,
-              minLines: 1,
-              maxLines: 4,
-              maxLength: 2000,
-              decoration: const InputDecoration(hintText: 'Écris un message…', counterText: ''),
-              onSubmitted: (_) => _send(),
+            // Entrée = envoyer ; Maj+Entrée = nouvelle ligne (champ multi-lignes).
+            child: Focus(
+              onKeyEvent: (node, event) {
+                if (event is KeyDownEvent &&
+                    event.logicalKey == LogicalKeyboardKey.enter &&
+                    !HardwareKeyboard.instance.isShiftPressed) {
+                  _send();
+                  return KeyEventResult.handled;
+                }
+                return KeyEventResult.ignored;
+              },
+              child: TextField(
+                controller: _input,
+                minLines: 1,
+                maxLines: 4,
+                maxLength: 2000,
+                decoration: const InputDecoration(hintText: 'Écris un message…', counterText: ''),
+                onSubmitted: (_) => _send(),
+              ),
             ),
           ),
           const SizedBox(width: 8),
