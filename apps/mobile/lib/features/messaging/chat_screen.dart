@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../l10n/app_localizations.dart';
+import '../../theme/haptics.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/rank_badge.dart';
 
@@ -80,6 +81,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     try {
       final api = ref.read(apiClientProvider);
       _convId = await api.sendMessage(widget.otherUserId, text);
+      HiHaptics.success();
       _input.clear();
       final c = await api.conversationMessages(_convId!);
       if (mounted) {

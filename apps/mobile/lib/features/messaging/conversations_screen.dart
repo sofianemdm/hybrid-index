@@ -5,6 +5,7 @@ import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
+import '../../widgets/hi_empty_state.dart';
 import '../../widgets/rank_badge.dart';
 import 'chat_screen.dart';
 
@@ -56,14 +57,11 @@ class _ConversationsScreenState extends ConsumerState<ConversationsScreen> {
               final items = snap.data!;
               if (items.isEmpty) {
                 return ListView(children: [
-                  Padding(
-                    padding: const EdgeInsets.all(HiSpace.xl),
-                    child: Column(children: [
-                      Icon(Icons.forum_outlined, color: HiColors.textTertiary, size: 40),
-                      const SizedBox(height: HiSpace.md),
-                      Text(t.conversationsEmpty,
-                          textAlign: TextAlign.center, style: HiType.body.copyWith(color: HiColors.textTertiary)),
-                    ]),
+                  const SizedBox(height: 48),
+                  HiEmptyState(
+                    icon: Icons.forum_rounded,
+                    title: t.conversationsTitle,
+                    message: t.conversationsEmpty,
                   ),
                 ]);
               }
