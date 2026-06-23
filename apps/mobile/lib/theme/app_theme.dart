@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'tokens.dart';
 
 /// ThemeData HYBRID INDEX pour une luminosité donnée (sombre par défaut, clair disponible).
@@ -24,8 +23,9 @@ ThemeData buildHiTheme(Brightness brightness) {
           onPrimary: pal.textOnBrand,
           onSurface: pal.textPrimary,
         );
-  // Corps de l'app en Inter (les chiffres data passent en Rajdhani via HiType au point d'usage).
-  final textTheme = GoogleFonts.interTextTheme(base.textTheme).apply(
+  // Corps de l'app en Inter EMBARQUÉ (les chiffres data passent en Rajdhani via HiType au point d'usage).
+  final textTheme = base.textTheme.apply(
+    fontFamily: 'Inter',
     bodyColor: pal.textPrimary,
     displayColor: pal.textPrimary,
   );

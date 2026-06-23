@@ -1,3 +1,5 @@
+import 'dart:ui' show ImageFilter;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -124,41 +126,86 @@ class _HomeShellState extends ConsumerState<HomeShell> {
         children: const [HomeScreen(), WodTab(), CommunityTab(), ProgressionScreen(), LeaderboardScreen()],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: HiColors.brandPrimary,
-        foregroundColor: HiColors.textOnBrand,
-        onPressed: () {
-          HiHaptics.tap();
-          _openLog();
-        },
-        icon: const Icon(Icons.add_rounded),
-        label: Text(t.homeAddSessionTitle, style: HiType.button.copyWith(color: HiColors.textOnBrand, fontSize: 15)),
+      floatingActionButton: Container(
+        decoration: BoxDecoration(shape: BoxShape.circle, boxShadow: HiShadow.glowBrand(0.4)),
+        child: FloatingActionButton(
+          backgroundColor: HiColors.brandPrimary,
+          foregroundColor: HiColors.textOnBrand,
+          elevation: 0,
+          tooltip: t.homeAddSessionTitle,
+          onPressed: () {
+            HiHaptics.tap();
+            _openLog();
+          },
+          child: const Icon(Icons.add_rounded, size: 28),
+        ),
       ),
-      bottomNavigationBar: NavigationBar(
-        backgroundColor: HiColors.bgElevated,
-        indicatorColor: HiColors.brandPrimary.withValues(alpha: 0.18),
-        selectedIndex: _tab,
-        onDestinationSelected: (i) {
-          HiHaptics.tap();
-          setState(() => _tab = i);
-        },
-        destinations: [
-          NavigationDestination(
-              icon: const Icon(Icons.bolt_outlined), selectedIcon: const Icon(Icons.bolt_rounded), label: t.navHome),
-          NavigationDestination(
-              icon: const Icon(Icons.fitness_center_outlined),
-              selectedIcon: const Icon(Icons.fitness_center_rounded),
-              label: t.navSessions),
-          NavigationDestination(
-              icon: const Icon(Icons.groups_outlined), selectedIcon: const Icon(Icons.groups_rounded), label: t.navCommunity),
-          NavigationDestination(
-              icon: const Icon(Icons.emoji_events_outlined),
-              selectedIcon: const Icon(Icons.emoji_events_rounded),
-              label: t.navProgress),
-          NavigationDestination(
-              icon: const Icon(Icons.leaderboard_outlined),
-              selectedIcon: const Icon(Icons.leaderboard_rounded),
-              label: t.navLeaderboard),
+      bottomNavigationBar: _floatingNav(t),
+    );
+  }
+
+  /// Barre de navigation flottante (pilule arrondie + flou d'arrière-plan) — feel premium.
+  Widget _floatingNav(AppLocalizations t) {
+    final tabs = <(IconData, IconData, String)>[
+      (Icons.bolt_outlined, Icons.bolt_rounded, t.navHome),
+      (Icons.fitness_center_outlined, Icons.fitness_center_rounded, t.navSessions),
+      (Icons.groups_outlined, Icons.groups_rounded, t.navCommunity),
+      (Icons.emoji_events_outlined, Icons.emoji_events_rounded, t.navProgress),
+      (Icons.leaderboard_outlined, Icons.leaderboard_rounded, t.navLeaderboard),
+    ];
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(HiSpace.md, 0, HiSpace.md, HiSpace.sm),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(HiRadius.pill),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+            child: Container(
+              height: 64,
+              decoration: BoxDecoration(
+                color: HiColors.bgElevated2.withValues(alpha: 0.86),
+                borderRadius: BorderRadius.circular(HiRadius.pill),
+                border: Border.all(color: HiColors.strokeSubtle),
+                boxShadow: HiShadow.e2,
+              ),
+              child: Row(
+                children: [
+                  for (var i = 0; i < tabs.length; i++)
+                    Expanded(child: _navItem(i, tabs[i].$1, tabs[i].$2, tabs[i].$3)),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _navItem(int i, IconData icon, IconData activeIcon, String label) {
+    final active = _tab == i;
+    final color = active ? HiColors.brandPrimary : HiColors.textTertiary;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        HiHaptics.tap();
+        setState(() => _tab = i);
+      },
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          AnimatedScale(
+            scale: active ? 1.0 : 0.9,
+            duration: HiMotion.fast,
+            curve: Curves.easeOut,
+            child: Icon(active ? activeIcon : icon, color: color, size: 23),
+          ),
+          const SizedBox(height: 2),
+          Text(label,
+              maxLines: 1,
+              overflow: TextOverflow.clip,
+              style: HiType.caption.copyWith(
+                  color: color, fontSize: 10, fontWeight: active ? FontWeight.w700 : FontWeight.w500)),
         ],
       ),
     );

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 /// Tokens du design system HYBRID INDEX (cf. docs/design/design-system.md). Mode sombre
 /// prioritaire, « feel jeu » façon Whoop + carte FIFA : profondeur par surfaces + glow,
@@ -393,30 +392,33 @@ class HiMotion {
 }
 
 /// Échelle typographique « instrument de sport » : Rajdhani (chiffres/titres data, figures
-/// tabulaires pour des count-up sans saut) + Inter (corps, lisible en FR). Via google_fonts.
+/// tabulaires pour des count-up sans saut) + Inter (corps, lisible en FR). Polices EMBARQUÉES
+/// (assets/fonts, déclarées au pubspec) → aucun fetch réseau, pas de saut de police au reveal.
 class HiType {
   HiType._();
 
+  static const _data = 'Rajdhani';
+  static const _body = 'Inter';
   static const _tabular = [FontFeature.tabularFigures()];
 
   // ---- Data / chiffres (Rajdhani) ----
-  static TextStyle get displayXL =>
-      GoogleFonts.rajdhani(fontSize: 88, fontWeight: FontWeight.w700, letterSpacing: -1.5, height: 0.92, fontFeatures: _tabular);
-  static TextStyle get displayL =>
-      GoogleFonts.rajdhani(fontSize: 56, fontWeight: FontWeight.w700, letterSpacing: -1.0, height: 0.95, fontFeatures: _tabular);
-  static TextStyle get numericL =>
-      GoogleFonts.rajdhani(fontSize: 34, fontWeight: FontWeight.w700, letterSpacing: -0.5, height: 1.0, fontFeatures: _tabular);
-  static TextStyle get numericM =>
-      GoogleFonts.rajdhani(fontSize: 22, fontWeight: FontWeight.w600, height: 1.0, fontFeatures: _tabular);
-  static TextStyle get overline =>
-      GoogleFonts.rajdhani(fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 2.5, height: 1.0);
+  static const TextStyle displayXL =
+      TextStyle(fontFamily: _data, fontSize: 88, fontWeight: FontWeight.w700, letterSpacing: -1.5, height: 0.92, fontFeatures: _tabular);
+  static const TextStyle displayL =
+      TextStyle(fontFamily: _data, fontSize: 56, fontWeight: FontWeight.w700, letterSpacing: -1.0, height: 0.95, fontFeatures: _tabular);
+  static const TextStyle numericL =
+      TextStyle(fontFamily: _data, fontSize: 34, fontWeight: FontWeight.w700, letterSpacing: -0.5, height: 1.0, fontFeatures: _tabular);
+  static const TextStyle numericM =
+      TextStyle(fontFamily: _data, fontSize: 22, fontWeight: FontWeight.w600, height: 1.0, fontFeatures: _tabular);
+  static const TextStyle overline =
+      TextStyle(fontFamily: _data, fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 2.5, height: 1.0);
 
   // ---- Corps / UI (Inter) ----
-  static TextStyle get titleL => GoogleFonts.inter(fontSize: 22, fontWeight: FontWeight.w800, letterSpacing: -0.2, height: 1.15);
-  static TextStyle get titleM => GoogleFonts.inter(fontSize: 17, fontWeight: FontWeight.w700, letterSpacing: -0.1, height: 1.2);
-  static TextStyle get body => GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w500, height: 1.4);
-  static TextStyle get bodyStrong => GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w700, height: 1.4);
-  static TextStyle get label => GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, letterSpacing: 0.2, height: 1.3);
-  static TextStyle get caption => GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500, letterSpacing: 0.2, height: 1.3);
-  static TextStyle get button => GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700, letterSpacing: 0.3, height: 1.0);
+  static const TextStyle titleL = TextStyle(fontFamily: _body, fontSize: 22, fontWeight: FontWeight.w800, letterSpacing: -0.2, height: 1.15);
+  static const TextStyle titleM = TextStyle(fontFamily: _body, fontSize: 17, fontWeight: FontWeight.w700, letterSpacing: -0.1, height: 1.2);
+  static const TextStyle body = TextStyle(fontFamily: _body, fontSize: 15, fontWeight: FontWeight.w500, height: 1.4);
+  static const TextStyle bodyStrong = TextStyle(fontFamily: _body, fontSize: 15, fontWeight: FontWeight.w700, height: 1.4);
+  static const TextStyle label = TextStyle(fontFamily: _body, fontSize: 13, fontWeight: FontWeight.w600, letterSpacing: 0.2, height: 1.3);
+  static const TextStyle caption = TextStyle(fontFamily: _body, fontSize: 12, fontWeight: FontWeight.w500, letterSpacing: 0.2, height: 1.3);
+  static const TextStyle button = TextStyle(fontFamily: _body, fontSize: 16, fontWeight: FontWeight.w700, letterSpacing: 0.3, height: 1.0);
 }
