@@ -38,7 +38,7 @@ class _ProgressionScreenState extends ConsumerState<ProgressionScreen> {
           future: _future,
           builder: (context, snap) {
             if (snap.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
+              return Center(child: CircularProgressIndicator(color: HiColors.brandPrimary));
             }
             if (snap.hasError) {
               return ListView(children: [
@@ -53,8 +53,7 @@ class _ProgressionScreenState extends ConsumerState<ProgressionScreen> {
             return ListView(
               padding: const EdgeInsets.fromLTRB(HiSpace.lg, HiSpace.lg, HiSpace.lg, 96),
               children: [
-                Text('Progression',
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: HiColors.textPrimary)),
+                Text('Progression', style: HiType.titleL.copyWith(color: HiColors.textPrimary)),
                 const SizedBox(height: HiSpace.md),
                 OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(
@@ -84,7 +83,7 @@ class _ProgressionScreenState extends ConsumerState<ProgressionScreen> {
                 ),
                 const SizedBox(height: HiSpace.lg),
                 Text('Badges (${badges.where((b) => b.unlocked).length}/${badges.length} débloqués)',
-                    style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 16)),
+                    style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
                 Text('Pour chaque série, ton palier actuel et le prochain à viser.',
                     style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
                 const SizedBox(height: HiSpace.sm),

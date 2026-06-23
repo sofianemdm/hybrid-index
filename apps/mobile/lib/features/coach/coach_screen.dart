@@ -50,8 +50,7 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text('Sur quel axe progresser ?',
-                    style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 16)),
+                Text('Sur quel axe progresser ?', style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
                 const SizedBox(height: HiSpace.sm),
                 Wrap(
                   spacing: 8,
@@ -66,7 +65,9 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
                   future: _future,
                   builder: (context, snap) {
                     if (snap.connectionState == ConnectionState.waiting) {
-                      return const Padding(padding: EdgeInsets.all(40), child: Center(child: CircularProgressIndicator()));
+                      return Padding(
+                          padding: const EdgeInsets.all(40),
+                          child: Center(child: CircularProgressIndicator(color: HiColors.brandPrimary)));
                     }
                     if (snap.hasError) {
                       return Column(
@@ -112,14 +113,13 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
               const SizedBox(width: HiSpace.md),
               Expanded(
                 child: Text('Fais ces séances pour progresser sur ${HiLabels.attribute(r.targetAttribute)}',
-                    style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w800, fontSize: 16, height: 1.3)),
+                    style: HiType.titleM.copyWith(color: HiColors.textPrimary, height: 1.3)),
               ),
             ],
           ),
         ),
         const SizedBox(height: HiSpace.lg),
-        Text('Séances ciblées',
-            style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 16)),
+        Text('SÉANCES CIBLÉES', style: HiType.overline.copyWith(color: HiColors.textSecondary)),
         const SizedBox(height: HiSpace.sm),
         if (r.sessions.isEmpty)
           Text('Aucune séance pour cet axe avec ton matériel.', style: TextStyle(color: HiColors.textTertiary))
