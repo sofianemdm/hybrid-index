@@ -58,18 +58,19 @@ class GradeBlock extends ConsumerWidget {
       return Text('Sommet atteint — 100',
           style: TextStyle(color: color, fontSize: 13, fontWeight: FontWeight.w800));
     }
-    // Paliers de 5 (plus de jalons, progression plus lisible) : prochaine cible = multiple de 5.
-    final lower5 = (ovr ~/ 5) * 5;
-    final next5 = (lower5 + 5).clamp(0, 100);
-    final pts = (next5 - ovr).clamp(1, 5);
-    final fill = ((ovr - lower5) / 5).clamp(0.0, 1.0);
-    final nextColor = HiGrade.color(next5); // couleur du palier de grade visé (peut être identique)
+    // Objectif = le PROCHAIN POINT (ex. 74 → 75). Remplissage = progression réelle vers ce point
+    // (via la note à la décimale).
+    final r = (profile.index.rating ?? ovr.toDouble()).clamp(0.0, 99.999);
+    final cur = r.floor();
+    final next = cur + 1;
+    final fill = (r - cur).clamp(0.0, 1.0);
+    final nextColor = HiGrade.color(next);
     return Column(
       children: [
         Align(
           alignment: Alignment.centerRight,
-          child: Text('${pts == 1 ? '1 pt' : '$pts pts'} → $next5',
-              style: TextStyle(color: nextColor, fontSize: 12, fontWeight: FontWeight.w700)),
+          child: Text('Objectif : $next',
+              style: TextStyle(color: nextColor, fontSize: 12, fontWeight: FontWeight.w800)),
         ),
         const SizedBox(height: 4),
         ClipRRect(
@@ -94,8 +95,8 @@ class GradeBlock extends ConsumerWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('$ovr', style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w700)),
-            Text('$next5', style: TextStyle(color: HiColors.textTertiary, fontSize: 11, fontWeight: FontWeight.w600)),
+            Text('$cur', style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w700)),
+            Text('$next', style: TextStyle(color: HiColors.textTertiary, fontSize: 11, fontWeight: FontWeight.w600)),
           ],
         ),
       ],
@@ -222,7 +223,8 @@ class GradeBlock extends ConsumerWidget {
   /// Index complet (6/6) : message d'action court vers le palier suivant.
   Widget _actionMessage(int ovr) {
     final weak = profile.weakest;
-    final next = HiGrade.nextLabel(ovr);
+    // Objectif = le prochain POINT (ex. 75), pas le prochain palier de grade.
+    final next = '${(profile.index.rating ?? ovr.toDouble()).floor() + 1}';
     if (weak == null) {
       return Text('Continue à logger tes séances pour grimper vers $next.',
           textAlign: TextAlign.center, style: TextStyle(color: HiColors.textSecondary, fontSize: 13));

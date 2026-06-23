@@ -44,6 +44,9 @@ export interface PersistedProfile {
   weakest: string | null;
   /** Renseigné après un recalcul qui fait MONTER de bande population (déclenche la célébration UI). */
   bandCelebration?: { from: string | null; to: string } | null;
+  /** Position dans la ligue (sexe), 1-indexée, + taille de la ligue. Rempli sur un GET de profil. */
+  leaguePosition?: number;
+  leagueTotal?: number;
 }
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
@@ -389,7 +392,14 @@ export class ProfileScoringService {
       };
     });
     const socialProof = await this.buildSocialProof(profile.sex, profile.goal, radar, Number(index.percentile));
+    // Position dans la ligue (sexe), 1-indexée — autoritatif Postgres (live).
+    const [above, leagueTotal] = await Promise.all([
+      this.prisma.hybridIndex.count({ where: { value: { gt: index.value }, user: { profile: { sex: profile.sex } } } }),
+      this.prisma.hybridIndex.count({ where: { user: { profile: { sex: profile.sex } } } }),
+    ]);
     return {
+      leaguePosition: above + 1,
+      leagueTotal,
       index: (() => {
         // `index` est une ligne DB (valeur interne /1000) → on dérive l'OVR /100.
         // `value` est TOUJOURS un entier non-null (contrat unique avec l'onboarding) ;

@@ -100,6 +100,10 @@ class HomeScreen extends ConsumerWidget {
         const SizedBox(height: HiSpace.md),
         GradeBlock(profile: p),
         const SizedBox(height: HiSpace.md),
+        if (p.leaguePosition != null) ...[
+          _leagueRankCard(p.leaguePosition!, p.leagueTotal),
+          const SizedBox(height: HiSpace.md),
+        ],
         if (p.socialProof != null) ...[
           SocialProofCard(proof: p.socialProof!),
           const SizedBox(height: HiSpace.md),
@@ -165,6 +169,53 @@ class HomeScreen extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+
+  /// Place dans la ligue mise en avant (le classement compte plus que « X% des humains » pour un
+  /// athlète bien classé).
+  Widget _leagueRankCard(int position, int? total) {
+    final medal = position == 1
+        ? '🥇'
+        : position == 2
+            ? '🥈'
+            : position == 3
+                ? '🥉'
+                : '🏆';
+    return Container(
+      padding: const EdgeInsets.all(HiSpace.md),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [HiColors.brandPrimary.withValues(alpha: 0.18), HiColors.brandSecondary.withValues(alpha: 0.10)],
+        ),
+        borderRadius: BorderRadius.circular(HiRadius.md),
+        border: Border.all(color: HiColors.brandPrimary.withValues(alpha: 0.5)),
+      ),
+      child: Row(
+        children: [
+          Text(medal, style: const TextStyle(fontSize: 28)),
+          const SizedBox(width: HiSpace.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                RichText(
+                  text: TextSpan(
+                    style: TextStyle(color: HiColors.textPrimary, fontSize: 18, fontWeight: FontWeight.w800),
+                    children: [
+                      const TextSpan(text: 'Tu es '),
+                      TextSpan(text: '#$position', style: TextStyle(color: HiColors.brandPrimary)),
+                      const TextSpan(text: ' de ta ligue'),
+                    ],
+                  ),
+                ),
+                if (total != null)
+                  Text('sur $total athlètes de ta ligue', style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 

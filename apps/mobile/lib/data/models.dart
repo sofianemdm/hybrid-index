@@ -65,6 +65,7 @@ class IndexPoint {
 
 class IndexSummary {
   final int value;
+  final double? rating; // OVR à 1 décimale (ex. 74.3) pour la barre de progression au point près
   final double percentile;
   final String rank;
   final bool isProvisional;
@@ -73,6 +74,7 @@ class IndexSummary {
   final RankProgress? rankProgress;
   const IndexSummary({
     required this.value,
+    this.rating,
     required this.percentile,
     required this.rank,
     required this.isProvisional,
@@ -83,6 +85,7 @@ class IndexSummary {
 
   factory IndexSummary.fromJson(Map<String, dynamic> j) => IndexSummary(
         value: (j['value'] as num).toInt(),
+        rating: (j['rating'] as num?)?.toDouble(),
         percentile: (j['percentile'] as num).toDouble(),
         rank: j['rank'] as String,
         isProvisional: j['isProvisional'] as bool? ?? false,
@@ -141,6 +144,8 @@ class Profile {
   final List<AttributeGain> gains;
   /// Attribut le plus faible débloqué (point faible à cibler).
   final String? weakest;
+  final int? leaguePosition; // place dans la ligue (sexe), 1 = premier
+  final int? leagueTotal;
   /// Renseigné quand le dernier recalcul a fait MONTER de bande population (déclenche la célébration).
   final List<String>? bandCelebration; // [from, to] où from peut être '' (null)
   const Profile({
@@ -149,6 +154,8 @@ class Profile {
     this.socialProof,
     this.gains = const [],
     this.weakest,
+    this.leaguePosition,
+    this.leagueTotal,
     this.bandCelebration,
   });
 
@@ -160,6 +167,8 @@ class Profile {
               .toList() ??
           const [],
       weakest: j['weakest'] as String?,
+      leaguePosition: (j['leaguePosition'] as num?)?.toInt(),
+      leagueTotal: (j['leagueTotal'] as num?)?.toInt(),
       index: IndexSummary.fromJson(j['index'] as Map<String, dynamic>),
       radar: (j['radar'] as List<dynamic>)
           .map((e) => RadarAttribute.fromJson(e as Map<String, dynamic>))
