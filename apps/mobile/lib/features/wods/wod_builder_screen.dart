@@ -401,6 +401,7 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
     final e = _estimate!;
     final champ = e.ref('champion')?.rawResult;
     final inter = e.ref('intermediate')?.rawResult;
+    final beg = e.ref('occasional')?.rawResult;
     return Container(
       padding: const EdgeInsets.all(HiSpace.md),
       decoration: BoxDecoration(
@@ -423,6 +424,7 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
           const SizedBox(height: HiSpace.sm),
           if (champ != null) Text('🏆 Champion : ${formatWodResult(champ, _scoreType)}', style: TextStyle(color: HiColors.textSecondary)),
           if (inter != null) Text('Intermédiaire : ${formatWodResult(inter, _scoreType)}', style: TextStyle(color: HiColors.textSecondary)),
+          if (beg != null) Text('Débutant : ${formatWodResult(beg, _scoreType)}', style: TextStyle(color: HiColors.textSecondary)),
           const SizedBox(height: 6),
           Wrap(
             spacing: 6,

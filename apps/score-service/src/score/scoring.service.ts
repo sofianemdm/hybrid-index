@@ -249,6 +249,11 @@ export class ScoringService {
     const attrShare = new Map<string, number>();
     let repsPerRound = 0;
 
+    // Modèle de temps prédit (recalibré sport-science, 23 juin).
+    const BREAK_SEC = { champion: 3.0, intermediate: 3.0, occasional: 4.0 } as const; // pause par coupure de série
+    const ROUND_DECAY = { champion: 0.08, intermediate: 0.06, occasional: 0.04 } as const; // dégradation inter-tours
+    const TRANSITION = 3.5; // s entre deux blocs
+
     for (const level of levels) {
       let roundTime = 0;
       const lineCosts: Array<{ attrs: { attribute: string; weight: number }[]; cost: number }> = [];
@@ -265,19 +270,27 @@ export class ScoringService {
         } else if (m.unit === "meter" && (m.id === "run" || m.id === "sprint")) {
           cost = (amount / rate) * Math.pow(Math.max(amount, 1) / 400, 0.06); // Riegel
         } else {
+          // Charge : pénalité au-dessus de la charge Rx de référence (sous-Rx = pas de bonus).
           const refLoad = m.loadFactor ? m.loadFactor * BW : 0;
           const loadMult = block.loadKg && refLoad > 0 ? 1 + 0.6 * Math.max(0, block.loadKg / refLoad - 1) : 1;
-          const fatMult = Math.pow(Math.max(amount, 1) / 15, m.fatigueExponent - 1);
-          cost = (amount / rate) * loadMult * fatMult;
+          // Fatigue : courbe de puissance d'origine MAIS bornée à 1 → plus de « remise » absurde
+          // pour les petites séries (le bug), tout en gardant la pénalité réaliste des gros volumes.
+          const fatMult = Math.max(1, Math.pow(amount / 15, m.fatigueExponent - 1));
+          // Coupures de série implicites (on ne tient pas 30 répétitions d'affilée).
+          const breaks = amount > 0 ? Math.floor((amount - 1) / (m.maxSet ?? 12)) : 0;
+          cost = (amount / rate) * loadMult * fatMult + breaks * BREAK_SEC[level];
         }
         roundTime += cost;
         lineCosts.push({ attrs: m.attributes, cost });
         if (level === "champion") repsPerRound += block.reps ?? 0;
       }
-      roundTime += Math.max(0, req.blocks.length - 1) * 2.5; // transitions
+      roundTime += Math.max(0, req.blocks.length - 1) * TRANSITION; // transitions entre blocs
       const rounds = req.rounds ?? 1;
       if (req.scoreType === "time") {
-        predicted[level] = roundTime * rounds;
+        // Dégradation inter-tours : chaque tour est un peu plus lent. Σ_{i=0..rounds-1} (1 + decay·i).
+        let mult = 0;
+        for (let i = 0; i < rounds; i++) mult += 1 + ROUND_DECAY[level] * i;
+        predicted[level] = roundTime * mult;
       } else {
         const cap = req.timeCapSec ?? 600;
         predicted[level] = Math.round((cap / Math.max(roundTime, 1)) * Math.max(repsPerRound, 1));
