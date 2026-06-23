@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app.dart';
 import '../../data/session.dart';
+import '../../theme/haptics.dart';
 import '../../theme/tokens.dart';
 import '../leaderboard/leaderboard_screen.dart';
 import '../log/log_wod_screen.dart';
@@ -123,25 +124,31 @@ class _HomeShellState extends ConsumerState<HomeShell> {
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: HiColors.brandPrimary,
         foregroundColor: HiColors.textOnBrand,
-        onPressed: _openLog,
-        icon: const Icon(Icons.add),
-        label: const Text('Ajouter une séance', style: TextStyle(fontWeight: FontWeight.w700)),
+        onPressed: () {
+          HiHaptics.tap();
+          _openLog();
+        },
+        icon: const Icon(Icons.add_rounded),
+        label: Text('Ajouter une séance', style: HiType.button.copyWith(color: HiColors.textOnBrand, fontSize: 15)),
       ),
       bottomNavigationBar: NavigationBar(
         backgroundColor: HiColors.bgElevated,
         indicatorColor: HiColors.brandPrimary.withValues(alpha: 0.18),
         selectedIndex: _tab,
-        onDestinationSelected: (i) => setState(() => _tab = i),
+        onDestinationSelected: (i) {
+          HiHaptics.tap();
+          setState(() => _tab = i);
+        },
         destinations: const [
-          NavigationDestination(icon: Icon(Icons.bolt_outlined), selectedIcon: Icon(Icons.bolt), label: 'Accueil'),
+          NavigationDestination(icon: Icon(Icons.bolt_outlined), selectedIcon: Icon(Icons.bolt_rounded), label: 'Accueil'),
           NavigationDestination(
-              icon: Icon(Icons.fitness_center_outlined), selectedIcon: Icon(Icons.fitness_center), label: 'Séances'),
+              icon: Icon(Icons.fitness_center_outlined), selectedIcon: Icon(Icons.fitness_center_rounded), label: 'Séances'),
           NavigationDestination(
-              icon: Icon(Icons.groups_outlined), selectedIcon: Icon(Icons.groups), label: 'Communauté'),
+              icon: Icon(Icons.groups_outlined), selectedIcon: Icon(Icons.groups_rounded), label: 'Communauté'),
           NavigationDestination(
-              icon: Icon(Icons.emoji_events_outlined), selectedIcon: Icon(Icons.emoji_events), label: 'Progrès'),
+              icon: Icon(Icons.emoji_events_outlined), selectedIcon: Icon(Icons.emoji_events_rounded), label: 'Progrès'),
           NavigationDestination(
-              icon: Icon(Icons.leaderboard_outlined), selectedIcon: Icon(Icons.leaderboard), label: 'Classement'),
+              icon: Icon(Icons.leaderboard_outlined), selectedIcon: Icon(Icons.leaderboard_rounded), label: 'Classement'),
         ],
       ),
     );
