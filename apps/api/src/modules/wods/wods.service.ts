@@ -239,10 +239,36 @@ export class WodsService {
     if (!wod) throw new NotFoundException({ code: "NOT_FOUND", message: "WOD introuvable." });
 
     let levels: unknown = null;
-    try {
-      levels = await this.scoreClient.getWodLevels(id);
-    } catch {
-      levels = null; // WOD communautaire (pas de paliers officiels) ou score-service indisponible
+    if (wod.isCustom) {
+      // WOD communautaire : pas de barème officiel → on REJOUE l'estimation (par sexe) à partir des
+      // mouvements enregistrés pour fournir les paliers champion / intermédiaire / débutant
+      // (cohérent avec l'aperçu du constructeur).
+      try {
+        const base = {
+          scoreType: wod.scoreType,
+          wodType: wod.type,
+          timeCapSec: wod.timeCapSec ?? undefined,
+          rounds: wod.rounds ?? undefined,
+          blocks: wod.movements as internalScore.WodBlockInput[],
+        };
+        const [m, f] = await Promise.all([
+          this.scoreClient.computeEstimate({ ...base, sex: "male" }),
+          this.scoreClient.computeEstimate({ ...base, sex: "female" }),
+        ]);
+        const triple = (refs: internalScore.ComputeEstimateResponse["references"]) => {
+          const get = (lvl: string) => Math.round(refs.find((r) => r.level === lvl)?.rawResult ?? 0);
+          return { champion: get("champion"), intermediate: get("intermediate"), occasional: get("occasional") };
+        };
+        levels = { male: triple(m.references), female: triple(f.references) };
+      } catch {
+        levels = null;
+      }
+    } else {
+      try {
+        levels = await this.scoreClient.getWodLevels(id);
+      } catch {
+        levels = null; // barème indisponible (score-service down)
+      }
     }
 
     let myBest: unknown = null;
