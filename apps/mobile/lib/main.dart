@@ -6,6 +6,7 @@ import 'data/session.dart';
 import 'data/theme_mode.dart';
 import 'theme/app_theme.dart';
 import 'theme/tokens.dart';
+import 'widgets/celebration.dart';
 
 void main() {
   runApp(const ProviderScope(child: HybridIndexApp()));
@@ -20,12 +21,25 @@ class HybridIndexApp extends ConsumerStatefulWidget {
   ConsumerState<HybridIndexApp> createState() => _HybridIndexAppState();
 }
 
-class _HybridIndexAppState extends ConsumerState<HybridIndexApp> {
+class _HybridIndexAppState extends ConsumerState<HybridIndexApp> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     // Restaure la session (token persisté) au démarrage.
     Future.microtask(() => ref.read(sessionProvider.notifier).bootstrap());
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Nouveau « passage » dans l'app → on ré-autorise une célébration FORTE (anti-fatigue : 1/session).
+    if (state == AppLifecycleState.resumed) Celebration.resetSession();
   }
 
   @override

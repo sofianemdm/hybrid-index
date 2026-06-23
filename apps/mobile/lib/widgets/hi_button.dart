@@ -100,17 +100,20 @@ class HiGhostButton extends StatelessWidget {
     return HiPressable(
       onTap: onPressed,
       pressedScale: 0.96,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: HiSpace.sm, vertical: HiSpace.sm),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (icon != null) ...[
-              Icon(icon, color: HiColors.brandPrimary, size: 18),
-              const SizedBox(width: 6),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 44),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: HiSpace.sm),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (icon != null) ...[
+                Icon(icon, color: HiColors.brandPrimary, size: 18),
+                const SizedBox(width: 6),
+              ],
+              Text(label, style: HiType.label.copyWith(color: HiColors.brandPrimary)),
             ],
-            Text(label, style: HiType.label.copyWith(color: HiColors.brandPrimary)),
-          ],
+          ),
         ),
       ),
     );

@@ -127,10 +127,12 @@ class _CelebrationViewState extends State<_CelebrationView> with TickerProviderS
       child: Stack(
         children: [
           Positioned.fill(
-            child: AnimatedBuilder(
-              animation: _confetti,
-              builder: (_, __) =>
-                  CustomPaint(painter: _ConfettiPainter(_particles, Curves.easeOut.transform(_confetti.value))),
+            child: RepaintBoundary(
+              child: AnimatedBuilder(
+                animation: _confetti,
+                builder: (_, __) =>
+                    CustomPaint(painter: _ConfettiPainter(_particles, Curves.easeOut.transform(_confetti.value))),
+              ),
             ),
           ),
           Center(

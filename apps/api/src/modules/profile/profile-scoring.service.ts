@@ -6,6 +6,7 @@ import { RedisService } from "../../infra/redis/redis.service";
 import { ScoreClient } from "../../infra/score-client/score-client.service";
 import { FeedEventsService } from "../social/feed-events.service";
 import { SCORING_VERSION_UUID } from "../../common/constants";
+import { buildRival } from "./rival.logic";
 
 const RANK_ORDER = ["rookie", "bronze", "silver", "gold", "platinum", "diamond", "elite"];
 
@@ -402,15 +403,8 @@ export class ProfileScoringService {
       where: { userId: rivalIdx.userId },
       select: { displayName: true, rank: true },
     });
-    const rivalOvr = Math.round(ratingFromInternal(rivalIdx.value));
-    const myOvr = Math.round(ratingFromInternal(myValue));
-    return {
-      displayName: rp?.displayName ?? "—",
-      rank: rp?.rank ?? "rookie",
-      ovr: rivalOvr,
-      position: above, // le rival occupe la place juste devant la mienne (above + 1)
-      gapPoints: Math.max(1, rivalOvr - myOvr),
-    };
+    // Vue rival = logique pure et testée (cf. rival.logic.ts).
+    return buildRival(myValue, above, { value: rivalIdx.value, displayName: rp?.displayName ?? null, rank: rp?.rank ?? null });
   }
 
   async getMyProfile(userId: string): Promise<PersistedProfile | null> {
