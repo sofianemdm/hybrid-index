@@ -114,13 +114,27 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SizedBox(height: HiSpace.lg),
+                  const SizedBox(height: HiSpace.xl),
+                  // Logo : pastille marque + wordmark Rajdhani.
+                  Center(
+                    child: Container(
+                      width: 64,
+                      height: 64,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: HiColors.brandGradient,
+                        boxShadow: HiShadow.glowBrand(0.3),
+                      ),
+                      child: Icon(Icons.bolt_rounded, color: HiColors.textOnBrand, size: 36),
+                    ),
+                  ),
+                  const SizedBox(height: HiSpace.md),
                   Text('HYBRID INDEX',
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 30, fontWeight: FontWeight.w800, letterSpacing: 3, color: HiColors.textPrimary)),
+                      style: HiType.displayL.copyWith(fontSize: 36, color: HiColors.textPrimary, letterSpacing: 1)),
                   const SizedBox(height: 6),
                   Text('Ton score de condition physique hybride, comparable.',
-                      textAlign: TextAlign.center, style: TextStyle(color: HiColors.textSecondary)),
+                      textAlign: TextAlign.center, style: HiType.body.copyWith(color: HiColors.textSecondary)),
                   const SizedBox(height: HiSpace.xl),
                   _SegToggle(
                     left: 'Inscription',
