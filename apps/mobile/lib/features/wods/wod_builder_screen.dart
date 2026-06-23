@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/api_client.dart';
 import '../../data/models.dart';
 import '../../data/session.dart';
+import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/hi_button.dart';
 import 'wod_detail_screen.dart';
@@ -82,8 +83,8 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
   /// Nom généré automatiquement : format (For Time, EMOM…) + mouvements clés.
   /// L'utilisateur ne choisit pas le nom — l'app en propose un cohérent.
   String get _generatedName {
-    if (_blocks.isEmpty) return 'Séance personnalisée';
-    final fmt = _formats[_type] ?? 'Séance';
+    if (_blocks.isEmpty) return AppLocalizations.of(context).wodBuilderCustomWorkout;
+    final fmt = _formats[_type] ?? AppLocalizations.of(context).wodBuilderWorkout;
     final seen = <String>{};
     final names = <String>[];
     for (final b in _blocks) {
@@ -157,7 +158,7 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
 
   Future<void> _save() async {
     if (_blocks.isEmpty) {
-      _toast('Ajoute au moins un mouvement.');
+      _toast(AppLocalizations.of(context).wodBuilderAddMovementError);
       return;
     }
     final name = _generatedName;
@@ -189,8 +190,9 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Construire une séance'), backgroundColor: Colors.transparent, elevation: 0),
+      appBar: AppBar(title: Text(t.wodBuilderTitle), backgroundColor: Colors.transparent, elevation: 0),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(HiSpace.lg),
@@ -199,7 +201,7 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text('Format', style: HiType.caption.copyWith(color: HiColors.textSecondary)),
+                Text(t.wodBuilderFormat, style: HiType.caption.copyWith(color: HiColors.textSecondary)),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
@@ -224,7 +226,7 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
                 if (const ['for_time', 'chipper', 'interval'].contains(_type)) ...[
                   const SizedBox(height: HiSpace.md),
                   Row(children: [
-                    Text('Nombre de tours : ', style: HiType.body.copyWith(color: HiColors.textSecondary)),
+                    Text(t.wodBuilderRoundsLabel, style: HiType.body.copyWith(color: HiColors.textSecondary)),
                     SizedBox(
                       width: 64,
                       child: TextField(
@@ -233,26 +235,25 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
                         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                         textAlign: TextAlign.center,
                         onChanged: (_) => _refreshEstimate(),
-                        decoration: const InputDecoration(hintText: 'ex. 3', isDense: true),
+                        decoration: InputDecoration(hintText: t.wodBuilderRoundsHint, isDense: true),
                       ),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: Text('(les mouvements se répètent N fois)',
+                      child: Text(t.wodBuilderRoundsCaption,
                           style: HiType.caption.copyWith(color: HiColors.textTertiary)),
                     ),
                   ]),
                 ],
                 if (_scoreType == 'time') ...[
                   const SizedBox(height: HiSpace.sm),
-                  Text('Pas de temps à saisir ici : le score est le chrono que tu mettras à finir, '
-                      'tu l\'enregistreras en faisant la séance.',
+                  Text(t.wodBuilderTimeNote,
                       style: HiType.caption.copyWith(color: HiColors.textTertiary)),
                 ],
                 if (_scoreType == 'reps') ...[
                   const SizedBox(height: HiSpace.md),
                   Row(children: [
-                    Text('Plafond (min) : ', style: HiType.body.copyWith(color: HiColors.textSecondary)),
+                    Text(t.wodBuilderCapLabel, style: HiType.body.copyWith(color: HiColors.textSecondary)),
                     SizedBox(
                       width: 70,
                       child: TextField(
@@ -260,7 +261,7 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
                         keyboardType: TextInputType.number,
                         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                         onChanged: (_) => _refreshEstimate(),
-                        decoration: const InputDecoration(hintText: 'ex. 12'),
+                        decoration: InputDecoration(hintText: t.wodBuilderCapHint),
                       ),
                     ),
                   ]),
@@ -270,11 +271,11 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
                   contentPadding: EdgeInsets.zero,
                   activeThumbColor: HiColors.brandPrimary,
                   value: _requiresEquipment,
-                  title: Text('Nécessite du matériel', style: HiType.body.copyWith(color: HiColors.textPrimary)),
+                  title: Text(t.wodBuilderRequiresEquipment, style: HiType.body.copyWith(color: HiColors.textPrimary)),
                   onChanged: (v) => setState(() => _requiresEquipment = v),
                 ),
                 const SizedBox(height: HiSpace.md),
-                Text('Mouvements', style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
+                Text(t.wodBuilderMovements, style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
                 const SizedBox(height: HiSpace.sm),
                 ..._blocks.asMap().entries.map((e) => _blockRow(e.key, e.value)),
                 OutlinedButton.icon(
@@ -284,7 +285,7 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
                     foregroundColor: HiColors.brandPrimary,
                   ),
                   icon: const Icon(Icons.add_rounded),
-                  label: const Text('Ajouter un mouvement'),
+                  label: Text(t.wodBuilderAddMovement),
                   onPressed: _catalog.isEmpty ? null : _addMovement,
                 ),
                 const SizedBox(height: HiSpace.lg),
@@ -292,7 +293,7 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
                 const SizedBox(height: HiSpace.lg),
                 _nameCard(),
                 const SizedBox(height: HiSpace.md),
-                HiButton(label: 'Publier cette séance', loading: _saving, onPressed: _save),
+                HiButton(label: t.wodBuilderPublish, loading: _saving, onPressed: _save),
               ],
             ),
           ),
@@ -380,7 +381,7 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Nom attribué', style: HiType.caption.copyWith(color: HiColors.textTertiary)),
+                Text(AppLocalizations.of(context).wodBuilderAssignedName, style: HiType.caption.copyWith(color: HiColors.textTertiary)),
                 const SizedBox(height: 2),
                 Text(_generatedName, style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
               ],
@@ -392,11 +393,12 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
   }
 
   Widget _estimateCard() {
+    final t = AppLocalizations.of(context);
     if (_estimating) {
       return Center(child: Padding(padding: const EdgeInsets.all(16), child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: HiColors.brandPrimary))));
     }
     if (_estimate == null) {
-      return Text('Ajoute des mouvements pour voir l’estimation.', textAlign: TextAlign.center, style: HiType.body.copyWith(color: HiColors.textTertiary));
+      return Text(t.wodBuilderEstimateEmpty, textAlign: TextAlign.center, style: HiType.body.copyWith(color: HiColors.textTertiary));
     }
     final e = _estimate!;
     final champ = e.ref('champion')?.rawResult;
@@ -413,18 +415,18 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(children: [
-            Text('Estimation', style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
+            Text(t.wodBuilderEstimate, style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
             const Spacer(),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(color: HiColors.warn.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(HiRadius.pill)),
-              child: Text('≈ estimé', style: HiType.caption.copyWith(color: HiColors.warn, fontWeight: FontWeight.w600)),
+              child: Text(t.wodBuilderEstimated, style: HiType.caption.copyWith(color: HiColors.warn, fontWeight: FontWeight.w600)),
             ),
           ]),
           const SizedBox(height: HiSpace.sm),
-          if (champ != null) Text('🏆 Champion : ${formatWodResult(champ, _scoreType)}', style: HiType.body.copyWith(color: HiColors.textSecondary)),
-          if (inter != null) Text('Intermédiaire : ${formatWodResult(inter, _scoreType)}', style: HiType.body.copyWith(color: HiColors.textSecondary)),
-          if (beg != null) Text('Débutant : ${formatWodResult(beg, _scoreType)}', style: HiType.body.copyWith(color: HiColors.textSecondary)),
+          if (champ != null) Text(t.wodBuilderEstimateChampion(formatWodResult(champ, _scoreType)), style: HiType.body.copyWith(color: HiColors.textSecondary)),
+          if (inter != null) Text(t.wodBuilderEstimateIntermediate(formatWodResult(inter, _scoreType)), style: HiType.body.copyWith(color: HiColors.textSecondary)),
+          if (beg != null) Text(t.wodBuilderEstimateBeginner(formatWodResult(beg, _scoreType)), style: HiType.body.copyWith(color: HiColors.textSecondary)),
           const SizedBox(height: 6),
           Wrap(
             spacing: 6,
@@ -461,7 +463,7 @@ class _MovementSheetState extends State<_MovementSheet> {
         child: Column(
           children: [
             TextField(
-              decoration: const InputDecoration(hintText: 'Rechercher un mouvement', prefixIcon: Icon(Icons.search_rounded)),
+              decoration: InputDecoration(hintText: AppLocalizations.of(context).wodBuilderSearchMovement, prefixIcon: const Icon(Icons.search_rounded)),
               onChanged: (v) => setState(() => _q = v),
             ),
             const SizedBox(height: HiSpace.sm),

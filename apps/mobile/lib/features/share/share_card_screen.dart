@@ -9,6 +9,7 @@ import '../../app.dart';
 import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../data/web_download.dart';
+import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/hi_button.dart';
 import '../../widgets/rank_badge.dart';
@@ -45,9 +46,10 @@ class _ShareCardScreenState extends ConsumerState<ShareCardScreen> {
     try {
       final bytes = await _capture();
       if (bytes == null || !mounted) return;
+      final shareText = AppLocalizations.of(context).shareCardShareText;
       await Share.shareXFiles(
         [XFile.fromData(bytes, name: 'hybrid-index.png', mimeType: 'image/png')],
-        text: 'Mon HYBRID INDEX 💪 Et toi, c\'est combien ? #HybridIndex',
+        text: shareText,
       );
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
@@ -60,8 +62,9 @@ class _ShareCardScreenState extends ConsumerState<ShareCardScreen> {
       if (bytes == null || !mounted) return;
       final ok = await downloadBytes(bytes, 'hybrid-index.png');
       if (!mounted) return;
+      final t = AppLocalizations.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(ok ? 'Carte téléchargée 📥' : 'Téléchargement non supporté ici.')),
+        SnackBar(content: Text(ok ? t.shareCardDownloaded : t.shareCardDownloadUnsupported)),
       );
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
@@ -70,11 +73,12 @@ class _ShareCardScreenState extends ConsumerState<ShareCardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final profile = ref.watch(myProfileProvider).value;
     final name = ref.watch(sessionProvider).user?.displayName ?? '';
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Ma carte'), backgroundColor: Colors.transparent, elevation: 0),
+      appBar: AppBar(title: Text(t.shareCardTitle), backgroundColor: Colors.transparent, elevation: 0),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -83,20 +87,20 @@ class _ShareCardScreenState extends ConsumerState<ShareCardScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (profile == null)
-                  Text('Aucun Index à partager.', style: TextStyle(color: HiColors.textTertiary))
+                  Text(t.shareCardNoIndex, style: TextStyle(color: HiColors.textTertiary))
                 else ...[
                   RepaintBoundary(
                     key: _cardKey,
                     child: _Card(profile: profile, name: name, sex: ref.watch(sessionProvider).sex, exporting: _exporting),
                   ),
                   const SizedBox(height: HiSpace.lg),
-                  Text('Montre ton niveau — défie tes amis 🔥',
+                  Text(t.shareCardTagline,
                       textAlign: TextAlign.center, style: HiType.caption.copyWith(color: HiColors.textTertiary)),
                   const SizedBox(height: HiSpace.sm),
                   SizedBox(
                     width: 300,
                     child: HiButton(
-                      label: 'Partager ma carte',
+                      label: t.shareCardShareCta,
                       icon: Icons.ios_share_rounded,
                       loading: _exporting,
                       onPressed: _exporting ? null : _share,
@@ -106,7 +110,7 @@ class _ShareCardScreenState extends ConsumerState<ShareCardScreen> {
                   SizedBox(
                     width: 300,
                     child: HiButtonSecondary(
-                      label: 'Télécharger',
+                      label: t.shareCardDownload,
                       icon: Icons.download_rounded,
                       onPressed: _exporting ? null : _export,
                     ),
@@ -187,6 +191,7 @@ class _CardState extends State<_Card> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     final idx = widget.profile.index;
     final skin = _skin;
     final isElite = idx.rank == 'elite';
@@ -238,12 +243,12 @@ class _CardState extends State<_Card> with TickerProviderStateMixin {
                                   child: Text('$shownOvr',
                                       style: const TextStyle(fontSize: 76, fontWeight: FontWeight.w900, height: 0.9, color: Colors.white)),
                                 ),
-                                Text('OVR',
+                                Text(loc.shareCardOvr,
                                     style: TextStyle(color: skin.frame.withValues(alpha: 0.75), fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 3)),
                                 const SizedBox(height: 8),
                                 RankBadge(rank: idx.rank, fontSize: 12),
                                 const SizedBox(height: 4),
-                                Text('${widget.sex == 'female' ? '♀' : '♂'}  LIGUE ${widget.sex == 'female' ? 'F' : 'H'}',
+                                Text('${widget.sex == 'female' ? '♀' : '♂'}  ${loc.shareCardLeague} ${widget.sex == 'female' ? 'F' : 'H'}',
                                     style: const TextStyle(color: _inkSoft, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 0.5)),
                               ],
                             ),
@@ -255,11 +260,11 @@ class _CardState extends State<_Card> with TickerProviderStateMixin {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(color: skin.frame.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(HiRadius.pill)),
-                        child: Text('★ TOP $topPct %',
+                        child: Text(loc.shareCardTopPct(topPct),
                             style: TextStyle(color: skin.frame, fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 0.5)),
                       ),
                       const SizedBox(height: 12),
-                      Text(widget.name.isEmpty ? 'Athlète' : widget.name,
+                      Text(widget.name.isEmpty ? loc.shareCardAthlete : widget.name,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(color: _ink, fontSize: 22, fontWeight: FontWeight.w800, letterSpacing: 0.2)),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models.dart';
 import '../../data/wod_catalog.dart';
+import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import '../wods/wod_detail_screen.dart';
 
@@ -42,23 +43,24 @@ class _LogWodScreenState extends ConsumerState<LogWodScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final bodyweight = wodCatalog.where((w) => !w.requiresEquipment).toList();
     final equipped = wodCatalog.where((w) => w.requiresEquipment).toList();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Choisir une séance'), backgroundColor: Colors.transparent, elevation: 0),
+      appBar: AppBar(title: Text(t.logWodTitle), backgroundColor: Colors.transparent, elevation: 0),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(HiSpace.lg, HiSpace.lg, HiSpace.lg, 96),
           children: [
-            Text('Choisis une séance pour voir en quoi elle consiste, les temps de référence et le classement — puis enregistre ton résultat.',
+            Text(t.logWodIntro,
                 style: HiType.body.copyWith(color: HiColors.textSecondary)),
             const SizedBox(height: HiSpace.lg),
-            _sectionTitle('Sans matériel'),
-            ...bodyweight.map(_tile),
+            _sectionTitle(t.logWodNoEquipment),
+            ...bodyweight.map((w) => _tile(context, w)),
             const SizedBox(height: HiSpace.lg),
-            _sectionTitle('Avec matériel'),
-            ...equipped.map(_tile),
+            _sectionTitle(t.logWodWithEquipment),
+            ...equipped.map((w) => _tile(context, w)),
           ],
         ),
       ),
@@ -70,14 +72,17 @@ class _LogWodScreenState extends ConsumerState<LogWodScreen> {
         child: Text(t, style: HiType.overline.copyWith(color: HiColors.textSecondary)),
       );
 
-  Widget _tile(WodCatalogItem w) => Card(
-        color: HiColors.bgElevated,
-        child: ListTile(
-          title: Text(w.name, style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
-          subtitle: Text(w.requiresEquipment ? 'Avec matériel' : 'Sans matériel',
-              style: HiType.caption.copyWith(color: HiColors.textTertiary)),
-          trailing: Icon(Icons.chevron_right_rounded, color: HiColors.textTertiary),
-          onTap: () => _open(w.id),
-        ),
-      );
+  Widget _tile(BuildContext context, WodCatalogItem w) {
+    final t = AppLocalizations.of(context);
+    return Card(
+      color: HiColors.bgElevated,
+      child: ListTile(
+        title: Text(w.name, style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
+        subtitle: Text(w.requiresEquipment ? t.logWodWithEquipment : t.logWodNoEquipment,
+            style: HiType.caption.copyWith(color: HiColors.textTertiary)),
+        trailing: Icon(Icons.chevron_right_rounded, color: HiColors.textTertiary),
+        onTap: () => _open(w.id),
+      ),
+    );
+  }
 }

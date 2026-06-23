@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../data/models.dart';
+import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/hi_card.dart';
 
@@ -12,6 +13,7 @@ class WeeklyRecapCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return HiCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -20,36 +22,36 @@ class WeeklyRecapCard extends StatelessWidget {
             children: [
               Icon(Icons.calendar_today_rounded, color: HiColors.brandPrimary, size: 16),
               const SizedBox(width: HiSpace.sm),
-              Text('TA SEMAINE', style: HiType.overline.copyWith(color: HiColors.textSecondary)),
+              Text(t.recapWeekLabel, style: HiType.overline.copyWith(color: HiColors.textSecondary)),
               const Spacer(),
               if (recap.weekValidated)
-                Text('validée ✅', style: HiType.caption.copyWith(color: HiColors.success)),
+                Text(t.recapValidated, style: HiType.caption.copyWith(color: HiColors.success)),
             ],
           ),
           const SizedBox(height: HiSpace.md),
           Row(
             children: [
-              _stat('${recap.sessions}', recap.sessions > 1 ? 'séances' : 'séance', HiColors.brandPrimary),
+              _stat('${recap.sessions}', recap.sessions > 1 ? t.recapSessionsPlural : t.recapSessionsSingular, HiColors.brandPrimary),
               _divider(),
-              _stat(recap.deltaIndex > 0 ? '+${recap.deltaIndex}' : '—', 'points d\'Index', HiColors.success),
+              _stat(recap.deltaIndex > 0 ? '+${recap.deltaIndex}' : '—', t.recapIndexPoints, HiColors.success),
               _divider(),
-              _stat('${recap.streakCurrent}', recap.streakCurrent > 1 ? 'semaines 🔥' : 'semaine 🔥',
+              _stat('${recap.streakCurrent}', recap.streakCurrent > 1 ? t.recapWeeksPlural : t.recapWeeksSingular,
                   HiColors.streakFlame),
             ],
           ),
           const SizedBox(height: HiSpace.sm),
-          Text(_message(), style: HiType.caption.copyWith(color: HiColors.textSecondary)),
+          Text(_message(t), style: HiType.caption.copyWith(color: HiColors.textSecondary)),
         ],
       ),
     );
   }
 
-  String _message() {
+  String _message(AppLocalizations t) {
     if (recap.deltaIndex > 0 && recap.sessions > 0) {
-      return 'Belle semaine — ton travail paye, +${recap.deltaIndex} sur ton Index.';
+      return t.recapMessageGain(recap.deltaIndex);
     }
-    if (recap.sessions > 0) return 'Bien joué, continue sur ta lancée.';
-    return 'Une séance suffit pour lancer la semaine.';
+    if (recap.sessions > 0) return t.recapMessageKeepGoing;
+    return t.recapMessageStart;
   }
 
   Widget _stat(String value, String label, Color color) {

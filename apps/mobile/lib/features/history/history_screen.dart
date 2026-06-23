@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app.dart';
+import '../../l10n/app_localizations.dart';
 import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../data/wod_catalog.dart';
@@ -33,7 +34,8 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     return null;
   }
 
-  String _name(String wodId) => _catalog(wodId)?.name ?? (wodId == 'run_free_distance' ? 'Course' : wodId);
+  String _name(String wodId) => _catalog(wodId)?.name ??
+      (wodId == 'run_free_distance' ? AppLocalizations.of(context).historyRun : wodId);
 
   String _formatResult(WodResultItem r) {
     final type = _catalog(r.wodId)?.scoreType ?? (r.wodId == 'run_free_distance' ? 'time' : 'reps');
@@ -46,16 +48,17 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
   String _date(DateTime d) => '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
 
   Future<void> _delete(WodResultItem r) async {
+    final t = AppLocalizations.of(context);
     final ok = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: HiColors.bgElevated,
-        title: Text('Supprimer cette séance ?', style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
-        content: Text('${_name(r.wodId)} · ${_date(r.performedAt)}\nTon Index sera recalculé.',
+        title: Text(t.historyDeleteTitle, style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
+        content: Text(t.historyDeleteBody(_name(r.wodId), _date(r.performedAt)),
             style: HiType.body.copyWith(color: HiColors.textSecondary)),
         actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Annuler')),
-          TextButton(onPressed: () => Navigator.of(context).pop(true), child: Text('Supprimer', style: HiType.button.copyWith(color: HiColors.error))),
+          TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text(t.commonCancel)),
+          TextButton(onPressed: () => Navigator.of(context).pop(true), child: Text(t.commonDelete, style: HiType.button.copyWith(color: HiColors.error))),
         ],
       ),
     );
@@ -72,8 +75,9 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Mon historique'), backgroundColor: Colors.transparent, elevation: 0),
+      appBar: AppBar(title: Text(t.historyTitle), backgroundColor: Colors.transparent, elevation: 0),
       body: SafeArea(
         child: FutureBuilder<List<WodResultItem>>(
           future: _future,
@@ -89,7 +93,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
               return Center(
                 child: Padding(
                   padding: const EdgeInsets.all(HiSpace.lg),
-                  child: Text('Aucune séance loggée pour l’instant.',
+                  child: Text(t.historyEmpty,
                       textAlign: TextAlign.center, style: HiType.body.copyWith(color: HiColors.textTertiary)),
                 ),
               );
@@ -141,7 +145,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                   style: HiType.numericM.copyWith(color: HiColors.brandPrimary)),
             ),
           IconButton(
-            tooltip: 'Supprimer',
+            tooltip: AppLocalizations.of(context).commonDelete,
             icon: Icon(Icons.delete_outline_rounded, color: HiColors.textTertiary, size: 20),
             onPressed: () => _delete(r),
           ),

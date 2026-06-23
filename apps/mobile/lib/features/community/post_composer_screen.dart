@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models.dart';
 import '../../data/session.dart';
+import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/hi_button.dart';
 import '../wods/wod_format.dart';
@@ -36,14 +37,15 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
   }
 
   Future<void> _submit() async {
+    final t = AppLocalizations.of(context);
     final body = _body.text.trim();
     if (_perfMode) {
       if (_selected == null) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Choisis une perf à partager.')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t.composerPickPerf)));
         return;
       }
     } else if (body.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Écris un message.')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t.composerWriteMessage)));
       return;
     }
     setState(() => _busy = true);
@@ -63,22 +65,23 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Publier'), backgroundColor: Colors.transparent, elevation: 0),
+      appBar: AppBar(title: Text(t.composerTitle), backgroundColor: Colors.transparent, elevation: 0),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(HiSpace.lg),
           children: [
             Row(children: [
-              _modeChip('💬 Message', false),
+              _modeChip(t.composerModeMessage, false),
               const SizedBox(width: 8),
-              _modeChip('💪 Partager une perf', true),
+              _modeChip(t.composerModePerf, true),
             ]),
             const SizedBox(height: HiSpace.lg),
             if (_perfMode) ...[
               _perfPicker(),
               const SizedBox(height: HiSpace.md),
-              Text('Légende (option)', style: HiType.caption.copyWith(color: HiColors.textSecondary)),
+              Text(t.composerCaptionLabel, style: HiType.caption.copyWith(color: HiColors.textSecondary)),
               const SizedBox(height: 6),
             ],
             TextField(
@@ -86,12 +89,12 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
               maxLines: _perfMode ? 2 : 6,
               maxLength: 500,
               decoration: InputDecoration(
-                hintText: _perfMode ? 'Un mot sur cette perf…' : 'Quoi de neuf, athlète ?',
+                hintText: _perfMode ? t.composerHintPerf : t.composerHintText,
                 alignLabelWithHint: true,
               ),
             ),
             const SizedBox(height: HiSpace.md),
-            HiButton(label: 'Publier', loading: _busy, onPressed: _busy ? null : _submit),
+            HiButton(label: t.composerPublish, loading: _busy, onPressed: _busy ? null : _submit),
           ],
         ),
       ),
@@ -123,6 +126,7 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
   }
 
   Widget _perfPicker() {
+    final t = AppLocalizations.of(context);
     if (_results == null) {
       return Padding(
           padding: const EdgeInsets.all(16),
@@ -136,14 +140,14 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
           borderRadius: BorderRadius.circular(HiRadius.md),
           border: Border.all(color: HiColors.strokeSubtle),
         ),
-        child: Text('Logue d\'abord une séance pour pouvoir partager une perf.',
+        child: Text(t.composerNoResults,
             style: HiType.body.copyWith(color: HiColors.textTertiary)),
       );
     }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Choisis la perf à partager', style: HiType.caption.copyWith(color: HiColors.textSecondary)),
+        Text(t.composerPickPerfLabel, style: HiType.caption.copyWith(color: HiColors.textSecondary)),
         const SizedBox(height: 6),
         ..._results!.take(20).map((r) {
           final sel = _selected?.id == r.id;

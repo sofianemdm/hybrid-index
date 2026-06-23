@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models.dart';
 import '../../data/session.dart';
+import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/rank_badge.dart';
 import '../profile/public_profile_screen.dart';
@@ -50,8 +51,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Athlètes'), backgroundColor: Colors.transparent, elevation: 0),
+      appBar: AppBar(title: Text(t.exploreTitle), backgroundColor: Colors.transparent, elevation: 0),
       body: SafeArea(
         child: Column(
           children: [
@@ -60,7 +62,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               child: Column(
                 children: [
                   TextField(
-                    decoration: const InputDecoration(hintText: 'Rechercher un pseudo', prefixIcon: Icon(Icons.search_rounded)),
+                    decoration: InputDecoration(hintText: t.exploreSearchHint, prefixIcon: const Icon(Icons.search_rounded)),
                     onChanged: _onQueryChanged,
                   ),
                   const SizedBox(height: HiSpace.sm),
@@ -68,16 +70,16 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                     spacing: 6,
                     runSpacing: 6,
                     children: [
-                      _chip('Tous', _sex == null && _rank == null, () => setState(() {
+                      _chip(t.exploreFilterAll, _sex == null && _rank == null, () => setState(() {
                             _sex = null;
                             _rank = null;
                             _load();
                           })),
-                      _chip('Hommes', _sex == 'male', () => setState(() {
+                      _chip(t.exploreFilterMen, _sex == 'male', () => setState(() {
                             _sex = 'male';
                             _load();
                           })),
-                      _chip('Femmes', _sex == 'female', () => setState(() {
+                      _chip(t.exploreFilterWomen, _sex == 'female', () => setState(() {
                             _sex = 'female';
                             _load();
                           })),
@@ -100,7 +102,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                   if (snap.hasError) return Center(child: Text('${snap.error}', style: HiType.body.copyWith(color: HiColors.error)));
                   final items = snap.data!;
                   if (items.isEmpty) {
-                    return Center(child: Text('Aucun athlète.', style: HiType.caption.copyWith(color: HiColors.textTertiary)));
+                    return Center(child: Text(t.exploreEmpty, style: HiType.caption.copyWith(color: HiColors.textTertiary)));
                   }
                   return ListView.separated(
                     padding: const EdgeInsets.fromLTRB(HiSpace.lg, 0, HiSpace.lg, HiSpace.lg),

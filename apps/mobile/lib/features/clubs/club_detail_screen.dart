@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models.dart';
 import '../../data/session.dart';
+import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/hi_button.dart';
 import '../../widgets/rank_badge.dart';
@@ -44,22 +45,23 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> {
   }
 
   Future<void> _leave(ClubDetail d) async {
+    final t = AppLocalizations.of(context);
     final ok = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: HiColors.bgElevated,
-        title: Text(d.isOwner && d.memberCount > 1 ? 'Tu es le créateur' : 'Quitter le club ?',
+        title: Text(d.isOwner && d.memberCount > 1 ? t.clubDetailOwnerTitle : t.clubDetailLeaveTitle,
             style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
         content: Text(
           d.isOwner && d.memberCount > 1
-              ? 'Transfère d\'abord le club ou attends d\'être seul·e pour le quitter.'
-              : 'Tu pourras le rejoindre à nouveau plus tard.',
+              ? t.clubDetailOwnerMessage
+              : t.clubDetailLeaveMessage,
           style: HiType.body.copyWith(color: HiColors.textSecondary),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Annuler')),
+          TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text(t.clubDetailCancel)),
           if (!(d.isOwner && d.memberCount > 1))
-            TextButton(onPressed: () => Navigator.of(context).pop(true), child: const Text('Quitter')),
+            TextButton(onPressed: () => Navigator.of(context).pop(true), child: Text(t.clubDetailLeave)),
         ],
       ),
     );
@@ -76,6 +78,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> {
   }
 
   Future<void> _pickSeance(ClubDetail d) async {
+    final t = AppLocalizations.of(context);
     final catalog = await ref.read(apiClientProvider).wodsCatalog();
     if (!mounted) return;
     final wods = catalog.where((w) => !w.isCustom).toList()
@@ -90,7 +93,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> {
           children: [
             Padding(
               padding: const EdgeInsets.all(HiSpace.md),
-              child: Text('Classement du club par séance',
+              child: Text(t.clubDetailRankingBySeance,
                   style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
             ),
             ...wods.map((w) => ListTile(
@@ -110,6 +113,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
       body: SafeArea(
@@ -131,7 +135,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> {
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       Text(d.name,
                           style: HiType.titleL.copyWith(color: HiColors.textPrimary)),
-                      Text('${d.memberCount} membre${d.memberCount > 1 ? 's' : ''}',
+                      Text(t.clubDetailMembers(d.memberCount),
                           style: HiType.caption.copyWith(color: HiColors.textTertiary)),
                     ]),
                   ),
@@ -142,7 +146,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> {
                 ],
                 const SizedBox(height: HiSpace.md),
                 if (!d.isMember)
-                  HiButton(label: 'Rejoindre le club', loading: _busy, onPressed: _busy ? null : () => _join(d))
+                  HiButton(label: t.clubDetailJoin, loading: _busy, onPressed: _busy ? null : () => _join(d))
                 else
                   Row(children: [
                     Expanded(
@@ -150,7 +154,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> {
                         onPressed: () => Navigator.of(context).push(MaterialPageRoute(
                             builder: (_) => ProgressBoardScreen(clubId: d.id, clubName: d.name))),
                         icon: const Icon(Icons.local_fire_department, size: 18),
-                        label: const Text('Progression'),
+                        label: Text(t.clubDetailProgression),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -158,12 +162,12 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> {
                       child: OutlinedButton.icon(
                         onPressed: () => _pickSeance(d),
                         icon: const Icon(Icons.leaderboard, size: 18),
-                        label: const Text('Par séance'),
+                        label: Text(t.clubDetailBySeance),
                       ),
                     ),
                   ]),
                 const SizedBox(height: HiSpace.lg),
-                Text('Classement du club (Hybrid Index)',
+                Text(t.clubDetailRankingTitle,
                     style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
                 const SizedBox(height: HiSpace.sm),
                 ...d.roster.map(_rosterRow),
@@ -171,7 +175,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> {
                   const SizedBox(height: HiSpace.lg),
                   TextButton(
                     onPressed: _busy ? null : () => _leave(d),
-                    child: Text('Quitter le club', style: HiType.button.copyWith(color: HiColors.error)),
+                    child: Text(t.clubDetailLeaveButton, style: HiType.button.copyWith(color: HiColors.error)),
                   ),
                 ],
               ],
@@ -194,7 +198,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> {
                     fontWeight: FontWeight.w700)),
           ),
           Expanded(
-            child: Text(e.isMe ? '${e.displayName} (toi)' : e.displayName,
+            child: Text(e.isMe ? AppLocalizations.of(context).clubDetailRosterMe(e.displayName) : e.displayName,
                 overflow: TextOverflow.ellipsis,
                 style: HiType.body.copyWith(color: HiColors.textPrimary, fontWeight: e.isMe ? FontWeight.w800 : FontWeight.w500)),
           ),

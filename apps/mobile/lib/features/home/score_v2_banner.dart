@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../app.dart';
+import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/hi_button.dart';
 import '../../widgets/rank_badge.dart';
@@ -63,6 +64,7 @@ class _ScoreV2Dialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return Dialog(
       backgroundColor: HiColors.bgElevated,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(HiRadius.lg)),
@@ -71,13 +73,12 @@ class _ScoreV2Dialog extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Nouveau : ton Index sur 100 🎯',
+            Text(t.scoreV2Title,
                 textAlign: TextAlign.center,
                 style: TextStyle(color: HiColors.textPrimary, fontSize: 19, fontWeight: FontWeight.w800)),
             const SizedBox(height: HiSpace.md),
             Text(
-              'Le HYBRID INDEX s\'affiche désormais sur 100, comme une note de jeu. '
-              'Ton niveau n\'a pas changé — seule la façon de l\'afficher évolue, en plus lisible.',
+              t.scoreV2Body,
               textAlign: TextAlign.center,
               style: TextStyle(color: HiColors.textSecondary, fontSize: 14, height: 1.4),
             ),
@@ -90,7 +91,7 @@ class _ScoreV2Dialog extends StatelessWidget {
                 border: Border.all(color: HiColors.brandPrimary.withValues(alpha: 0.3)),
               ),
               child: Column(children: [
-                Text('Ton HYBRID INDEX', style: TextStyle(color: HiColors.textSecondary, fontSize: 12, letterSpacing: 1)),
+                Text(t.scoreV2YourIndex, style: TextStyle(color: HiColors.textSecondary, fontSize: 12, letterSpacing: 1)),
                 const SizedBox(height: 6),
                 ShaderMask(
                   shaderCallback: (r) => HiColors.brandGradient.createShader(r),
@@ -103,11 +104,11 @@ class _ScoreV2Dialog extends StatelessWidget {
               ]),
             ),
             const SizedBox(height: HiSpace.sm),
-            Text('Repères : débutant ~45 · bon niveau ~80 · pro ~92+',
+            Text(t.scoreV2Benchmarks,
                 textAlign: TextAlign.center,
                 style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
             const SizedBox(height: HiSpace.lg),
-            HiButton(label: 'J\'ai compris 💪', onPressed: () => Navigator.of(context).pop()),
+            HiButton(label: t.scoreV2Got, onPressed: () => Navigator.of(context).pop()),
           ],
         ),
       ),

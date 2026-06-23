@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/session.dart';
+import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/hi_button.dart';
 
@@ -58,7 +59,7 @@ class _NotificationSettingsScreenState extends ConsumerState<NotificationSetting
         'dailyCap': _dailyCap,
       });
       if (!mounted) return;
-      _toast('Préférences enregistrées.');
+      _toast(AppLocalizations.of(context).notificationSettingsSaved);
       Navigator.of(context).pop();
     } catch (e) {
       _toast('$e');
@@ -81,8 +82,9 @@ class _NotificationSettingsScreenState extends ConsumerState<NotificationSetting
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Réglages des notifications'), backgroundColor: Colors.transparent, elevation: 0),
+      appBar: AppBar(title: Text(t.notificationSettingsTitle), backgroundColor: Colors.transparent, elevation: 0),
       body: SafeArea(
         child: _loading
             ? Center(child: CircularProgressIndicator(color: HiColors.brandPrimary))
@@ -93,20 +95,20 @@ class _NotificationSettingsScreenState extends ConsumerState<NotificationSetting
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Text('Heures de silence', style: HiType.overline.copyWith(color: HiColors.textSecondary)),
+                      Text(t.notificationSettingsQuietHours, style: HiType.overline.copyWith(color: HiColors.textSecondary)),
                       const SizedBox(height: 8),
                       Row(
                         children: [
-                          Expanded(child: _timeButton('Début', _quietStart, () => _pickTime(true))),
+                          Expanded(child: _timeButton(t.notificationSettingsStart, _quietStart, () => _pickTime(true))),
                           const SizedBox(width: HiSpace.md),
-                          Expanded(child: _timeButton('Fin', _quietEnd, () => _pickTime(false))),
+                          Expanded(child: _timeButton(t.notificationSettingsEnd, _quietEnd, () => _pickTime(false))),
                         ],
                       ),
                       const SizedBox(height: HiSpace.lg),
                       Row(
                         children: [
                           Expanded(
-                            child: Text('Maximum par jour', style: HiType.body.copyWith(color: HiColors.textPrimary)),
+                            child: Text(t.notificationSettingsDailyCap, style: HiType.body.copyWith(color: HiColors.textPrimary)),
                           ),
                           IconButton(
                             icon: Icon(Icons.remove_circle_outline_rounded, color: HiColors.textSecondary),
@@ -121,11 +123,11 @@ class _NotificationSettingsScreenState extends ConsumerState<NotificationSetting
                       ),
                       Divider(color: HiColors.strokeSubtle),
                       const SizedBox(height: HiSpace.sm),
-                      Text('Types de notifications', style: HiType.overline.copyWith(color: HiColors.textSecondary)),
+                      Text(t.notificationSettingsTypes, style: HiType.overline.copyWith(color: HiColors.textSecondary)),
                       const SizedBox(height: HiSpace.sm),
                       ..._triggers.map(_triggerRow),
                       const SizedBox(height: HiSpace.lg),
-                      HiButton(label: 'Enregistrer', loading: _saving, onPressed: _save),
+                      HiButton(label: t.notificationSettingsSave, loading: _saving, onPressed: _save),
                     ],
                   ),
                 ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../data/models.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/hi_avatar.dart';
@@ -14,21 +15,22 @@ class AvatarCustomizer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Center(child: HiAvatar(config: config, rank: rank, size: 150)),
         const SizedBox(height: HiSpace.lg),
-        _label('Teint'),
+        _label(t.avatarSkin),
         _swatches(AvatarPalettes.skin, config.skinTone, (i) => onChanged(config.copyWith(skinTone: i))),
         const SizedBox(height: HiSpace.lg),
-        _label('Couleur des cheveux'),
+        _label(t.avatarHairColor),
         _swatches(AvatarPalettes.hair, config.hairColor, (i) => onChanged(config.copyWith(hairColor: i))),
         const SizedBox(height: HiSpace.lg),
-        _label('Coupe'),
+        _label(t.avatarHaircut),
         _chips(AvatarPalettes.hairStyleLabels, config.hairStyle, (i) => onChanged(config.copyWith(hairStyle: i))),
         const SizedBox(height: HiSpace.lg),
-        _label('Barbe'),
+        _label(t.avatarBeard),
         _chips(AvatarPalettes.beardStyleLabels, config.beardStyle ?? 0,
             (i) => onChanged(config.copyWith(beardStyle: i, clearBeard: i == 0))),
       ],

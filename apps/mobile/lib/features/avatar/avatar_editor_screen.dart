@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../app.dart';
+import '../../l10n/app_localizations.dart';
 import '../../data/api_client.dart';
 import '../../data/models.dart';
 import '../../data/session.dart';
@@ -56,7 +57,7 @@ class _AvatarEditorScreenState extends ConsumerState<AvatarEditorScreen> {
       if (bytes.length > 400000) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Image trop lourde — choisis-en une plus petite.')),
+            SnackBar(content: Text(AppLocalizations.of(context).avatarImageTooLarge)),
           );
         }
         return;
@@ -84,9 +85,10 @@ class _AvatarEditorScreenState extends ConsumerState<AvatarEditorScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final rank = ref.watch(myProfileProvider).value?.index.rank ?? 'rookie';
     return Scaffold(
-      appBar: AppBar(title: const Text('Mon avatar'), backgroundColor: Colors.transparent, elevation: 0),
+      appBar: AppBar(title: Text(t.avatarTitle), backgroundColor: Colors.transparent, elevation: 0),
       body: SafeArea(
         child: _loading
             ? Center(child: CircularProgressIndicator(color: HiColors.brandPrimary))
@@ -105,13 +107,13 @@ class _AvatarEditorScreenState extends ConsumerState<AvatarEditorScreen> {
                           OutlinedButton.icon(
                             onPressed: _pickPhoto,
                             icon: const Icon(Icons.photo_camera_outlined, size: 18),
-                            label: Text(_config.photoData == null ? 'Mettre une photo' : 'Changer la photo'),
+                            label: Text(_config.photoData == null ? t.avatarAddPhoto : t.avatarChangePhoto),
                           ),
                           if (_config.photoData != null) ...[
                             const SizedBox(width: 8),
                             TextButton(
                               onPressed: () => setState(() => _config = _config.copyWith(clearPhoto: true)),
-                              child: Text('Retirer', style: HiType.button.copyWith(color: HiColors.error)),
+                              child: Text(t.avatarRemove, style: HiType.button.copyWith(color: HiColors.error)),
                             ),
                           ],
                         ],
@@ -119,47 +121,47 @@ class _AvatarEditorScreenState extends ConsumerState<AvatarEditorScreen> {
                       if (_config.photoData != null)
                         Padding(
                           padding: const EdgeInsets.only(top: 4),
-                          child: Text('Avec une photo, l\'avatar dessiné est masqué.',
+                          child: Text(t.avatarPhotoHidesDrawn,
                               textAlign: TextAlign.center,
                               style: HiType.caption.copyWith(color: HiColors.textTertiary)),
                         ),
                       const SizedBox(height: HiSpace.lg),
-                      _label('Teint'),
+                      _label(t.avatarSkin),
                       _swatches(
                         AvatarPalettes.skin,
                         _config.skinTone,
                         (i) => setState(() => _config = _config.copyWith(skinTone: i)),
                       ),
                       const SizedBox(height: HiSpace.lg),
-                      _label('Couleur des cheveux'),
+                      _label(t.avatarHairColor),
                       _swatches(
                         AvatarPalettes.hair,
                         _config.hairColor,
                         (i) => setState(() => _config = _config.copyWith(hairColor: i)),
                       ),
                       const SizedBox(height: HiSpace.lg),
-                      _label('Coupe'),
+                      _label(t.avatarHaircut),
                       _chips(
                         AvatarPalettes.hairStyleLabels,
                         _config.hairStyle,
                         (i) => setState(() => _config = _config.copyWith(hairStyle: i)),
                       ),
                       const SizedBox(height: HiSpace.lg),
-                      _label('Barbe'),
+                      _label(t.avatarBeard),
                       _chips(
                         AvatarPalettes.beardStyleLabels,
                         _config.beardStyle ?? 0,
                         (i) => setState(() => _config = _config.copyWith(beardStyle: i, clearBeard: i == 0)),
                       ),
                       const SizedBox(height: HiSpace.lg),
-                      _label('Fond'),
+                      _label(t.avatarBackground),
                       _swatches(
                         AvatarPalettes.background,
                         _config.background,
                         (i) => setState(() => _config = _config.copyWith(background: i)),
                       ),
                       const SizedBox(height: HiSpace.xl),
-                      HiButton(label: 'Enregistrer mon avatar', loading: _saving, onPressed: _save),
+                      HiButton(label: t.avatarSave, loading: _saving, onPressed: _save),
                     ],
                   ),
                 ),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models.dart';
 import '../../data/session.dart';
+import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import 'wod_detail_screen.dart';
 
@@ -13,8 +14,9 @@ class OtherWorkoutsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final t = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Autres épreuves'), backgroundColor: Colors.transparent, elevation: 0),
+      appBar: AppBar(title: Text(t.otherWorkoutsTitle), backgroundColor: Colors.transparent, elevation: 0),
       body: SafeArea(
         child: FutureBuilder<List<WodCatalogEntry>>(
           future: ref.read(apiClientProvider).wodsCatalog(),
@@ -30,25 +32,24 @@ class OtherWorkoutsScreen extends ConsumerWidget {
             return ListView(
               padding: const EdgeInsets.fromLTRB(HiSpace.lg, HiSpace.lg, HiSpace.lg, 96),
               children: [
-                Text('De grandes épreuves réelles (HYROX, WODs de compétition, courses). '
-                    'Ouvre-en une pour voir les détails et les records — et enregistre ton temps.',
+                Text(t.otherWorkoutsIntro,
                     style: HiType.caption.copyWith(color: HiColors.textSecondary)),
                 const SizedBox(height: HiSpace.lg),
                 if (sans.isNotEmpty) ...[
-                  _section('Sans matériel'),
+                  _section(t.otherWorkoutsNoEquipment),
                   ...sans.map((w) => _tile(context, w)),
                   const SizedBox(height: HiSpace.lg),
                 ],
                 if (avec.isNotEmpty) ...[
-                  _section('Avec matériel'),
+                  _section(t.otherWorkoutsWithEquipment),
                   ...avec.map((w) => _tile(context, w)),
                   const SizedBox(height: HiSpace.lg),
                 ],
-                _section('Séances de la communauté'),
+                _section(t.otherWorkoutsCommunitySection),
                 if (community.isEmpty)
                   Padding(
                     padding: const EdgeInsets.only(bottom: HiSpace.sm),
-                    child: Text('Aucune séance créée par les utilisateurs pour l\'instant. Crée la tienne via « Construire une séance ».',
+                    child: Text(t.otherWorkoutsCommunityEmpty,
                         style: HiType.caption.copyWith(color: HiColors.textTertiary)),
                   )
                 else

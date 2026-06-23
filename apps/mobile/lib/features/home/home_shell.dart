@@ -71,6 +71,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
   }
 
   Future<void> _openLog() async {
+    final t = AppLocalizations.of(context);
     final choice = await showDialog<String>(
       context: context,
       builder: (ctx) => Dialog(
@@ -83,20 +84,20 @@ class _HomeShellState extends ConsumerState<HomeShell> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text('Ajouter une séance',
+              Text(t.homeAddSessionTitle,
                   textAlign: TextAlign.center,
                   style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w800, fontSize: 18)),
               const SizedBox(height: HiSpace.lg),
               _choiceCard(ctx,
                   icon: Icons.timer_outlined,
-                  title: 'Ajouter une séance rapidement',
-                  subtitle: 'Choisis une séance de référence',
+                  title: t.homeAddQuickTitle,
+                  subtitle: t.homeAddQuickSubtitle,
                   value: 'log'),
               const SizedBox(height: HiSpace.md),
               _choiceCard(ctx,
                   icon: Icons.build,
-                  title: 'Construire une séance',
-                  subtitle: 'Compose ta propre séance, estimée automatiquement',
+                  title: t.homeBuildSessionTitle,
+                  subtitle: t.homeBuildSessionSubtitle,
                   value: 'build'),
             ],
           ),
@@ -131,7 +132,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
           _openLog();
         },
         icon: const Icon(Icons.add_rounded),
-        label: Text('Ajouter une séance', style: HiType.button.copyWith(color: HiColors.textOnBrand, fontSize: 15)),
+        label: Text(t.homeAddSessionTitle, style: HiType.button.copyWith(color: HiColors.textOnBrand, fontSize: 15)),
       ),
       bottomNavigationBar: NavigationBar(
         backgroundColor: HiColors.bgElevated,

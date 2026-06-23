@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../theme/tokens.dart';
@@ -33,8 +34,9 @@ class _EndgameScreenState extends ConsumerState<EndgameScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Grand Chelem'), backgroundColor: Colors.transparent, elevation: 0),
+      appBar: AppBar(title: Text(t.endgameTitle), backgroundColor: Colors.transparent, elevation: 0),
       body: SafeArea(
         child: FutureBuilder<EndgameInfo>(
           future: _future,
@@ -49,18 +51,18 @@ class _EndgameScreenState extends ConsumerState<EndgameScreen> {
               children: [
                 _hero(e),
                 const SizedBox(height: HiSpace.lg),
-                Text('Les 4 séances phares', style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
-                Text('Touche une séance pour voir en quoi elle consiste et la faire.',
+                Text(t.endgameFlagshipTitle, style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
+                Text(t.endgameFlagshipSubtitle,
                     style: HiType.caption.copyWith(color: HiColors.textTertiary)),
                 const SizedBox(height: HiSpace.sm),
                 ...e.flagship.map((f) => _flagshipRow(f, e)),
                 const SizedBox(height: HiSpace.lg),
-                _trophyTier('bronze', '🥉 Bronze', 'Terminer les 4 séances phares.', e),
-                _trophyTier('silver', '🥈 Argent', 'Les 4 avec une note ≥ ${e.silverMin}/100 — difficile mais atteignable (~1 an de pratique).', e),
-                _trophyTier('gold', '🥇 Or', 'Les 4 avec une note ≥ ${e.goldMin}/100 — ultra exigeant (~5 ans).', e),
+                _trophyTier('bronze', t.endgameTierBronze, t.endgameTierBronzeDesc, e),
+                _trophyTier('silver', t.endgameTierSilver, t.endgameTierSilverDesc(e.silverMin), e),
+                _trophyTier('gold', t.endgameTierGold, t.endgameTierGoldDesc(e.goldMin), e),
                 const SizedBox(height: HiSpace.lg),
-                _statCard('Rang mondial', e.globalRank != null ? '#${e.globalRank} / ${e.globalTotal}' : '—',
-                    e.isTop100 ? 'Top 100 mondial 🌍' : null, HiColors.brandPrimary),
+                _statCard(t.endgameGlobalRank, e.globalRank != null ? '#${e.globalRank} / ${e.globalTotal}' : '—',
+                    e.isTop100 ? t.endgameTop100 : null, HiColors.brandPrimary),
               ],
             );
           },
@@ -70,10 +72,11 @@ class _EndgameScreenState extends ConsumerState<EndgameScreen> {
   }
 
   Widget _hero(EndgameInfo e) {
+    final t = AppLocalizations.of(context);
     final c = _tierColor[e.tier] ?? HiColors.textTertiary;
     final emoji = {'bronze': '🥉', 'silver': '🥈', 'gold': '🥇'}[e.tier] ?? '🔒';
-    final label = {'bronze': 'Grand Chelem Bronze', 'silver': 'Grand Chelem Argent', 'gold': 'Grand Chelem Or'}[e.tier] ??
-        'Grand Chelem — non débloqué';
+    final label = {'bronze': t.endgameHeroBronze, 'silver': t.endgameHeroSilver, 'gold': t.endgameHeroGold}[e.tier] ??
+        t.endgameHeroLocked;
     return Container(
       padding: const EdgeInsets.all(HiSpace.lg),
       decoration: BoxDecoration(
@@ -88,7 +91,7 @@ class _EndgameScreenState extends ConsumerState<EndgameScreen> {
           Text(label, textAlign: TextAlign.center,
               style: HiType.titleL.copyWith(color: e.tier == 'none' ? HiColors.textSecondary : c)),
           const SizedBox(height: 4),
-          Text('${e.completed}/${e.total} séances phares terminées',
+          Text(t.endgameFlagshipDone(e.completed, e.total),
               style: HiType.caption.copyWith(color: HiColors.textTertiary)),
         ],
       ),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models.dart';
 import '../../data/session.dart';
+import '../../l10n/app_localizations.dart';
 import '../../theme/haptics.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/hi_skeleton.dart';
@@ -54,6 +55,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
         _load();
       }
     }
+    final t = AppLocalizations.of(context);
     return SafeArea(
       child: Column(
         children: [
@@ -61,7 +63,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
             padding: const EdgeInsets.fromLTRB(HiSpace.lg, HiSpace.lg, HiSpace.lg, HiSpace.sm),
             child: Align(
               alignment: Alignment.centerLeft,
-              child: Text('Classement', style: HiType.titleL.copyWith(color: HiColors.textPrimary)),
+              child: Text(t.leaderboardTitle, style: HiType.titleL.copyWith(color: HiColors.textPrimary)),
             ),
           ),
           Padding(
@@ -73,7 +75,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                 foregroundColor: HiColors.brandPrimary,
               ),
               icon: const Icon(Icons.local_fire_department),
-              label: const Text('Progression de la semaine (par effort)'),
+              label: Text(t.leaderboardWeeklyProgress),
               onPressed: () => Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const ProgressBoardScreen()),
               ),
@@ -83,9 +85,9 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
             padding: const EdgeInsets.symmetric(horizontal: HiSpace.lg),
             child: Row(
               children: [
-                _tab('Hommes', 'male'),
+                _tab(t.leaderboardMen, 'male'),
                 const SizedBox(width: 8),
-                _tab('Femmes', 'female'),
+                _tab(t.leaderboardWomen, 'female'),
               ],
             ),
           ),
@@ -111,10 +113,10 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                         children: [
                           Icon(Icons.leaderboard_rounded, color: HiColors.textTertiary, size: 40),
                           const SizedBox(height: HiSpace.md),
-                          Text('Classement indisponible pour le moment.',
+                          Text(t.leaderboardUnavailable,
                               textAlign: TextAlign.center, style: HiType.body.copyWith(color: HiColors.textSecondary)),
                           const SizedBox(height: HiSpace.md),
-                          TextButton(onPressed: () => setState(_load), child: const Text('Réessayer')),
+                          TextButton(onPressed: () => setState(_load), child: Text(t.leaderboardRetry)),
                         ],
                       ),
                     ),
@@ -123,7 +125,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                 final lb = snap.data!;
                 if (lb.entries.isEmpty) {
                   return Center(
-                      child: Text('Aucun athlète pour l’instant.', style: TextStyle(color: HiColors.textTertiary)));
+                      child: Text(t.leaderboardEmpty, style: TextStyle(color: HiColors.textTertiary)));
                 }
                 return RefreshIndicator(
                   onRefresh: () async => setState(_load),
@@ -191,7 +193,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
             ),
             Expanded(
               child: Text(
-                e.isMe ? '${e.displayName}  (toi)' : e.displayName,
+                e.isMe ? AppLocalizations.of(context).leaderboardYou(e.displayName) : e.displayName,
                 overflow: TextOverflow.ellipsis,
                 style: (e.isMe ? HiType.bodyStrong : HiType.body).copyWith(color: HiColors.textPrimary),
               ),

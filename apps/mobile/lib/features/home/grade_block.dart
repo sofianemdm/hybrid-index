@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models.dart';
 import '../../data/session.dart';
+import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import '../wods/wod_detail_screen.dart';
 
@@ -25,9 +26,9 @@ class GradeBlock extends ConsumerWidget {
       children: [
         _gradeChip(ovr, color),
         const SizedBox(height: HiSpace.md),
-        _progressBar(ovr, color),
+        _progressBar(context, ovr, color),
         const SizedBox(height: HiSpace.sm),
-        if (incomplete) _estimationNotice(context, ref, coverage) else _actionMessage(ovr),
+        if (incomplete) _estimationNotice(context, ref, coverage) else _actionMessage(context, ovr),
       ],
     );
   }
@@ -55,9 +56,10 @@ class GradeBlock extends ConsumerWidget {
     );
   }
 
-  Widget _progressBar(int ovr, Color color) {
+  Widget _progressBar(BuildContext context, int ovr, Color color) {
+    final t = AppLocalizations.of(context);
     if (ovr >= 100) {
-      return Text('Sommet atteint — 100',
+      return Text(t.gradeSummitReached,
           style: TextStyle(color: color, fontSize: 13, fontWeight: FontWeight.w800));
     }
     // Objectif = le PROCHAIN POINT (ex. 74 → 75). Remplissage = progression réelle vers ce point
@@ -71,7 +73,7 @@ class GradeBlock extends ConsumerWidget {
       children: [
         Align(
           alignment: Alignment.centerRight,
-          child: Text('Objectif : $next',
+          child: Text(t.gradeObjective(next),
               style: TextStyle(color: nextColor, fontSize: 12, fontWeight: FontWeight.w800)),
         ),
         const SizedBox(height: 4),
@@ -108,7 +110,8 @@ class GradeBlock extends ConsumerWidget {
   /// Tant que les 6 attributs ne sont pas débloqués : on précise que l'Index est une ESTIMATION,
   /// et on RECOMMANDE les séances minimales à faire pour révéler le vrai Index.
   Widget _estimationNotice(BuildContext context, WidgetRef ref, int coverage) {
-    final title = coverage == 5 ? 'Presque ton vrai Index' : 'Index estimé';
+    final t = AppLocalizations.of(context);
+    final title = coverage == 5 ? t.gradeAlmostReal : t.gradeEstimated;
     final planAsync = ref.watch(completionPlanProvider);
     return Container(
       width: double.infinity,
@@ -131,15 +134,15 @@ class GradeBlock extends ConsumerWidget {
           ),
           const SizedBox(height: 8),
           planAsync.when(
-            loading: () => Text('Estimation sur $coverage/6 attributs…', style: TextStyle(color: HiColors.textSecondary, fontSize: 12)),
+            loading: () => Text(t.gradeEstimationLoading(coverage), style: TextStyle(color: HiColors.textSecondary, fontSize: 12)),
             error: (_, __) => Text(
-              'Estimation sur $coverage/6 attributs. Complète ton radar pour révéler ton vrai Index.',
+              t.gradeEstimationError(coverage),
               style: TextStyle(color: HiColors.textSecondary, fontSize: 12, height: 1.3),
             ),
             data: (plan) {
               final n = plan.sessions.length;
               if (n == 0) {
-                return Text('Continue à logger des séances pour finaliser ton Index.',
+                return Text(t.gradeKeepLogging,
                     style: TextStyle(color: HiColors.textSecondary, fontSize: 12));
               }
               return Column(
@@ -149,10 +152,10 @@ class GradeBlock extends ConsumerWidget {
                     text: TextSpan(
                       style: TextStyle(color: HiColors.textSecondary, fontSize: 12, height: 1.3),
                       children: [
-                        const TextSpan(text: 'Complète '),
-                        TextSpan(text: n == 1 ? 'cette séance' : 'ces $n séances',
+                        TextSpan(text: t.gradeCompletePrefix),
+                        TextSpan(text: n == 1 ? t.gradeCompleteSessionOne : t.gradeCompleteSessionMany(n),
                             style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w800)),
-                        const TextSpan(text: ' pour révéler ton vrai Index :'),
+                        TextSpan(text: t.gradeCompleteSuffix),
                       ],
                     ),
                   ),
@@ -191,7 +194,7 @@ class GradeBlock extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(s.name, style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 13)),
-                      Text('Débloque : $covers', style: TextStyle(color: HiColors.textTertiary, fontSize: 11)),
+                      Text(AppLocalizations.of(context).gradeUnlocks(covers), style: TextStyle(color: HiColors.textTertiary, fontSize: 11)),
                     ],
                   ),
                 ),
@@ -223,12 +226,13 @@ class GradeBlock extends ConsumerWidget {
   }
 
   /// Index complet (6/6) : message d'action court vers le palier suivant.
-  Widget _actionMessage(int ovr) {
+  Widget _actionMessage(BuildContext context, int ovr) {
+    final t = AppLocalizations.of(context);
     final weak = profile.weakest;
     // Objectif = le prochain POINT (ex. 75), pas le prochain palier de grade.
     final next = '${(profile.index.rating ?? ovr.toDouble()).floor() + 1}';
     if (weak == null) {
-      return Text('Continue à logger tes séances pour grimper vers $next.',
+      return Text(t.gradeClimbTo(next),
           textAlign: TextAlign.center, style: TextStyle(color: HiColors.textSecondary, fontSize: 13));
     }
     final attrColor = HiColors.attribute(weak);
@@ -243,11 +247,11 @@ class GradeBlock extends ConsumerWidget {
             text: TextSpan(
               style: TextStyle(color: HiColors.textSecondary, fontSize: 13),
               children: [
-                const TextSpan(text: 'Travaille ta '),
+                TextSpan(text: t.gradeWorkPrefix),
                 TextSpan(text: HiLabels.attribute(weak), style: TextStyle(color: attrColor, fontWeight: FontWeight.w800)),
-                const TextSpan(text: ' pour viser '),
+                TextSpan(text: t.gradeWorkMiddle),
                 TextSpan(text: next, style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w800)),
-                const TextSpan(text: '.'),
+                TextSpan(text: t.gradeWorkSuffix),
               ],
             ),
           ),

@@ -49,5 +49,755 @@
   "settingsDeleteAccount": "Delete my account",
   "settingsSignOut": "Sign out",
   "deleteAccountTitle": "Delete account?",
-  "deleteAccountBody": "This action is permanent: all your data will be erased."
+  "deleteAccountBody": "This action is permanent: all your data will be erased.",
+  "wodTabTitle": "Workouts",
+  "wodTabSubtitle": "Pick a workout (also called a \"WOD\"), see the records and where you stand.",
+  "wodTabFlagshipSection": "⭐ Flagship workouts",
+  "wodTabFlagshipCaption": "The 4 big challenges everyone measures themselves against.",
+  "wodTabNoEquipment": "No equipment",
+  "wodTabWithEquipment": "With equipment",
+  "wodTabOtherTitle": "Other",
+  "wodTabOtherSubtitle": "Real events (HYROX, CrossFit competitions, races) + real pro times",
+  "wodTabMyHistory": "My workout history",
+  "otherWorkoutsTitle": "Other events",
+  "otherWorkoutsIntro": "Major real-world events (HYROX, competition WODs, races). Open one to see the details and records — and log your time.",
+  "otherWorkoutsNoEquipment": "No equipment",
+  "otherWorkoutsWithEquipment": "With equipment",
+  "otherWorkoutsCommunitySection": "Community workouts",
+  "otherWorkoutsCommunityEmpty": "No workouts created by users yet. Create yours via \"Build a workout\".",
+  "logWodTitle": "Pick a workout",
+  "logWodIntro": "Pick a workout to see what it involves, the reference times and the leaderboard — then log your result.",
+  "logWodNoEquipment": "No equipment",
+  "logWodWithEquipment": "With equipment",
+  "wodDetailReferenceTimes": "Reference times",
+  "wodDetailReferenceTimesCaption": "Beginner · intermediate · champion, by sex",
+  "wodDetailNoTiers": "Tiers not available for this workout.",
+  "wodDetailLeaderboard": "Leaderboard",
+  "wodDetailDoThisWorkout": "Do this workout",
+  "wodDetailMen": "Men",
+  "wodDetailWomen": "Women",
+  "wodDetailTierChampion": "🏆 Champion (elite)",
+  "wodDetailTierIntermediate": "Intermediate",
+  "wodDetailTierBeginner": "Beginner",
+  "wodDetailYou": "You: ",
+  "wodDetailPoints": "{n} pts",
+  "@wodDetailPoints": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "wodDetailMinutes": "{n} min",
+  "@wodDetailMinutes": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "wodDetailChallenge": "The challenge",
+  "wodDetailCap": "Cap {cap}",
+  "@wodDetailCap": {
+    "placeholders": {
+      "cap": {
+        "type": "String"
+      }
+    }
+  },
+  "wodDetailLoads": "LOADS",
+  "wodDetailRx": "RX: ",
+  "wodDetailLight": "Light: ",
+  "wodDetailScopeAll": "🌍 All",
+  "wodDetailMyClub": "My club",
+  "wodDetailWorldRecord": "🌍 World record",
+  "wodDetailElite": "⭐ Elite",
+  "wodDetailMyPerformances": "My performances",
+  "wodDetailLeaderboardEmpty": "Be the first to post a result 💪",
+  "wodDetailLeaderboardYou": "{name} (you)",
+  "@wodDetailLeaderboardYou": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "wodBuilderTitle": "Build a workout",
+  "wodBuilderFormat": "Format",
+  "wodBuilderRoundsLabel": "Number of rounds: ",
+  "wodBuilderRoundsHint": "e.g. 3",
+  "wodBuilderRoundsCaption": "(the movements repeat N times)",
+  "wodBuilderTimeNote": "No time to enter here: the score is the time you take to finish, which you'll log when doing the workout.",
+  "wodBuilderCapLabel": "Cap (min): ",
+  "wodBuilderCapHint": "e.g. 12",
+  "wodBuilderRequiresEquipment": "Requires equipment",
+  "wodBuilderMovements": "Movements",
+  "wodBuilderAddMovement": "Add a movement",
+  "wodBuilderPublish": "Publish this workout",
+  "wodBuilderAddMovementError": "Add at least one movement.",
+  "wodBuilderCustomWorkout": "Custom workout",
+  "wodBuilderWorkout": "Workout",
+  "wodBuilderAssignedName": "Assigned name",
+  "wodBuilderEstimateEmpty": "Add movements to see the estimate.",
+  "wodBuilderEstimate": "Estimate",
+  "wodBuilderEstimated": "≈ estimated",
+  "wodBuilderEstimateChampion": "🏆 Champion: {result}",
+  "@wodBuilderEstimateChampion": {
+    "placeholders": {
+      "result": {
+        "type": "String"
+      }
+    }
+  },
+  "wodBuilderEstimateIntermediate": "Intermediate: {result}",
+  "@wodBuilderEstimateIntermediate": {
+    "placeholders": {
+      "result": {
+        "type": "String"
+      }
+    }
+  },
+  "wodBuilderEstimateBeginner": "Beginner: {result}",
+  "@wodBuilderEstimateBeginner": {
+    "placeholders": {
+      "result": {
+        "type": "String"
+      }
+    }
+  },
+  "wodBuilderSearchMovement": "Search a movement",
+  "communityTitle": "Community",
+  "communityEmpty": "Follow athletes to see their activity, or log a workout to start your feed.",
+  "communityPublish": "Post",
+  "communityExploreClubs": "Explore clubs",
+  "communityTooltipMessages": "Messages",
+  "communityTooltipPublish": "Post",
+  "communityTooltipClubs": "Clubs",
+  "communityTooltipSearch": "Search",
+  "communityPostDelete": "Delete",
+  "communityPostReport": "Report",
+  "communityReportSent": "Thanks, report sent.",
+  "communityWorkoutFallback": "a workout",
+  "communityMsgPr": "🏆 New PR — {wodName}",
+  "@communityMsgPr": {
+    "placeholders": {
+      "wodName": {
+        "type": "String"
+      }
+    }
+  },
+  "communityMsgWodLogged": "did {wodName}",
+  "@communityMsgWodLogged": {
+    "placeholders": {
+      "wodName": {
+        "type": "String"
+      }
+    }
+  },
+  "communityMsgRankUp": "is promoted to {rank} 🎖️",
+  "@communityMsgRankUp": {
+    "placeholders": {
+      "rank": {
+        "type": "String"
+      }
+    }
+  },
+  "communityMsgBadge": "badge unlocked: {name}",
+  "@communityMsgBadge": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "communityMsgMemberJoined": "just joined us with a HYBRID INDEX of {index} 👋",
+  "@communityMsgMemberJoined": {
+    "placeholders": {
+      "index": {
+        "type": "String"
+      }
+    }
+  },
+  "communityMsgPostPerf": "💪 shared a perf — {wodName}",
+  "@communityMsgPostPerf": {
+    "placeholders": {
+      "wodName": {
+        "type": "String"
+      }
+    }
+  },
+  "communityMsgDefault": "new activity",
+  "exploreTitle": "Athletes",
+  "exploreSearchHint": "Search a username",
+  "exploreFilterAll": "All",
+  "exploreFilterMen": "Men",
+  "exploreFilterWomen": "Women",
+  "exploreEmpty": "No athletes.",
+  "composerTitle": "Post",
+  "composerPickPerf": "Pick a perf to share.",
+  "composerWriteMessage": "Write a message.",
+  "composerModeMessage": "💬 Message",
+  "composerModePerf": "💪 Share a perf",
+  "composerCaptionLabel": "Caption (optional)",
+  "composerHintPerf": "A word about this perf…",
+  "composerHintText": "What's up, athlete?",
+  "composerPublish": "Post",
+  "composerNoResults": "Log a workout first to be able to share a perf.",
+  "composerPickPerfLabel": "Pick the perf to share",
+  "chatStartConversation": "Start the conversation with {name} 👋",
+  "@chatStartConversation": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "chatHint": "Write a message…",
+  "conversationsTitle": "Messages",
+  "conversationsEmpty": "No conversation yet. Message an athlete you follow (and who follows you) or a member of your club.",
+  "conversationsYouPrefix": "You: ",
+  "notificationsTitle": "Notifications",
+  "notificationsSettingsTooltip": "Settings",
+  "notificationsEmpty": "Nothing new for now. Log a session to get things moving!",
+  "notificationSettingsTitle": "Notification settings",
+  "notificationSettingsSaved": "Preferences saved.",
+  "notificationSettingsQuietHours": "Quiet hours",
+  "notificationSettingsStart": "Start",
+  "notificationSettingsEnd": "End",
+  "notificationSettingsDailyCap": "Maximum per day",
+  "notificationSettingsTypes": "Notification types",
+  "notificationSettingsSave": "Save",
+  "clubsTitle": "Clubs",
+  "clubsCreateTitle": "Create a club",
+  "clubsNameLabel": "Club name",
+  "clubsDescriptionLabel": "Description (optional)",
+  "clubsCancel": "Cancel",
+  "clubsCreate": "Create",
+  "clubsSearchHint": "Search for a club to join",
+  "clubsInvitations": "Invitations",
+  "clubsMine": "My clubs",
+  "clubsEmpty": "You're not in any club. Create your own or join one 👥",
+  "clubsView": "View",
+  "clubsMembers": "{count} members",
+  "@clubsMembers": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "clubsMembersOwner": "{count} members · creator",
+  "@clubsMembersOwner": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "clubsMembersInvite": "{count} members · invites you",
+  "@clubsMembersInvite": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "clubDetailOwnerTitle": "You're the creator",
+  "clubDetailLeaveTitle": "Leave the club?",
+  "clubDetailOwnerMessage": "Transfer the club first, or wait until you're alone to leave it.",
+  "clubDetailLeaveMessage": "You can join again later.",
+  "clubDetailCancel": "Cancel",
+  "clubDetailLeave": "Leave",
+  "clubDetailRankingBySeance": "Club ranking by session",
+  "clubDetailJoin": "Join the club",
+  "clubDetailProgression": "Progress",
+  "clubDetailBySeance": "By session",
+  "clubDetailRankingTitle": "Club ranking (Hybrid Index)",
+  "clubDetailLeaveButton": "Leave the club",
+  "clubDetailMembers": "{count, plural, one{{count} member} other{{count} members}}",
+  "@clubDetailMembers": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "clubDetailRosterMe": "{name} (you)",
+  "@clubDetailRosterMe": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "publicProfileFollowing": "Following",
+  "publicProfileFollow": "Follow",
+  "publicProfileMessage": "Message",
+  "publicProfileInviteToClub": "Invite to my club",
+  "publicProfileInviteNoClub": "Create a club first to invite.",
+  "publicProfileInviteInto": "Invite into…",
+  "publicProfileInviteSent": "Invitation sent to « {name} »",
+  "@publicProfileInviteSent": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "publicProfileLeaguePosition": "#{position} in their league",
+  "@publicProfileLeaguePosition": {
+    "placeholders": {
+      "position": {
+        "type": "int"
+      }
+    }
+  },
+  "publicProfileNoIndex": "No Index yet.",
+  "publicProfileComparison": "Comparison",
+  "publicProfileTheirRadar": "Their radar",
+  "publicProfileCompareAhead": "You're ahead by {diff} points (you {mine} · them {other}).",
+  "@publicProfileCompareAhead": {
+    "placeholders": {
+      "diff": {
+        "type": "int"
+      },
+      "mine": {
+        "type": "int"
+      },
+      "other": {
+        "type": "int"
+      }
+    }
+  },
+  "publicProfileCompareBehind": "They're ahead of you by {diff} points (you {mine} · them {other}).",
+  "@publicProfileCompareBehind": {
+    "placeholders": {
+      "diff": {
+        "type": "int"
+      },
+      "mine": {
+        "type": "int"
+      },
+      "other": {
+        "type": "int"
+      }
+    }
+  },
+  "avatarTitle": "My avatar",
+  "avatarImageTooLarge": "Image too large — pick a smaller one.",
+  "avatarAddPhoto": "Add a photo",
+  "avatarChangePhoto": "Change photo",
+  "avatarRemove": "Remove",
+  "avatarPhotoHidesDrawn": "With a photo, the drawn avatar is hidden.",
+  "avatarSkin": "Skin tone",
+  "avatarHairColor": "Hair color",
+  "avatarHaircut": "Haircut",
+  "avatarBeard": "Beard",
+  "avatarBackground": "Background",
+  "avatarSave": "Save my avatar",
+  "leagueMen": "Men",
+  "leagueWomen": "Women",
+  "historyTitle": "My history",
+  "historyRun": "Run",
+  "historyEmpty": "No session logged yet.",
+  "historyDeleteTitle": "Delete this session?",
+  "historyDeleteBody": "{name} · {date}\nYour Index will be recalculated.",
+  "@historyDeleteBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "endgameTitle": "Grand Slam",
+  "endgameFlagshipTitle": "The 4 flagship sessions",
+  "endgameFlagshipSubtitle": "Tap a session to see what it involves and take it on.",
+  "endgameTierBronze": "🥉 Bronze",
+  "endgameTierBronzeDesc": "Complete the 4 flagship sessions.",
+  "endgameTierSilver": "🥈 Silver",
+  "endgameTierSilverDesc": "All 4 with a score ≥ {min}/100 — hard but reachable (~1 year of practice).",
+  "@endgameTierSilverDesc": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      }
+    }
+  },
+  "endgameTierGold": "🥇 Gold",
+  "endgameTierGoldDesc": "All 4 with a score ≥ {min}/100 — extremely demanding (~5 years).",
+  "@endgameTierGoldDesc": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      }
+    }
+  },
+  "endgameGlobalRank": "Global rank",
+  "endgameTop100": "Global Top 100 🌍",
+  "endgameHeroBronze": "Bronze Grand Slam",
+  "endgameHeroSilver": "Silver Grand Slam",
+  "endgameHeroGold": "Gold Grand Slam",
+  "endgameHeroLocked": "Grand Slam — not unlocked",
+  "endgameFlagshipDone": "{completed}/{total} flagship sessions completed",
+  "@endgameFlagshipDone": {
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "challengeBannerLabel": "CHALLENGE OF THE WEEK · {theme}",
+  "@challengeBannerLabel": {
+    "placeholders": {
+      "theme": {
+        "type": "String"
+      }
+    }
+  },
+  "challengeEnded": "Ended",
+  "challengeCountdownDays": "{days}d {hours}h left",
+  "@challengeCountdownDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      },
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "challengeCountdownHours": "{hours}h {minutes}min left",
+  "@challengeCountdownHours": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "challengeTitle": "Challenge of the week",
+  "challengeDoIt": "Take the challenge 🔥",
+  "challengeDetails": "Tiers, pro references & details",
+  "challengeLeaderboard": "Challenge leaderboard",
+  "challengeHeroTagline": "Everyone is measured on this session this week. Give it everything 💪",
+  "challengeWhatToDo": "What to do",
+  "challengeBeFirst": "Be the first to take the challenge this week 🔥",
+  "challengeYouSuffix": "{name} (you)",
+  "@challengeYouSuffix": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "progressionTitle": "Progress",
+  "progressionHistoryButton": "My session history",
+  "progressionEndgameButton": "Endgame — Grand Slam & global rank",
+  "progressionBadges": "Badges ({unlocked}/{total} unlocked)",
+  "@progressionBadges": {
+    "placeholders": {
+      "unlocked": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "progressionBadgesHint": "For each series, your current tier and the next one to aim for.",
+  "coachTitle": "Coach",
+  "coachWhichAxis": "Which axis to improve?",
+  "coachWeakPoint": "My weak point",
+  "coachLoadError": "Couldn't load tips right now.",
+  "coachProgressOn": "Do these sessions to improve on {attribute}",
+  "@coachProgressOn": {
+    "placeholders": {
+      "attribute": {
+        "type": "String"
+      }
+    }
+  },
+  "coachTargetedSessions": "TARGETED SESSIONS",
+  "coachNoSessions": "No session for this axis with your equipment.",
+  "coachLogSession": "Do a scored session & log my time",
+  "coachDurationMin": "{min} min",
+  "@coachDurationMin": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      }
+    }
+  },
+  "coachWithEquipment": "Equipment",
+  "coachNoEquipment": "No equipment",
+  "coachIntensityHigh": "Intense",
+  "coachIntensityMedium": "Moderate",
+  "coachIntensityLow": "Light",
+  "homeGreeting": "Hi, {name}",
+  "@homeGreeting": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "homeNotifications": "Notifications",
+  "homeSettings": "Settings",
+  "homeProfileUnavailable": "Profile unavailable.",
+  "homeRadarTitle": "YOUR RADAR",
+  "homeRadarHint": "Tap a quality to see the sessions that boost it.",
+  "homeCoachCta": "Coach — improve an axis",
+  "homeHistory": "My history",
+  "homeShareCard": "Share my card",
+  "homeFreshnessTitleOne": "One axis to refresh",
+  "homeFreshnessTitleMany": "Some axes to refresh",
+  "homeFreshnessBody": "{names}: your measure is a bit old. A re-test could push it up.",
+  "@homeFreshnessBody": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "homeAddSessionTitle": "Add a session",
+  "homeAddQuickTitle": "Add a session quickly",
+  "homeAddQuickSubtitle": "Pick a reference session",
+  "homeBuildSessionTitle": "Build a session",
+  "homeBuildSessionSubtitle": "Compose your own session, automatically estimated",
+  "gradeSummitReached": "Summit reached — 100",
+  "gradeObjective": "Goal: {next}",
+  "@gradeObjective": {
+    "placeholders": {
+      "next": {
+        "type": "Object"
+      }
+    }
+  },
+  "gradeAlmostReal": "Almost your real Index",
+  "gradeEstimated": "Estimated Index",
+  "gradeEstimationLoading": "Estimated on {coverage}/6 attributes…",
+  "@gradeEstimationLoading": {
+    "placeholders": {
+      "coverage": {
+        "type": "Object"
+      }
+    }
+  },
+  "gradeEstimationError": "Estimated on {coverage}/6 attributes. Complete your radar to reveal your real Index.",
+  "@gradeEstimationError": {
+    "placeholders": {
+      "coverage": {
+        "type": "Object"
+      }
+    }
+  },
+  "gradeKeepLogging": "Keep logging sessions to finalize your Index.",
+  "gradeCompletePrefix": "Complete ",
+  "gradeCompleteSessionOne": "this session",
+  "gradeCompleteSessionMany": "these {n} sessions",
+  "@gradeCompleteSessionMany": {
+    "placeholders": {
+      "n": {
+        "type": "Object"
+      }
+    }
+  },
+  "gradeCompleteSuffix": " to reveal your real Index:",
+  "gradeUnlocks": "Unlocks: {covers}",
+  "@gradeUnlocks": {
+    "placeholders": {
+      "covers": {
+        "type": "String"
+      }
+    }
+  },
+  "gradeClimbTo": "Keep logging your sessions to climb toward {next}.",
+  "@gradeClimbTo": {
+    "placeholders": {
+      "next": {
+        "type": "String"
+      }
+    }
+  },
+  "gradeWorkPrefix": "Work on your ",
+  "gradeWorkMiddle": " to aim for ",
+  "gradeWorkSuffix": ".",
+  "rivalChasing": "YOU'RE CHASING",
+  "rivalGapOne": "Just 1 point to catch up 👊",
+  "rivalGapMany": "{gap} points to catch up 👊",
+  "@rivalGapMany": {
+    "placeholders": {
+      "gap": {
+        "type": "Object"
+      }
+    }
+  },
+  "rivalLeaderLabel": "LEADER OF YOUR LEAGUE",
+  "rivalLeaderTitle": "You're on top 👑",
+  "rivalLeaderBody": "Defend your spot — beat your own record.",
+  "recapWeekLabel": "YOUR WEEK",
+  "recapValidated": "validated ✅",
+  "recapSessionsSingular": "session",
+  "recapSessionsPlural": "sessions",
+  "recapIndexPoints": "Index points",
+  "recapWeeksSingular": "week 🔥",
+  "recapWeeksPlural": "weeks 🔥",
+  "recapMessageGain": "Great week — your work pays off, +{delta} on your Index.",
+  "@recapMessageGain": {
+    "placeholders": {
+      "delta": {
+        "type": "Object"
+      }
+    }
+  },
+  "recapMessageKeepGoing": "Well done, keep up the momentum.",
+  "recapMessageStart": "One session is enough to kick off the week.",
+  "scoreV2Title": "New: your Index out of 100 🎯",
+  "scoreV2Body": "The HYBRID INDEX is now shown out of 100, like a game rating. Your level hasn't changed — only the way it's displayed evolves, to be more readable.",
+  "scoreV2YourIndex": "Your HYBRID INDEX",
+  "scoreV2Benchmarks": "Benchmarks: beginner ~45 · good level ~80 · pro ~92+",
+  "scoreV2Got": "Got it 💪",
+  "streakDetailValidated": "Week validated ✅ — streak of {current}",
+  "@streakDetailValidated": {
+    "placeholders": {
+      "current": {
+        "type": "Object"
+      }
+    }
+  },
+  "streakDetailSeries": "Streak of {current} weeks",
+  "@streakDetailSeries": {
+    "placeholders": {
+      "current": {
+        "type": "Object"
+      }
+    }
+  },
+  "streakDetailLeft": "{left, plural, one{{left} more session to validate your week} other{{left} more sessions to validate your week}}",
+  "@streakDetailLeft": {
+    "placeholders": {
+      "left": {
+        "type": "num",
+        "format": "compact"
+      }
+    }
+  },
+  "streakSheetTitle": "Your streak",
+  "streakSheetActive": "{current, plural, one{{current} active week in a row. A week counts from {goal} sessions.} other{{current} active weeks in a row. A week counts from {goal} sessions.}}",
+  "@streakSheetActive": {
+    "placeholders": {
+      "current": {
+        "type": "num",
+        "format": "compact"
+      },
+      "goal": {
+        "type": "Object"
+      }
+    }
+  },
+  "streakSheetStart": "Do {goal} sessions this week to start your streak.",
+  "@streakSheetStart": {
+    "placeholders": {
+      "goal": {
+        "type": "Object"
+      }
+    }
+  },
+  "streakThisWeek": "This week",
+  "streakBest": "Best",
+  "streakBestValue": "{best} wk",
+  "@streakBestValue": {
+    "placeholders": {
+      "best": {
+        "type": "Object"
+      }
+    }
+  },
+  "streakFreezeTokens": "Rest tokens",
+  "streakFreezeHint": "Protect a missed week.",
+  "streakNoPressure": "No pressure: missing a week never lowers your Index.",
+  "socialProofBases": "You're laying your foundations — each session brings you closer to the top of the ranking.",
+  "socialProofElite": "🔥 You're in the elite — right at the top of the best performers.",
+  "socialProofTopPrefix": "You're among the ",
+  "socialProofTopSuffix": " fittest humans",
+  "socialProofAppPrefix": "Top ",
+  "socialProofAppSuffix": " of HYBRID athletes",
+  "revealYourIndex": "YOUR HYBRID INDEX",
+  "revealProvisional": "Provisional Index — refine it by logging more sessions.",
+  "revealRadar": "YOUR RADAR",
+  "revealDiscoverProfile": "Discover my profile",
+  "revealShareCard": "Share my card",
+  "revealComputing": "Computing your Index…",
+  "shareCardTitle": "My card",
+  "shareCardShareText": "My HYBRID INDEX 💪 What's yours? #HybridIndex",
+  "shareCardDownloaded": "Card downloaded 📥",
+  "shareCardDownloadUnsupported": "Download not supported here.",
+  "shareCardNoIndex": "No Index to share.",
+  "shareCardTagline": "Show your level — challenge your friends 🔥",
+  "shareCardShareCta": "Share my card",
+  "shareCardDownload": "Download",
+  "shareCardOvr": "OVR",
+  "shareCardLeague": "LEAGUE",
+  "shareCardTopPct": "★ TOP {pct} %",
+  "@shareCardTopPct": {
+    "placeholders": {
+      "pct": {
+        "type": "Object"
+      }
+    }
+  },
+  "shareCardAthlete": "Athlete",
+  "leaderboardTitle": "Leaderboard",
+  "leaderboardWeeklyProgress": "Weekly progress (by effort)",
+  "leaderboardMen": "Men",
+  "leaderboardWomen": "Women",
+  "leaderboardUnavailable": "Leaderboard unavailable right now.",
+  "leaderboardRetry": "Retry",
+  "leaderboardEmpty": "No athletes yet.",
+  "leaderboardYou": "{name}  (you)",
+  "@leaderboardYou": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "progressBoardTitle": "Weekly progress",
+  "progressBoardClubTitle": "Progress · {clubName}",
+  "@progressBoardClubTitle": {
+    "placeholders": {
+      "clubName": {
+        "type": "String"
+      }
+    }
+  },
+  "progressBoardHeader": "🔥 Here we reward the effort of the week — not talent. Every session, every record, every active day moves you up.",
+  "progressBoardEmpty": "Nobody has moved yet this week. Log a session and take the lead 💪",
+  "progressBoardMyPosition": "Your spot this week: #{position} · {ep} effort pts",
+  "@progressBoardMyPosition": {
+    "placeholders": {
+      "position": {
+        "type": "Object"
+      },
+      "ep": {
+        "type": "Object"
+      }
+    }
+  },
+  "progressBoardPts": "{ep} pts",
+  "@progressBoardPts": {
+    "placeholders": {
+      "ep": {
+        "type": "Object"
+      }
+    }
+  }
 }

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models.dart';
 import '../../data/session.dart';
+import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import 'wod_detail_screen.dart';
 import 'other_workouts_screen.dart';
@@ -27,6 +28,7 @@ class _WodTabState extends ConsumerState<WodTab> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return SafeArea(
       child: RefreshIndicator(
         onRefresh: () async => setState(() => _future = ref.read(apiClientProvider).wodsCatalog()),
@@ -49,31 +51,31 @@ class _WodTabState extends ConsumerState<WodTab> {
             return ListView(
               padding: const EdgeInsets.fromLTRB(HiSpace.lg, HiSpace.lg, HiSpace.lg, 96),
               children: [
-                Text('Séances',
+                Text(t.wodTabTitle,
                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: HiColors.textPrimary)),
                 const SizedBox(height: 4),
-                Text('Choisis une séance (aussi appelée « WOD »), vois les records et où tu te situes.',
+                Text(t.wodTabSubtitle,
                     style: TextStyle(color: HiColors.textSecondary)),
                 const SizedBox(height: HiSpace.md),
                 _historyButton(context),
                 const SizedBox(height: HiSpace.lg),
                 if (phares.isNotEmpty) ...[
-                  _section('⭐ Séances phares'),
+                  _section(t.wodTabFlagshipSection),
                   Padding(
                     padding: const EdgeInsets.only(bottom: HiSpace.sm),
-                    child: Text('Les 4 grands défis où tout le monde se mesure.',
+                    child: Text(t.wodTabFlagshipCaption,
                         style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
                   ),
                   ...phares.map((w) => _card(w, flagship: true)),
                   const SizedBox(height: HiSpace.lg),
                 ],
                 if (sansMateriel.isNotEmpty) ...[
-                  _section('Sans matériel'),
+                  _section(t.wodTabNoEquipment),
                   ...sansMateriel.map(_card),
                   const SizedBox(height: HiSpace.lg),
                 ],
                 if (avecMateriel.isNotEmpty) ...[
-                  _section('Avec matériel'),
+                  _section(t.wodTabWithEquipment),
                   ...avecMateriel.map(_card),
                 ],
                 const SizedBox(height: HiSpace.lg),
@@ -82,8 +84,8 @@ class _WodTabState extends ConsumerState<WodTab> {
                     color: HiColors.bgElevated,
                     child: ListTile(
                       leading: const Text('🌍', style: TextStyle(fontSize: 20)),
-                      title: Text('Autre', style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
-                      subtitle: Text('Épreuves réelles (HYROX, compét CrossFit, courses) + vrais temps des pros',
+                      title: Text(t.wodTabOtherTitle, style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
+                      subtitle: Text(t.wodTabOtherSubtitle,
                           style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
                       trailing: Icon(Icons.chevron_right, color: HiColors.textTertiary),
                       onTap: () => Navigator.of(context).push(
@@ -108,7 +110,7 @@ class _WodTabState extends ConsumerState<WodTab> {
           foregroundColor: HiColors.textPrimary,
         ),
         icon: const Icon(Icons.history),
-        label: const Text('Mon historique de séance'),
+        label: Text(AppLocalizations.of(context).wodTabMyHistory),
         onPressed: () => Navigator.of(context).push(
           MaterialPageRoute(builder: (_) => const HistoryScreen()),
         ),

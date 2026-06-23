@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../data/models.dart';
+import '../l10n/app_localizations.dart';
 import '../theme/tokens.dart';
 
 /// Preuve sociale à deux populations.
@@ -24,19 +25,20 @@ class SocialProofCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _humanityLine(),
+          _humanityLine(context),
           if (appVisible) ...[
             const SizedBox(height: HiSpace.sm),
             Divider(height: 1, color: HiColors.strokeSubtle),
             const SizedBox(height: HiSpace.sm),
-            _appLine(),
+            _appLine(context),
           ],
         ],
       ),
     );
   }
 
-  Widget _humanityLine() {
+  Widget _humanityLine(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final top = proof.humanityTopPercent;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -47,22 +49,22 @@ class SocialProofCard extends StatelessWidget {
           child: top == null
               // Sous la médiane : jamais dévalorisant, formulé en progression.
               ? Text(
-                  'Tu poses tes bases — chaque séance te rapproche du haut du classement.',
+                  t.socialProofBases,
                   style: TextStyle(color: HiColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600),
                 )
               : top <= 1
                   // Tout en haut : on célèbre, sans surenchère « des humains ».
                   ? Text(
-                      '🔥 Tu es dans l\'élite — tout en haut des plus performants.',
+                      t.socialProofElite,
                       style: TextStyle(color: HiColors.textPrimary, fontSize: 15, fontWeight: FontWeight.w700, height: 1.3),
                     )
                   : RichText(
                       text: TextSpan(
                         style: TextStyle(color: HiColors.textPrimary, fontSize: 15, fontWeight: FontWeight.w700, height: 1.3),
                         children: [
-                          const TextSpan(text: 'Tu fais partie des '),
+                          TextSpan(text: t.socialProofTopPrefix),
                           TextSpan(text: '$top%', style: TextStyle(color: HiColors.brandPrimary)),
-                          const TextSpan(text: ' des humains les plus en forme'),
+                          TextSpan(text: t.socialProofTopSuffix),
                         ],
                       ),
                     ),
@@ -71,7 +73,8 @@ class SocialProofCard extends StatelessWidget {
     );
   }
 
-  Widget _appLine() {
+  Widget _appLine(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return Row(
       children: [
         Icon(Icons.bolt, color: HiColors.brandSecondaryText, size: 18),
@@ -81,9 +84,9 @@ class SocialProofCard extends StatelessWidget {
             text: TextSpan(
               style: TextStyle(color: HiColors.textSecondary, fontSize: 14, fontWeight: FontWeight.w600),
               children: [
-                const TextSpan(text: 'Top '),
+                TextSpan(text: t.socialProofAppPrefix),
                 TextSpan(text: '${proof.appTopPercent}%', style: TextStyle(color: HiColors.brandSecondaryText, fontWeight: FontWeight.w700)),
-                const TextSpan(text: ' des athlètes HYBRID'),
+                TextSpan(text: t.socialProofAppSuffix),
               ],
             ),
           ),

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models.dart';
 import '../../data/session.dart';
+import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/hi_button.dart';
 import 'club_detail_screen.dart';
@@ -62,21 +63,22 @@ class _ClubsScreenState extends ConsumerState<ClubsScreen> {
   }
 
   Future<void> _createDialog() async {
+    final t = AppLocalizations.of(context);
     final name = TextEditingController();
     final desc = TextEditingController();
     final ok = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: HiColors.bgElevated,
-        title: Text('Créer un club', style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
+        title: Text(t.clubsCreateTitle, style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
         content: Column(mainAxisSize: MainAxisSize.min, children: [
-          TextField(controller: name, decoration: const InputDecoration(labelText: 'Nom du club')),
+          TextField(controller: name, decoration: InputDecoration(labelText: t.clubsNameLabel)),
           const SizedBox(height: 8),
-          TextField(controller: desc, decoration: const InputDecoration(labelText: 'Description (option)')),
+          TextField(controller: desc, decoration: InputDecoration(labelText: t.clubsDescriptionLabel)),
         ]),
         actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Annuler')),
-          TextButton(onPressed: () => Navigator.of(context).pop(true), child: const Text('Créer')),
+          TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text(t.clubsCancel)),
+          TextButton(onPressed: () => Navigator.of(context).pop(true), child: Text(t.clubsCreate)),
         ],
       ),
     );
@@ -99,14 +101,15 @@ class _ClubsScreenState extends ConsumerState<ClubsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Clubs'), backgroundColor: Colors.transparent, elevation: 0),
+      appBar: AppBar(title: Text(t.clubsTitle), backgroundColor: Colors.transparent, elevation: 0),
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: HiColors.brandPrimary,
         foregroundColor: HiColors.textOnBrand,
         onPressed: _createDialog,
         icon: const Icon(Icons.add),
-        label: const Text('Créer un club'),
+        label: Text(t.clubsCreateTitle),
       ),
       body: SafeArea(
         child: FutureBuilder<({List<ClubSummary> mine, List<ClubInvite> invites})>(
@@ -122,31 +125,34 @@ class _ClubsScreenState extends ConsumerState<ClubsScreen> {
               children: [
                 TextField(
                   controller: _search,
-                  decoration: const InputDecoration(hintText: 'Rechercher un club à rejoindre', prefixIcon: Icon(Icons.search)),
+                  decoration: InputDecoration(hintText: t.clubsSearchHint, prefixIcon: const Icon(Icons.search)),
                   onChanged: _onSearch,
                 ),
                 if (_results.isNotEmpty) ...[
                   const SizedBox(height: HiSpace.sm),
-                  ..._results.map((c) => _clubTile(c, subtitle: '${c.memberCount} membres')),
+                  ..._results.map((c) => _clubTile(c, subtitle: t.clubsMembers(c.memberCount))),
                   Divider(color: HiColors.strokeSubtle),
                 ],
                 if (data.invites.isNotEmpty) ...[
                   const SizedBox(height: HiSpace.md),
-                  Text('Invitations', style: HiType.overline.copyWith(color: HiColors.textSecondary)),
+                  Text(t.clubsInvitations, style: HiType.overline.copyWith(color: HiColors.textSecondary)),
                   const SizedBox(height: HiSpace.sm),
                   ...data.invites.map(_inviteTile),
                 ],
                 const SizedBox(height: HiSpace.md),
-                Text('Mes clubs', style: HiType.overline.copyWith(color: HiColors.textSecondary)),
+                Text(t.clubsMine, style: HiType.overline.copyWith(color: HiColors.textSecondary)),
                 const SizedBox(height: HiSpace.sm),
                 if (data.mine.isEmpty)
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: HiSpace.md),
-                    child: Text('Tu n\'es dans aucun club. Crée le tien ou rejoins-en un 👥',
+                    child: Text(t.clubsEmpty,
                         style: HiType.body.copyWith(color: HiColors.textTertiary)),
                   )
                 else
-                  ...data.mine.map((c) => _clubTile(c, subtitle: '${c.memberCount} membres${c.role == 'owner' ? ' · créateur' : ''}')),
+                  ...data.mine.map((c) => _clubTile(c,
+                      subtitle: c.role == 'owner'
+                          ? t.clubsMembersOwner(c.memberCount)
+                          : t.clubsMembers(c.memberCount))),
               ],
             );
           },
@@ -171,11 +177,12 @@ class _ClubsScreenState extends ConsumerState<ClubsScreen> {
         child: ListTile(
           leading: Icon(Icons.mail_outline_rounded, color: HiColors.brandSecondaryText),
           title: Text(i.clubName, style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
-          subtitle: Text('${i.memberCount} membres · t\'invite', style: HiType.caption.copyWith(color: HiColors.textTertiary)),
+          subtitle: Text(AppLocalizations.of(context).clubsMembersInvite(i.memberCount),
+              style: HiType.caption.copyWith(color: HiColors.textTertiary)),
           trailing: Row(mainAxisSize: MainAxisSize.min, children: [
             SizedBox(
               height: 34,
-              child: HiButton(label: 'Voir', onPressed: () => _open(i.clubId)),
+              child: HiButton(label: AppLocalizations.of(context).clubsView, onPressed: () => _open(i.clubId)),
             ),
             IconButton(icon: Icon(Icons.close_rounded, color: HiColors.textTertiary), onPressed: () => _decline(i.inviteId)),
           ]),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../theme/tokens.dart';
@@ -20,6 +21,7 @@ class ChallengeBanner extends ConsumerWidget {
       future: ref.read(apiClientProvider).currentChallenge(),
       builder: (context, snap) {
         if (!snap.hasData) return const SizedBox.shrink();
+        final t = AppLocalizations.of(context);
         final c = snap.data!;
         return GestureDetector(
           onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ChallengeScreen())),
@@ -38,7 +40,7 @@ class ChallengeBanner extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('DÉFI DE LA SEMAINE · ${c.theme.toUpperCase()}',
+                      Text(t.challengeBannerLabel(c.theme.toUpperCase()),
                           style: HiType.overline.copyWith(color: HiColors.textOnBrand.withValues(alpha: 0.9))),
                       const SizedBox(height: 2),
                       Text(c.wodName,
@@ -80,12 +82,13 @@ class _ChallengeScreenState extends ConsumerState<ChallengeScreen> {
   void _loadBoard() => _board = ref.read(apiClientProvider).challengeLeaderboard(_sex);
 
   String _countdown(String endsAtIso) {
+    final t = AppLocalizations.of(context);
     final end = DateTime.tryParse(endsAtIso);
     if (end == null) return '';
     final d = end.toUtc().difference(DateTime.now().toUtc());
-    if (d.isNegative) return 'Terminé';
-    if (d.inDays >= 1) return 'Plus que ${d.inDays} j ${d.inHours % 24} h';
-    return 'Plus que ${d.inHours} h ${d.inMinutes % 60} min';
+    if (d.isNegative) return t.challengeEnded;
+    if (d.inDays >= 1) return t.challengeCountdownDays(d.inDays, d.inHours % 24);
+    return t.challengeCountdownHours(d.inHours, d.inMinutes % 60);
   }
 
   Future<void> _doChallenge(WeeklyChallenge c) async {
@@ -97,8 +100,9 @@ class _ChallengeScreenState extends ConsumerState<ChallengeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Défi de la semaine'), backgroundColor: Colors.transparent, elevation: 0),
+      appBar: AppBar(title: Text(t.challengeTitle), backgroundColor: Colors.transparent, elevation: 0),
       body: SafeArea(
         child: FutureBuilder<WeeklyChallenge>(
           future: _challenge,
@@ -117,20 +121,20 @@ class _ChallengeScreenState extends ConsumerState<ChallengeScreen> {
                   _whatToDo(c.prescription!),
                 ],
                 const SizedBox(height: HiSpace.md),
-                HiButton(label: 'Faire le défi 🔥', onPressed: () => _doChallenge(c)),
+                HiButton(label: t.challengeDoIt, onPressed: () => _doChallenge(c)),
                 const SizedBox(height: HiSpace.sm),
                 OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(46)),
                   icon: const Icon(Icons.info_outline_rounded, size: 18),
-                  label: const Text('Paliers, références pro & détails'),
+                  label: Text(t.challengeDetails),
                   onPressed: () => Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => WodDetailScreen(wodId: c.wodId, wodName: c.wodName)),
                   ),
                 ),
                 const SizedBox(height: HiSpace.lg),
-                Row(children: [_tab('Hommes', 'male'), const SizedBox(width: 8), _tab('Femmes', 'female')]),
+                Row(children: [_tab(t.leagueMen, 'male'), const SizedBox(width: 8), _tab(t.leagueWomen, 'female')]),
                 const SizedBox(height: HiSpace.md),
-                Text('Classement du défi', style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
+                Text(t.challengeLeaderboard, style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
                 const SizedBox(height: HiSpace.sm),
                 _boardSection(c.scoreType),
               ],
@@ -170,7 +174,7 @@ class _ChallengeScreenState extends ConsumerState<ChallengeScreen> {
                 style: HiType.body.copyWith(color: HiColors.textOnBrand.withValues(alpha: 0.9), fontWeight: FontWeight.w600)),
           ],
           const SizedBox(height: HiSpace.sm),
-          Text('Tout le monde se mesure sur cette séance cette semaine. Donne tout 💪',
+          Text(AppLocalizations.of(context).challengeHeroTagline,
               style: HiType.caption.copyWith(color: HiColors.textOnBrand.withValues(alpha: 0.85))),
         ],
       ),
@@ -188,7 +192,7 @@ class _ChallengeScreenState extends ConsumerState<ChallengeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Ce qu\'il faut faire',
+          Text(AppLocalizations.of(context).challengeWhatToDo,
               style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
           if (p.summary != null && p.summary!.isNotEmpty) ...[
             const SizedBox(height: 6),
@@ -253,7 +257,7 @@ class _ChallengeScreenState extends ConsumerState<ChallengeScreen> {
         if (snap.hasError) return Text('${snap.error}', style: HiType.body.copyWith(color: HiColors.error));
         final entries = snap.data!;
         if (entries.isEmpty) {
-          return Text('Sois le premier à relever le défi cette semaine 🔥', style: HiType.body.copyWith(color: HiColors.textTertiary));
+          return Text(AppLocalizations.of(context).challengeBeFirst, style: HiType.body.copyWith(color: HiColors.textTertiary));
         }
         return Column(
           children: entries.map((e) {
@@ -268,7 +272,7 @@ class _ChallengeScreenState extends ConsumerState<ChallengeScreen> {
                           color: e.position <= 3 ? HiColors.brandPrimary : HiColors.textTertiary, fontWeight: FontWeight.w700)),
                 ),
                 Expanded(
-                  child: Text(e.isMe ? '${e.displayName} (toi)' : e.displayName,
+                  child: Text(e.isMe ? AppLocalizations.of(context).challengeYouSuffix(e.displayName) : e.displayName,
                       overflow: TextOverflow.ellipsis,
                       style: HiType.body.copyWith(color: HiColors.textPrimary, fontWeight: e.isMe ? FontWeight.w800 : FontWeight.w500)),
                 ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../data/models.dart';
+import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/hi_card.dart';
 
@@ -25,11 +26,12 @@ class RivalCard extends StatelessWidget {
           HiColors.brandPrimary.withValues(alpha: 0.08),
         ],
       ),
-      child: isLeader ? _leader() : _chasing(rival!),
+      child: isLeader ? _leader(context) : _chasing(context, rival!),
     );
   }
 
-  Widget _chasing(Rival r) {
+  Widget _chasing(BuildContext context, Rival r) {
+    final t = AppLocalizations.of(context);
     return Row(
       children: [
         _avatarBubble(Icons.sports_mma_rounded, HiColors.brandSecondaryText),
@@ -38,7 +40,7 @@ class RivalCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('TU POURSUIS', style: HiType.overline.copyWith(color: HiColors.brandSecondaryText)),
+              Text(t.rivalChasing, style: HiType.overline.copyWith(color: HiColors.brandSecondaryText)),
               const SizedBox(height: 4),
               RichText(
                 text: TextSpan(
@@ -52,8 +54,8 @@ class RivalCard extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 r.gapPoints <= 1
-                    ? 'Plus qu\'1 point pour le rattraper 👊'
-                    : 'Plus que ${r.gapPoints} points pour le rattraper 👊',
+                    ? t.rivalGapOne
+                    : t.rivalGapMany(r.gapPoints),
                 style: HiType.caption.copyWith(color: HiColors.textSecondary),
               ),
             ],
@@ -64,7 +66,8 @@ class RivalCard extends StatelessWidget {
     );
   }
 
-  Widget _leader() {
+  Widget _leader(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return Row(
       children: [
         _avatarBubble(Icons.workspace_premium_rounded, HiColors.accentVictory),
@@ -73,11 +76,11 @@ class RivalCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('LEADER DE TA LIGUE', style: HiType.overline.copyWith(color: HiColors.accentVictory)),
+              Text(t.rivalLeaderLabel, style: HiType.overline.copyWith(color: HiColors.accentVictory)),
               const SizedBox(height: 4),
-              Text('Tu es en tête 👑', style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
+              Text(t.rivalLeaderTitle, style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
               const SizedBox(height: 4),
-              Text('Défends ta place — bats ton propre record.',
+              Text(t.rivalLeaderBody,
                   style: HiType.caption.copyWith(color: HiColors.textSecondary)),
             ],
           ),

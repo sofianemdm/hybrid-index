@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models.dart';
 import '../../data/session.dart';
+import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/hi_button.dart';
 import '../../widgets/rank_badge.dart';
@@ -62,6 +63,7 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(title: Text(widget.wodName), backgroundColor: Colors.transparent, elevation: 0),
       body: SafeArea(
@@ -94,19 +96,19 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
                       .toList(),
                 ),
                 const SizedBox(height: HiSpace.lg),
-                Text('Temps de référence', style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
+                Text(t.wodDetailReferenceTimes, style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
                 const SizedBox(height: 2),
-                Text('Débutant · intermédiaire · champion, selon le sexe', style: HiType.caption.copyWith(color: HiColors.textTertiary)),
+                Text(t.wodDetailReferenceTimesCaption, style: HiType.caption.copyWith(color: HiColors.textTertiary)),
                 const SizedBox(height: HiSpace.sm),
                 _sexToggle(),
                 const SizedBox(height: HiSpace.md),
-                if (d.levels(_sex) != null) _tierCard(d) else Text('Paliers non disponibles pour cette séance.', style: HiType.body.copyWith(color: HiColors.textTertiary)),
+                if (d.levels(_sex) != null) _tierCard(d) else Text(t.wodDetailNoTiers, style: HiType.body.copyWith(color: HiColors.textTertiary)),
                 const SizedBox(height: HiSpace.lg),
                 if (d.myHistory.isNotEmpty) ...[
                   _mesPrestations(d),
                   const SizedBox(height: HiSpace.lg),
                 ],
-                Text('Classement', style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
+                Text(t.wodDetailLeaderboard, style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
                 if (widget.clubId != null) ...[
                   const SizedBox(height: HiSpace.sm),
                   _clubScopeToggle(),
@@ -114,7 +116,7 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
                 const SizedBox(height: HiSpace.sm),
                 _leaderboardSection(d.scoreType),
                 const SizedBox(height: HiSpace.lg),
-                HiButton(label: 'Faire cette séance', onPressed: () => _doWod(d.scoreType)),
+                HiButton(label: t.wodDetailDoThisWorkout, onPressed: () => _doWod(d.scoreType)),
               ],
             );
           },
@@ -126,9 +128,9 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
   Widget _sexToggle() {
     return Row(
       children: [
-        _segment('Hommes', 'male'),
+        _segment(AppLocalizations.of(context).wodDetailMen, 'male'),
         const SizedBox(width: 8),
-        _segment('Femmes', 'female'),
+        _segment(AppLocalizations.of(context).wodDetailWomen, 'female'),
       ],
     );
   }
@@ -167,11 +169,11 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
       ),
       child: Column(
         children: [
-          if (_wr(d) case final wr?) _wrRow(wr) else _tierRow('🏆 Champion (élite)', t.champion, d.scoreType, HiColors.attrSpeed),
+          if (_wr(d) case final wr?) _wrRow(wr) else _tierRow(AppLocalizations.of(context).wodDetailTierChampion, t.champion, d.scoreType, HiColors.attrSpeed),
           Divider(color: HiColors.strokeSubtle),
-          _tierRow('Intermédiaire', t.intermediate, d.scoreType, HiColors.textSecondary),
+          _tierRow(AppLocalizations.of(context).wodDetailTierIntermediate, t.intermediate, d.scoreType, HiColors.textSecondary),
           Divider(color: HiColors.strokeSubtle),
-          _tierRow('Débutant', t.occasional, d.scoreType, HiColors.textTertiary),
+          _tierRow(AppLocalizations.of(context).wodDetailTierBeginner, t.occasional, d.scoreType, HiColors.textTertiary),
           if (d.myBestRaw != null) ...[
             const SizedBox(height: HiSpace.sm),
             Container(
@@ -183,11 +185,11 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('Toi : ', style: HiType.body.copyWith(color: HiColors.textSecondary)),
+                  Text(AppLocalizations.of(context).wodDetailYou, style: HiType.body.copyWith(color: HiColors.textSecondary)),
                   Text(formatWodResult(d.myBestRaw!, d.scoreType),
                       style: HiType.body.copyWith(color: HiColors.brandPrimary, fontWeight: FontWeight.w800)),
                   if (d.myBestSubScore != null)
-                    Text('  ·  ${d.myBestSubScore} pts', style: HiType.body.copyWith(color: HiColors.textTertiary)),
+                    Text('  ·  ${AppLocalizations.of(context).wodDetailPoints(d.myBestSubScore!)}', style: HiType.body.copyWith(color: HiColors.textTertiary)),
                 ],
               ),
             ),
@@ -211,7 +213,7 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
   }
 
   String _fmtCap(int sec) {
-    if (sec % 60 == 0) return '${sec ~/ 60} min';
+    if (sec % 60 == 0) return AppLocalizations.of(context).wodDetailMinutes(sec ~/ 60);
     final m = sec ~/ 60;
     final s = (sec % 60).toString().padLeft(2, '0');
     return '$m:$s';
@@ -232,7 +234,7 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Le défi',
+          Text(AppLocalizations.of(context).wodDetailChallenge,
               style: HiType.titleM.copyWith(color: HiColors.textPrimary, fontSize: 18, fontWeight: FontWeight.w800)),
           const SizedBox(height: HiSpace.sm),
           Wrap(
@@ -256,7 +258,7 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
                   child: Row(mainAxisSize: MainAxisSize.min, children: [
                     Icon(Icons.timer_rounded, size: 13, color: HiColors.textSecondary),
                     const SizedBox(width: 4),
-                    Text('Cap ${_fmtCap(p.timeCapSec!)}',
+                    Text(AppLocalizations.of(context).wodDetailCap(_fmtCap(p.timeCapSec!)),
                         style: HiType.caption.copyWith(color: HiColors.textSecondary, fontWeight: FontWeight.w600)),
                   ]),
                 ),
@@ -270,7 +272,7 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
           ...p.blocks.map(_blockRow),
           if (p.weights.isNotEmpty) ...[
             Divider(color: HiColors.strokeSubtle, height: HiSpace.lg),
-            Text('CHARGES',
+            Text(AppLocalizations.of(context).wodDetailLoads,
                 style: HiType.overline.copyWith(color: HiColors.textSecondary)),
             const SizedBox(height: HiSpace.sm),
             ...p.weights.map(_weightRow),
@@ -336,10 +338,10 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
           const SizedBox(height: 2),
           RichText(
             text: TextSpan(children: [
-              TextSpan(text: 'RX : ', style: TextStyle(color: HiColors.textTertiary, fontSize: 12, fontWeight: FontWeight.w600)),
+              TextSpan(text: AppLocalizations.of(context).wodDetailRx, style: TextStyle(color: HiColors.textTertiary, fontSize: 12, fontWeight: FontWeight.w600)),
               TextSpan(text: fmt(rx), style: TextStyle(color: HiColors.brandPrimary, fontSize: 13, fontWeight: FontWeight.w800)),
               TextSpan(text: '   ·   ', style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
-              TextSpan(text: 'Léger : ', style: TextStyle(color: HiColors.textTertiary, fontSize: 12, fontWeight: FontWeight.w600)),
+              TextSpan(text: AppLocalizations.of(context).wodDetailLight, style: TextStyle(color: HiColors.textTertiary, fontSize: 12, fontWeight: FontWeight.w600)),
               TextSpan(text: fmt(scaled), style: TextStyle(color: HiColors.textSecondary, fontSize: 13, fontWeight: FontWeight.w700)),
               if (w.note != null && w.note!.isNotEmpty)
                 TextSpan(text: '  (${w.note})', style: TextStyle(color: HiColors.textTertiary, fontSize: 11)),
@@ -353,9 +355,9 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
   Widget _clubScopeToggle() {
     return Row(
       children: [
-        _scopeChip('🌍 Tous', false),
+        _scopeChip(AppLocalizations.of(context).wodDetailScopeAll, false),
         const SizedBox(width: 8),
-        _scopeChip('👥 ${widget.clubName ?? "Mon club"}', true),
+        _scopeChip('👥 ${widget.clubName ?? AppLocalizations.of(context).wodDetailMyClub}', true),
       ],
     );
   }
@@ -402,7 +404,7 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(r.tier == 'record' ? '🌍 World record' : '⭐ Élite',
+                Text(r.tier == 'record' ? AppLocalizations.of(context).wodDetailWorldRecord : AppLocalizations.of(context).wodDetailElite,
                     style: HiType.body.copyWith(color: HiColors.attrSpeed, fontWeight: FontWeight.w800)),
                 if (r.athlete != null && r.athlete!.isNotEmpty)
                   Text(r.athlete!, style: HiType.caption.copyWith(color: HiColors.textTertiary)),
@@ -419,7 +421,7 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Mes prestations', style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
+        Text(AppLocalizations.of(context).wodDetailMyPerformances, style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
         const SizedBox(height: HiSpace.sm),
         Container(
           decoration: BoxDecoration(
@@ -458,7 +460,7 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
               child: Text(widget.wodId == 'hyrox_solo' ? 'Open' : 'Scaled', style: HiType.caption.copyWith(color: HiColors.textTertiary)),
             ),
           if (h.subScore != null)
-            Text('${h.subScore} pts', style: HiType.body.copyWith(color: HiColors.brandPrimary, fontWeight: FontWeight.w800)),
+            Text(AppLocalizations.of(context).wodDetailPoints(h.subScore!), style: HiType.body.copyWith(color: HiColors.brandPrimary, fontWeight: FontWeight.w800)),
         ],
       ),
     );
@@ -474,7 +476,7 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
         if (snap.hasError) return Text('${snap.error}', style: HiType.body.copyWith(color: HiColors.error));
         final entries = snap.data!;
         if (entries.isEmpty) {
-          return Text('Sois le premier à poster un résultat 💪', style: HiType.body.copyWith(color: HiColors.textTertiary));
+          return Text(AppLocalizations.of(context).wodDetailLeaderboardEmpty, style: HiType.body.copyWith(color: HiColors.textTertiary));
         }
         return Column(
           children: entries.map((e) {
@@ -491,7 +493,7 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
                             fontWeight: FontWeight.w700)),
                   ),
                   Expanded(
-                    child: Text(e.isMe ? '${e.displayName} (toi)' : e.displayName,
+                    child: Text(e.isMe ? AppLocalizations.of(context).wodDetailLeaderboardYou(e.displayName) : e.displayName,
                         overflow: TextOverflow.ellipsis,
                         style: HiType.body.copyWith(
                             color: HiColors.textPrimary, fontWeight: e.isMe ? FontWeight.w800 : FontWeight.w500)),

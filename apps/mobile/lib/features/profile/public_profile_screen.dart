@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app.dart';
 import '../../data/models.dart';
 import '../../data/session.dart';
+import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import '../messaging/chat_screen.dart';
 import '../../widgets/index_ring.dart';
@@ -44,6 +45,7 @@ class _FollowButtonState extends ConsumerState<_FollowButton> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return SizedBox(
       width: 200,
       child: _following
@@ -54,7 +56,7 @@ class _FollowButtonState extends ConsumerState<_FollowButton> {
                 foregroundColor: HiColors.textSecondary,
               ),
               icon: const Icon(Icons.check_rounded, size: 18),
-              label: const Text('Suivi'),
+              label: Text(t.publicProfileFollowing),
               onPressed: _busy ? null : _toggle,
             )
           : FilledButton.icon(
@@ -64,7 +66,7 @@ class _FollowButtonState extends ConsumerState<_FollowButton> {
                 foregroundColor: HiColors.textOnBrand,
               ),
               icon: const Icon(Icons.person_add_alt, size: 18),
-              label: const Text('Suivre'),
+              label: Text(t.publicProfileFollow),
               onPressed: _busy ? null : _toggle,
             ),
     );
@@ -115,7 +117,7 @@ class _DmButtonState extends ConsumerState<_DmButton> {
               foregroundColor: HiColors.brandPrimary,
             ),
             icon: const Icon(Icons.chat_bubble_outline_rounded, size: 18),
-            label: const Text('Message'),
+            label: Text(AppLocalizations.of(context).publicProfileMessage),
             onPressed: () => Navigator.of(context).push(MaterialPageRoute(
               builder: (_) => ChatScreen(otherUserId: widget.userId, otherName: widget.name),
             )),
@@ -145,7 +147,7 @@ class _InviteToClubButtonState extends ConsumerState<_InviteToClubButton> {
       if (!mounted) return;
       if (clubs.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Crée d\'abord un club pour inviter.')));
+            SnackBar(content: Text(AppLocalizations.of(context).publicProfileInviteNoClub)));
         return;
       }
       final club = clubs.length == 1
@@ -157,7 +159,7 @@ class _InviteToClubButtonState extends ConsumerState<_InviteToClubButton> {
                 child: Column(mainAxisSize: MainAxisSize.min, children: [
                   Padding(
                     padding: const EdgeInsets.all(HiSpace.md),
-                    child: Text('Inviter dans…',
+                    child: Text(AppLocalizations.of(context).publicProfileInviteInto,
                         style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
                   ),
                   ...clubs.map((c) => ListTile(
@@ -171,7 +173,7 @@ class _InviteToClubButtonState extends ConsumerState<_InviteToClubButton> {
       if (club == null || !mounted) return;
       await ref.read(apiClientProvider).inviteToClub(club.id, widget.userId);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Invitation envoyée à « ${club.name} »')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context).publicProfileInviteSent(club.name))));
       }
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
@@ -191,7 +193,7 @@ class _InviteToClubButtonState extends ConsumerState<_InviteToClubButton> {
           foregroundColor: HiColors.textSecondary,
         ),
         icon: const Icon(Icons.group_add, size: 18),
-        label: const Text('Inviter dans mon club'),
+        label: Text(AppLocalizations.of(context).publicProfileInviteToClub),
         onPressed: _busy ? null : _invite,
       ),
     );
@@ -205,6 +207,7 @@ class PublicProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final t = AppLocalizations.of(context);
     final future = ref.read(apiClientProvider).publicProfile(userId);
     final mine = ref.watch(myProfileProvider).value;
 
@@ -248,13 +251,13 @@ class PublicProfileScreen extends ConsumerWidget {
                       ],
                     ),
                     const SizedBox(height: 4),
-                    Text('${HiLabels.goal(p.goal)} · ${p.position != null ? '#${p.position} de sa ligue' : '—'}',
+                    Text('${HiLabels.goal(p.goal)} · ${p.position != null ? t.publicProfileLeaguePosition(p.position!) : '—'}',
                         style: HiType.body.copyWith(color: HiColors.textSecondary)),
                     const SizedBox(height: HiSpace.lg),
                     if (p.index != null)
                       IndexRing(value: p.index!.value, percentile: p.index!.percentile, size: 200)
                     else
-                      Text('Pas encore d’Index.', style: HiType.body.copyWith(color: HiColors.textTertiary)),
+                      Text(t.publicProfileNoIndex, style: HiType.body.copyWith(color: HiColors.textTertiary)),
                     const SizedBox(height: HiSpace.md),
                     RankBadge(rank: p.rank, ovr: p.index?.value, fontSize: 14),
                     if (!p.isMe) ...[
@@ -274,7 +277,7 @@ class PublicProfileScreen extends ConsumerWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(mine != null ? 'Comparaison' : 'Son radar',
+                            Text(mine != null ? t.publicProfileComparison : t.publicProfileTheirRadar,
                                 style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
                             const SizedBox(height: HiSpace.sm),
                             if (mine != null)
@@ -311,12 +314,15 @@ class PublicProfileScreen extends ConsumerWidget {
               color: ahead ? HiColors.success : HiColors.error),
           const SizedBox(width: HiSpace.md),
           Expanded(
-            child: Text(
-              ahead
-                  ? 'Tu es devant de ${diff.abs()} points (toi ${mine.index.value} · lui ${other.index!.value}).'
-                  : 'Il te devance de ${diff.abs()} points (toi ${mine.index.value} · lui ${other.index!.value}).',
-              style: HiType.body.copyWith(color: HiColors.textPrimary),
-            ),
+            child: Builder(builder: (context) {
+              final t = AppLocalizations.of(context);
+              return Text(
+                ahead
+                    ? t.publicProfileCompareAhead(diff.abs(), mine.index.value, other.index!.value)
+                    : t.publicProfileCompareBehind(diff.abs(), mine.index.value, other.index!.value),
+                style: HiType.body.copyWith(color: HiColors.textPrimary),
+              );
+            }),
           ),
         ],
       ),

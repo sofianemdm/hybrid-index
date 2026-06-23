@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models.dart';
 import '../../data/session.dart';
+import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import '../profile/public_profile_screen.dart';
 
@@ -41,9 +42,10 @@ class _ProgressBoardScreenState extends ConsumerState<ProgressBoardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
-          title: Text(widget.clubName != null ? 'Progression · ${widget.clubName}' : 'Progression de la semaine'),
+          title: Text(widget.clubName != null ? t.progressBoardClubTitle(widget.clubName!) : t.progressBoardTitle),
           backgroundColor: Colors.transparent,
           elevation: 0),
       body: SafeArea(
@@ -51,13 +53,12 @@ class _ProgressBoardScreenState extends ConsumerState<ProgressBoardScreen> {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(HiSpace.lg, HiSpace.sm, HiSpace.lg, HiSpace.sm),
-              child: Text('🔥 Ici on récompense l\'effort de la semaine — pas le talent. Chaque séance, '
-                  'chaque record, chaque jour actif te fait monter.',
+              child: Text(t.progressBoardHeader,
                   style: TextStyle(color: HiColors.textSecondary, fontSize: 13)),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: HiSpace.lg),
-              child: Row(children: [_tab('Hommes', 'male'), const SizedBox(width: 8), _tab('Femmes', 'female')]),
+              child: Row(children: [_tab(t.leaderboardMen, 'male'), const SizedBox(width: 8), _tab(t.leaderboardWomen, 'female')]),
             ),
             const SizedBox(height: HiSpace.md),
             Expanded(
@@ -75,7 +76,7 @@ class _ProgressBoardScreenState extends ConsumerState<ProgressBoardScreen> {
                     return Center(
                       child: Padding(
                         padding: const EdgeInsets.all(HiSpace.xl),
-                        child: Text('Personne n\'a encore bougé cette semaine. Logue une séance et prends la tête 💪',
+                        child: Text(t.progressBoardEmpty,
                             textAlign: TextAlign.center, style: TextStyle(color: HiColors.textTertiary)),
                       ),
                     );
@@ -86,7 +87,7 @@ class _ProgressBoardScreenState extends ConsumerState<ProgressBoardScreen> {
                       if (b.myPosition != null)
                         Padding(
                           padding: const EdgeInsets.only(bottom: HiSpace.md),
-                          child: Text('Ta place cette semaine : #${b.myPosition} · ${b.myEp} pts d\'effort',
+                          child: Text(t.progressBoardMyPosition(b.myPosition!, b.myEp ?? 0),
                               style: TextStyle(color: HiColors.brandPrimary, fontWeight: FontWeight.w700)),
                         ),
                       ...b.entries.map(_row),
@@ -141,7 +142,7 @@ class _ProgressBoardScreenState extends ConsumerState<ProgressBoardScreen> {
               onTap: e.isMe ? null : () => Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => PublicProfileScreen(userId: e.userId)),
                   ),
-              child: Text(e.isMe ? '${e.displayName}  (toi)' : e.displayName,
+              child: Text(e.isMe ? AppLocalizations.of(context).leaderboardYou(e.displayName) : e.displayName,
                   style: TextStyle(color: HiColors.textPrimary, fontWeight: e.isMe ? FontWeight.w800 : FontWeight.w500)),
             ),
           ),
@@ -151,7 +152,7 @@ class _ProgressBoardScreenState extends ConsumerState<ProgressBoardScreen> {
               color: HiColors.brandPrimary.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(HiRadius.pill),
             ),
-            child: Text('${e.ep} pts',
+            child: Text(AppLocalizations.of(context).progressBoardPts(e.ep),
                 style: TextStyle(color: HiColors.brandPrimary, fontWeight: FontWeight.w800, fontSize: 13)),
           ),
         ],

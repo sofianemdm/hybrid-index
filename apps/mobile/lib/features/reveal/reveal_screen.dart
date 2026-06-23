@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app.dart';
 import '../../data/models.dart';
+import '../../l10n/app_localizations.dart';
 import '../../theme/haptics.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/hi_button.dart';
@@ -66,6 +67,7 @@ class _RevealScreenState extends ConsumerState<RevealScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final idx = widget.profile.index;
     return Scaffold(
       body: GestureDetector(
@@ -80,7 +82,7 @@ class _RevealScreenState extends ConsumerState<RevealScreen> {
                 child: Column(
                   children: [
                     const SizedBox(height: HiSpace.md),
-                    Text('TON HYBRID INDEX', style: HiType.overline.copyWith(color: HiColors.textSecondary)),
+                    Text(t.revealYourIndex, style: HiType.overline.copyWith(color: HiColors.textSecondary)),
                     const SizedBox(height: HiSpace.lg),
                     // Phase 0 : suspense ; Phase 1+ : l'anneau qui se remplit en comptant.
                     SizedBox(
@@ -100,7 +102,7 @@ class _RevealScreenState extends ConsumerState<RevealScreen> {
                           RankBadge(rank: idx.rank, fontSize: 15),
                           if (idx.isProvisional) ...[
                             const SizedBox(height: HiSpace.sm),
-                            Text('Index provisoire — affine-le en loggant plus de séances.',
+                            Text(t.revealProvisional,
                                 textAlign: TextAlign.center, style: HiType.caption.copyWith(color: HiColors.warn)),
                           ],
                           if (idx.rankProgress != null) ...[
@@ -123,7 +125,7 @@ class _RevealScreenState extends ConsumerState<RevealScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('TON RADAR', style: HiType.overline.copyWith(color: HiColors.textSecondary)),
+                              Text(t.revealRadar, style: HiType.overline.copyWith(color: HiColors.textSecondary)),
                               const SizedBox(height: HiSpace.sm),
                               RadarView(radar: widget.profile.radar),
                             ],
@@ -139,7 +141,7 @@ class _RevealScreenState extends ConsumerState<RevealScreen> {
                         child: Column(
                           children: [
                             HiButton(
-                              label: 'Découvrir mon profil',
+                              label: t.revealDiscoverProfile,
                               icon: Icons.arrow_forward_rounded,
                               onPressed: () {
                                 ref.invalidate(myProfileProvider);
@@ -148,7 +150,7 @@ class _RevealScreenState extends ConsumerState<RevealScreen> {
                             ),
                             const SizedBox(height: HiSpace.sm),
                             HiButtonSecondary(
-                              label: 'Partager ma carte',
+                              label: t.revealShareCard,
                               icon: Icons.ios_share_rounded,
                               onPressed: () {
                                 ref.invalidate(myProfileProvider);
@@ -230,7 +232,7 @@ class _SuspenseState extends State<_Suspense> with SingleTickerProviderStateMixi
               child: Icon(Icons.bolt_rounded, color: HiColors.brandPrimary, size: 32),
             ),
             const SizedBox(height: HiSpace.lg),
-            Text('Calcul de ton Index…', style: HiType.body.copyWith(color: HiColors.textSecondary)),
+            Text(AppLocalizations.of(context).revealComputing, style: HiType.body.copyWith(color: HiColors.textSecondary)),
           ],
         );
       },

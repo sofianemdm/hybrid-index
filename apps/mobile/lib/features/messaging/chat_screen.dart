@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models.dart';
 import '../../data/session.dart';
+import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/rank_badge.dart';
 
@@ -114,7 +115,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(HiSpace.xl),
-          child: Text('Démarre la conversation avec ${widget.otherName} 👋',
+          child: Text(AppLocalizations.of(context).chatStartConversation(widget.otherName),
               textAlign: TextAlign.center, style: HiType.body.copyWith(color: HiColors.textTertiary)),
         ),
       );
@@ -173,7 +174,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 minLines: 1,
                 maxLines: 4,
                 maxLength: 2000,
-                decoration: const InputDecoration(hintText: 'Écris un message…', counterText: ''),
+                decoration: InputDecoration(hintText: AppLocalizations.of(context).chatHint, counterText: ''),
                 onSubmitted: (_) => _send(),
               ),
             ),

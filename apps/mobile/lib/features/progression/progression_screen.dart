@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../theme/tokens.dart';
@@ -31,6 +32,7 @@ class _ProgressionScreenState extends ConsumerState<ProgressionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return SafeArea(
       child: RefreshIndicator(
         onRefresh: () async => setState(_load),
@@ -53,7 +55,7 @@ class _ProgressionScreenState extends ConsumerState<ProgressionScreen> {
             return ListView(
               padding: const EdgeInsets.fromLTRB(HiSpace.lg, HiSpace.lg, HiSpace.lg, 96),
               children: [
-                Text('Progression', style: HiType.titleL.copyWith(color: HiColors.textPrimary)),
+                Text(t.progressionTitle, style: HiType.titleL.copyWith(color: HiColors.textPrimary)),
                 const SizedBox(height: HiSpace.md),
                 OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(
@@ -62,7 +64,7 @@ class _ProgressionScreenState extends ConsumerState<ProgressionScreen> {
                     foregroundColor: HiColors.textPrimary,
                   ),
                   icon: const Icon(Icons.history),
-                  label: const Text('Mon historique de séance'),
+                  label: Text(t.progressionHistoryButton),
                   onPressed: () => Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const HistoryScreen()),
                   ),
@@ -76,15 +78,15 @@ class _ProgressionScreenState extends ConsumerState<ProgressionScreen> {
                     foregroundColor: HiColors.attrSpeed,
                   ),
                   icon: const Icon(Icons.emoji_events),
-                  label: const Text('Endgame — Grand Chelem & rang mondial'),
+                  label: Text(t.progressionEndgameButton),
                   onPressed: () => Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const EndgameScreen()),
                   ),
                 ),
                 const SizedBox(height: HiSpace.lg),
-                Text('Badges (${badges.where((b) => b.unlocked).length}/${badges.length} débloqués)',
+                Text(t.progressionBadges(badges.where((b) => b.unlocked).length, badges.length),
                     style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
-                Text('Pour chaque série, ton palier actuel et le prochain à viser.',
+                Text(t.progressionBadgesHint,
                     style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
                 const SizedBox(height: HiSpace.sm),
                 GridView.count(

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app.dart';
 import '../../data/models.dart';
 import '../../data/session.dart';
+import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/hi_avatar.dart';
 import '../../widgets/hi_button.dart';
@@ -32,6 +33,7 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final t = AppLocalizations.of(context);
     final profileAsync = ref.watch(myProfileProvider);
     final session = ref.watch(sessionProvider);
 
@@ -65,7 +67,7 @@ class HomeScreen extends ConsumerWidget {
                 const SizedBox(width: HiSpace.sm),
                 Expanded(
                   child: Text(
-                    'Salut, ${session.user?.displayName ?? ''}',
+                    t.homeGreeting(session.user?.displayName ?? ''),
                     style: HiType.titleL.copyWith(color: HiColors.textPrimary),
                   ),
                 ),
@@ -76,14 +78,14 @@ class HomeScreen extends ConsumerWidget {
                     ),
                 const SizedBox(width: HiSpace.xs),
                 IconButton(
-                  tooltip: 'Notifications',
+                  tooltip: t.homeNotifications,
                   icon: Icon(Icons.notifications_rounded, color: HiColors.textSecondary),
                   onPressed: () => Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const NotificationsScreen()),
                   ),
                 ),
                 IconButton(
-                  tooltip: 'Paramètres',
+                  tooltip: t.homeSettings,
                   icon: Icon(Icons.settings_rounded, color: HiColors.textSecondary),
                   onPressed: () => Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const SettingsScreen()),
@@ -95,7 +97,7 @@ class HomeScreen extends ConsumerWidget {
             profileAsync.when(
               loading: () => const HomeSkeleton(),
               error: (e, _) => _errorBox('$e'),
-              data: (p) => p == null ? _errorBox('Profil indisponible.') : _content(context, ref, p),
+              data: (p) => p == null ? _errorBox(t.homeProfileUnavailable) : _content(context, ref, p),
             ),
           ],
         ),
@@ -104,6 +106,7 @@ class HomeScreen extends ConsumerWidget {
   }
 
   Widget _content(BuildContext context, WidgetRef ref, Profile p) {
+    final t = AppLocalizations.of(context);
     final stale = p.radar.where((a) => a.unlocked && a.isStale).toList();
     return Column(
       children: [
@@ -148,9 +151,9 @@ class HomeScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('TON RADAR', style: HiType.overline.copyWith(color: HiColors.textSecondary)),
+              Text(t.homeRadarTitle, style: HiType.overline.copyWith(color: HiColors.textSecondary)),
               const SizedBox(height: 2),
-              Text('Touche une qualité pour voir les séances qui la boostent.',
+              Text(t.homeRadarHint,
                   style: HiType.caption.copyWith(color: HiColors.textTertiary)),
               const SizedBox(height: HiSpace.sm),
               RadarView(
@@ -165,7 +168,7 @@ class HomeScreen extends ConsumerWidget {
         const SizedBox(height: HiSpace.lg),
         // CTA principal unique (un seul élément plein par écran de repos).
         HiButton(
-          label: 'Coach — progresser sur un axe',
+          label: t.homeCoachCta,
           icon: Icons.fitness_center_rounded,
           onPressed: () => Navigator.of(context).push(
             MaterialPageRoute(builder: (_) => const CoachScreen()),
@@ -177,7 +180,7 @@ class HomeScreen extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             HiGhostButton(
-              label: 'Mon historique',
+              label: t.homeHistory,
               icon: Icons.history_rounded,
               onPressed: () => Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const HistoryScreen()),
@@ -185,7 +188,7 @@ class HomeScreen extends ConsumerWidget {
             ),
             const SizedBox(width: HiSpace.md),
             HiGhostButton(
-              label: 'Partager ma carte',
+              label: t.homeShareCard,
               icon: Icons.ios_share_rounded,
               onPressed: () => Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const ShareCardScreen()),
@@ -199,6 +202,7 @@ class HomeScreen extends ConsumerWidget {
 
   /// Bandeau « fraîcheur » : un ou plusieurs axes datent → on propose un re-test, ton positif.
   Widget _freshnessBanner(BuildContext context, List<RadarAttribute> stale) {
+    final t = AppLocalizations.of(context);
     final names = stale.map((a) => HiLabels.attribute(a.attribute)).join(', ');
     final one = stale.length == 1;
     return HiCard(
@@ -213,10 +217,10 @@ class HomeScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(one ? 'Un axe à rafraîchir' : 'Des axes à rafraîchir',
+                Text(one ? t.homeFreshnessTitleOne : t.homeFreshnessTitleMany,
                     style: HiType.bodyStrong.copyWith(color: HiColors.textPrimary)),
                 const SizedBox(height: 2),
-                Text('$names : ta mesure date un peu. Un re-test peut la faire grimper.',
+                Text(t.homeFreshnessBody(names),
                     style: HiType.caption.copyWith(color: HiColors.textSecondary)),
               ],
             ),

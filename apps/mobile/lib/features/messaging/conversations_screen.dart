@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models.dart';
 import '../../data/session.dart';
+import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/rank_badge.dart';
 import 'chat_screen.dart';
@@ -35,8 +36,9 @@ class _ConversationsScreenState extends ConsumerState<ConversationsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Messages'), backgroundColor: Colors.transparent, elevation: 0),
+      appBar: AppBar(title: Text(t.conversationsTitle), backgroundColor: Colors.transparent, elevation: 0),
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async => setState(_load),
@@ -59,8 +61,7 @@ class _ConversationsScreenState extends ConsumerState<ConversationsScreen> {
                     child: Column(children: [
                       Icon(Icons.forum_outlined, color: HiColors.textTertiary, size: 40),
                       const SizedBox(height: HiSpace.md),
-                      Text('Aucune conversation. Écris à un athlète que tu suis (et qui te suit) '
-                          'ou à un membre de ton club.',
+                      Text(t.conversationsEmpty,
                           textAlign: TextAlign.center, style: HiType.body.copyWith(color: HiColors.textTertiary)),
                     ]),
                   ),
@@ -78,7 +79,7 @@ class _ConversationsScreenState extends ConsumerState<ConversationsScreen> {
   }
 
   Widget _tile(ConversationSummary c) {
-    final preview = c.lastBody == null ? '' : '${c.lastIsMine ? 'Toi : ' : ''}${c.lastBody}';
+    final preview = c.lastBody == null ? '' : '${c.lastIsMine ? AppLocalizations.of(context).conversationsYouPrefix : ''}${c.lastBody}';
     return Card(
       color: HiColors.bgElevated,
       child: ListTile(

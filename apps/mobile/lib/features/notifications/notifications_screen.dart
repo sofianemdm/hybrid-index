@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models.dart';
 import '../../data/session.dart';
+import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import 'notification_settings_screen.dart';
 
@@ -26,14 +27,15 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Notifications'),
+        title: Text(t.notificationsTitle),
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
           IconButton(
-            tooltip: 'Réglages',
+            tooltip: t.notificationsSettingsTooltip,
             icon: Icon(Icons.tune_rounded, color: HiColors.textTertiary),
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const NotificationSettingsScreen()),
@@ -56,7 +58,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
               return Center(
                 child: Padding(
                   padding: const EdgeInsets.all(HiSpace.lg),
-                  child: Text('Rien de neuf pour l’instant. Logue une séance pour faire bouger les choses !',
+                  child: Text(t.notificationsEmpty,
                       textAlign: TextAlign.center, style: HiType.body.copyWith(color: HiColors.textTertiary)),
                 ),
               );

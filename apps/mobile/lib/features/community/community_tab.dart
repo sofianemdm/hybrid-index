@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models.dart';
 import '../../data/session.dart';
+import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/rank_badge.dart';
 import '../clubs/clubs_screen.dart';
@@ -56,6 +57,7 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
   }
 
   Future<void> _postMenu(FeedActivity a) async {
+    final t = AppLocalizations.of(context);
     final action = await showModalBottomSheet<String>(
       context: context,
       backgroundColor: HiColors.bgElevated,
@@ -64,13 +66,13 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
           if (a.isMe)
             ListTile(
               leading: Icon(Icons.delete_outline, color: HiColors.error),
-              title: Text('Supprimer', style: TextStyle(color: HiColors.error)),
+              title: Text(t.communityPostDelete, style: TextStyle(color: HiColors.error)),
               onTap: () => Navigator.of(context).pop('delete'),
             )
           else
             ListTile(
               leading: Icon(Icons.flag_outlined, color: HiColors.textSecondary),
-              title: Text('Signaler', style: TextStyle(color: HiColors.textPrimary)),
+              title: Text(t.communityPostReport, style: TextStyle(color: HiColors.textPrimary)),
               onTap: () => Navigator.of(context).pop('report'),
             ),
         ]),
@@ -84,7 +86,7 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
       } else if (action == 'report') {
         await api.reportPost(a.id, 'inappropriate');
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Merci, signalement envoyé.')));
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t.communityReportSent)));
         }
       }
       if (mounted) setState(_load);
@@ -95,6 +97,7 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return SafeArea(
       child: RefreshIndicator(
         onRefresh: () async => setState(_load),
@@ -117,7 +120,7 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
                   child: Column(children: [
                     Icon(Icons.groups_outlined, color: HiColors.textTertiary, size: 40),
                     const SizedBox(height: HiSpace.md),
-                    Text('Suis des athlètes pour voir leur activité, ou logue une séance pour démarrer ton fil.',
+                    Text(t.communityEmpty,
                         textAlign: TextAlign.center, style: TextStyle(color: HiColors.textTertiary)),
                     const SizedBox(height: HiSpace.md),
                     Wrap(spacing: 8, runSpacing: 8, alignment: WrapAlignment.center, children: [
@@ -126,12 +129,12 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
                             backgroundColor: HiColors.brandPrimary, foregroundColor: HiColors.textOnBrand),
                         onPressed: _openComposer,
                         icon: const Icon(Icons.edit_outlined, size: 18),
-                        label: const Text('Publier'),
+                        label: Text(t.communityPublish),
                       ),
                       OutlinedButton.icon(
                         onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ClubsScreen())),
                         icon: const Icon(Icons.groups, size: 18),
-                        label: const Text('Explorer les clubs'),
+                        label: Text(t.communityExploreClubs),
                       ),
                     ]),
                   ]),
@@ -143,27 +146,27 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
               children: [
                 Row(children: [
                   Expanded(
-                    child: Text('Communauté',
+                    child: Text(t.communityTitle,
                         style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: HiColors.textPrimary)),
                   ),
                   IconButton(
-                    tooltip: 'Messages',
+                    tooltip: t.communityTooltipMessages,
                     icon: Icon(Icons.forum_outlined, color: HiColors.textTertiary),
                     onPressed: () =>
                         Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ConversationsScreen())),
                   ),
                   IconButton(
-                    tooltip: 'Publier',
+                    tooltip: t.communityTooltipPublish,
                     icon: Icon(Icons.edit_outlined, color: HiColors.brandPrimary),
                     onPressed: _openComposer,
                   ),
                   IconButton(
-                    tooltip: 'Clubs',
+                    tooltip: t.communityTooltipClubs,
                     icon: Icon(Icons.groups, color: HiColors.textTertiary),
                     onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ClubsScreen())),
                   ),
                   IconButton(
-                    tooltip: 'Rechercher',
+                    tooltip: t.communityTooltipSearch,
                     icon: Icon(Icons.search, color: HiColors.textTertiary),
                     onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ExploreScreen())),
                   ),
@@ -179,23 +182,24 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
   }
 
   String _message(FeedActivity a) {
+    final t = AppLocalizations.of(context);
     switch (a.type) {
       case 'pr':
-        return '🏆 Nouveau PR — ${a.payload['wodName'] ?? 'une séance'}';
+        return t.communityMsgPr(a.payload['wodName']?.toString() ?? t.communityWorkoutFallback);
       case 'wod_logged':
-        return 'a fait ${a.payload['wodName'] ?? 'une séance'}';
+        return t.communityMsgWodLogged(a.payload['wodName']?.toString() ?? t.communityWorkoutFallback);
       case 'rank_up':
-        return 'monte au rang ${HiLabels.rank(a.payload['rank']?.toString() ?? '')} 🎖️';
+        return t.communityMsgRankUp(HiLabels.rank(a.payload['rank']?.toString() ?? ''));
       case 'badge_unlocked':
-        return 'badge débloqué : ${a.payload['name'] ?? ''}';
+        return t.communityMsgBadge(a.payload['name']?.toString() ?? '');
       case 'member_joined':
-        return 'vient de nous rejoindre avec un HYBRID INDEX de ${a.payload['index'] ?? '—'} 👋';
+        return t.communityMsgMemberJoined(a.payload['index']?.toString() ?? '—');
       case 'post_text':
         return a.payload['body']?.toString() ?? '';
       case 'post_perf':
-        return '💪 a partagé sa perf — ${a.payload['wodName'] ?? 'une séance'}';
+        return t.communityMsgPostPerf(a.payload['wodName']?.toString() ?? t.communityWorkoutFallback);
       default:
-        return 'nouvelle activité';
+        return t.communityMsgDefault;
     }
   }
 
@@ -281,7 +285,7 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
     if (a.type != 'pr' && a.type != 'wod_logged' && a.type != 'post_perf') return null;
     final id = a.payload['wodId']?.toString();
     if (id == null || id.isEmpty) return null;
-    return (id, a.payload['wodName']?.toString() ?? 'Séance');
+    return (id, a.payload['wodName']?.toString() ?? AppLocalizations.of(context).communityWorkoutFallback);
   }
 
   /// Ligne « perf » d'un post de partage : résultat formaté (+ légende optionnelle).

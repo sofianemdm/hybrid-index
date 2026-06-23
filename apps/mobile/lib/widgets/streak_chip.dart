@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../data/models.dart';
+import '../l10n/app_localizations.dart';
 import '../theme/haptics.dart';
 import '../theme/tokens.dart';
 
@@ -20,7 +21,7 @@ class StreakChip extends StatelessWidget {
     final active = streak.current > 0;
     final color = active ? orange : HiColors.textTertiary;
     return Tooltip(
-      message: _detail(),
+      message: _detail(context),
       child: GestureDetector(
         onTap: () {
           HiHaptics.tap();
@@ -47,15 +48,17 @@ class StreakChip extends StatelessWidget {
     );
   }
 
-  String _detail() {
-    if (streak.weekValidated) return 'Semaine validée ✅ — série de ${streak.current}';
+  String _detail(BuildContext context) {
+    final t = AppLocalizations.of(context);
+    if (streak.weekValidated) return t.streakDetailValidated(streak.current);
     final left = (streak.weeklyGoal - streak.thisWeekCount).clamp(0, streak.weeklyGoal);
     return left == 0
-        ? 'Série de ${streak.current} semaines'
-        : 'Encore $left séance${left > 1 ? 's' : ''} pour valider ta semaine';
+        ? t.streakDetailSeries(streak.current)
+        : t.streakDetailLeft(left);
   }
 
   void _showSheet(BuildContext context) {
+    final t = AppLocalizations.of(context);
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: HiColors.bgElevated,
@@ -72,24 +75,23 @@ class StreakChip extends StatelessWidget {
               children: [
                 const Icon(Icons.local_fire_department_rounded, color: HiColors.streakFlame, size: 28),
                 const SizedBox(width: HiSpace.sm),
-                Text('Ta série', style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
+                Text(t.streakSheetTitle, style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
               ],
             ),
             const SizedBox(height: HiSpace.md),
             Text(
               streak.current > 0
-                  ? '${streak.current} semaine${streak.current > 1 ? 's' : ''} active${streak.current > 1 ? 's' : ''} d\'affilée. '
-                      'Une semaine compte dès ${streak.weeklyGoal} séances.'
-                  : 'Fais ${streak.weeklyGoal} séances cette semaine pour démarrer ta série.',
+                  ? t.streakSheetActive(streak.current, streak.weeklyGoal)
+                  : t.streakSheetStart(streak.weeklyGoal),
               style: HiType.body.copyWith(color: HiColors.textSecondary),
             ),
             const SizedBox(height: HiSpace.sm),
-            _row('Cette semaine', '${streak.thisWeekCount}/${streak.weeklyGoal}'),
-            _row('Record', '${streak.best} sem.'),
+            _row(t.streakThisWeek, '${streak.thisWeekCount}/${streak.weeklyGoal}'),
+            _row(t.streakBest, t.streakBestValue(streak.best)),
             if (streak.freezeTokens > 0)
-              _row('Jetons de repos', '${streak.freezeTokens} 🛡️', hint: 'Protègent une semaine ratée.'),
+              _row(t.streakFreezeTokens, '${streak.freezeTokens} 🛡️', hint: t.streakFreezeHint),
             const SizedBox(height: HiSpace.md),
-            Text('Pas de pression : rater une semaine ne fait jamais baisser ton Index.',
+            Text(t.streakNoPressure,
                 style: HiType.caption.copyWith(color: HiColors.textTertiary)),
           ],
         ),

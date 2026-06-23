@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../theme/tokens.dart';
@@ -40,8 +41,9 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Coach'), backgroundColor: Colors.transparent, elevation: 0),
+      appBar: AppBar(title: Text(t.coachTitle), backgroundColor: Colors.transparent, elevation: 0),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(HiSpace.lg),
@@ -50,13 +52,13 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text('Sur quel axe progresser ?', style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
+                Text(t.coachWhichAxis, style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
                 const SizedBox(height: HiSpace.sm),
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
                   children: [
-                    _chip('Mon point faible', null),
+                    _chip(t.coachWeakPoint, null),
                     ..._attributes.map((a) => _chip(HiLabels.attribute(a), a)),
                   ],
                 ),
@@ -72,12 +74,12 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
                     if (snap.hasError) {
                       return Column(
                         children: [
-                          Text('Impossible de charger les conseils pour le moment.',
+                          Text(t.coachLoadError,
                               textAlign: TextAlign.center, style: TextStyle(color: HiColors.textSecondary)),
                           const SizedBox(height: HiSpace.sm),
                           OutlinedButton.icon(
                             icon: const Icon(Icons.refresh, size: 18),
-                            label: const Text('Réessayer'),
+                            label: Text(t.commonRetry),
                             onPressed: () => setState(_load),
                           ),
                         ],
@@ -95,6 +97,7 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
   }
 
   Widget _content(CoachResult r) {
+    final t = AppLocalizations.of(context);
     final color = HiColors.attribute(r.targetAttribute);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -112,17 +115,17 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
               Icon(Icons.trending_up, color: color),
               const SizedBox(width: HiSpace.md),
               Expanded(
-                child: Text('Fais ces séances pour progresser sur ${HiLabels.attribute(r.targetAttribute)}',
+                child: Text(t.coachProgressOn(HiLabels.attribute(r.targetAttribute)),
                     style: HiType.titleM.copyWith(color: HiColors.textPrimary, height: 1.3)),
               ),
             ],
           ),
         ),
         const SizedBox(height: HiSpace.lg),
-        Text('SÉANCES CIBLÉES', style: HiType.overline.copyWith(color: HiColors.textSecondary)),
+        Text(t.coachTargetedSessions, style: HiType.overline.copyWith(color: HiColors.textSecondary)),
         const SizedBox(height: HiSpace.sm),
         if (r.sessions.isEmpty)
-          Text('Aucune séance pour cet axe avec ton matériel.', style: TextStyle(color: HiColors.textTertiary))
+          Text(t.coachNoSessions, style: TextStyle(color: HiColors.textTertiary))
         else
           ...r.sessions.map((s) => _sessionCard(s, color)),
         const SizedBox(height: HiSpace.md),
@@ -130,7 +133,7 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
           builder: (context) => OutlinedButton.icon(
             style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
             icon: const Icon(Icons.timer_outlined, size: 18),
-            label: const Text('Faire une séance notée & enregistrer mon temps'),
+            label: Text(t.coachLogSession),
             onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const LogWodScreen())),
           ),
         ),
@@ -139,6 +142,7 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
   }
 
   Widget _sessionCard(CoachSession s, Color color) {
+    final t = AppLocalizations.of(context);
     return Card(
       margin: const EdgeInsets.only(bottom: HiSpace.sm),
       child: Padding(
@@ -152,7 +156,7 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
                   child: Text(s.name,
                       style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
                 ),
-                _tag('${s.durationMin} min', HiColors.textTertiary),
+                _tag(t.coachDurationMin(s.durationMin), HiColors.textTertiary),
               ],
             ),
             const SizedBox(height: 6),
@@ -160,7 +164,7 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
               children: [
                 _tag(_intensityLabel(s.intensity), color),
                 const SizedBox(width: 6),
-                _tag(s.requiresEquipment ? 'Matériel' : 'Sans matériel',
+                _tag(s.requiresEquipment ? t.coachWithEquipment : t.coachNoEquipment,
                     s.requiresEquipment ? HiColors.warn : HiColors.success),
               ],
             ),
@@ -172,8 +176,10 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
     );
   }
 
-  String _intensityLabel(String i) =>
-      i == 'high' ? 'Intense' : (i == 'medium' ? 'Modéré' : 'Léger');
+  String _intensityLabel(String i) {
+    final t = AppLocalizations.of(context);
+    return i == 'high' ? t.coachIntensityHigh : (i == 'medium' ? t.coachIntensityMedium : t.coachIntensityLow);
+  }
 
   Widget _tag(String text, Color color) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
