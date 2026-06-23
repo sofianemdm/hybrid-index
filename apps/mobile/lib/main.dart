@@ -12,6 +12,33 @@ import 'theme/tokens.dart';
 import 'widgets/celebration.dart';
 
 void main() {
+  // Garde-fou global : tout widget qui plante au build est remplacé par un message propre
+  // (plus jamais le gros rouge « Unexpected null value » chez l'utilisateur). Wrappé dans une
+  // Directionality pour fonctionner même hors d'un MaterialApp.
+  ErrorWidget.builder = (FlutterErrorDetails details) {
+    return Directionality(
+      textDirection: TextDirection.ltr,
+      child: Container(
+        alignment: Alignment.center,
+        color: HiColors.bgBase,
+        padding: const EdgeInsets.all(HiSpace.md),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.error_outline_rounded, color: HiColors.textTertiary, size: 30),
+            const SizedBox(height: HiSpace.sm),
+            Flexible(
+              child: Text(
+                'Oups, un souci d\'affichage ici.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: HiColors.textSecondary, fontSize: 13),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  };
   runApp(const ProviderScope(child: HybridIndexApp()));
 }
 
