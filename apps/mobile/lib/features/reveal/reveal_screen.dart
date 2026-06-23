@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app.dart';
+import '../../data/analytics.dart';
 import '../../data/models.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/haptics.dart';
@@ -43,6 +44,7 @@ class _RevealScreenState extends ConsumerState<RevealScreen> {
     _schedule(_t2, 2, peak: true);
     _schedule(_t3, 3);
     _schedule(_t4, 4);
+    Analytics.capture('reveal_shown', {'index': widget.profile.index.value});
   }
 
   void _schedule(int ms, int step, {bool peak = false}) {

@@ -25,7 +25,7 @@ class HomeShell extends ConsumerStatefulWidget {
 }
 
 class _HomeShellState extends ConsumerState<HomeShell> {
-  int _tab = 0;
+  // L'onglet actif vit dans homeTabProvider (partagé) pour pouvoir y revenir depuis ailleurs.
 
   /// Carte de choix bien visible (dialogue centré « Ajouter une séance »).
   Widget _choiceCard(BuildContext ctx,
@@ -120,9 +120,10 @@ class _HomeShellState extends ConsumerState<HomeShell> {
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
+    final tab = ref.watch(homeTabProvider);
     return Scaffold(
       body: IndexedStack(
-        index: _tab,
+        index: tab,
         children: const [HomeScreen(), WodTab(), CommunityTab(), ProgressionScreen(), LeaderboardScreen()],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
@@ -183,13 +184,13 @@ class _HomeShellState extends ConsumerState<HomeShell> {
   }
 
   Widget _navItem(int i, IconData icon, IconData activeIcon, String label) {
-    final active = _tab == i;
+    final active = ref.watch(homeTabProvider) == i;
     final color = active ? HiColors.brandPrimary : HiColors.textTertiary;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () {
         HiHaptics.tap();
-        setState(() => _tab = i);
+        ref.read(homeTabProvider.notifier).state = i;
       },
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,

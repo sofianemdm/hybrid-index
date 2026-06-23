@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app.dart';
+import '../../data/analytics.dart';
 import '../../data/api_client.dart';
 import '../../data/models.dart';
 import '../../data/session.dart';
@@ -91,6 +92,7 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
         if (distanceMeters != null) 'distanceMeters': distanceMeters,
       };
       final profile = await ref.read(apiClientProvider).logWodResult(widget.wodId, payload);
+      Analytics.capture('wod_logged', {'wodId': widget.wodId, 'index': profile?.index.value});
       ref.invalidate(myProfileProvider);
       ref.invalidate(completionPlanProvider); // un attribut vient peut-être d'être débloqué
       ref.invalidate(streakProvider); // la semaine vient peut-être d'être validée
@@ -146,7 +148,11 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
           maybeAskForReview();
         }
       }
-      if (mounted) Navigator.of(context).pop(true);
+      // Après l'enregistrement : on bascule sur l'accueil (onglet 0) et on dépile jusqu'à la racine.
+      if (mounted) {
+        ref.read(homeTabProvider.notifier).state = 0;
+        Navigator.of(context).popUntil((r) => r.isFirst);
+      }
     } on ApiException catch (e) {
       _toast(e.code == 'WOD_RESULT_OUT_OF_BOUNDS' ? 'Résultat hors des bornes plausibles.' : e.message);
     } catch (e) {

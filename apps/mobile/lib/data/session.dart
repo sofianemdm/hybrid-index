@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'analytics.dart';
 import 'api_client.dart';
 import 'models.dart';
 
@@ -48,6 +49,7 @@ class SessionNotifier extends StateNotifier<SessionState> {
     _api.setToken(token);
     try {
       final me = await _api.me();
+      Analytics.identify(me['id'] as String);
       state = SessionState(
         status: AuthStatus.loggedIn,
         user: AuthUser(
@@ -73,6 +75,7 @@ class SessionNotifier extends StateNotifier<SessionState> {
 
   Future<void> register(Map<String, dynamic> payload) async {
     final res = await _api.register(payload);
+    Analytics.identify(res.user.id);
     await _persist(res.token);
     state = SessionState(
       status: AuthStatus.loggedIn,
@@ -85,6 +88,7 @@ class SessionNotifier extends StateNotifier<SessionState> {
   /// Connexion via Google. `profile` requis seulement à la première connexion (age-gate).
   Future<void> loginWithGoogle(String idToken, {Map<String, dynamic>? profile}) async {
     final res = await _api.googleAuth(idToken, profile);
+    Analytics.identify(res.user.id);
     await _persist(res.token);
     final me = await _api.me();
     state = SessionState(
@@ -97,6 +101,7 @@ class SessionNotifier extends StateNotifier<SessionState> {
 
   Future<void> login(String email, String password) async {
     final res = await _api.login(email, password);
+    Analytics.identify(res.user.id);
     await _persist(res.token);
     final me = await _api.me();
     state = SessionState(
@@ -123,6 +128,7 @@ class SessionNotifier extends StateNotifier<SessionState> {
   }
 
   Future<void> logout() async {
+    Analytics.reset();
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_kToken);
     _api.setToken(null);

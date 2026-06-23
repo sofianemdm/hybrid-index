@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../app.dart';
+import '../../data/analytics.dart';
 import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../data/web_download.dart';
@@ -51,6 +52,7 @@ class _ShareCardScreenState extends ConsumerState<ShareCardScreen> {
         [XFile.fromData(bytes, name: 'hybrid-index.png', mimeType: 'image/png')],
         text: shareText,
       );
+      Analytics.capture('share_card_shared');
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
     }

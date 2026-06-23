@@ -36,6 +36,10 @@ final streakProvider = FutureProvider<StreakState?>((ref) async {
   }
 });
 
+/// Onglet actif de la coquille principale (0 = Accueil). Partagé pour pouvoir y revenir depuis
+/// n'importe où (ex. après l'enregistrement d'une séance → retour à l'accueil).
+final homeTabProvider = StateProvider<int>((ref) => 0);
+
 /// Récap de la semaine en cours. Non bloquant (null si erreur/déconnecté).
 final weeklyRecapProvider = FutureProvider<WeeklyRecap?>((ref) async {
   final session = ref.watch(sessionProvider);

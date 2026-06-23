@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app.dart';
+import 'data/analytics.dart';
 import 'data/locale_mode.dart';
 import 'data/push_service.dart';
 import 'data/session.dart';
@@ -60,6 +61,7 @@ class _HybridIndexAppState extends ConsumerState<HybridIndexApp> with WidgetsBin
     Future.microtask(() => ref.read(sessionProvider.notifier).bootstrap());
     // Push : prêt mais inactif (no-op tant que Env.pushEnabled est faux).
     Future.microtask(() => PushService(ref.read(apiClientProvider)).init());
+    Analytics.capture('app_open');
   }
 
   @override

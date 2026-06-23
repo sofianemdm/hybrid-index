@@ -21,4 +21,9 @@ class Env {
   /// Notifications push : OFF par défaut tant que Firebase n'est pas configuré (« prêt mais
   /// inactif »). Activable via --dart-define=PUSH_ENABLED=true une fois les credentials FCM en place.
   static const bool pushEnabled = bool.fromEnvironment('PUSH_ENABLED', defaultValue: false);
+
+  /// Analytics (PostHog) : vide = inactif (les events sont seulement journalisés). Fournir la clé
+  /// projet via --dart-define=POSTHOG_KEY=... pour activer l'envoi réel.
+  static const String posthogKey = String.fromEnvironment('POSTHOG_KEY', defaultValue: '');
+  static const String posthogHost = String.fromEnvironment('POSTHOG_HOST', defaultValue: 'https://eu.i.posthog.com');
 }
