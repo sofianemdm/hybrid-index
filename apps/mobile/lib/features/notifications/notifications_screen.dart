@@ -34,7 +34,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         actions: [
           IconButton(
             tooltip: 'Réglages',
-            icon: Icon(Icons.tune, color: HiColors.textTertiary),
+            icon: Icon(Icons.tune_rounded, color: HiColors.textTertiary),
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const NotificationSettingsScreen()),
             ),
@@ -46,10 +46,10 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
           future: _future,
           builder: (context, snap) {
             if (snap.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
+              return Center(child: CircularProgressIndicator(color: HiColors.brandPrimary));
             }
             if (snap.hasError) {
-              return Center(child: Text('${snap.error}', style: TextStyle(color: HiColors.error)));
+              return Center(child: Text('${snap.error}', style: HiType.body.copyWith(color: HiColors.error)));
             }
             final items = snap.data!;
             if (items.isEmpty) {
@@ -57,7 +57,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                 child: Padding(
                   padding: const EdgeInsets.all(HiSpace.lg),
                   child: Text('Rien de neuf pour l’instant. Logue une séance pour faire bouger les choses !',
-                      textAlign: TextAlign.center, style: TextStyle(color: HiColors.textTertiary)),
+                      textAlign: TextAlign.center, style: HiType.body.copyWith(color: HiColors.textTertiary)),
                 ),
               );
             }
@@ -87,15 +87,15 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.notifications_active, color: color, size: 22),
+          Icon(Icons.notifications_active_rounded, color: color, size: 22),
           const SizedBox(width: HiSpace.md),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(item.title, style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
+                Text(item.title, style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
                 const SizedBox(height: 2),
-                Text(item.body, style: TextStyle(color: HiColors.textSecondary, fontSize: 13)),
+                Text(item.body, style: HiType.caption.copyWith(color: HiColors.textSecondary)),
               ],
             ),
           ),

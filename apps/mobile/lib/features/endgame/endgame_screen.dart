@@ -40,18 +40,18 @@ class _EndgameScreenState extends ConsumerState<EndgameScreen> {
           future: _future,
           builder: (context, snap) {
             if (snap.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
+              return Center(child: CircularProgressIndicator(color: HiColors.brandPrimary));
             }
-            if (snap.hasError) return Center(child: Text('${snap.error}', style: TextStyle(color: HiColors.error)));
+            if (snap.hasError) return Center(child: Text('${snap.error}', style: HiType.body.copyWith(color: HiColors.error)));
             final e = snap.data!;
             return ListView(
               padding: const EdgeInsets.fromLTRB(HiSpace.lg, HiSpace.lg, HiSpace.lg, 96),
               children: [
                 _hero(e),
                 const SizedBox(height: HiSpace.lg),
-                Text('Les 4 séances phares', style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 16)),
+                Text('Les 4 séances phares', style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
                 Text('Touche une séance pour voir en quoi elle consiste et la faire.',
-                    style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
+                    style: HiType.caption.copyWith(color: HiColors.textTertiary)),
                 const SizedBox(height: HiSpace.sm),
                 ...e.flagship.map((f) => _flagshipRow(f, e)),
                 const SizedBox(height: HiSpace.lg),
@@ -86,10 +86,10 @@ class _EndgameScreenState extends ConsumerState<EndgameScreen> {
           Text(emoji, style: const TextStyle(fontSize: 48)),
           const SizedBox(height: HiSpace.sm),
           Text(label, textAlign: TextAlign.center,
-              style: TextStyle(color: e.tier == 'none' ? HiColors.textSecondary : c, fontWeight: FontWeight.w800, fontSize: 18)),
+              style: HiType.titleL.copyWith(color: e.tier == 'none' ? HiColors.textSecondary : c)),
           const SizedBox(height: 4),
           Text('${e.completed}/${e.total} séances phares terminées',
-              style: TextStyle(color: HiColors.textTertiary, fontSize: 13)),
+              style: HiType.caption.copyWith(color: HiColors.textTertiary)),
         ],
       ),
     );
@@ -124,13 +124,13 @@ class _EndgameScreenState extends ConsumerState<EndgameScreen> {
             padding: const EdgeInsets.symmetric(horizontal: HiSpace.md, vertical: 12),
             child: Row(
               children: [
-                Icon(f.done ? Icons.check_circle : Icons.radio_button_unchecked, color: f.done ? sc : HiColors.textTertiary, size: 20),
+                Icon(f.done ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded, color: f.done ? sc : HiColors.textTertiary, size: 20),
                 const SizedBox(width: HiSpace.sm),
-                Expanded(child: Text(f.name, style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700))),
+                Expanded(child: Text(f.name, style: HiType.titleM.copyWith(color: HiColors.textPrimary))),
                 Text(f.done ? '${f.score}/100' : '—',
-                    style: TextStyle(color: f.done ? sc : HiColors.textTertiary, fontWeight: FontWeight.w800)),
+                    style: HiType.bodyStrong.copyWith(color: f.done ? sc : HiColors.textTertiary, fontWeight: FontWeight.w800)),
                 const SizedBox(width: 4),
-                Icon(Icons.chevron_right, color: HiColors.textTertiary, size: 20),
+                Icon(Icons.chevron_right_rounded, color: HiColors.textTertiary, size: 20),
               ],
             ),
           ),
@@ -156,14 +156,14 @@ class _EndgameScreenState extends ConsumerState<EndgameScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: TextStyle(color: unlocked ? c : HiColors.textSecondary, fontWeight: FontWeight.w800, fontSize: 15)),
+                Text(title, style: HiType.titleM.copyWith(color: unlocked ? c : HiColors.textSecondary, fontWeight: FontWeight.w800)),
                 const SizedBox(height: 2),
-                Text(desc, style: TextStyle(color: HiColors.textTertiary, fontSize: 12, height: 1.3)),
+                Text(desc, style: HiType.caption.copyWith(color: HiColors.textTertiary)),
               ],
             ),
           ),
           const SizedBox(width: HiSpace.sm),
-          Icon(unlocked ? Icons.emoji_events : Icons.lock_outline, color: unlocked ? c : HiColors.textTertiary),
+          Icon(unlocked ? Icons.emoji_events_rounded : Icons.lock_outline_rounded, color: unlocked ? c : HiColors.textTertiary),
         ],
       ),
     );
@@ -179,15 +179,15 @@ class _EndgameScreenState extends ConsumerState<EndgameScreen> {
       ),
       child: Row(
         children: [
-          Icon(Icons.public, color: color),
+          Icon(Icons.public_rounded, color: color),
           const SizedBox(width: HiSpace.md),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: TextStyle(color: HiColors.textSecondary, fontSize: 13)),
-                Text(value, style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w800, fontSize: 18)),
-                if (highlight != null) Text(highlight, style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w600)),
+                Text(title, style: HiType.overline.copyWith(color: HiColors.textSecondary)),
+                Text(value, style: HiType.numericM.copyWith(color: HiColors.textPrimary)),
+                if (highlight != null) Text(highlight, style: HiType.caption.copyWith(color: color, fontWeight: FontWeight.w600)),
               ],
             ),
           ),

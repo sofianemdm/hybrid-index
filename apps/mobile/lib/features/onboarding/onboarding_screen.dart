@@ -6,6 +6,7 @@ import '../../app.dart';
 import '../../data/api_client.dart';
 import '../../data/models.dart';
 import '../../data/session.dart';
+import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/hi_button.dart';
 import '../avatar/avatar_customizer.dart';
@@ -99,11 +100,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   Future<void> _reveal() async {
     if (!_hasInput) {
-      _toast('Ajoute une course, des pompes ou des squats.');
+      _toast(AppLocalizations.of(context).onbNeedEffort);
       return;
     }
     if (_withCourse && !_courseValid) {
-      _toast('Distance (0,4–42 km) et temps requis pour la course.');
+      _toast(AppLocalizations.of(context).onbRunNeedsBoth);
       return;
     }
     setState(() => _submitting = true);
@@ -135,7 +136,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         actions: [
           TextButton(
             onPressed: () => ref.read(sessionProvider.notifier).logout(),
-            child: Text('Déconnexion', style: TextStyle(color: HiColors.textTertiary)),
+            child: Text(AppLocalizations.of(context).commonLogout, style: TextStyle(color: HiColors.textTertiary)),
           ),
         ],
       ),
@@ -157,29 +158,29 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   List<Widget> _avatarStep() => [
-        Text('Crée ton avatar',
+        Text(AppLocalizations.of(context).onbAvatarTitle,
             style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: HiColors.textPrimary)),
         const SizedBox(height: 6),
-        Text('Personnalise-le (modifiable à tout moment dans les paramètres).',
+        Text(AppLocalizations.of(context).onbAvatarSubtitle,
             style: TextStyle(color: HiColors.textSecondary)),
         const SizedBox(height: HiSpace.lg),
         AvatarCustomizer(config: _avatar, onChanged: (c) => setState(() => _avatar = c)),
         const SizedBox(height: HiSpace.xl),
-        HiButton(label: 'Continuer', onPressed: () => setState(() => _step = 1)),
+        HiButton(label: AppLocalizations.of(context).commonContinue, onPressed: () => setState(() => _step = 1)),
         const SizedBox(height: HiSpace.lg),
       ];
 
   List<Widget> _effortsStep() => [
-        Text('Révèle ton Index',
+        Text(AppLocalizations.of(context).onbRevealTitle,
             style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: HiColors.textPrimary)),
         const SizedBox(height: 6),
-        Text('Un effort suffit. Ajoutes-en plus pour un Index plus précis.',
+        Text(AppLocalizations.of(context).onbRevealSubtitle,
             style: TextStyle(color: HiColors.textSecondary)),
         const SizedBox(height: HiSpace.lg),
         _courseCard(),
         const SizedBox(height: HiSpace.md),
         _repsCard(
-          title: 'Max pompes strictes (une série)',
+          title: AppLocalizations.of(context).onbMaxPushups,
           enabled: _withPushups,
           value: _pushups,
           max: 100,
@@ -191,7 +192,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         ),
         const SizedBox(height: HiSpace.md),
         _repsCard(
-          title: 'Max squats à vide (une série)',
+          title: AppLocalizations.of(context).onbMaxSquats,
           enabled: _withAirSquats,
           value: _airSquats,
           max: 200,
@@ -205,7 +206,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         _previewCard(),
         const SizedBox(height: HiSpace.lg),
         HiButton(
-          label: 'Révéler mon HYBRID INDEX',
+          label: AppLocalizations.of(context).onbRevealCta,
           loading: _submitting,
           onPressed: _hasInput ? _reveal : null,
         ),
@@ -222,7 +223,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             Row(
               children: [
                 Expanded(
-                  child: Text('Course (saisis ta distance)',
+                  child: Text(AppLocalizations.of(context).onbRunTitle,
                       style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w600)),
                 ),
                 Switch(
@@ -254,7 +255,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 ],
               ),
               const SizedBox(height: 6),
-              Text('Ex. 3 km en 15:00. On calcule ton allure et on l’ajuste à toutes distances.',
+              Text(AppLocalizations.of(context).onbRunHint,
                   style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
             ],
           ],
@@ -328,7 +329,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       );
     }
     if (_preview == null) {
-      return Text('Ton Index estimé s’affichera ici.',
+      return Text(AppLocalizations.of(context).onbEstimatedIndexHere,
           textAlign: TextAlign.center, style: TextStyle(color: HiColors.textTertiary));
     }
     return Container(
@@ -340,7 +341,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       ),
       child: Column(
         children: [
-          Text('INDEX ESTIMÉ', style: TextStyle(color: HiColors.textSecondary, fontSize: 11, letterSpacing: 2)),
+          Text(AppLocalizations.of(context).onbEstimatedIndexLabel,
+              style: TextStyle(color: HiColors.textSecondary, fontSize: 11, letterSpacing: 2)),
           const SizedBox(height: 4),
           Text('${_preview!.index.value}',
               style: TextStyle(color: HiColors.brandPrimary, fontSize: 40, fontWeight: FontWeight.w800)),

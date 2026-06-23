@@ -85,7 +85,7 @@ class _NotificationSettingsScreenState extends ConsumerState<NotificationSetting
       appBar: AppBar(title: const Text('Réglages des notifications'), backgroundColor: Colors.transparent, elevation: 0),
       body: SafeArea(
         child: _loading
-            ? const Center(child: CircularProgressIndicator())
+            ? Center(child: CircularProgressIndicator(color: HiColors.brandPrimary))
             : SingleChildScrollView(
                 padding: const EdgeInsets.all(HiSpace.lg),
                 child: ConstrainedBox(
@@ -93,7 +93,7 @@ class _NotificationSettingsScreenState extends ConsumerState<NotificationSetting
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Text('Heures de silence', style: TextStyle(color: HiColors.textSecondary, fontSize: 13)),
+                      Text('Heures de silence', style: HiType.overline.copyWith(color: HiColors.textSecondary)),
                       const SizedBox(height: 8),
                       Row(
                         children: [
@@ -106,22 +106,22 @@ class _NotificationSettingsScreenState extends ConsumerState<NotificationSetting
                       Row(
                         children: [
                           Expanded(
-                            child: Text('Maximum par jour', style: TextStyle(color: HiColors.textPrimary)),
+                            child: Text('Maximum par jour', style: HiType.body.copyWith(color: HiColors.textPrimary)),
                           ),
                           IconButton(
-                            icon: Icon(Icons.remove_circle_outline, color: HiColors.textSecondary),
+                            icon: Icon(Icons.remove_circle_outline_rounded, color: HiColors.textSecondary),
                             onPressed: _dailyCap > 0 ? () => setState(() => _dailyCap--) : null,
                           ),
-                          Text('$_dailyCap', style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
+                          Text('$_dailyCap', style: HiType.numericM.copyWith(color: HiColors.textPrimary)),
                           IconButton(
-                            icon: Icon(Icons.add_circle_outline, color: HiColors.textSecondary),
+                            icon: Icon(Icons.add_circle_outline_rounded, color: HiColors.textSecondary),
                             onPressed: _dailyCap < 10 ? () => setState(() => _dailyCap++) : null,
                           ),
                         ],
                       ),
                       Divider(color: HiColors.strokeSubtle),
                       const SizedBox(height: HiSpace.sm),
-                      Text('Types de notifications', style: TextStyle(color: HiColors.textSecondary, fontSize: 13)),
+                      Text('Types de notifications', style: HiType.overline.copyWith(color: HiColors.textSecondary)),
                       const SizedBox(height: HiSpace.sm),
                       ..._triggers.map(_triggerRow),
                       const SizedBox(height: HiSpace.lg),
@@ -140,7 +140,7 @@ class _NotificationSettingsScreenState extends ConsumerState<NotificationSetting
       borderRadius: BorderRadius.circular(HiRadius.md),
       child: InputDecorator(
         decoration: InputDecoration(labelText: label),
-        child: Text(value, style: TextStyle(color: HiColors.textPrimary)),
+        child: Text(value, style: HiType.body.copyWith(color: HiColors.textPrimary)),
       ),
     );
   }
@@ -151,9 +151,9 @@ class _NotificationSettingsScreenState extends ConsumerState<NotificationSetting
       contentPadding: EdgeInsets.zero,
       activeThumbColor: HiColors.brandPrimary,
       value: _enabled(key),
-      title: Text(t['title']?.toString() ?? key, style: TextStyle(color: HiColors.textPrimary, fontSize: 14)),
+      title: Text(t['title']?.toString() ?? key, style: HiType.body.copyWith(color: HiColors.textPrimary)),
       subtitle: Text(t['body']?.toString() ?? '',
-          maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
+          maxLines: 2, overflow: TextOverflow.ellipsis, style: HiType.caption.copyWith(color: HiColors.textTertiary)),
       onChanged: (v) => setState(() => _prefs[key] = v),
     );
   }

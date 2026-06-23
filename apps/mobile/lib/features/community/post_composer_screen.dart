@@ -78,7 +78,7 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
             if (_perfMode) ...[
               _perfPicker(),
               const SizedBox(height: HiSpace.md),
-              Text('Légende (option)', style: TextStyle(color: HiColors.textSecondary, fontSize: 13)),
+              Text('Légende (option)', style: HiType.caption.copyWith(color: HiColors.textSecondary)),
               const SizedBox(height: 6),
             ],
             TextField(
@@ -115,8 +115,8 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
             borderRadius: BorderRadius.circular(HiRadius.pill),
           ),
           child: Text(label,
-              style: TextStyle(
-                  color: active ? HiColors.textOnBrand : HiColors.textSecondary, fontWeight: FontWeight.w700)),
+              style: HiType.bodyStrong.copyWith(
+                  color: active ? HiColors.textOnBrand : HiColors.textSecondary)),
         ),
       ),
     );
@@ -124,7 +124,9 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
 
   Widget _perfPicker() {
     if (_results == null) {
-      return const Padding(padding: EdgeInsets.all(16), child: Center(child: CircularProgressIndicator()));
+      return Padding(
+          padding: const EdgeInsets.all(16),
+          child: Center(child: CircularProgressIndicator(color: HiColors.brandPrimary)));
     }
     if (_results!.isEmpty) {
       return Container(
@@ -135,13 +137,13 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
           border: Border.all(color: HiColors.strokeSubtle),
         ),
         child: Text('Logue d\'abord une séance pour pouvoir partager une perf.',
-            style: TextStyle(color: HiColors.textTertiary)),
+            style: HiType.body.copyWith(color: HiColors.textTertiary)),
       );
     }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Choisis la perf à partager', style: TextStyle(color: HiColors.textSecondary, fontSize: 13)),
+        Text('Choisis la perf à partager', style: HiType.caption.copyWith(color: HiColors.textSecondary)),
         const SizedBox(height: 6),
         ..._results!.take(20).map((r) {
           final sel = _selected?.id == r.id;
@@ -159,12 +161,12 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
                 Expanded(
                   child: Text(r.wodName,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
+                      style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
                 ),
                 Text(formatWodResult(r.rawResult, r.scoreType),
-                    style: TextStyle(color: HiColors.brandPrimary, fontWeight: FontWeight.w800)),
+                    style: HiType.numericM.copyWith(color: HiColors.brandPrimary)),
                 if (r.subScore != null)
-                  Text('  ${r.subScore} pts', style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
+                  Text('  ${r.subScore} pts', style: HiType.caption.copyWith(color: HiColors.textTertiary)),
               ]),
             ),
           );

@@ -50,12 +50,12 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: HiColors.bgElevated,
-        title: Text('Supprimer cette séance ?', style: TextStyle(color: HiColors.textPrimary)),
+        title: Text('Supprimer cette séance ?', style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
         content: Text('${_name(r.wodId)} · ${_date(r.performedAt)}\nTon Index sera recalculé.',
-            style: TextStyle(color: HiColors.textSecondary)),
+            style: HiType.body.copyWith(color: HiColors.textSecondary)),
         actions: [
           TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Annuler')),
-          TextButton(onPressed: () => Navigator.of(context).pop(true), child: Text('Supprimer', style: TextStyle(color: HiColors.error))),
+          TextButton(onPressed: () => Navigator.of(context).pop(true), child: Text('Supprimer', style: HiType.button.copyWith(color: HiColors.error))),
         ],
       ),
     );
@@ -79,10 +79,10 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
           future: _future,
           builder: (context, snap) {
             if (snap.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
+              return Center(child: CircularProgressIndicator(color: HiColors.brandPrimary));
             }
             if (snap.hasError) {
-              return Center(child: Text('${snap.error}', style: TextStyle(color: HiColors.error)));
+              return Center(child: Text('${snap.error}', style: HiType.body.copyWith(color: HiColors.error)));
             }
             final items = snap.data!;
             if (items.isEmpty) {
@@ -90,7 +90,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                 child: Padding(
                   padding: const EdgeInsets.all(HiSpace.lg),
                   child: Text('Aucune séance loggée pour l’instant.',
-                      textAlign: TextAlign.center, style: TextStyle(color: HiColors.textTertiary)),
+                      textAlign: TextAlign.center, style: HiType.body.copyWith(color: HiColors.textTertiary)),
                 ),
               );
             }
@@ -123,10 +123,10 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(_name(r.wodId), style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
+                Text(_name(r.wodId), style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
                 const SizedBox(height: 2),
                 Text('${_formatResult(r)} · ${_date(r.performedAt)}',
-                    style: TextStyle(color: HiColors.textSecondary, fontSize: 13)),
+                    style: HiType.caption.copyWith(color: HiColors.textSecondary)),
               ],
             ),
           ),
@@ -138,11 +138,11 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                 borderRadius: BorderRadius.circular(HiRadius.pill),
               ),
               child: Text('${r.subScore}',
-                  style: TextStyle(color: HiColors.brandPrimary, fontWeight: FontWeight.w800)),
+                  style: HiType.numericM.copyWith(color: HiColors.brandPrimary)),
             ),
           IconButton(
             tooltip: 'Supprimer',
-            icon: Icon(Icons.delete_outline, color: HiColors.textTertiary, size: 20),
+            icon: Icon(Icons.delete_outline_rounded, color: HiColors.textTertiary, size: 20),
             onPressed: () => _delete(r),
           ),
           ],

@@ -39,14 +39,14 @@ class ChallengeBanner extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('DÉFI DE LA SEMAINE · ${c.theme.toUpperCase()}',
-                          style: TextStyle(color: HiColors.textOnBrand.withValues(alpha: 0.9), fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 0.5)),
+                          style: HiType.overline.copyWith(color: HiColors.textOnBrand.withValues(alpha: 0.9))),
                       const SizedBox(height: 2),
                       Text(c.wodName,
-                          style: TextStyle(color: HiColors.textOnBrand, fontSize: 17, fontWeight: FontWeight.w900)),
+                          style: HiType.titleM.copyWith(color: HiColors.textOnBrand, fontWeight: FontWeight.w900)),
                     ],
                   ),
                 ),
-                Icon(Icons.chevron_right, color: HiColors.textOnBrand),
+                Icon(Icons.chevron_right_rounded, color: HiColors.textOnBrand),
               ],
             ),
           ),
@@ -104,9 +104,9 @@ class _ChallengeScreenState extends ConsumerState<ChallengeScreen> {
           future: _challenge,
           builder: (context, snap) {
             if (snap.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
+              return Center(child: CircularProgressIndicator(color: HiColors.brandPrimary));
             }
-            if (snap.hasError) return Center(child: Text('${snap.error}', style: TextStyle(color: HiColors.error)));
+            if (snap.hasError) return Center(child: Text('${snap.error}', style: HiType.body.copyWith(color: HiColors.error)));
             final c = snap.data!;
             return ListView(
               padding: const EdgeInsets.fromLTRB(HiSpace.lg, HiSpace.lg, HiSpace.lg, 96),
@@ -121,7 +121,7 @@ class _ChallengeScreenState extends ConsumerState<ChallengeScreen> {
                 const SizedBox(height: HiSpace.sm),
                 OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(46)),
-                  icon: const Icon(Icons.info_outline, size: 18),
+                  icon: const Icon(Icons.info_outline_rounded, size: 18),
                   label: const Text('Paliers, références pro & détails'),
                   onPressed: () => Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => WodDetailScreen(wodId: c.wodId, wodName: c.wodName)),
@@ -130,7 +130,7 @@ class _ChallengeScreenState extends ConsumerState<ChallengeScreen> {
                 const SizedBox(height: HiSpace.lg),
                 Row(children: [_tab('Hommes', 'male'), const SizedBox(width: 8), _tab('Femmes', 'female')]),
                 const SizedBox(height: HiSpace.md),
-                Text('Classement du défi', style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 16)),
+                Text('Classement du défi', style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
                 const SizedBox(height: HiSpace.sm),
                 _boardSection(c.scoreType),
               ],
@@ -156,22 +156,22 @@ class _ChallengeScreenState extends ConsumerState<ChallengeScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(HiRadius.pill)),
               child: Text(c.theme.toUpperCase(),
-                  style: TextStyle(color: HiColors.textOnBrand, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1)),
+                  style: HiType.overline.copyWith(color: HiColors.textOnBrand)),
             ),
             const Spacer(),
-            Text(_countdown(c.endsAt), style: TextStyle(color: HiColors.textOnBrand, fontSize: 12, fontWeight: FontWeight.w700)),
+            Text(_countdown(c.endsAt), style: HiType.caption.copyWith(color: HiColors.textOnBrand, fontWeight: FontWeight.w700)),
           ]),
           const SizedBox(height: HiSpace.md),
           Text(c.wodName,
-              style: TextStyle(color: HiColors.textOnBrand, fontSize: 28, fontWeight: FontWeight.w900, height: 1.1)),
+              style: HiType.titleL.copyWith(color: HiColors.textOnBrand, fontSize: 28, fontWeight: FontWeight.w900, height: 1.1)),
           if (c.prescription != null) ...[
             const SizedBox(height: 4),
             Text(c.prescription!.format,
-                style: TextStyle(color: HiColors.textOnBrand.withValues(alpha: 0.9), fontSize: 14, fontWeight: FontWeight.w600)),
+                style: HiType.body.copyWith(color: HiColors.textOnBrand.withValues(alpha: 0.9), fontWeight: FontWeight.w600)),
           ],
           const SizedBox(height: HiSpace.sm),
           Text('Tout le monde se mesure sur cette séance cette semaine. Donne tout 💪',
-              style: TextStyle(color: HiColors.textOnBrand.withValues(alpha: 0.85), fontSize: 13)),
+              style: HiType.caption.copyWith(color: HiColors.textOnBrand.withValues(alpha: 0.85))),
         ],
       ),
     );
@@ -189,10 +189,10 @@ class _ChallengeScreenState extends ConsumerState<ChallengeScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('Ce qu\'il faut faire',
-              style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 15)),
+              style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
           if (p.summary != null && p.summary!.isNotEmpty) ...[
             const SizedBox(height: 6),
-            Text(p.summary!, style: TextStyle(color: HiColors.textSecondary, fontSize: 13, height: 1.4)),
+            Text(p.summary!, style: HiType.caption.copyWith(color: HiColors.textSecondary, height: 1.4)),
           ],
           const SizedBox(height: HiSpace.sm),
           ...p.blocks.map((b) => Padding(
@@ -201,11 +201,11 @@ class _ChallengeScreenState extends ConsumerState<ChallengeScreen> {
                   SizedBox(
                     width: 64,
                     child: Text(b.reps,
-                        style: TextStyle(color: HiColors.brandPrimary, fontSize: 14, fontWeight: FontWeight.w800)),
+                        style: HiType.bodyStrong.copyWith(color: HiColors.brandPrimary, fontWeight: FontWeight.w800)),
                   ),
                   Expanded(
                     child: Text(b.detail != null && b.detail!.isNotEmpty ? '${b.movement} · ${b.detail}' : b.movement,
-                        style: TextStyle(color: HiColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600)),
+                        style: HiType.body.copyWith(color: HiColors.textPrimary, fontWeight: FontWeight.w600)),
                   ),
                 ]),
               )),
@@ -213,7 +213,7 @@ class _ChallengeScreenState extends ConsumerState<ChallengeScreen> {
           Row(children: [
             Icon(Icons.flag_outlined, size: 14, color: HiColors.brandPrimary),
             const SizedBox(width: 6),
-            Expanded(child: Text(p.scoringNote, style: TextStyle(color: HiColors.textTertiary, fontSize: 12))),
+            Expanded(child: Text(p.scoringNote, style: HiType.caption.copyWith(color: HiColors.textTertiary))),
           ]),
         ],
       ),
@@ -237,7 +237,7 @@ class _ChallengeScreenState extends ConsumerState<ChallengeScreen> {
             borderRadius: BorderRadius.circular(HiRadius.pill),
           ),
           child: Text(label,
-              style: TextStyle(color: active ? HiColors.textOnBrand : HiColors.textSecondary, fontWeight: FontWeight.w700)),
+              style: HiType.label.copyWith(color: active ? HiColors.textOnBrand : HiColors.textSecondary, fontWeight: FontWeight.w700)),
         ),
       ),
     );
@@ -248,12 +248,12 @@ class _ChallengeScreenState extends ConsumerState<ChallengeScreen> {
       future: _board,
       builder: (context, snap) {
         if (snap.connectionState == ConnectionState.waiting) {
-          return const Padding(padding: EdgeInsets.all(24), child: Center(child: CircularProgressIndicator()));
+          return Padding(padding: const EdgeInsets.all(24), child: Center(child: CircularProgressIndicator(color: HiColors.brandPrimary)));
         }
-        if (snap.hasError) return Text('${snap.error}', style: TextStyle(color: HiColors.error));
+        if (snap.hasError) return Text('${snap.error}', style: HiType.body.copyWith(color: HiColors.error));
         final entries = snap.data!;
         if (entries.isEmpty) {
-          return Text('Sois le premier à relever le défi cette semaine 🔥', style: TextStyle(color: HiColors.textTertiary));
+          return Text('Sois le premier à relever le défi cette semaine 🔥', style: HiType.body.copyWith(color: HiColors.textTertiary));
         }
         return Column(
           children: entries.map((e) {
@@ -264,18 +264,18 @@ class _ChallengeScreenState extends ConsumerState<ChallengeScreen> {
                 SizedBox(
                   width: 32,
                   child: Text('#${e.position}',
-                      style: TextStyle(
+                      style: HiType.label.copyWith(
                           color: e.position <= 3 ? HiColors.brandPrimary : HiColors.textTertiary, fontWeight: FontWeight.w700)),
                 ),
                 Expanded(
                   child: Text(e.isMe ? '${e.displayName} (toi)' : e.displayName,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(color: HiColors.textPrimary, fontWeight: e.isMe ? FontWeight.w800 : FontWeight.w500)),
+                      style: HiType.body.copyWith(color: HiColors.textPrimary, fontWeight: e.isMe ? FontWeight.w800 : FontWeight.w500)),
                 ),
                 RankBadge(rank: e.rank, fontSize: 10),
                 const SizedBox(width: HiSpace.sm),
                 Text(formatWodResult(e.rawResult, scoreType),
-                    style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
+                    style: HiType.bodyStrong.copyWith(color: HiColors.textPrimary)),
               ]),
             );
           }).toList(),

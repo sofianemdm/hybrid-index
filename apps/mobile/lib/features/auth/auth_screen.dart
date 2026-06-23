@@ -39,6 +39,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   }
 
   Future<void> _submit() async {
+    final t = AppLocalizations.of(context);
     FocusScope.of(context).unfocus();
     if (_register && _dob == null) {
       _toast('Renseigne ta date de naissance.');
@@ -62,7 +63,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       }
       // AuthGate prend le relais (onboarding ou home).
     } on ApiException catch (e) {
-      _toast(e.code == 'AGE_RESTRICTED' ? AppLocalizations.of(context).ageRestricted : e.message);
+      _toast(e.code == 'AGE_RESTRICTED' ? t.ageRestricted : e.message);
     } catch (e) {
       _toast('$e');
     } finally {
@@ -76,6 +77,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   }
 
   Future<void> _handleGoogle(String idToken) async {
+    final t = AppLocalizations.of(context);
     try {
       await ref.read(sessionProvider.notifier).loginWithGoogle(idToken);
       // AuthGate prend le relais (onboarding ou home).
@@ -84,7 +86,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         if (!mounted) return;
         Navigator.of(context).push(MaterialPageRoute(builder: (_) => GoogleProfileScreen(idToken: idToken)));
       } else {
-        _toast(e.code == 'AGE_RESTRICTED' ? AppLocalizations.of(context).ageRestricted : e.message);
+        _toast(e.code == 'AGE_RESTRICTED' ? t.ageRestricted : e.message);
       }
     } catch (e) {
       _toast('$e');

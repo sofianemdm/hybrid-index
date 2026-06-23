@@ -69,9 +69,9 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
           future: _detail,
           builder: (context, snap) {
             if (snap.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
+              return Center(child: CircularProgressIndicator(color: HiColors.brandPrimary));
             }
-            if (snap.hasError) return Center(child: Text('${snap.error}', style: TextStyle(color: HiColors.error)));
+            if (snap.hasError) return Center(child: Text('${snap.error}', style: HiType.body.copyWith(color: HiColors.error)));
             final d = snap.data!;
             final challenge = _challengeCard(d);
             return ListView(
@@ -89,24 +89,24 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
                               borderRadius: BorderRadius.circular(HiRadius.pill),
                             ),
                             child: Text(HiLabels.attribute(a),
-                                style: TextStyle(color: HiColors.attribute(a), fontSize: 11, fontWeight: FontWeight.w600)),
+                                style: HiType.caption.copyWith(color: HiColors.attribute(a), fontWeight: FontWeight.w600)),
                           ))
                       .toList(),
                 ),
                 const SizedBox(height: HiSpace.lg),
-                Text('Temps de référence', style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 16)),
+                Text('Temps de référence', style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
                 const SizedBox(height: 2),
-                Text('Débutant · intermédiaire · champion, selon le sexe', style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
+                Text('Débutant · intermédiaire · champion, selon le sexe', style: HiType.caption.copyWith(color: HiColors.textTertiary)),
                 const SizedBox(height: HiSpace.sm),
                 _sexToggle(),
                 const SizedBox(height: HiSpace.md),
-                if (d.levels(_sex) != null) _tierCard(d) else Text('Paliers non disponibles pour cette séance.', style: TextStyle(color: HiColors.textTertiary)),
+                if (d.levels(_sex) != null) _tierCard(d) else Text('Paliers non disponibles pour cette séance.', style: HiType.body.copyWith(color: HiColors.textTertiary)),
                 const SizedBox(height: HiSpace.lg),
                 if (d.myHistory.isNotEmpty) ...[
                   _mesPrestations(d),
                   const SizedBox(height: HiSpace.lg),
                 ],
-                Text('Classement', style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 16)),
+                Text('Classement', style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
                 if (widget.clubId != null) ...[
                   const SizedBox(height: HiSpace.sm),
                   _clubScopeToggle(),
@@ -150,7 +150,7 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
             borderRadius: BorderRadius.circular(HiRadius.pill),
           ),
           child: Text(label,
-              style: TextStyle(color: active ? HiColors.textOnBrand : HiColors.textSecondary, fontWeight: FontWeight.w700)),
+              style: HiType.body.copyWith(color: active ? HiColors.textOnBrand : HiColors.textSecondary, fontWeight: FontWeight.w700)),
         ),
       ),
     );
@@ -183,11 +183,11 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('Toi : ', style: TextStyle(color: HiColors.textSecondary)),
+                  Text('Toi : ', style: HiType.body.copyWith(color: HiColors.textSecondary)),
                   Text(formatWodResult(d.myBestRaw!, d.scoreType),
-                      style: TextStyle(color: HiColors.brandPrimary, fontWeight: FontWeight.w800)),
+                      style: HiType.body.copyWith(color: HiColors.brandPrimary, fontWeight: FontWeight.w800)),
                   if (d.myBestSubScore != null)
-                    Text('  ·  ${d.myBestSubScore} pts', style: TextStyle(color: HiColors.textTertiary)),
+                    Text('  ·  ${d.myBestSubScore} pts', style: HiType.body.copyWith(color: HiColors.textTertiary)),
                 ],
               ),
             ),
@@ -202,9 +202,9 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         children: [
-          Expanded(child: Text(label, style: TextStyle(color: color, fontWeight: FontWeight.w600))),
+          Expanded(child: Text(label, style: HiType.body.copyWith(color: color, fontWeight: FontWeight.w600))),
           Text(formatWodResult(value, scoreType),
-              style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
+              style: HiType.body.copyWith(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
         ],
       ),
     );
@@ -233,8 +233,7 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('Le défi',
-              style: TextStyle(
-                  color: HiColors.textPrimary, fontSize: 18, fontWeight: FontWeight.w800, letterSpacing: -0.2)),
+              style: HiType.titleM.copyWith(color: HiColors.textPrimary, fontSize: 18, fontWeight: FontWeight.w800)),
           const SizedBox(height: HiSpace.sm),
           Wrap(
             spacing: HiSpace.sm,
@@ -245,7 +244,7 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(gradient: HiColors.brandGradient, borderRadius: BorderRadius.circular(HiRadius.pill)),
                 child: Text(p.format,
-                    style: TextStyle(color: HiColors.textOnBrand, fontSize: 12, fontWeight: FontWeight.w700)),
+                    style: HiType.caption.copyWith(color: HiColors.textOnBrand, fontWeight: FontWeight.w700)),
               ),
               if (p.timeCapSec != null)
                 Container(
@@ -255,25 +254,24 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
                     borderRadius: BorderRadius.circular(HiRadius.pill),
                   ),
                   child: Row(mainAxisSize: MainAxisSize.min, children: [
-                    Icon(Icons.timer_outlined, size: 13, color: HiColors.textSecondary),
+                    Icon(Icons.timer_rounded, size: 13, color: HiColors.textSecondary),
                     const SizedBox(width: 4),
                     Text('Cap ${_fmtCap(p.timeCapSec!)}',
-                        style: TextStyle(color: HiColors.textSecondary, fontSize: 12, fontWeight: FontWeight.w600)),
+                        style: HiType.caption.copyWith(color: HiColors.textSecondary, fontWeight: FontWeight.w600)),
                   ]),
                 ),
             ],
           ),
           if (p.summary != null && p.summary!.isNotEmpty) ...[
             const SizedBox(height: HiSpace.md),
-            Text(p.summary!, style: TextStyle(color: HiColors.textSecondary, fontSize: 14, height: 1.4)),
+            Text(p.summary!, style: HiType.body.copyWith(color: HiColors.textSecondary)),
           ],
           const SizedBox(height: HiSpace.md),
           ...p.blocks.map(_blockRow),
           if (p.weights.isNotEmpty) ...[
             Divider(color: HiColors.strokeSubtle, height: HiSpace.lg),
             Text('CHARGES',
-                style: TextStyle(
-                    color: HiColors.textTertiary, fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 0.3)),
+                style: HiType.overline.copyWith(color: HiColors.textSecondary)),
             const SizedBox(height: HiSpace.sm),
             ...p.weights.map(_weightRow),
           ],
@@ -285,11 +283,11 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
               borderRadius: BorderRadius.circular(HiRadius.sm),
             ),
             child: Row(children: [
-              Icon(Icons.flag_outlined, size: 15, color: HiColors.brandPrimary),
+              Icon(Icons.flag_rounded, size: 15, color: HiColors.brandPrimary),
               const SizedBox(width: HiSpace.sm),
               Expanded(
                 child: Text(p.scoringNote,
-                    style: TextStyle(color: HiColors.textSecondary, fontSize: 12.5, height: 1.35)),
+                    style: HiType.caption.copyWith(color: HiColors.textSecondary)),
               ),
             ]),
           ),
@@ -307,16 +305,16 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
           SizedBox(
             width: 64,
             child: Text(b.reps,
-                style: TextStyle(color: HiColors.brandPrimary, fontSize: 14, fontWeight: FontWeight.w800)),
+                style: HiType.body.copyWith(color: HiColors.brandPrimary, fontSize: 14, fontWeight: FontWeight.w800)),
           ),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(b.movement,
-                    style: TextStyle(color: HiColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600)),
+                    style: HiType.body.copyWith(color: HiColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600)),
                 if (b.detail != null && b.detail!.isNotEmpty)
-                  Text(b.detail!, style: TextStyle(color: HiColors.textTertiary, fontSize: 12, height: 1.3)),
+                  Text(b.detail!, style: HiType.caption.copyWith(color: HiColors.textTertiary)),
               ],
             ),
           ),
@@ -334,7 +332,7 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(w.movement, style: TextStyle(color: HiColors.textPrimary, fontSize: 13, fontWeight: FontWeight.w600)),
+          Text(w.movement, style: HiType.label.copyWith(color: HiColors.textPrimary, fontWeight: FontWeight.w600)),
           const SizedBox(height: 2),
           RichText(
             text: TextSpan(children: [
@@ -377,10 +375,9 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
           borderRadius: BorderRadius.circular(HiRadius.pill),
         ),
         child: Text(label,
-            style: TextStyle(
+            style: HiType.caption.copyWith(
                 color: active ? HiColors.textOnBrand : HiColors.textSecondary,
-                fontWeight: FontWeight.w700,
-                fontSize: 12)),
+                fontWeight: FontWeight.w700)),
       ),
     );
   }
@@ -406,13 +403,13 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(r.tier == 'record' ? '🌍 World record' : '⭐ Élite',
-                    style: TextStyle(color: HiColors.attrSpeed, fontWeight: FontWeight.w800)),
+                    style: HiType.body.copyWith(color: HiColors.attrSpeed, fontWeight: FontWeight.w800)),
                 if (r.athlete != null && r.athlete!.isNotEmpty)
-                  Text(r.athlete!, style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
+                  Text(r.athlete!, style: HiType.caption.copyWith(color: HiColors.textTertiary)),
               ],
             ),
           ),
-          Text(r.note, textAlign: TextAlign.right, style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
+          Text(r.note, textAlign: TextAlign.right, style: HiType.body.copyWith(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
         ],
       ),
     );
@@ -422,7 +419,7 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Mes prestations', style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 16)),
+        Text('Mes prestations', style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
         const SizedBox(height: HiSpace.sm),
         Container(
           decoration: BoxDecoration(
@@ -450,18 +447,18 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
       padding: const EdgeInsets.symmetric(horizontal: HiSpace.md, vertical: 10),
       child: Row(
         children: [
-          SizedBox(width: 70, child: Text(date, style: TextStyle(color: HiColors.textTertiary, fontSize: 12))),
+          SizedBox(width: 70, child: Text(date, style: HiType.caption.copyWith(color: HiColors.textTertiary))),
           Expanded(
             child: Text(formatWodResult(h.rawResult, scoreType),
-                style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
+                style: HiType.body.copyWith(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
           ),
           if (!h.rxCompliant)
             Padding(
               padding: const EdgeInsets.only(right: 8),
-              child: Text(widget.wodId == 'hyrox_solo' ? 'Open' : 'Scaled', style: TextStyle(color: HiColors.textTertiary, fontSize: 11)),
+              child: Text(widget.wodId == 'hyrox_solo' ? 'Open' : 'Scaled', style: HiType.caption.copyWith(color: HiColors.textTertiary)),
             ),
           if (h.subScore != null)
-            Text('${h.subScore} pts', style: TextStyle(color: HiColors.brandPrimary, fontWeight: FontWeight.w800)),
+            Text('${h.subScore} pts', style: HiType.body.copyWith(color: HiColors.brandPrimary, fontWeight: FontWeight.w800)),
         ],
       ),
     );
@@ -472,12 +469,12 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
       future: _leaderboard,
       builder: (context, snap) {
         if (snap.connectionState == ConnectionState.waiting) {
-          return const Padding(padding: EdgeInsets.all(24), child: Center(child: CircularProgressIndicator()));
+          return Padding(padding: const EdgeInsets.all(24), child: Center(child: CircularProgressIndicator(color: HiColors.brandPrimary)));
         }
-        if (snap.hasError) return Text('${snap.error}', style: TextStyle(color: HiColors.error));
+        if (snap.hasError) return Text('${snap.error}', style: HiType.body.copyWith(color: HiColors.error));
         final entries = snap.data!;
         if (entries.isEmpty) {
-          return Text('Sois le premier à poster un résultat 💪', style: TextStyle(color: HiColors.textTertiary));
+          return Text('Sois le premier à poster un résultat 💪', style: HiType.body.copyWith(color: HiColors.textTertiary));
         }
         return Column(
           children: entries.map((e) {
@@ -489,20 +486,20 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
                   SizedBox(
                     width: 32,
                     child: Text('#${e.position}',
-                        style: TextStyle(
+                        style: HiType.body.copyWith(
                             color: e.position <= 3 ? HiColors.brandPrimary : HiColors.textTertiary,
                             fontWeight: FontWeight.w700)),
                   ),
                   Expanded(
                     child: Text(e.isMe ? '${e.displayName} (toi)' : e.displayName,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
+                        style: HiType.body.copyWith(
                             color: HiColors.textPrimary, fontWeight: e.isMe ? FontWeight.w800 : FontWeight.w500)),
                   ),
                   RankBadge(rank: e.rank, fontSize: 10),
                   const SizedBox(width: HiSpace.sm),
                   Text(formatWodResult(e.rawResult, scoreType),
-                      style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
+                      style: HiType.body.copyWith(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
                 ],
               ),
             );

@@ -187,7 +187,7 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 if (_isFreeRun) ...[
-                  Text('Distance parcourue (mètres)', style: TextStyle(color: HiColors.textSecondary)),
+                  Text('Distance parcourue (mètres)', style: HiType.body.copyWith(color: HiColors.textSecondary)),
                   const SizedBox(height: 8),
                   _num(_distance, 'ex. 5000'),
                   const SizedBox(height: HiSpace.lg),
@@ -195,12 +195,12 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
                 Text(_isFreeRun
                     ? 'Ton temps'
                     : 'Ton résultat (${_isTime ? 'temps' : widget.scoreType == 'load' ? 'kg' : widget.scoreType == 'distance' ? 'mètres' : 'reps'})',
-                    style: TextStyle(color: HiColors.textSecondary)),
+                    style: HiType.body.copyWith(color: HiColors.textSecondary)),
                 const SizedBox(height: 8),
                 if (_isTime)
                   Row(children: [
                     Expanded(child: _num(_min, 'min')),
-                    Padding(padding: const EdgeInsets.symmetric(horizontal: 8), child: Text(':', style: TextStyle(color: HiColors.textSecondary, fontSize: 20))),
+                    Padding(padding: const EdgeInsets.symmetric(horizontal: 8), child: Text(':', style: HiType.numericM.copyWith(color: HiColors.textSecondary))),
                     Expanded(child: _num(_sec, 'sec')),
                   ])
                 else
@@ -208,7 +208,7 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
                 // Échelle Rx/Scaled : uniquement pour les WODs à charge ; Pro/Open pour HYROX solo.
                 if (_isHyrox || _hasScale) ...[
                   const SizedBox(height: HiSpace.lg),
-                  Text(_isHyrox ? 'Catégorie' : 'Échelle', style: TextStyle(color: HiColors.textSecondary)),
+                  Text(_isHyrox ? 'Catégorie' : 'Échelle', style: HiType.body.copyWith(color: HiColors.textSecondary)),
                   const SizedBox(height: 8),
                   Row(children: [
                     _scaleChip(_isHyrox ? 'Pro' : 'Rx (prescrit)', true),
@@ -218,7 +218,7 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
                   if (_isHyrox || pref != null) ...[
                     const SizedBox(height: HiSpace.sm),
                     Text(_isHyrox ? 'Les classements Pro et Open sont séparés.' : 'Le classement Rx et Scaled sont séparés.',
-                        style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
+                        style: HiType.caption.copyWith(color: HiColors.textTertiary)),
                   ],
                 ],
                 const SizedBox(height: HiSpace.xl),
@@ -245,7 +245,7 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
             borderRadius: BorderRadius.circular(HiRadius.pill),
           ),
           child: Text(label,
-              style: TextStyle(color: active ? HiColors.textOnBrand : HiColors.textSecondary, fontWeight: FontWeight.w600)),
+              style: HiType.body.copyWith(color: active ? HiColors.textOnBrand : HiColors.textSecondary, fontWeight: FontWeight.w600)),
         ),
       ),
     );

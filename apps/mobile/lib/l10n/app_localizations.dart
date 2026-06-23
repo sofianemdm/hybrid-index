@@ -223,6 +223,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You must be at least 13.'**
   String get ageRestricted;
+
+  /// No description provided for @commonContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get commonContinue;
+
+  /// No description provided for @commonLogout.
+  ///
+  /// In en, this message translates to:
+  /// **'Log out'**
+  String get commonLogout;
+
+  /// No description provided for @onbAvatarTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create your avatar'**
+  String get onbAvatarTitle;
+
+  /// No description provided for @onbAvatarSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Personalize it (you can change it anytime in settings).'**
+  String get onbAvatarSubtitle;
+
+  /// No description provided for @onbRevealTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reveal your Index'**
+  String get onbRevealTitle;
+
+  /// No description provided for @onbRevealSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'One effort is enough. Add more for a more precise Index.'**
+  String get onbRevealSubtitle;
+
+  /// No description provided for @onbMaxPushups.
+  ///
+  /// In en, this message translates to:
+  /// **'Max strict push-ups (one set)'**
+  String get onbMaxPushups;
+
+  /// No description provided for @onbMaxSquats.
+  ///
+  /// In en, this message translates to:
+  /// **'Max bodyweight squats (one set)'**
+  String get onbMaxSquats;
+
+  /// No description provided for @onbRevealCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Reveal my HYBRID INDEX'**
+  String get onbRevealCta;
+
+  /// No description provided for @onbRunTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Run (enter your distance)'**
+  String get onbRunTitle;
+
+  /// No description provided for @onbRunHint.
+  ///
+  /// In en, this message translates to:
+  /// **'E.g. 3 km in 15:00. We compute your pace and adjust it to any distance.'**
+  String get onbRunHint;
+
+  /// No description provided for @onbEstimatedIndexHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Your estimated Index will appear here.'**
+  String get onbEstimatedIndexHere;
+
+  /// No description provided for @onbEstimatedIndexLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'ESTIMATED INDEX'**
+  String get onbEstimatedIndexLabel;
+
+  /// No description provided for @onbNeedEffort.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a run, push-ups or squats.'**
+  String get onbNeedEffort;
+
+  /// No description provided for @onbRunNeedsBoth.
+  ///
+  /// In en, this message translates to:
+  /// **'Distance (0.4–42 km) and time required for the run.'**
+  String get onbRunNeedsBoth;
 }
 
 class _AppLocalizationsDelegate

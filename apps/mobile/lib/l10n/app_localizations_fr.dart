@@ -71,4 +71,53 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get ageRestricted => 'Tu dois avoir au moins 13 ans.';
+
+  @override
+  String get commonContinue => 'Continuer';
+
+  @override
+  String get commonLogout => 'Déconnexion';
+
+  @override
+  String get onbAvatarTitle => 'Crée ton avatar';
+
+  @override
+  String get onbAvatarSubtitle =>
+      'Personnalise-le (modifiable à tout moment dans les paramètres).';
+
+  @override
+  String get onbRevealTitle => 'Révèle ton Index';
+
+  @override
+  String get onbRevealSubtitle =>
+      'Un effort suffit. Ajoutes-en plus pour un Index plus précis.';
+
+  @override
+  String get onbMaxPushups => 'Max pompes strictes (une série)';
+
+  @override
+  String get onbMaxSquats => 'Max squats à vide (une série)';
+
+  @override
+  String get onbRevealCta => 'Révéler mon HYBRID INDEX';
+
+  @override
+  String get onbRunTitle => 'Course (saisis ta distance)';
+
+  @override
+  String get onbRunHint =>
+      'Ex. 3 km en 15:00. On calcule ton allure et on l’ajuste à toutes distances.';
+
+  @override
+  String get onbEstimatedIndexHere => 'Ton Index estimé s’affichera ici.';
+
+  @override
+  String get onbEstimatedIndexLabel => 'INDEX ESTIMÉ';
+
+  @override
+  String get onbNeedEffort => 'Ajoute une course, des pompes ou des squats.';
+
+  @override
+  String get onbRunNeedsBoth =>
+      'Distance (0,4–42 km) et temps requis pour la course.';
 }

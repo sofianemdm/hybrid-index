@@ -20,9 +20,9 @@ class OtherWorkoutsScreen extends ConsumerWidget {
           future: ref.read(apiClientProvider).wodsCatalog(),
           builder: (context, snap) {
             if (snap.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
+              return Center(child: CircularProgressIndicator(color: HiColors.brandPrimary));
             }
-            if (snap.hasError) return Center(child: Text('${snap.error}', style: TextStyle(color: HiColors.error)));
+            if (snap.hasError) return Center(child: Text('${snap.error}', style: HiType.body.copyWith(color: HiColors.error)));
             final others = (snap.data ?? []).where((w) => w.isOther).toList();
             final sans = others.where((w) => !w.requiresEquipment).toList();
             final avec = others.where((w) => w.requiresEquipment).toList();
@@ -32,7 +32,7 @@ class OtherWorkoutsScreen extends ConsumerWidget {
               children: [
                 Text('De grandes épreuves réelles (HYROX, WODs de compétition, courses). '
                     'Ouvre-en une pour voir les détails et les records — et enregistre ton temps.',
-                    style: TextStyle(color: HiColors.textSecondary, fontSize: 13)),
+                    style: HiType.caption.copyWith(color: HiColors.textSecondary)),
                 const SizedBox(height: HiSpace.lg),
                 if (sans.isNotEmpty) ...[
                   _section('Sans matériel'),
@@ -49,7 +49,7 @@ class OtherWorkoutsScreen extends ConsumerWidget {
                   Padding(
                     padding: const EdgeInsets.only(bottom: HiSpace.sm),
                     child: Text('Aucune séance créée par les utilisateurs pour l\'instant. Crée la tienne via « Construire une séance ».',
-                        style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
+                        style: HiType.caption.copyWith(color: HiColors.textTertiary)),
                   )
                 else
                   ...community.map((w) => _tile(context, w)),
@@ -63,14 +63,14 @@ class OtherWorkoutsScreen extends ConsumerWidget {
 
   Widget _section(String t) => Padding(
         padding: const EdgeInsets.only(bottom: HiSpace.sm),
-        child: Text(t, style: TextStyle(color: HiColors.textTertiary, fontSize: 13, fontWeight: FontWeight.w700, letterSpacing: 0.3)),
+        child: Text(t, style: HiType.label.copyWith(color: HiColors.textTertiary, fontWeight: FontWeight.w700)),
       );
 
   Widget _tile(BuildContext context, WodCatalogEntry w) => Card(
         color: HiColors.bgElevated,
         child: ListTile(
-          title: Text(w.name, style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
-          trailing: Icon(Icons.chevron_right, color: HiColors.textTertiary),
+          title: Text(w.name, style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
+          trailing: Icon(Icons.chevron_right_rounded, color: HiColors.textTertiary),
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute(builder: (_) => WodDetailScreen(wodId: w.id, wodName: w.name)),
           ),

@@ -37,7 +37,7 @@ class AvatarCustomizer extends StatelessWidget {
 
   Widget _label(String t) => Padding(
         padding: const EdgeInsets.only(bottom: HiSpace.sm),
-        child: Text(t, style: TextStyle(color: HiColors.textSecondary, fontSize: 13)),
+        child: Text(t, style: HiType.overline.copyWith(color: HiColors.textSecondary)),
       );
 
   Widget _swatches(List<Color> colors, int selected, ValueChanged<int> onTap) {

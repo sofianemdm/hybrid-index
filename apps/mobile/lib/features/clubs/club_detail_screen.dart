@@ -49,12 +49,12 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> {
       builder: (_) => AlertDialog(
         backgroundColor: HiColors.bgElevated,
         title: Text(d.isOwner && d.memberCount > 1 ? 'Tu es le créateur' : 'Quitter le club ?',
-            style: TextStyle(color: HiColors.textPrimary)),
+            style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
         content: Text(
           d.isOwner && d.memberCount > 1
               ? 'Transfère d\'abord le club ou attends d\'être seul·e pour le quitter.'
               : 'Tu pourras le rejoindre à nouveau plus tard.',
-          style: TextStyle(color: HiColors.textSecondary),
+          style: HiType.body.copyWith(color: HiColors.textSecondary),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Annuler')),
@@ -91,11 +91,11 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> {
             Padding(
               padding: const EdgeInsets.all(HiSpace.md),
               child: Text('Classement du club par séance',
-                  style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 16)),
+                  style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
             ),
             ...wods.map((w) => ListTile(
                   leading: Text(w.isFlagship ? '⭐' : '•', style: const TextStyle(fontSize: 16)),
-                  title: Text(w.name, style: TextStyle(color: HiColors.textPrimary)),
+                  title: Text(w.name, style: HiType.body.copyWith(color: HiColors.textPrimary)),
                   onTap: () => Navigator.of(context).pop(w),
                 )),
           ],
@@ -117,28 +117,28 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> {
           future: _future,
           builder: (context, snap) {
             if (snap.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
+              return Center(child: CircularProgressIndicator(color: HiColors.brandPrimary));
             }
-            if (snap.hasError) return Center(child: Text('${snap.error}', style: TextStyle(color: HiColors.error)));
+            if (snap.hasError) return Center(child: Text('${snap.error}', style: HiType.body.copyWith(color: HiColors.error)));
             final d = snap.data!;
             return ListView(
               padding: const EdgeInsets.fromLTRB(HiSpace.lg, 0, HiSpace.lg, 96),
               children: [
                 Row(children: [
-                  Icon(Icons.groups, color: HiColors.brandPrimary, size: 30),
+                  Icon(Icons.groups_rounded, color: HiColors.brandPrimary, size: 30),
                   const SizedBox(width: HiSpace.sm),
                   Expanded(
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       Text(d.name,
-                          style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w800, fontSize: 20)),
+                          style: HiType.titleL.copyWith(color: HiColors.textPrimary)),
                       Text('${d.memberCount} membre${d.memberCount > 1 ? 's' : ''}',
-                          style: TextStyle(color: HiColors.textTertiary, fontSize: 13)),
+                          style: HiType.caption.copyWith(color: HiColors.textTertiary)),
                     ]),
                   ),
                 ]),
                 if (d.description != null && d.description!.isNotEmpty) ...[
                   const SizedBox(height: HiSpace.sm),
-                  Text(d.description!, style: TextStyle(color: HiColors.textSecondary)),
+                  Text(d.description!, style: HiType.body.copyWith(color: HiColors.textSecondary)),
                 ],
                 const SizedBox(height: HiSpace.md),
                 if (!d.isMember)
@@ -164,14 +164,14 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> {
                   ]),
                 const SizedBox(height: HiSpace.lg),
                 Text('Classement du club (Hybrid Index)',
-                    style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 16)),
+                    style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
                 const SizedBox(height: HiSpace.sm),
                 ...d.roster.map(_rosterRow),
                 if (d.isMember) ...[
                   const SizedBox(height: HiSpace.lg),
                   TextButton(
                     onPressed: _busy ? null : () => _leave(d),
-                    child: Text('Quitter le club', style: TextStyle(color: HiColors.error)),
+                    child: Text('Quitter le club', style: HiType.button.copyWith(color: HiColors.error)),
                   ),
                 ],
               ],
@@ -189,21 +189,21 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> {
           SizedBox(
             width: 32,
             child: Text('#${e.position}',
-                style: TextStyle(
+                style: HiType.label.copyWith(
                     color: e.position <= 3 ? HiColors.brandPrimary : HiColors.textTertiary,
                     fontWeight: FontWeight.w700)),
           ),
           Expanded(
             child: Text(e.isMe ? '${e.displayName} (toi)' : e.displayName,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(color: HiColors.textPrimary, fontWeight: e.isMe ? FontWeight.w800 : FontWeight.w500)),
+                style: HiType.body.copyWith(color: HiColors.textPrimary, fontWeight: e.isMe ? FontWeight.w800 : FontWeight.w500)),
           ),
           if (e.role == 'owner')
             const Padding(padding: EdgeInsets.only(right: 6), child: Text('👑', style: TextStyle(fontSize: 13))),
           RankBadge(ovr: e.index, fontSize: 10),
           const SizedBox(width: HiSpace.sm),
           Text('${e.index}',
-              style: TextStyle(color: HiColors.brandPrimary, fontWeight: FontWeight.w800)),
+              style: HiType.numericM.copyWith(color: HiColors.brandPrimary)),
         ]),
       );
 }

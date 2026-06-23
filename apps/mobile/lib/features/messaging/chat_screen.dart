@@ -108,14 +108,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   Widget _body() {
-    if (_loading) return const Center(child: CircularProgressIndicator());
-    if (_error != null) return Center(child: Text(_error!, style: TextStyle(color: HiColors.error)));
+    if (_loading) return Center(child: CircularProgressIndicator(color: HiColors.brandPrimary));
+    if (_error != null) return Center(child: Text(_error!, style: HiType.body.copyWith(color: HiColors.error)));
     if (_messages.isEmpty) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(HiSpace.xl),
           child: Text('Démarre la conversation avec ${widget.otherName} 👋',
-              textAlign: TextAlign.center, style: TextStyle(color: HiColors.textTertiary)),
+              textAlign: TextAlign.center, style: HiType.body.copyWith(color: HiColors.textTertiary)),
         ),
       );
     }
@@ -142,7 +142,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           border: mine ? null : Border.all(color: HiColors.strokeSubtle),
         ),
         child: Text(m.body,
-            style: TextStyle(color: mine ? HiColors.textOnBrand : HiColors.textPrimary)),
+            style: HiType.body.copyWith(color: mine ? HiColors.textOnBrand : HiColors.textPrimary)),
       ),
     );
   }
@@ -182,7 +182,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           IconButton(
             icon: _sending
                 ? SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: HiColors.brandPrimary))
-                : Icon(Icons.send, color: HiColors.brandPrimary),
+                : Icon(Icons.send_rounded, color: HiColors.brandPrimary),
             onPressed: _sending ? null : _send,
           ),
         ],
@@ -199,7 +199,7 @@ class ChatPeerHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Row(children: [
-        Text(name, style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
+        Text(name, style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
         const SizedBox(width: 8),
         RankBadge(rank: rank, fontSize: 10),
       ]);

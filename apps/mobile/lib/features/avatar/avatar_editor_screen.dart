@@ -89,7 +89,7 @@ class _AvatarEditorScreenState extends ConsumerState<AvatarEditorScreen> {
       appBar: AppBar(title: const Text('Mon avatar'), backgroundColor: Colors.transparent, elevation: 0),
       body: SafeArea(
         child: _loading
-            ? const Center(child: CircularProgressIndicator())
+            ? Center(child: CircularProgressIndicator(color: HiColors.brandPrimary))
             : SingleChildScrollView(
                 padding: const EdgeInsets.all(HiSpace.lg),
                 child: ConstrainedBox(
@@ -111,7 +111,7 @@ class _AvatarEditorScreenState extends ConsumerState<AvatarEditorScreen> {
                             const SizedBox(width: 8),
                             TextButton(
                               onPressed: () => setState(() => _config = _config.copyWith(clearPhoto: true)),
-                              child: Text('Retirer', style: TextStyle(color: HiColors.error)),
+                              child: Text('Retirer', style: HiType.button.copyWith(color: HiColors.error)),
                             ),
                           ],
                         ],
@@ -121,7 +121,7 @@ class _AvatarEditorScreenState extends ConsumerState<AvatarEditorScreen> {
                           padding: const EdgeInsets.only(top: 4),
                           child: Text('Avec une photo, l\'avatar dessiné est masqué.',
                               textAlign: TextAlign.center,
-                              style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
+                              style: HiType.caption.copyWith(color: HiColors.textTertiary)),
                         ),
                       const SizedBox(height: HiSpace.lg),
                       _label('Teint'),
@@ -170,7 +170,7 @@ class _AvatarEditorScreenState extends ConsumerState<AvatarEditorScreen> {
 
   Widget _label(String t) => Padding(
         padding: const EdgeInsets.only(bottom: HiSpace.sm),
-        child: Text(t, style: TextStyle(color: HiColors.textSecondary, fontSize: 13)),
+        child: Text(t, style: HiType.overline.copyWith(color: HiColors.textSecondary)),
       );
 
   Widget _swatches(List<Color> colors, int selected, ValueChanged<int> onTap) {

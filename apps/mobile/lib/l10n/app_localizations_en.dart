@@ -70,4 +70,53 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ageRestricted => 'You must be at least 13.';
+
+  @override
+  String get commonContinue => 'Continue';
+
+  @override
+  String get commonLogout => 'Log out';
+
+  @override
+  String get onbAvatarTitle => 'Create your avatar';
+
+  @override
+  String get onbAvatarSubtitle =>
+      'Personalize it (you can change it anytime in settings).';
+
+  @override
+  String get onbRevealTitle => 'Reveal your Index';
+
+  @override
+  String get onbRevealSubtitle =>
+      'One effort is enough. Add more for a more precise Index.';
+
+  @override
+  String get onbMaxPushups => 'Max strict push-ups (one set)';
+
+  @override
+  String get onbMaxSquats => 'Max bodyweight squats (one set)';
+
+  @override
+  String get onbRevealCta => 'Reveal my HYBRID INDEX';
+
+  @override
+  String get onbRunTitle => 'Run (enter your distance)';
+
+  @override
+  String get onbRunHint =>
+      'E.g. 3 km in 15:00. We compute your pace and adjust it to any distance.';
+
+  @override
+  String get onbEstimatedIndexHere => 'Your estimated Index will appear here.';
+
+  @override
+  String get onbEstimatedIndexLabel => 'ESTIMATED INDEX';
+
+  @override
+  String get onbNeedEffort => 'Add a run, push-ups or squats.';
+
+  @override
+  String get onbRunNeedsBoth =>
+      'Distance (0.4–42 km) and time required for the run.';
 }

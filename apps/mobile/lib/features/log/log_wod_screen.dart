@@ -52,7 +52,7 @@ class _LogWodScreenState extends ConsumerState<LogWodScreen> {
           padding: const EdgeInsets.fromLTRB(HiSpace.lg, HiSpace.lg, HiSpace.lg, 96),
           children: [
             Text('Choisis une séance pour voir en quoi elle consiste, les temps de référence et le classement — puis enregistre ton résultat.',
-                style: TextStyle(color: HiColors.textSecondary, fontSize: 13)),
+                style: HiType.body.copyWith(color: HiColors.textSecondary)),
             const SizedBox(height: HiSpace.lg),
             _sectionTitle('Sans matériel'),
             ...bodyweight.map(_tile),
@@ -67,16 +67,16 @@ class _LogWodScreenState extends ConsumerState<LogWodScreen> {
 
   Widget _sectionTitle(String t) => Padding(
         padding: const EdgeInsets.only(bottom: HiSpace.sm),
-        child: Text(t, style: TextStyle(color: HiColors.textTertiary, fontSize: 13, fontWeight: FontWeight.w700, letterSpacing: 0.3)),
+        child: Text(t, style: HiType.overline.copyWith(color: HiColors.textSecondary)),
       );
 
   Widget _tile(WodCatalogItem w) => Card(
         color: HiColors.bgElevated,
         child: ListTile(
-          title: Text(w.name, style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
+          title: Text(w.name, style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
           subtitle: Text(w.requiresEquipment ? 'Avec matériel' : 'Sans matériel',
-              style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
-          trailing: Icon(Icons.chevron_right, color: HiColors.textTertiary),
+              style: HiType.caption.copyWith(color: HiColors.textTertiary)),
+          trailing: Icon(Icons.chevron_right_rounded, color: HiColors.textTertiary),
           onTap: () => _open(w.id),
         ),
       );

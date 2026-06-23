@@ -68,7 +68,7 @@ class _ClubsScreenState extends ConsumerState<ClubsScreen> {
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: HiColors.bgElevated,
-        title: Text('Créer un club', style: TextStyle(color: HiColors.textPrimary)),
+        title: Text('Créer un club', style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
         content: Column(mainAxisSize: MainAxisSize.min, children: [
           TextField(controller: name, decoration: const InputDecoration(labelText: 'Nom du club')),
           const SizedBox(height: 8),
@@ -113,9 +113,9 @@ class _ClubsScreenState extends ConsumerState<ClubsScreen> {
           future: _future,
           builder: (context, snap) {
             if (snap.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
+              return Center(child: CircularProgressIndicator(color: HiColors.brandPrimary));
             }
-            if (snap.hasError) return Center(child: Text('${snap.error}', style: TextStyle(color: HiColors.error)));
+            if (snap.hasError) return Center(child: Text('${snap.error}', style: HiType.body.copyWith(color: HiColors.error)));
             final data = snap.data!;
             return ListView(
               padding: const EdgeInsets.fromLTRB(HiSpace.lg, HiSpace.lg, HiSpace.lg, 96),
@@ -132,18 +132,18 @@ class _ClubsScreenState extends ConsumerState<ClubsScreen> {
                 ],
                 if (data.invites.isNotEmpty) ...[
                   const SizedBox(height: HiSpace.md),
-                  Text('Invitations', style: TextStyle(color: HiColors.textSecondary, fontSize: 13)),
+                  Text('Invitations', style: HiType.overline.copyWith(color: HiColors.textSecondary)),
                   const SizedBox(height: HiSpace.sm),
                   ...data.invites.map(_inviteTile),
                 ],
                 const SizedBox(height: HiSpace.md),
-                Text('Mes clubs', style: TextStyle(color: HiColors.textSecondary, fontSize: 13)),
+                Text('Mes clubs', style: HiType.overline.copyWith(color: HiColors.textSecondary)),
                 const SizedBox(height: HiSpace.sm),
                 if (data.mine.isEmpty)
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: HiSpace.md),
                     child: Text('Tu n\'es dans aucun club. Crée le tien ou rejoins-en un 👥',
-                        style: TextStyle(color: HiColors.textTertiary)),
+                        style: HiType.body.copyWith(color: HiColors.textTertiary)),
                   )
                 else
                   ...data.mine.map((c) => _clubTile(c, subtitle: '${c.memberCount} membres${c.role == 'owner' ? ' · créateur' : ''}')),
@@ -158,10 +158,10 @@ class _ClubsScreenState extends ConsumerState<ClubsScreen> {
   Widget _clubTile(ClubSummary c, {required String subtitle}) => Card(
         color: HiColors.bgElevated,
         child: ListTile(
-          leading: Icon(Icons.groups, color: HiColors.brandPrimary),
-          title: Text(c.name, style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
-          subtitle: Text(subtitle, style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
-          trailing: Icon(Icons.chevron_right, color: HiColors.textTertiary),
+          leading: Icon(Icons.groups_rounded, color: HiColors.brandPrimary),
+          title: Text(c.name, style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
+          subtitle: Text(subtitle, style: HiType.caption.copyWith(color: HiColors.textTertiary)),
+          trailing: Icon(Icons.chevron_right_rounded, color: HiColors.textTertiary),
           onTap: () => _open(c.id),
         ),
       );
@@ -169,15 +169,15 @@ class _ClubsScreenState extends ConsumerState<ClubsScreen> {
   Widget _inviteTile(ClubInvite i) => Card(
         color: HiColors.bgElevated,
         child: ListTile(
-          leading: Icon(Icons.mail_outline, color: HiColors.brandSecondaryText),
-          title: Text(i.clubName, style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
-          subtitle: Text('${i.memberCount} membres · t\'invite', style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
+          leading: Icon(Icons.mail_outline_rounded, color: HiColors.brandSecondaryText),
+          title: Text(i.clubName, style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
+          subtitle: Text('${i.memberCount} membres · t\'invite', style: HiType.caption.copyWith(color: HiColors.textTertiary)),
           trailing: Row(mainAxisSize: MainAxisSize.min, children: [
             SizedBox(
               height: 34,
               child: HiButton(label: 'Voir', onPressed: () => _open(i.clubId)),
             ),
-            IconButton(icon: Icon(Icons.close, color: HiColors.textTertiary), onPressed: () => _decline(i.inviteId)),
+            IconButton(icon: Icon(Icons.close_rounded, color: HiColors.textTertiary), onPressed: () => _decline(i.inviteId)),
           ]),
         ),
       );

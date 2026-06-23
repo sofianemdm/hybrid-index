@@ -44,11 +44,11 @@ class _ConversationsScreenState extends ConsumerState<ConversationsScreen> {
             future: _future,
             builder: (context, snap) {
               if (snap.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
+                return Center(child: CircularProgressIndicator(color: HiColors.brandPrimary));
               }
               if (snap.hasError) {
                 return ListView(children: [
-                  Padding(padding: const EdgeInsets.all(HiSpace.lg), child: Text('${snap.error}', style: TextStyle(color: HiColors.error))),
+                  Padding(padding: const EdgeInsets.all(HiSpace.lg), child: Text('${snap.error}', style: HiType.body.copyWith(color: HiColors.error))),
                 ]);
               }
               final items = snap.data!;
@@ -61,7 +61,7 @@ class _ConversationsScreenState extends ConsumerState<ConversationsScreen> {
                       const SizedBox(height: HiSpace.md),
                       Text('Aucune conversation. Écris à un athlète que tu suis (et qui te suit) '
                           'ou à un membre de ton club.',
-                          textAlign: TextAlign.center, style: TextStyle(color: HiColors.textTertiary)),
+                          textAlign: TextAlign.center, style: HiType.body.copyWith(color: HiColors.textTertiary)),
                     ]),
                   ),
                 ]);
@@ -86,7 +86,7 @@ class _ConversationsScreenState extends ConsumerState<ConversationsScreen> {
           Flexible(
             child: Text(c.otherName,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
+                style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
           ),
           const SizedBox(width: 8),
           RankBadge(rank: c.otherRank, fontSize: 9),
@@ -94,7 +94,7 @@ class _ConversationsScreenState extends ConsumerState<ConversationsScreen> {
         subtitle: Text(preview,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(color: HiColors.textTertiary, fontSize: 13)),
+            style: HiType.caption.copyWith(color: HiColors.textTertiary)),
         trailing: c.unread > 0
             ? Container(
                 padding: const EdgeInsets.all(6),
@@ -102,7 +102,7 @@ class _ConversationsScreenState extends ConsumerState<ConversationsScreen> {
                 child: Text('${c.unread}',
                     style: TextStyle(color: HiColors.textOnBrand, fontSize: 11, fontWeight: FontWeight.w800)),
               )
-            : Icon(Icons.chevron_right, color: HiColors.textTertiary),
+            : Icon(Icons.chevron_right_rounded, color: HiColors.textTertiary),
         onTap: () => _open(c),
       ),
     );

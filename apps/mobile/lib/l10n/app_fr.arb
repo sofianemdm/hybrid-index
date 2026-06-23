@@ -20,5 +20,20 @@
   "authDateOfBirth": "Date de naissance",
   "authChoose": "Choisir…",
   "authOr": "ou",
-  "ageRestricted": "Tu dois avoir au moins 13 ans."
+  "ageRestricted": "Tu dois avoir au moins 13 ans.",
+  "commonContinue": "Continuer",
+  "commonLogout": "Déconnexion",
+  "onbAvatarTitle": "Crée ton avatar",
+  "onbAvatarSubtitle": "Personnalise-le (modifiable à tout moment dans les paramètres).",
+  "onbRevealTitle": "Révèle ton Index",
+  "onbRevealSubtitle": "Un effort suffit. Ajoutes-en plus pour un Index plus précis.",
+  "onbMaxPushups": "Max pompes strictes (une série)",
+  "onbMaxSquats": "Max squats à vide (une série)",
+  "onbRevealCta": "Révéler mon HYBRID INDEX",
+  "onbRunTitle": "Course (saisis ta distance)",
+  "onbRunHint": "Ex. 3 km en 15:00. On calcule ton allure et on l’ajuste à toutes distances.",
+  "onbEstimatedIndexHere": "Ton Index estimé s’affichera ici.",
+  "onbEstimatedIndexLabel": "INDEX ESTIMÉ",
+  "onbNeedEffort": "Ajoute une course, des pompes ou des squats.",
+  "onbRunNeedsBoth": "Distance (0,4–42 km) et temps requis pour la course."
 }
