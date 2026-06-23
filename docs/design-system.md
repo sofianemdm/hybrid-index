@@ -1,3 +1,31 @@
+> ## 🆕 v2 « AAA » (implémentée 2026-06-23) — source de vérité = `apps/mobile/lib/theme/tokens.dart`
+>
+> Refonte premium (cf. `docs/decisions-log.md` D21). Tokens implémentés :
+> - **Couleurs** (dark-first) : signature cyan `brandPrimary #2BD4F5`, `brandPrimaryBright #6BECFF`,
+>   `brandPrimaryDeep #0A8FB3`, secondaire violet `#7C5CFF`. **`accentVictory #C6FF4A` (lime) =
+>   réservé aux célébrations**, jamais en UI de repos. Fond profond `bgBase #090B11`, surfaces
+>   `bgElevated #11151F` / `bgElevated2 #1A1F2D` / `bgElevatedHi #232A3B`. `attrEndurance` passé en
+>   teal `#2EE6C6` (ne plus collisionner avec le cyan marque). Palette light alignée WCAG AA.
+> - **Typographie** (`HiType`, via `google_fonts`) : **Rajdhani** (chiffres data, `tabularFigures`)
+>   pour `displayXL/displayL/numericL/numericM/overline` ; **Inter** pour `titleL/titleM/body/
+>   bodyStrong/label/caption/button`. L'app passe globalement en Inter (`app_theme.dart`).
+> - **Tokens** : `HiSpace` (xxs→xxxl + gutter 20), `HiRadius` (xs 8 → xxl 36, cartes=lg 20,
+>   héros=xl 28, boutons=md 16), `HiShadow` (e1/e2/e3 + `glowBrand`/`glowVictory`, adaptés clair),
+>   `HiMotion` (instant 90 / fast 180 / base 280 / slow 480 / reveal 1600 / celebrate 900 ; courbes
+>   enter=easeOutCubic, emphasis=easeOutBack, countUp=easeOutExpo).
+> - **Composants** : `HiCard` / `HiHeroCard` / `HiPressable` (micro-scale 0.97 + haptique au press),
+>   `HiButton` (gradient métal cyan + glow) / `HiButtonSecondary` / `HiGhostButton`, `HiSkeleton`
+>   (shimmer) + `HomeSkeleton`, `Celebration` (overlay plein écran + confettis maison, intensités
+>   light/medium/strong, anti-fatigue 1 forte/session), `AnimatedNumber`, `HiHaptics` (no-op web).
+> - **Anneau d'Index** : point focal (264, stroke 14, Rajdhani tabular, halo cyan respirant 2.6 s).
+> - **Hiérarchie accueil** : Index dominant → barre vers le point suivant → carte **rival amical** →
+>   bandeau **fraîcheur** (`isStale`) → preuve sociale → radar → **un seul** CTA plein + actions
+>   fantômes. Skeleton au chargement. Icônes Material **`_rounded`**.
+> - **Révélation onboarding** : séquence cinématique (suspense → count-up → rang/preuve → radar → CTA),
+>   skippable au tap, pic haptique.
+>
+> Le reste de ce document (v1) reste valable pour la structure des écrans non encore retouchés.
+
 # HYBRID INDEX — Design System & Spécification des écrans (v1)
 
 > **Statut :** livrable du designer UI/UX. Source de vérité : `docs/cahier-des-charges.md` (§3, §5, §6, §8, §9, §11, §12, §13, §17, §19) et `docs/gamification.md` (rangs §3.1, rareté §4.7, rival §2).

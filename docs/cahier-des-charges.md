@@ -11,7 +11,11 @@
 > ## ⚠️ Avenant 2026-06-20 — Pivot « preuve sociale honnête »
 >
 > Décision du fondateur (cf. `docs/decisions-log.md`). **Supersède** les sections rival & défis ci-dessous :
-> - **SUPPRIMÉS : le système de rival ET les défis (challenges).** Ne pas réimplémenter.
+> - **SUPPRIMÉS : les défis (challenges).** Ne pas réimplémenter.
+> - ⚠️ **MISE À JOUR 2026-06-23 (D20) — le RIVAL est RÉINTRODUIT**, en version **amicale** (ton
+>   bienveillant, jamais de honte). Calculé à la volée (athlète juste au-dessus dans la ligue),
+>   exposé via le profil enrichi, sans nouveau modèle DB. Les sections rival du corps du document
+>   (§11.4, accueil §… ) redeviennent **actives**. Les **défis** restent supprimés.
 > - **REMPLACÉS par une preuve sociale à DEUX populations** (toujours valorisante, honnête) :
 >   1. **% population générale (« humanité »)** — fondé sur des normes scientifiques (`popnorm-v1`,
 >      `docs/population-norms-sources.md`) : *« tu fais partie des X % des humains les plus en forme »*.

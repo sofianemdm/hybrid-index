@@ -192,3 +192,34 @@ du cahier).**
 **Dette tracée (revue G6, non bloquante)** : `wod-overtaken` peut se réafficher entre deux séances
 (fenêtre temporelle, pas d'acquittement par-vue dédié) ; `bandImproved` non couvert par test unitaire
 dédié (extraire + tester). `attribute_score.percentile = score/1000` reste un placeholder assumé.
+
+## 2026-06-23 — Refonte « niveau AAA » (design system + feel + engagement)
+
+### D20 — Réintroduction du rival, en version AMICALE (annule partiellement D19)
+**Contexte.** Lors de la refonte AAA, le fondateur (sofiane) demande explicitement, en session, de
+réintroduire un **« rival amical »** (positif, encourageant, jamais humiliant) comme ressort
+d'engagement. C'est un arbitrage humain qui **supersède** la suppression du rival décidée en D19.
+L'agent `gamification` a signalé le conflit avec D19 avant implémentation (conformité à la
+constitution) ; le fondateur a tranché.
+
+**Décision.**
+- **Rival amical réintroduit**, mais **sans nouveau modèle DB ni migration** : il est **calculé** à la
+  volée comme l'athlète immédiatement au-dessus dans la ligue (même sexe), à partir du classement
+  existant. Exposé via le **profil enrichi** (`getMyProfile` → champ `rival`), pas via un endpoint
+  `/v1/me/rival` distinct (on ne ré-introduit pas l'ancienne surface supprimée).
+- **Ton verrouillé bienveillant** : « Tu poursuis X · plus que N points pour le rattraper 👊 ». Jamais
+  de honte de dépassement, jamais « tu t'es fait écraser ». État meneur valorisant (« Tu es en tête »).
+- **Pas de défis** : les défis quotidiens/mensuels restent **supprimés** (le fondateur a confirmé). Seul
+  le rival revient.
+- **Conservé de D19** : la preuve sociale à deux populations (`popnorm-v1`), l'honnêteté des bandes, la
+  célébration uniquement à la montée.
+
+### D21 — Design system « AAA » + langage de feel
+**Décision (additive, non contradictoire).** Adoption d'un design system premium (specs `ui-ux-designer`
++ `gamification`) : couleur signature cyan `#2BD4F5` + lime « victoire » `#C6FF4A` réservé aux
+célébrations ; typographie data **Rajdhani** (figures tabulaires) + corps **Inter** via `google_fonts` ;
+tokens `HiShadow`/`HiMotion`/`HiType` ; composants `HiCard`/`HiButton`/`HiSkeleton` ; retour haptique
+(`HiHaptics`, no-op web) ; overlay de **célébration** plein écran (confettis maison, anti-fatigue
+1 forte/session) ; **révélation d'onboarding cinématique** ; **squelettes** au lieu des spinners ;
+bandeau **fraîcheur** (`isStale`) incitant au re-test sans culpabiliser. Le **moteur de score reste
+intouché**. App **FR uniquement** (i18n EN différé). Cf. `docs/design-system.md`.
