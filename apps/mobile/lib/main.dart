@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app.dart';
+import 'data/locale_mode.dart';
 import 'data/push_service.dart';
 import 'data/session.dart';
 import 'data/theme_mode.dart';
+import 'l10n/app_localizations.dart';
 import 'theme/app_theme.dart';
 import 'theme/tokens.dart';
 import 'widgets/celebration.dart';
@@ -48,12 +50,16 @@ class _HybridIndexAppState extends ConsumerState<HybridIndexApp> with WidgetsBin
   @override
   Widget build(BuildContext context) {
     final themeMode = ref.watch(themeModeProvider);
+    final locale = ref.watch(localeProvider);
     return MaterialApp(
       title: 'HYBRID INDEX',
       debugShowCheckedModeBanner: false,
       theme: buildHiTheme(Brightness.light),
       darkTheme: buildHiTheme(Brightness.dark),
       themeMode: themeMode,
+      locale: locale, // null = langue du système (FR/EN)
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       // Synchronise la palette des tokens HiColors avec le thème RÉELLEMENT appliqué (système inclus)
       // AVANT que le sous-arbre ne se construise.
       builder: (context, child) {

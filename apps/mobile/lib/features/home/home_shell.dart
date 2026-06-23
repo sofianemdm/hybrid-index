@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app.dart';
 import '../../data/session.dart';
+import '../../l10n/app_localizations.dart';
 import '../../theme/haptics.dart';
 import '../../theme/tokens.dart';
 import '../leaderboard/leaderboard_screen.dart';
@@ -115,6 +116,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return Scaffold(
       body: IndexedStack(
         index: _tab,
@@ -139,16 +141,23 @@ class _HomeShellState extends ConsumerState<HomeShell> {
           HiHaptics.tap();
           setState(() => _tab = i);
         },
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.bolt_outlined), selectedIcon: Icon(Icons.bolt_rounded), label: 'Accueil'),
+        destinations: [
           NavigationDestination(
-              icon: Icon(Icons.fitness_center_outlined), selectedIcon: Icon(Icons.fitness_center_rounded), label: 'Séances'),
+              icon: const Icon(Icons.bolt_outlined), selectedIcon: const Icon(Icons.bolt_rounded), label: t.navHome),
           NavigationDestination(
-              icon: Icon(Icons.groups_outlined), selectedIcon: Icon(Icons.groups_rounded), label: 'Communauté'),
+              icon: const Icon(Icons.fitness_center_outlined),
+              selectedIcon: const Icon(Icons.fitness_center_rounded),
+              label: t.navSessions),
           NavigationDestination(
-              icon: Icon(Icons.emoji_events_outlined), selectedIcon: Icon(Icons.emoji_events_rounded), label: 'Progrès'),
+              icon: const Icon(Icons.groups_outlined), selectedIcon: const Icon(Icons.groups_rounded), label: t.navCommunity),
           NavigationDestination(
-              icon: Icon(Icons.leaderboard_outlined), selectedIcon: Icon(Icons.leaderboard_rounded), label: 'Classement'),
+              icon: const Icon(Icons.emoji_events_outlined),
+              selectedIcon: const Icon(Icons.emoji_events_rounded),
+              label: t.navProgress),
+          NavigationDestination(
+              icon: const Icon(Icons.leaderboard_outlined),
+              selectedIcon: const Icon(Icons.leaderboard_rounded),
+              label: t.navLeaderboard),
         ],
       ),
     );

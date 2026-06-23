@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/env.dart';
 import '../../data/api_client.dart';
 import '../../data/session.dart';
+import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/hi_button.dart';
 import 'google_button.dart';
@@ -61,7 +62,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       }
       // AuthGate prend le relais (onboarding ou home).
     } on ApiException catch (e) {
-      _toast(e.code == 'AGE_RESTRICTED' ? 'Tu dois avoir au moins 13 ans.' : e.message);
+      _toast(e.code == 'AGE_RESTRICTED' ? AppLocalizations.of(context).ageRestricted : e.message);
     } catch (e) {
       _toast('$e');
     } finally {
@@ -83,7 +84,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         if (!mounted) return;
         Navigator.of(context).push(MaterialPageRoute(builder: (_) => GoogleProfileScreen(idToken: idToken)));
       } else {
-        _toast(e.code == 'AGE_RESTRICTED' ? 'Tu dois avoir au moins 13 ans.' : e.message);
+        _toast(e.code == 'AGE_RESTRICTED' ? AppLocalizations.of(context).ageRestricted : e.message);
       }
     } catch (e) {
       _toast('$e');
@@ -104,6 +105,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return Scaffold(
       body: SafeArea(
         child: Center(
@@ -133,12 +135,12 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       textAlign: TextAlign.center,
                       style: HiType.displayL.copyWith(fontSize: 36, color: HiColors.textPrimary, letterSpacing: 1)),
                   const SizedBox(height: 6),
-                  Text('Ton score de condition physique hybride, comparable.',
+                  Text(t.appTagline,
                       textAlign: TextAlign.center, style: HiType.body.copyWith(color: HiColors.textSecondary)),
                   const SizedBox(height: HiSpace.xl),
                   _SegToggle(
-                    left: 'Inscription',
-                    right: 'Connexion',
+                    left: t.authSignUp,
+                    right: t.authLogIn,
                     isLeft: _register,
                     onChanged: (v) => setState(() => _register = v),
                   ),
@@ -198,7 +200,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   ],
                   const SizedBox(height: HiSpace.xl),
                   HiButton(
-                    label: _register ? 'Créer mon compte' : 'Se connecter',
+                    label: _register ? t.authCreateAccount : t.authSignInAction,
                     loading: _loading,
                     onPressed: _submit,
                   ),

@@ -6,9 +6,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app.dart';
 import '../../data/api_client.dart';
+import '../../data/locale_mode.dart';
 import '../../data/session.dart';
 import '../../data/theme_mode.dart';
 import '../../data/web_download.dart';
+import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/hi_button.dart';
 import '../avatar/avatar_editor_screen.dart';
@@ -132,6 +134,23 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
+  Widget _languageSelector() {
+    final locale = ref.watch(localeProvider);
+    final t = AppLocalizations.of(context);
+    final sel = locale?.languageCode ?? 'system';
+    return SegmentedButton<String>(
+      segments: [
+        ButtonSegment(value: 'system', icon: const Icon(Icons.translate), label: Text(t.languageSystem)),
+        ButtonSegment(value: 'fr', label: Text(t.languageFrench)),
+        ButtonSegment(value: 'en', label: Text(t.languageEnglish)),
+      ],
+      selected: {sel},
+      showSelectedIcon: false,
+      onSelectionChanged: (s) =>
+          ref.read(localeProvider.notifier).set(s.first == 'system' ? null : Locale(s.first)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -184,6 +203,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       Text('Apparence', style: TextStyle(color: HiColors.textSecondary, fontSize: 13)),
                       const SizedBox(height: HiSpace.sm),
                       _themeSelector(),
+                      const SizedBox(height: HiSpace.xl),
+                      Divider(color: HiColors.strokeSubtle),
+                      const SizedBox(height: HiSpace.md),
+                      Text(AppLocalizations.of(context).settingsLanguage,
+                          style: TextStyle(color: HiColors.textSecondary, fontSize: 13)),
+                      const SizedBox(height: HiSpace.sm),
+                      _languageSelector(),
                       const SizedBox(height: HiSpace.xl),
                       Divider(color: HiColors.strokeSubtle),
                       const SizedBox(height: HiSpace.md),
