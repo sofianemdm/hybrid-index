@@ -1184,6 +1184,12 @@ abstract class AppLocalizations {
   /// **'My clubs'**
   String get clubsMine;
 
+  /// No description provided for @clubsDiscover.
+  ///
+  /// In en, this message translates to:
+  /// **'All clubs'**
+  String get clubsDiscover;
+
   /// No description provided for @clubsEmpty.
   ///
   /// In en, this message translates to:
@@ -1346,6 +1352,12 @@ abstract class AppLocalizations {
   /// **'#{position} in their league'**
   String publicProfileLeaguePosition(int position);
 
+  /// No description provided for @publicProfileLeaguePositionMine.
+  ///
+  /// In en, this message translates to:
+  /// **'#{position} in your league'**
+  String publicProfileLeaguePositionMine(int position);
+
   /// No description provided for @publicProfileNoIndex.
   ///
   /// In en, this message translates to:
@@ -1363,6 +1375,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Their radar'**
   String get publicProfileTheirRadar;
+
+  /// No description provided for @publicProfileYourRadar.
+  ///
+  /// In en, this message translates to:
+  /// **'Your radar'**
+  String get publicProfileYourRadar;
 
   /// No description provided for @publicProfileCompareAhead.
   ///

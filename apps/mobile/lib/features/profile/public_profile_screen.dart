@@ -251,7 +251,7 @@ class PublicProfileScreen extends ConsumerWidget {
                       ],
                     ),
                     const SizedBox(height: 4),
-                    Text('${HiLabels.goal(p.goal)} · ${p.position != null ? t.publicProfileLeaguePosition(p.position!) : '—'}',
+                    Text('${HiLabels.goal(p.goal)} · ${p.position != null ? (p.isMe ? t.publicProfileLeaguePositionMine(p.position!) : t.publicProfileLeaguePosition(p.position!)) : '—'}',
                         style: HiType.body.copyWith(color: HiColors.textSecondary)),
                     const SizedBox(height: HiSpace.lg),
                     if (p.index != null)
@@ -269,7 +269,7 @@ class PublicProfileScreen extends ConsumerWidget {
                       _InviteToClubButton(userId: p.userId),
                     ],
                     const SizedBox(height: HiSpace.lg),
-                    if (mine != null && p.index != null) _compareCard(mine, p),
+                    if (!p.isMe && mine != null && p.index != null) _compareCard(mine, p),
                     const SizedBox(height: HiSpace.md),
                     Card(
                       child: Padding(
@@ -277,10 +277,13 @@ class PublicProfileScreen extends ConsumerWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(mine != null ? t.publicProfileComparison : t.publicProfileTheirRadar,
+                            Text(
+                                p.isMe
+                                    ? t.publicProfileYourRadar
+                                    : (mine != null ? t.publicProfileComparison : t.publicProfileTheirRadar),
                                 style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
                             const SizedBox(height: HiSpace.sm),
-                            if (mine != null)
+                            if (mine != null && !p.isMe)
                               OverlayRadar(mine: mine.radar, other: p.radar)
                             else
                               RadarView(radar: p.radar),

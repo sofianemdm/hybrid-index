@@ -603,6 +603,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get clubsMine => 'Mes clubs';
 
   @override
+  String get clubsDiscover => 'Tous les clubs';
+
+  @override
   String get clubsEmpty =>
       'Tu n\'es dans aucun club. Crée le tien ou rejoins-en un 👥';
 
@@ -707,6 +710,11 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
+  String publicProfileLeaguePositionMine(int position) {
+    return '#$position de ta ligue';
+  }
+
+  @override
   String get publicProfileNoIndex => 'Pas encore d’Index.';
 
   @override
@@ -714,6 +722,9 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get publicProfileTheirRadar => 'Son radar';
+
+  @override
+  String get publicProfileYourRadar => 'Ton radar';
 
   @override
   String publicProfileCompareAhead(int diff, int mine, int other) {

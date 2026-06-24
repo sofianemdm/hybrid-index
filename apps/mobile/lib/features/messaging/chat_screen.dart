@@ -77,19 +77,41 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   Future<void> _send() async {
     final text = _input.text.trim();
     if (text.isEmpty || _sending) return;
-    setState(() => _sending = true);
+    final myId = ref.read(sessionProvider).user?.id ?? '';
+    // Affichage INSTANTANÉ (optimiste) : le message apparaît tout de suite, on réconcilie avec le
+    // serveur juste après. C'est ce qui donne le « feel » pro (WhatsApp/iMessage).
+    final pendingId = 'tmp_${_messages.length}_${text.hashCode}';
+    final optimistic = DmMessage(
+      id: pendingId,
+      senderId: myId,
+      body: text,
+      createdAt: DateTime.now().toIso8601String(),
+      isMine: true,
+    );
+    setState(() {
+      _messages = [..._messages, optimistic];
+      _sending = true;
+    });
+    _input.clear();
+    _jumpToEnd();
     try {
       final api = ref.read(apiClientProvider);
       _convId = await api.sendMessage(widget.otherUserId, text);
       HiHaptics.success();
-      _input.clear();
       final c = await api.conversationMessages(_convId!);
       if (mounted) {
-        setState(() => _messages = c.messages);
+        setState(() => _messages = c.messages); // remplace l'optimiste par la vérité serveur
         _jumpToEnd();
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+      // Échec d'envoi : on retire le message optimiste et on remet le texte pour réessayer.
+      if (mounted) {
+        setState(() {
+          _messages = _messages.where((m) => m.id != pendingId).toList();
+          _input.text = text;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+      }
     } finally {
       if (mounted) setState(() => _sending = false);
     }

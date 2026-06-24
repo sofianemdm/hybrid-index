@@ -285,6 +285,7 @@
   "clubsSearchHint": "Search for a club to join",
   "clubsInvitations": "Invitations",
   "clubsMine": "My clubs",
+  "clubsDiscover": "All clubs",
   "clubsEmpty": "You're not in any club. Create your own or join one 👥",
   "clubsView": "View",
   "clubsMembers": "{count} members",
@@ -361,9 +362,18 @@
       }
     }
   },
+  "publicProfileLeaguePositionMine": "#{position} in your league",
+  "@publicProfileLeaguePositionMine": {
+    "placeholders": {
+      "position": {
+        "type": "int"
+      }
+    }
+  },
   "publicProfileNoIndex": "No Index yet.",
   "publicProfileComparison": "Comparison",
   "publicProfileTheirRadar": "Their radar",
+  "publicProfileYourRadar": "Your radar",
   "publicProfileCompareAhead": "You're ahead by {diff} points (you {mine} · them {other}).",
   "@publicProfileCompareAhead": {
     "placeholders": {

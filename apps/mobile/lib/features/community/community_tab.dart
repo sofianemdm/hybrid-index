@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../app.dart';
 import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../l10n/app_localizations.dart';
@@ -157,11 +158,19 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
                     child: Text(t.communityTitle,
                         style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: HiColors.textPrimary)),
                   ),
-                  IconButton(
-                    tooltip: t.communityTooltipMessages,
-                    icon: Icon(Icons.forum_outlined, color: HiColors.textTertiary),
-                    onPressed: () =>
-                        Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ConversationsScreen())),
+                  Badge.count(
+                    count: ref.watch(unreadMessagesProvider).value ?? 0,
+                    isLabelVisible: (ref.watch(unreadMessagesProvider).value ?? 0) > 0,
+                    backgroundColor: HiColors.error,
+                    child: IconButton(
+                      tooltip: t.communityTooltipMessages,
+                      icon: Icon(Icons.forum_outlined, color: HiColors.textTertiary),
+                      onPressed: () async {
+                        await Navigator.of(context)
+                            .push(MaterialPageRoute(builder: (_) => const ConversationsScreen()));
+                        ref.invalidate(unreadMessagesProvider); // maj de la pastille au retour
+                      },
+                    ),
                   ),
                   IconButton(
                     tooltip: t.communityTooltipPublish,

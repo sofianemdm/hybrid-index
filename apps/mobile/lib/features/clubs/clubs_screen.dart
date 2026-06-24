@@ -40,7 +40,9 @@ class _ClubsScreenState extends ConsumerState<ClubsScreen> {
   void _load() {
     final api = ref.read(apiClientProvider);
     _future = () async {
-      final r = await Future.wait([api.myClubs(), api.myClubInvites()]);
+      // searchClubs('') = TOUS les clubs visibles (publics, rejoignables par n'importe qui).
+      final r = await Future.wait([api.myClubs(), api.myClubInvites(), api.searchClubs('')]);
+      if (mounted) setState(() => _results = r[2] as List<ClubSummary>);
       return (mine: r[0] as List<ClubSummary>, invites: r[1] as List<ClubInvite>);
     }();
   }
@@ -48,10 +50,7 @@ class _ClubsScreenState extends ConsumerState<ClubsScreen> {
   void _onSearch(String v) {
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 300), () async {
-      if (v.trim().isEmpty) {
-        setState(() => _results = []);
-        return;
-      }
+      // Recherche vide → on réaffiche TOUS les clubs (et pas une liste vide).
       final res = await ref.read(apiClientProvider).searchClubs(v.trim());
       if (mounted) setState(() => _results = res);
     });
@@ -128,11 +127,20 @@ class _ClubsScreenState extends ConsumerState<ClubsScreen> {
                   decoration: InputDecoration(hintText: t.clubsSearchHint, prefixIcon: const Icon(Icons.search)),
                   onChanged: _onSearch,
                 ),
-                if (_results.isNotEmpty) ...[
-                  const SizedBox(height: HiSpace.sm),
-                  ..._results.map((c) => _clubTile(c, subtitle: t.clubsMembers(c.memberCount))),
-                  Divider(color: HiColors.strokeSubtle),
-                ],
+                Builder(builder: (context) {
+                  // « Tous les clubs » : tout ce qui est visible, SAUF ceux dont je suis déjà membre
+                  // (ils apparaissent dans « Mes clubs »). Tap → fiche du club → bouton Rejoindre.
+                  final mineIds = data.mine.map((m) => m.id).toSet();
+                  final discover = _results.where((c) => !mineIds.contains(c.id)).toList();
+                  if (discover.isEmpty) return const SizedBox.shrink();
+                  return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    const SizedBox(height: HiSpace.md),
+                    Text(t.clubsDiscover, style: HiType.overline.copyWith(color: HiColors.textSecondary)),
+                    const SizedBox(height: HiSpace.sm),
+                    ...discover.map((c) => _clubTile(c, subtitle: t.clubsMembers(c.memberCount))),
+                    Divider(color: HiColors.strokeSubtle, height: HiSpace.xl),
+                  ]);
+                }),
                 if (data.invites.isNotEmpty) ...[
                   const SizedBox(height: HiSpace.md),
                   Text(t.clubsInvitations, style: HiType.overline.copyWith(color: HiColors.textSecondary)),

@@ -58,6 +58,19 @@ final indexHistoryProvider = FutureProvider<List<IndexPoint>>((ref) async {
   }
 });
 
+/// Nombre total de messages NON LUS (somme sur les conversations) → pastille rouge sur l'icône
+/// messages. Invalidé à l'ouverture/fermeture des conversations. Tolérant (0 si erreur).
+final unreadMessagesProvider = FutureProvider<int>((ref) async {
+  final session = ref.watch(sessionProvider);
+  if (session.status != AuthStatus.loggedIn) return 0;
+  try {
+    final convos = await ref.read(apiClientProvider).conversations();
+    return convos.fold<int>(0, (sum, c) => sum + c.unread);
+  } catch (_) {
+    return 0;
+  }
+});
+
 /// Point d'entrée logique : décide quel écran montrer selon l'état d'auth + onboarding.
 class AuthGate extends ConsumerWidget {
   const AuthGate({super.key});

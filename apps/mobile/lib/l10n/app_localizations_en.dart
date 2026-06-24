@@ -600,6 +600,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get clubsMine => 'My clubs';
 
   @override
+  String get clubsDiscover => 'All clubs';
+
+  @override
   String get clubsEmpty =>
       'You\'re not in any club. Create your own or join one 👥';
 
@@ -703,6 +706,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String publicProfileLeaguePositionMine(int position) {
+    return '#$position in your league';
+  }
+
+  @override
   String get publicProfileNoIndex => 'No Index yet.';
 
   @override
@@ -710,6 +718,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get publicProfileTheirRadar => 'Their radar';
+
+  @override
+  String get publicProfileYourRadar => 'Your radar';
 
   @override
   String publicProfileCompareAhead(int diff, int mine, int other) {
