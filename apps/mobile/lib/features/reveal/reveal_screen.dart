@@ -12,7 +12,6 @@ import '../../widgets/hi_card.dart';
 import '../../widgets/index_ring.dart';
 import '../../widgets/radar_view.dart';
 import '../../widgets/rank_badge.dart';
-import '../../widgets/rank_progress_bar.dart';
 import '../../widgets/social_proof_card.dart';
 import '../share/share_card_screen.dart';
 
@@ -106,10 +105,6 @@ class _RevealScreenState extends ConsumerState<RevealScreen> {
                             const SizedBox(height: HiSpace.sm),
                             Text(t.revealProvisional,
                                 textAlign: TextAlign.center, style: HiType.caption.copyWith(color: HiColors.warn)),
-                          ],
-                          if (idx.rankProgress != null) ...[
-                            const SizedBox(height: HiSpace.lg),
-                            RankProgressBar(rp: idx.rankProgress!),
                           ],
                           if (widget.profile.socialProof != null) ...[
                             const SizedBox(height: HiSpace.lg),

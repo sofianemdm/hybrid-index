@@ -1271,7 +1271,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shareCardDownload => 'Download';
 
   @override
-  String get shareCardOvr => 'OVR';
+  String get shareCardOvr => 'LEVEL';
 
   @override
   String get shareCardLeague => 'LEAGUE';

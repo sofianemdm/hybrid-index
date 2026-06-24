@@ -2291,7 +2291,7 @@ abstract class AppLocalizations {
   /// No description provided for @shareCardOvr.
   ///
   /// In en, this message translates to:
-  /// **'OVR'**
+  /// **'LEVEL'**
   String get shareCardOvr;
 
   /// No description provided for @shareCardLeague.

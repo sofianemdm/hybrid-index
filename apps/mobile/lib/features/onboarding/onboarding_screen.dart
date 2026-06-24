@@ -74,8 +74,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   // saisie front à ces bornes pour qu'AUCUN effort ne soit refusé (422) au reveal — un seul effort
   // hors bornes ferait échouer tout le calcul du profil. Source de vérité = score-service.
   bool get _isFemale => (ref.read(sessionProvider).sex ?? 'male') == 'female';
-  double get _pushupsMax => _isFemale ? 80 : 100; // hardMax 80 F / 110 H (slider plafonné à 100)
-  double get _pullupsMax => _isFemale ? 35 : 50; // hardMax 35 F / 50 H
+  double get _pushupsMax => 70; // slider pompes 1–70 (≤ hardMax 80 F / 110 H)
+  double get _pullupsMax => _isFemale ? 35 : 50; // slider tractions 1–50 H (35 F = hardMax sexe)
   int get _squatMin => _isFemale ? 15 : 20; // hardMin 15 F / 20 H
   int get _squatMax => _isFemale ? 220 : 320; // hardMax 220 F / 320 H
 
@@ -204,7 +204,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         _repsCard(
           title: AppLocalizations.of(context).onbMaxPushups,
           enabled: _withPushups,
-          value: _pushups.clamp(0, _pushupsMax),
+          value: _pushups.clamp(1, _pushupsMax),
           max: _pushupsMax,
           onToggle: (v) {
             setState(() => _withPushups = v);
@@ -216,7 +216,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         _repsCard(
           title: AppLocalizations.of(context).onbMaxPullups,
           enabled: _withPullups,
-          value: _pullups.clamp(0, _pullupsMax),
+          value: _pullups.clamp(1, _pullupsMax),
           max: _pullupsMax,
           onToggle: (v) {
             setState(() => _withPullups = v);
@@ -355,10 +355,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 children: [
                   Expanded(
                     child: Slider(
-                      value: value,
-                      min: 0,
+                      value: value.clamp(1, max),
+                      min: 1,
                       max: max,
-                      divisions: max.round(),
+                      divisions: (max - 1).round(),
                       activeColor: HiColors.brandPrimary,
                       label: '${value.round()}',
                       onChanged: onChanged,
