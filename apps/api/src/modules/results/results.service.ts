@@ -61,25 +61,25 @@ export class ResultsService {
     // Heure SERVEUR (le client ne fournit plus performedAt) → empêche de truquer défis/streaks.
     const performedAt = new Date();
 
-    // Anti-triche (décision verrouillée « justesse non négociable », cf. cahier §5.5) : un saut
-    // > +30 % du sous-score normalisé vs le MEILLEUR effort des 7 derniers jours sur ce WOD est
-    // suspect (faux record dans les bornes physiologiques larges). On l'ACCEPTE mais on le FLAGGE
-    // `pending_review` → exclu des classements/rivaux/badges (qui filtrent review:'ok') jusqu'à revue.
-    // Le tout PREMIER effort sur un WOD n'est jamais flaggé (aucune base de comparaison).
-    const sevenDaysAgo = new Date(performedAt.getTime() - 7 * 86400000);
-    const recentBest = await this.prisma.wodResult.aggregate({
-      where: {
-        userId,
-        wodId: req.wodId,
-        review: "ok",
-        subScore: { not: null },
-        performedAt: { gte: sevenDaysAgo },
-      },
+    // Anti-triche (décision verrouillée « justesse non négociable », cf. cahier §5.5). On flagge un
+    // effort suspect en `pending_review` → exclu des classements/rivaux/badges/Index (tout filtre
+    // review:'ok') jusqu'à revue. Signature de triche : un saut > +30 % du sous-score vs le MEILLEUR
+    // effort ALL-TIME (pas seulement 7 j → ferme le trou du « tricheur patient ») ET un résultat qui
+    // atterrit au niveau quasi-élite (percentile ≥ 0.85). La double condition évite de pénaliser un
+    // débutant qui progresse vite vers un niveau encore moyen (p20→p50 : non flaggé). 1er effort
+    // jamais flaggé (aucune base de comparaison).
+    const allTimeBest = await this.prisma.wodResult.aggregate({
+      where: { userId, wodId: req.wodId, review: "ok", subScore: { not: null } },
       _max: { subScore: true },
     });
-    const prevBest = recentBest._max.subScore;
+    const prevBest = allTimeBest._max.subScore;
     const ANOMALY_RATIO = 1.3; // +30 %
-    const isAnomaly = prevBest != null && prevBest > 0 && scored.subScore > prevBest * ANOMALY_RATIO;
+    const ANOMALY_MIN_PERCENTILE = 0.85; // ne flagge que les sauts vers le quasi-élite
+    const isAnomaly =
+      prevBest != null &&
+      prevBest > 0 &&
+      scored.subScore > prevBest * ANOMALY_RATIO &&
+      scored.percentile >= ANOMALY_MIN_PERCENTILE;
 
     const data = {
       wodId: req.wodId,
