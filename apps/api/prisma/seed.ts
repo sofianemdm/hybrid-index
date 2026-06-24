@@ -396,7 +396,7 @@ async function main(): Promise<void> {
   }
 
   console.log(`Seed terminé : ${created} athlètes. Redis ${redisOk ? "peuplé" : "indisponible (fallback Postgres)"}.`);
-  // Backfill display-v1 : recale le rang stocké de TOUS les profils sur l'OVR /100
+  // Backfill display (v2) : recale le rang stocké de TOUS les profils sur l'OVR /100
   // (corrige les rangs écrits sous l'ancienne échelle /1000, vrais comptes inclus).
   console.log("Seed: backfill des rangs sur l'échelle /100…");
   const allIndexes = await prisma.hybridIndex.findMany({ select: { userId: true, value: true } });

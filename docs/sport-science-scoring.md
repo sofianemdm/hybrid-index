@@ -319,6 +319,45 @@ Calcul : `raw(0)=1/(1+e^{3.3})=0.0356` ; `raw(1)=1/(1+e^{−2.7})=0.9370` ; dén
 > Pente raide en 0.5–0.75 (de 433 à 813) = la zone « dopamine » de progression visible. Extrêmes aplatis.
 > **`f` est VERSIONNÉE** : tout changement de `k`/`P0`/forme ⇒ nouvelle `version` + recalcul historique.
 
+### 4.4 Courbe d'AFFICHAGE /100 « type FIFA » — `display-v2` (recalibration pro, 2026-06-24)
+
+L'échelle interne `[0,1000]` (sigmoid-v1, §4.1–4.3) est INTACTE — c'est la clé de tri des
+classements. La note montrée à l'utilisateur (OVR /100, attributs, sous-scores de WOD) est une
+**projection pure et monotone du percentile P** (vs population de MÊME sexe), appliquée AU BORD à la
+lecture (`ratingFromPercentile` / `ratingFromInternal` dans `@hybrid-index/scoring-core`). Aucune
+migration de données : seule la note dérivée change.
+
+**Pourquoi `display-v2` ?** `display-v1` (pivot P=0.8→86, sommet 86→98 en puissance 1.5) récompensait
+trop le haut : un **non-élite** à P≈0.95 sortait à ~94/100. `display-v2` réserve le sommet aux niveaux
+quasi record-du-monde. Forme à TROIS segments (constantes dans `curve.ts`) :
+
+- **A** `P ∈ [0, 0.5]` : logistique renormalisée (k=5, P0=0.5), `35 → 57`.
+- **B** `P ∈ (0.5, 0.9]` : puissance `β=2.24`, `57 → 84`.
+- **C** `P ∈ (0.9, 1]` : puissance `γ=3.2` (raide), `84 → 98`.
+
+**Barème cible (percentile vs même sexe → OVR /100)** :
+
+| Niveau | Percentile P | OVR /100 |
+|---|---|---|
+| Record du monde / quasi-record | ~0.999 | **~97** |
+| Pro / élite internationale | ~0.99 | **~94** |
+| Élite nationale / top box | ~0.97 | **~88** |
+| Très bon amateur | ~0.93 | **~84** |
+| Bon (pratiquant sérieux, non élite) | ~0.85 | **~77** |
+| Au-dessus de la moyenne | ~0.70 | **~63** |
+| Médian régulier | ~0.50 | **57** |
+| Débutant | ~0.27 | **~44** |
+| Sédentaire | ~0.05 | **~36** |
+
+La note ne frôle **97 que pour un niveau quasi record-du-monde** ; **100 reste inatteignable** ; le
+sommet reste DIFFÉRENCIÉ (un athlète fort garde des attributs distincts, pas tous au plafond).
+**`display-v2` est VERSIONNÉE** : tout changement de constantes ⇒ nouvelle `display-vX` (sans recalcul
+historique puisque l'interne ne bouge pas).
+
+> NB rangs : les bornes de rang (`RANK_BANDS`, gamification) restent sur l'échelle /100 ; avec
+> display-v2 le médian devient `bronze` (57) et `elite` (≥92) correspond désormais à P≈0.985+ (vraiment
+> pro). C'est l'effet recherché. Tout réajustement des bandes appartient à `gamification.md`.
+
 ---
 
 ## 5. Score d'attribut (0–1000)

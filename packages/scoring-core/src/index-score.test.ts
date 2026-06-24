@@ -62,9 +62,9 @@ describe("coverageAdjustedValue (ajustement de couverture, appliqué à la persi
   it("1 seul attribut : la valeur est tirée vers la médiane (l'OVR n'est plus la valeur brute)", () => {
     const adj = coverageAdjustedValue(832, 1);
     expect(adj).toBeLessThan(832); // tiré vers le bas (5/6 du profil présumé médian)
-    // 832 vaut ~84 à couverture pleine ; à 1/6 mesuré l'OVR ajusté est nettement plus bas.
-    expect(Math.round(ratingFromInternal(adj))).toBeGreaterThan(55);
-    expect(Math.round(ratingFromInternal(adj))).toBeLessThan(78);
+    // 832 vaut ~68 à couverture pleine (display-v2) ; à 1/6 mesuré l'OVR ajusté retombe vers ~57.
+    expect(Math.round(ratingFromInternal(adj))).toBeGreaterThan(54);
+    expect(Math.round(ratingFromInternal(adj))).toBeLessThan(62);
   });
 
   it("monotone : plus la couverture est élevée, plus la valeur ajustée remonte", () => {

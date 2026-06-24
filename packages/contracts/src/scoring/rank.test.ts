@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { RANK_BANDS } from "../enums";
 import { clampIndex, rankBandFromIndex, rankFromIndex, rankProgress } from "./rank";
 
-// Bandes sur l'échelle d'AFFICHAGE /100 (display-v1) :
+// Bandes sur l'échelle d'AFFICHAGE /100 (note dérivée display-v2 ; les bornes elles-mêmes sont stables) :
 // rookie [40,55) bronze [55,65) silver [65,72) gold [72,79) platinum [79,85) diamond [85,92) elite [92,100].
 describe("rankFromIndex", () => {
   it("mappe chaque OVR /100 sur le bon rang", () => {
@@ -11,10 +11,10 @@ describe("rankFromIndex", () => {
     expect(rankFromIndex(55)).toBe("bronze");
     expect(rankFromIndex(64)).toBe("bronze");
     expect(rankFromIndex(65)).toBe("silver");
-    expect(rankFromIndex(67)).toBe("silver"); // exemple A (index interne ~499)
+    expect(rankFromIndex(67)).toBe("silver");
     expect(rankFromIndex(72)).toBe("gold");
     expect(rankFromIndex(79)).toBe("platinum");
-    expect(rankFromIndex(82)).toBe("platinum"); // exemple B (index interne ~775)
+    expect(rankFromIndex(82)).toBe("platinum");
     expect(rankFromIndex(85)).toBe("diamond");
     expect(rankFromIndex(92)).toBe("elite");
     expect(rankFromIndex(100)).toBe("elite");

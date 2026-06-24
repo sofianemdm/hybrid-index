@@ -53,12 +53,12 @@ describe("api — onboarding/estimate (e2e)", () => {
       .expect(201);
     // Un seul attribut mesuré (engine) → l'Index AFFICHÉ est ajusté par couverture (1/6) : il
     // remontera en complétant le radar. L'attribut engine, lui, reste élite.
-    expect(res.body.index.value).toBe(68); // OVR /100 ajusté couverture (24:00 au 5 km, engine seul)
-    expect(res.body.index.rank).toBe("silver"); // 68 ∈ [65,72)
+    expect(res.body.index.value).toBe(57); // OVR /100 ajusté couverture (display-v2, engine seul à 1/6)
+    expect(res.body.index.rank).toBe("bronze"); // 57 ∈ [55,65)
     expect(res.body.index.isProvisional).toBe(true);
     expect(res.body.index.isEstimated).toBe(false); // course seule = non estimé
     expect(res.body.radar[0].attribute).toBe("engine");
-    expect(res.body.radar[0].score).toBeGreaterThanOrEqual(85); // engine élite (non ajusté)
+    expect(res.body.radar[0].score).toBeGreaterThanOrEqual(70); // engine non ajusté (P≈0.82 → ~73 en display-v2)
   });
 
   it("5bis : pompes estimées → effort max_pushups mappé + Index ÉTIQUETÉ estimé", async () => {

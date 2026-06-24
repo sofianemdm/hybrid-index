@@ -44,7 +44,7 @@ const benchmarkZeroF: PointTableModel = {
   ],
 };
 
-describe("Worked example A — Homme, objectif 'Partout', 3 efforts → ~499 (OR)", () => {
+describe("Worked example A — Homme, objectif 'Partout', 3 efforts → ~499 interne / OVR 57 (BRONZE)", () => {
   it("reproduit l'Index (D2 : Grace fait autorité sur le proxy pompes)", () => {
     const grace = subScore(270, graceH); // ~76 (strength + power)
     const fiveK = subScore(1440, fiveKH); // 884 (engine)
@@ -67,13 +67,13 @@ describe("Worked example A — Homme, objectif 'Partout', 3 efforts → ~499 (OR
     expect(index.value).toBeLessThanOrEqual(500);
     expect(index.radarCoverage).toBe(4);
     expect(index.isProvisional).toBe(false);
-    // Affichage /100 (display-v1) : index interne ~499 → OVR 67 = silver.
-    expect(index.ratingInt).toBe(67);
-    expect(rankFromIndex(index.ratingInt!)).toBe("silver");
+    // Affichage /100 (display-v2, recalibration pro) : index interne ~499 (P≈0.54) → OVR 57 = bronze.
+    expect(index.ratingInt).toBe(57);
+    expect(rankFromIndex(index.ratingInt!)).toBe("bronze");
   });
 });
 
-describe("Worked example B — Femme, objectif 'HYROX', 3 efforts → ~775 (DIAMANT)", () => {
+describe("Worked example B — Femme, objectif 'HYROX', 3 efforts → ~775 interne / OVR 64 (BRONZE)", () => {
   it("reproduit l'Index (Force en proxy → isEstimated)", () => {
     const row = subScore(480, rowF); // ~825/827 (engine)
     const bz = subScore(900, benchmarkZeroF); // 597 (engine, muscular_endurance, hybrid)
@@ -101,8 +101,8 @@ describe("Worked example B — Femme, objectif 'HYROX', 3 efforts → ~775 (DIAM
     expect(index.value).toBeGreaterThanOrEqual(772);
     expect(index.value).toBeLessThanOrEqual(778);
     expect(index.isEstimated).toBe(true);
-    // Affichage /100 (display-v1) : index interne ~775 → OVR 82 = platinum.
-    expect(index.ratingInt).toBe(82);
-    expect(rankFromIndex(index.ratingInt!)).toBe("platinum");
+    // Affichage /100 (display-v2, recalibration pro) : index interne ~775 (P≈0.72) → OVR 64 = bronze.
+    expect(index.ratingInt).toBe(64);
+    expect(rankFromIndex(index.ratingInt!)).toBe("bronze");
   });
 });

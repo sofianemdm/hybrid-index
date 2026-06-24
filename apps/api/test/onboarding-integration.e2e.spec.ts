@@ -41,14 +41,14 @@ describe("api ↔ score-service — reveal RÉEL (intégration, sans mock, sans 
     // Un seul attribut mesuré (engine) → l'Index AFFICHÉ est tiré vers la médiane (shrinkage
     // display-v2 à couverture 1/6) : honnête, pas le score brut de l'engine. Il remontera en
     // complétant le radar.
-    expect(res.body.index.value).toBeGreaterThanOrEqual(60); // OVR /100 shrinké (24:00 au 5 km)
-    expect(res.body.index.value).toBeLessThanOrEqual(75);
+    expect(res.body.index.value).toBeGreaterThanOrEqual(54); // OVR /100 shrinké (24:00 au 5 km, display-v2)
+    expect(res.body.index.value).toBeLessThanOrEqual(62);
     expect(res.body.index.radarCoverage).toBe(1);
     expect(res.body.index.isProvisional).toBe(true);
-    expect(["silver", "gold"]).toContain(res.body.index.rank);
+    expect(["bronze", "silver"]).toContain(res.body.index.rank);
     const engine = res.body.radar.find((a: { attribute: string }) => a.attribute === "engine");
     expect(engine.unlocked).toBe(true);
-    expect(engine.score).toBeGreaterThanOrEqual(78); // l'attribut engine, lui, reste élite (non shrinké)
+    expect(engine.score).toBeGreaterThanOrEqual(56); // l'attribut engine non shrinké (24:00 = P≈0.66 → ~60 en display-v2)
   });
 
   it("course libre 3 km (15:00) saisie par l'utilisateur → Engine débloqué", async () => {
