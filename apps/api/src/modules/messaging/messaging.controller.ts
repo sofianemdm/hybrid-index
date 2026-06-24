@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Param, Post, UseGuards } from "@nestjs/common";
 import { z } from "zod";
 import { ZodValidationPipe } from "../../common/zod-validation.pipe";
+import { RateLimit } from "../../common/rate-limit.guard";
 import { CurrentUser } from "../auth/current-user.decorator";
 import { JwtAuthGuard, type AuthenticatedUser } from "../auth/jwt-auth.guard";
 import { MessagingService } from "./messaging.service";
@@ -28,6 +29,8 @@ export class MessagingController {
     return this.messaging.messages(user.userId, id);
   }
 
+  // Anti-spam DM : 20 messages / min / utilisateur.
+  @RateLimit({ limit: 20, windowSec: 60, by: "user" })
   @Post("messages")
   send(
     @CurrentUser() user: AuthenticatedUser,

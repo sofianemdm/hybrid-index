@@ -108,6 +108,20 @@ export class RedisService implements OnModuleDestroy {
     }
   }
 
+  /** Compteur de fenêtre glissante (rate-limit). Incrémente `rl:{key}` et pose un TTL au 1er hit.
+   *  Renvoie le nombre d'appels dans la fenêtre, ou `null` si Redis indisponible (→ fail-open :
+   *  on ne bloque jamais un utilisateur légitime sur une panne d'infra). */
+  async rateLimit(key: string, windowSec: number): Promise<number | null> {
+    try {
+      const k = `rl:${key}`;
+      const count = await this.client.incr(k);
+      if (count === 1) await this.client.expire(k, windowSec);
+      return count;
+    } catch {
+      return null;
+    }
+  }
+
   isAvailable(): boolean {
     return this.available;
   }

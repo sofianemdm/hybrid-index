@@ -1,4 +1,6 @@
 import { Module } from "@nestjs/common";
+import { APP_GUARD } from "@nestjs/core";
+import { RateLimitGuard } from "./common/rate-limit.guard";
 import { HealthController } from "./health/health.controller";
 import { PrismaModule } from "./infra/prisma/prisma.module";
 import { RedisModule } from "./infra/redis/redis.module";
@@ -45,5 +47,6 @@ import { ChallengeModule } from "./modules/challenge/challenge.module";
     WodsModule,
   ],
   controllers: [HealthController],
+  providers: [{ provide: APP_GUARD, useClass: RateLimitGuard }],
 })
 export class AppModule {}
