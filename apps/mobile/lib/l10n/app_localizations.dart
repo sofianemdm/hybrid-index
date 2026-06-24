@@ -1100,6 +1100,12 @@ abstract class AppLocalizations {
   /// **'Notification settings'**
   String get notificationSettingsTitle;
 
+  /// No description provided for @notificationSettingsComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Push notifications are coming soon. Your preferences below will apply as soon as they go live.'**
+  String get notificationSettingsComingSoon;
+
   /// No description provided for @notificationSettingsSaved.
   ///
   /// In en, this message translates to:

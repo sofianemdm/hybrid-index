@@ -118,7 +118,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get onbRunHint =>
-      'Ex. 3 km en 15:00. On calcule ton allure et on l’ajuste à toutes distances.';
+      'Ex. 3 km en 15:00. On calcule ton allure et on l’ajuste à toutes les distances.';
 
   @override
   String get onbEstimatedIndexHere => 'Ton Index estimé s’affichera ici.';
@@ -201,7 +201,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get wodTabOtherSubtitle =>
-      'Épreuves réelles (HYROX, compét CrossFit, courses) + vrais temps des pros';
+      'Épreuves réelles (HYROX, compétitions CrossFit, courses), avec les vrais temps des pros.';
 
   @override
   String get wodTabMyHistory => 'Mon historique de séance';
@@ -569,6 +569,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get notificationSettingsTitle => 'Réglages des notifications';
 
   @override
+  String get notificationSettingsComingSoon =>
+      'Les notifications push arrivent bientôt. Tes préférences ci-dessous seront prises en compte dès leur activation.';
+
+  @override
   String get notificationSettingsSaved => 'Préférences enregistrées.';
 
   @override
@@ -649,7 +653,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get clubDetailOwnerMessage =>
-      'Transfère d\'abord le club ou attends d\'être seul·e pour le quitter.';
+      'Transfère d\'abord le club ou attends qu\'il ne reste que toi pour le quitter.';
 
   @override
   String get clubDetailLeaveMessage =>
@@ -742,12 +746,12 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String publicProfileCompareAhead(int diff, int mine, int other) {
-    return 'Tu es devant de $diff points (toi $mine · lui $other).';
+    return '$diff points d\'avance pour toi (toi $mine · $other).';
   }
 
   @override
   String publicProfileCompareBehind(int diff, int mine, int other) {
-    return 'Il te devance de $diff points (toi $mine · lui $other).';
+    return '$diff points à reprendre (toi $mine · $other).';
   }
 
   @override

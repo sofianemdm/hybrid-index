@@ -566,6 +566,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notificationSettingsTitle => 'Notification settings';
 
   @override
+  String get notificationSettingsComingSoon =>
+      'Push notifications are coming soon. Your preferences below will apply as soon as they go live.';
+
+  @override
   String get notificationSettingsSaved => 'Preferences saved.';
 
   @override

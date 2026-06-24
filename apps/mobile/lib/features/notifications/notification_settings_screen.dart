@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/session.dart';
 import '../../l10n/app_localizations.dart';
+import '../../core/env.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/hi_button.dart';
 
@@ -95,6 +96,29 @@ class _NotificationSettingsScreenState extends ConsumerState<NotificationSetting
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      // Push pas encore branché (Firebase à venir) : on est HONNÊTE — les préférences
+                      // sont mémorisées, mais aucune notification n'est encore envoyée (audit IC-11).
+                      if (!Env.pushEnabled) ...[
+                        Container(
+                          padding: const EdgeInsets.all(HiSpace.md),
+                          decoration: BoxDecoration(
+                            color: HiColors.brandPrimary.withValues(alpha: 0.10),
+                            borderRadius: BorderRadius.circular(HiRadius.md),
+                            border: Border.all(color: HiColors.brandPrimary.withValues(alpha: 0.30)),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.notifications_paused_rounded, color: HiColors.brandPrimary, size: 20),
+                              const SizedBox(width: HiSpace.sm),
+                              Expanded(
+                                child: Text(t.notificationSettingsComingSoon,
+                                    style: HiType.caption.copyWith(color: HiColors.textSecondary, height: 1.35)),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: HiSpace.lg),
+                      ],
                       Text(t.notificationSettingsQuietHours, style: HiType.overline.copyWith(color: HiColors.textSecondary)),
                       const SizedBox(height: 8),
                       Row(

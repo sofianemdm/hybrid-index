@@ -278,6 +278,7 @@
   },
   "notificationsNewMessagesBody": "Open your conversations.",
   "notificationSettingsTitle": "Notification settings",
+  "notificationSettingsComingSoon": "Push notifications are coming soon. Your preferences below will apply as soon as they go live.",
   "notificationSettingsSaved": "Preferences saved.",
   "notificationSettingsQuietHours": "Quiet hours",
   "notificationSettingsStart": "Start",

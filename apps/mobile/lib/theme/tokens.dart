@@ -218,7 +218,7 @@ class HiLabels {
   HiLabels._();
 
   static const attributes = {
-    'engine': 'Engine',
+    'engine': 'Cardio', // « Engine » (anglais) → « Cardio » : cohérence de langue sur le radar
     'speed': 'Vitesse',
     'strength': 'Force',
     'power': 'Puissance',
@@ -227,7 +227,7 @@ class HiLabels {
   };
 
   static const ranks = {
-    'rookie': 'Rookie',
+    'rookie': 'Débutant', // « Rookie » (anglais) → « Débutant » : échelle francisée
     'bronze': 'Bronze',
     'silver': 'Argent',
     'gold': 'Or',
