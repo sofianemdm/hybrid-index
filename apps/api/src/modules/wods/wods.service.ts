@@ -208,18 +208,24 @@ export class WodsService {
 
     const sessions: Array<{ wodId: string; name: string; requiresEquipment: boolean; covers: string[] }> = [];
     const chosen = new Set<string>();
-    // Nouvel arrivant (aucun attribut encore mesuré POUR DE VRAI, ex. juste après l'onboarding) :
-    // on conseille « Profil Express » EN PREMIER — une seule séance sans matériel qui estime les 6
-    // qualités, pour un Index de départ plus complet/fin. Les séances ciblées ci-dessous le
-    // préciseront ensuite pour de vrai (profil_express ne réduit pas `remaining` : reste estimé).
-    if (done.size === 0) {
-      const pe = await this.prisma.wod.findUnique({
-        where: { id: "profil_express" },
-        select: { id: true, name: true, requiresEquipment: true },
+    // Nouvel arrivant : radar encore LARGEMENT incomplet (≥ 3 des 6 qualités non mesurées pour de
+    // vrai) ET « Profil Express » pas encore fait → on le conseille EN PREMIER : une seule séance
+    // sans matériel qui estime les 6 qualités, pour un Index de départ plus complet/fin. On ne le
+    // re-propose plus une fois fait (il ne donne que de l'ESTIMÉ → resterait sinon dans `remaining`).
+    if (remaining.size >= 3) {
+      const alreadyDone = await this.prisma.wodResult.findFirst({
+        where: { userId, wodId: "profil_express" },
+        select: { id: true },
       });
-      if (pe) {
-        sessions.push({ wodId: pe.id, name: pe.name, requiresEquipment: pe.requiresEquipment, covers: [...remaining] });
-        chosen.add(pe.id);
+      if (!alreadyDone) {
+        const pe = await this.prisma.wod.findUnique({
+          where: { id: "profil_express" },
+          select: { id: true, name: true, requiresEquipment: true },
+        });
+        if (pe) {
+          sessions.push({ wodId: pe.id, name: pe.name, requiresEquipment: pe.requiresEquipment, covers: [...remaining] });
+          chosen.add(pe.id);
+        }
       }
     }
     while (remaining.size > 0) {

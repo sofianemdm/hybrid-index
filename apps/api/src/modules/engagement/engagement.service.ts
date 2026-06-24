@@ -49,12 +49,14 @@ export class EngagementService {
     const nextMonday = addWeeks(monday, 1);
     const [sessions, idx, before, streak] = await Promise.all([
       // Séances RÉELLES de la semaine : on exclut les efforts d'onboarding (auto-évaluation à
-      // l'inscription, clé `onboarding:*`) — ce ne sont pas des séances faites cette semaine.
+      // l'inscription, clé `onboarding:*`) — ce ne sont pas des séances faites cette semaine. NB :
+      // les vraies séances ont `idempotencyKey = null` ; un simple `NOT startsWith` les exclurait
+      // (SQL `NOT(NULL LIKE …)` = NULL), d'où le `OR { null }` explicite pour les garder.
       this.prisma.wodResult.count({
         where: {
           userId,
           performedAt: { gte: monday, lt: nextMonday },
-          NOT: { idempotencyKey: { startsWith: "onboarding:" } },
+          OR: [{ idempotencyKey: null }, { idempotencyKey: { not: { startsWith: "onboarding:" } } }],
         },
       }),
       this.prisma.hybridIndex.findUnique({ where: { userId }, select: { value: true } }),

@@ -102,16 +102,33 @@ export class LeaderboardService {
     return { position: above + 1, value: idx.value };
   }
 
+  // Anti-COUNT : on ne revérifie la synchro Redis/Postgres qu'au plus une fois par minute et par
+  // sexe. Le classement est l'écran le plus consulté ; inutile de faire un COUNT Postgres à chaque
+  // ouverture une fois synchro. La cohérence en écriture est assurée par setIndex/remove.
+  private readonly lastSyncAt = new Map<string, number>();
+
   /** Auto-répare le sorted set Redis si son cardinal diffère de Postgres (seed sans REDIS_URL,
    *  flush Redis, comptes supprimés…). Postgres = source de vérité ; Redis = cache de tri rapide
-   *  (décision verrouillée). Une fois synchronisé, les lectures suivantes ne reconstruisent plus. */
+   *  (décision verrouillée). Throttlé à 1×/min/sexe ; une fois synchro, plus de reconstruction. */
   private async ensureSynced(sex: string): Promise<void> {
+    const now = Date.now();
+    if (now - (this.lastSyncAt.get(sex) ?? 0) < 60_000) return;
     const [rCount, pgCount] = await Promise.all([this.redis.total(sex), this.pgCount(sex)]);
-    if (rCount === null) return; // Redis indisponible → pgTop prend le relais en lecture
+    if (rCount === null) return; // Redis indisponible → pgTop prend le relais en lecture (pas de cache)
     if (rCount !== pgCount) {
-      const all = await this.pgTop(sex, 1_000_000); // toutes les entrées du sexe (source de vérité)
-      await this.redis.rebuild(sex, all);
+      await this.redis.rebuild(sex, await this.pgAll(sex)); // reconstruction depuis la source de vérité
     }
+    this.lastSyncAt.set(sex, now);
+  }
+
+  /** Toutes les entrées de classement d'un sexe (source de vérité Postgres), pour reconstruire Redis. */
+  private async pgAll(sex: string): Promise<Array<{ userId: string; value: number }>> {
+    const rows = await this.prisma.hybridIndex.findMany({
+      where: { user: { profile: { sex: sex as Sex } } },
+      orderBy: { value: "desc" },
+      select: { userId: true, value: true },
+    });
+    return rows.map((r) => ({ userId: r.userId, value: r.value }));
   }
 
   private async pgTop(sex: string, limit: number): Promise<Array<{ userId: string; value: number }>> {
