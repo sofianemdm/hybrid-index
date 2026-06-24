@@ -78,11 +78,19 @@ class HomeScreen extends ConsumerWidget {
                       orElse: () => const SizedBox.shrink(),
                     ),
                 const SizedBox(width: HiSpace.xs),
-                IconButton(
-                  tooltip: t.homeNotifications,
-                  icon: Icon(Icons.notifications_rounded, color: HiColors.textSecondary),
-                  onPressed: () => Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+                Badge.count(
+                  count: ref.watch(unreadMessagesProvider).value ?? 0,
+                  isLabelVisible: (ref.watch(unreadMessagesProvider).value ?? 0) > 0,
+                  backgroundColor: HiColors.error,
+                  child: IconButton(
+                    tooltip: t.homeNotifications,
+                    icon: Icon(Icons.notifications_rounded, color: HiColors.textSecondary),
+                    onPressed: () async {
+                      await Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+                      );
+                      ref.invalidate(unreadMessagesProvider); // maj pastille au retour
+                    },
                   ),
                 ),
                 IconButton(

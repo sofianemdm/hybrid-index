@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../app.dart';
 import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
+import '../messaging/conversations_screen.dart';
 import 'notification_settings_screen.dart';
 
 /// Centre de notifications in-app : déclencheurs d'engagement évalués sur l'état courant.
@@ -54,7 +56,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
               return Center(child: Text('${snap.error}', style: HiType.body.copyWith(color: HiColors.error)));
             }
             final items = snap.data!;
-            if (items.isEmpty) {
+            final unread = ref.watch(unreadMessagesProvider).value ?? 0;
+            if (items.isEmpty && unread == 0) {
               return Center(
                 child: Padding(
                   padding: const EdgeInsets.all(HiSpace.lg),
@@ -63,13 +66,58 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                 ),
               );
             }
+            final hasMsg = unread > 0;
             return ListView.separated(
               padding: const EdgeInsets.all(HiSpace.lg),
-              itemCount: items.length,
+              itemCount: items.length + (hasMsg ? 1 : 0),
               separatorBuilder: (_, __) => const SizedBox(height: HiSpace.sm),
-              itemBuilder: (_, i) => _tile(items[i]),
+              itemBuilder: (_, i) {
+                if (hasMsg && i == 0) return _messagesCard(context, unread);
+                return _tile(items[i - (hasMsg ? 1 : 0)]);
+              },
             );
           },
+        ),
+      ),
+    );
+  }
+
+  /// Carte « nouveaux messages » en tête des notifications → ouvre les conversations.
+  Widget _messagesCard(BuildContext context, int unread) {
+    final t = AppLocalizations.of(context);
+    return InkWell(
+      borderRadius: BorderRadius.circular(HiRadius.md),
+      onTap: () async {
+        await Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ConversationsScreen()));
+        if (!mounted) return;
+        ref.invalidate(unreadMessagesProvider);
+        setState(() {});
+      },
+      child: Container(
+        padding: const EdgeInsets.all(HiSpace.md),
+        decoration: BoxDecoration(
+          color: HiColors.brandPrimary.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(HiRadius.md),
+          border: Border.all(color: HiColors.brandPrimary.withValues(alpha: 0.5)),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.forum_rounded, color: HiColors.brandPrimary, size: 22),
+            const SizedBox(width: HiSpace.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(t.notificationsNewMessages(unread),
+                      style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
+                  const SizedBox(height: 2),
+                  Text(t.notificationsNewMessagesBody,
+                      style: HiType.caption.copyWith(color: HiColors.textSecondary)),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right_rounded, color: HiColors.textTertiary),
+          ],
         ),
       ),
     );

@@ -268,6 +268,15 @@
   "notificationsTitle": "Notifications",
   "notificationsSettingsTooltip": "Settings",
   "notificationsEmpty": "Nothing new for now. Log a session to get things moving!",
+  "notificationsNewMessages": "{count, plural, =1{1 new message} other{{count} new messages}}",
+  "@notificationsNewMessages": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notificationsNewMessagesBody": "Open your conversations.",
   "notificationSettingsTitle": "Notification settings",
   "notificationSettingsSaved": "Preferences saved.",
   "notificationSettingsQuietHours": "Quiet hours",

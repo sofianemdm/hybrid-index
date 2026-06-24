@@ -1082,6 +1082,18 @@ abstract class AppLocalizations {
   /// **'Nothing new for now. Log a session to get things moving!'**
   String get notificationsEmpty;
 
+  /// No description provided for @notificationsNewMessages.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 new message} other{{count} new messages}}'**
+  String notificationsNewMessages(int count);
+
+  /// No description provided for @notificationsNewMessagesBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Open your conversations.'**
+  String get notificationsNewMessagesBody;
+
   /// No description provided for @notificationSettingsTitle.
   ///
   /// In en, this message translates to:

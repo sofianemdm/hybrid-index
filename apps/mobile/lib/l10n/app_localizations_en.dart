@@ -549,6 +549,20 @@ class AppLocalizationsEn extends AppLocalizations {
       'Nothing new for now. Log a session to get things moving!';
 
   @override
+  String notificationsNewMessages(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count new messages',
+      one: '1 new message',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get notificationsNewMessagesBody => 'Open your conversations.';
+
+  @override
   String get notificationSettingsTitle => 'Notification settings';
 
   @override
