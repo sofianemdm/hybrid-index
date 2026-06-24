@@ -465,9 +465,42 @@ export class WodsService {
       select: { userId: true, value: true },
     });
     const ovrByUser = new Map(indices.map((h) => [h.userId, Math.round(ratingFromInternal(h.value))]));
+
+    // « Ma position » sur ce WOD, MÊME hors top 100 (Strava/Garmin l'épinglent toujours). On la
+    // calcule sur le meilleur effort par utilisateur, avec le même tie-break que la liste.
+    let me: { position: number; rawResult: number; subScore: number | null } | null = null;
+    if (userId) {
+      const baseWhere = { wodId: id, sex: sex as Sex, review: "ok" as const, subScore: { not: null }, rxCompliant: rx };
+      const myBest = await this.prisma.wodResult.findFirst({
+        where: { ...baseWhere, userId },
+        orderBy: [{ rawResult: better }, { performedAt: "asc" }],
+        select: { rawResult: true, subScore: true },
+      });
+      if (myBest) {
+        // Meilleur effort de chaque utilisateur, puis on compte ceux STRICTEMENT devant moi.
+        const groups = await this.prisma.wodResult.groupBy({
+          by: ["userId"],
+          where: baseWhere,
+          _min: better === "asc" ? { rawResult: true } : undefined,
+          _max: better === "desc" ? { rawResult: true } : undefined,
+        });
+        const myVal = Number(myBest.rawResult);
+        const isBetter = (v: number) => (better === "asc" ? v < myVal : v > myVal);
+        let above = 0;
+        for (const g of groups) {
+          if (g.userId === userId) continue;
+          const v = Number((better === "asc" ? g._min?.rawResult : g._max?.rawResult) ?? myVal);
+          if (isBetter(v)) above++;
+          else if (v === myVal && g.userId < userId) above++; // ex æquo → tie-break userId asc
+        }
+        me = { position: above + 1, rawResult: myVal, subScore: ovrSub(myBest.subScore) };
+      }
+    }
+
     return {
       wodId: id,
       sex,
+      me,
       entries: rows.map((r, i) => ({
         position: i + 1,
         userId: r.userId,
