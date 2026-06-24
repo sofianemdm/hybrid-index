@@ -111,7 +111,7 @@ class _GoogleProfileScreenState extends ConsumerState<GoogleProfileScreen> {
                 _choices('Objectif', const {'hyrox': 'HYROX', 'crossfit_strength': 'CrossFit', 'all_round': 'Condition physique'},
                     _goal, (v) => setState(() => _goal = v)),
                 const SizedBox(height: HiSpace.md),
-                _choices('Matériel', const {'none': 'Sans matériel', 'equipped': 'Équipé'}, _equipment,
+                _choices('Matériel', const {'none': 'Sans matériel', 'equipped': 'Équipé (salle de sport)'}, _equipment,
                     (v) => setState(() => _equipment = v)),
                 const SizedBox(height: HiSpace.xl),
                 HiButton(label: 'Créer mon compte', loading: _loading, onPressed: _submit),

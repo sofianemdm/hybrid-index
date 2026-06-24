@@ -191,7 +191,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       const SizedBox(height: HiSpace.lg),
                       _ChoiceRow(
                         label: 'Matériel — « Équipé » donne aussi accès au sans-matériel',
-                        options: const {'none': 'Sans matériel', 'equipped': 'Équipé'},
+                        options: const {'none': 'Sans matériel', 'equipped': 'Équipé (salle de sport)'},
                         value: _equipment,
                         onChanged: (v) => setState(() => _equipment = v),
                       ),
