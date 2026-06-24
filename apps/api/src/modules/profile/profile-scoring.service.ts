@@ -91,7 +91,9 @@ export class ProfileScoringService {
     if (!profile) return null;
 
     const results = await this.prisma.wodResult.findMany({
-      where: { userId },
+      // Seuls les résultats validés (review:'ok') comptent dans l'Index — un effort flaggé
+      // anti-triche (pending_review) ne gonfle ni l'Index ni le radar (cohérent avec les classements).
+      where: { userId, review: "ok" },
       select: {
         wodId: true,
         rawResult: true,

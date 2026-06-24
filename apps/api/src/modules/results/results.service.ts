@@ -58,7 +58,29 @@ export class ResultsService {
       distanceMeters: req.distanceMeters,
     });
 
-    const performedAt = req.performedAt ?? new Date();
+    // Heure SERVEUR (le client ne fournit plus performedAt) → empêche de truquer défis/streaks.
+    const performedAt = new Date();
+
+    // Anti-triche (décision verrouillée « justesse non négociable », cf. cahier §5.5) : un saut
+    // > +30 % du sous-score normalisé vs le MEILLEUR effort des 7 derniers jours sur ce WOD est
+    // suspect (faux record dans les bornes physiologiques larges). On l'ACCEPTE mais on le FLAGGE
+    // `pending_review` → exclu des classements/rivaux/badges (qui filtrent review:'ok') jusqu'à revue.
+    // Le tout PREMIER effort sur un WOD n'est jamais flaggé (aucune base de comparaison).
+    const sevenDaysAgo = new Date(performedAt.getTime() - 7 * 86400000);
+    const recentBest = await this.prisma.wodResult.aggregate({
+      where: {
+        userId,
+        wodId: req.wodId,
+        review: "ok",
+        subScore: { not: null },
+        performedAt: { gte: sevenDaysAgo },
+      },
+      _max: { subScore: true },
+    });
+    const prevBest = recentBest._max.subScore;
+    const ANOMALY_RATIO = 1.3; // +30 %
+    const isAnomaly = prevBest != null && prevBest > 0 && scored.subScore > prevBest * ANOMALY_RATIO;
+
     const data = {
       wodId: req.wodId,
       sex: profile.sex,
@@ -70,6 +92,7 @@ export class ResultsService {
       source: "declared" as const,
       scoringVersionId: SCORING_VERSION_UUID,
       performedAt,
+      review: (isAnomaly ? "pending_review" : "ok") as "pending_review" | "ok",
     };
     // Idempotent si une clé est fournie (retry réseau mobile) ; sinon création simple (historique).
     const created = req.idempotencyKey
