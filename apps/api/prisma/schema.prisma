@@ -5,6 +5,9 @@
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["multiSchema"]
+  // Moteurs : natif (dev) + Alpine/musl OpenSSL 3 (image Docker node:22-alpine) — sinon Prisma
+  // cherche libssl 1.1 qui n'existe pas sur Alpine récent.
+  binaryTargets   = ["native", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {
