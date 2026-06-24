@@ -12,6 +12,7 @@ import '../../data/session.dart';
 import '../../data/web_download.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
+import '../../widgets/hi_avatar.dart';
 import '../../widgets/hi_button.dart';
 import '../../widgets/rank_badge.dart';
 
@@ -93,7 +94,13 @@ class _ShareCardScreenState extends ConsumerState<ShareCardScreen> {
                 else ...[
                   RepaintBoundary(
                     key: _cardKey,
-                    child: _Card(profile: profile, name: name, sex: ref.watch(sessionProvider).sex, exporting: _exporting),
+                    child: _Card(
+                      profile: profile,
+                      name: name,
+                      sex: ref.watch(sessionProvider).sex,
+                      avatar: ref.watch(avatarProvider).value,
+                      exporting: _exporting,
+                    ),
                   ),
                   const SizedBox(height: HiSpace.lg),
                   Text(t.shareCardTagline,
@@ -151,10 +158,11 @@ class _Card extends StatefulWidget {
   final Profile profile;
   final String name;
   final String? sex;
+  final AvatarConfig? avatar;
 
   /// Pendant l'export PNG : on fige (OVR plein, sans reflet animé) pour une capture propre.
   final bool exporting;
-  const _Card({required this.profile, required this.name, this.sex, this.exporting = false});
+  const _Card({required this.profile, required this.name, this.sex, this.avatar, this.exporting = false});
 
   @override
   State<_Card> createState() => _CardState();
@@ -250,7 +258,7 @@ class _CardState extends State<_Card> with TickerProviderStateMixin {
                                 const SizedBox(height: 8),
                                 RankBadge(rank: idx.rank, fontSize: 12),
                                 const SizedBox(height: 4),
-                                Text('${widget.sex == 'female' ? '♀' : '♂'}  ${loc.shareCardLeague} ${widget.sex == 'female' ? 'F' : 'H'}',
+                                Text('${widget.sex == 'female' ? '♀' : '♂'}  ${loc.shareCardLeague} ${widget.sex == 'female' ? 'FEMME' : 'HOMME'}',
                                     style: const TextStyle(color: _inkSoft, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 0.5)),
                               ],
                             ),
@@ -324,6 +332,12 @@ class _CardState extends State<_Card> with TickerProviderStateMixin {
   }
 
   Widget _avatar(_Skin skin) {
+    // L'avatar personnalisé (ou la photo de profil, gérés tous deux par HiAvatar via photoData),
+    // avec l'anneau de rang. Repli sur les initiales tant que l'avatar n'est pas encore chargé.
+    final avatar = widget.avatar;
+    if (avatar != null) {
+      return HiAvatar(config: avatar, rank: widget.profile.index.rank, size: 84);
+    }
     final initials = widget.name.trim().isEmpty
         ? '?'
         : widget.name.trim().split(RegExp(r'\s+')).take(2).map((w) => w[0].toUpperCase()).join();
