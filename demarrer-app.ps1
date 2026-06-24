@@ -37,7 +37,17 @@ if (-not $ok) {
 }
 else { Write-Host "    Services OK." -ForegroundColor Green }
 
-Write-Host "==> 4/4  App Flutter dans Chrome (port 8080, laisse cette fenêtre ouverte)..." -ForegroundColor Cyan
+Write-Host "==> 4/4  App Flutter : build RELEASE + serveur local (port 8080)..." -ForegroundColor Cyan
 Set-Location "$root\apps\mobile"
-# Port fixe 8080 : requis pour la connexion Google (origine JavaScript autorisée).
-& $flutter run -d chrome --web-port 8080
+# Build RELEASE (dart2js) plutôt que `flutter run -d chrome` (build DEBUG lié à UNE fenêtre Chrome,
+# qui donne un écran blanc dans les autres navigateurs). Le release marche dans TOUS les navigateurs
+# du PC. API locale par défaut (http://localhost:3000, cf. Env.apiBaseUrl) → aucun --dart-define.
+Write-Host "    Compilation (env. 1 min la 1re fois)..." -ForegroundColor DarkGray
+& $flutter build web
+if ($LASTEXITCODE -ne 0) {
+  Write-Host "Echec du build Flutter web. Verifie l'installation Flutter (C:\flutter\bin)." -ForegroundColor Red
+  exit 1
+}
+# Port fixe 8080 : requis comme origine JavaScript autorisee pour la connexion Google. Le serveur
+# ouvre le navigateur tout seul et reste au premier plan (laisse cette fenetre ouverte).
+node "$root\serve-web.mjs"
