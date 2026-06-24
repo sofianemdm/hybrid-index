@@ -26,7 +26,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   int _step = 0; // 0 = avatar, 1 = efforts
   AvatarConfig _avatar = const AvatarConfig(skinTone: 2, hairStyle: 1, hairColor: 1);
 
-  bool _withCourse = true;
+  bool _withCourse = false; // OFF par défaut : les pompes (ON) suffisent au 1er reveal (UX-01)
   final _km = TextEditingController(text: '3');
   final _min = TextEditingController();
   final _sec = TextEditingController();
@@ -125,7 +125,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       _toast(AppLocalizations.of(context).onbNeedEffort);
       return;
     }
-    if (_withCourse && !_courseValid) {
+    // On ne bloque QUE si la course est le SEUL effort tenté mais incomplète. Si un autre effort
+    // valide existe (pompes/tractions/squat), une course incomplète est simplement ignorée du
+    // payload (cf. _buildPayload) — le reveal n'est jamais bloqué inutilement (UX-01).
+    final hasOtherEffort = _withPushups || _withPullups || _squatKg != null;
+    if (_withCourse && !_courseValid && !hasOtherEffort) {
       _toast(AppLocalizations.of(context).onbRunNeedsBoth);
       return;
     }
@@ -188,7 +192,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         const SizedBox(height: HiSpace.lg),
         AvatarCustomizer(config: _avatar, onChanged: (c) => setState(() => _avatar = c)),
         const SizedBox(height: HiSpace.xl),
-        HiButton(label: AppLocalizations.of(context).commonContinue, onPressed: () => setState(() => _step = 1)),
+        HiButton(
+            label: AppLocalizations.of(context).commonContinue,
+            // En arrivant à l'étape efforts, on calcule tout de suite l'aperçu d'Index (pompes ON par
+            // défaut → un chiffre s'affiche immédiatement, le « waouh » anticipé qui motive, UX-02).
+            onPressed: () {
+              setState(() => _step = 1);
+              _refreshPreview();
+            }),
         const SizedBox(height: HiSpace.lg),
       ];
 

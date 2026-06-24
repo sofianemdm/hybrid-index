@@ -73,6 +73,14 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
   }
 
   Future<void> _submit() async {
+    // Les secondes doivent rester dans [0,59] (sinon « 4:90 » serait enregistré comme 5:30, BUG-013).
+    if (_isTime) {
+      final sec = int.tryParse(_sec.text) ?? 0;
+      if (sec > 59) {
+        _toast('Les secondes doivent être entre 0 et 59.');
+        return;
+      }
+    }
     final raw = _raw;
     if (raw == null) {
       _toast('Saisis un résultat valide.');

@@ -41,7 +41,10 @@ class _Block {
   final MovementSummary movement;
   int amount;
   double? loadKg;
-  _Block(this.movement, this.amount, this.loadKg);
+  // Controller PERSISTANT (1 par bloc) : créé hors build → le curseur ne saute plus à chaque frappe
+  // (avant : un nouveau controller à chaque rebuild remettait la sélection à 0, BUG-004).
+  final TextEditingController controller;
+  _Block(this.movement, this.amount, this.loadKg) : controller = TextEditingController(text: '$amount');
 }
 
 /// Constructeur de séance : format + mouvements + aperçu live de l'estimation, puis publication.
@@ -75,6 +78,9 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
   void dispose() {
     _timeCap.dispose();
     _rounds.dispose();
+    for (final b in _blocks) {
+      b.controller.dispose();
+    }
     super.dispose();
   }
 
@@ -328,7 +334,7 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
                   suffixText: _unitSuffix(b.movement.unit),
                   isDense: true,
                 ),
-                controller: TextEditingController(text: '${b.amount}'),
+                controller: b.controller,
                 onChanged: (v) {
                   b.amount = int.tryParse(v) ?? b.amount;
                   _refreshEstimate();
@@ -354,7 +360,7 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
             IconButton(
               icon: Icon(Icons.close_rounded, color: HiColors.textTertiary, size: 20),
               onPressed: () {
-                setState(() => _blocks.removeAt(i));
+                setState(() => _blocks.removeAt(i).controller.dispose());
                 _refreshEstimate();
               },
             ),
