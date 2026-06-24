@@ -8,8 +8,8 @@ async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule, { bufferLogs: false });
   configureApp(app);
   // Le score-service n'est PAS exposé publiquement : seul l'`api` l'appelle (contrat /v1/score/*).
-  const port = Number(process.env.SCORE_SERVICE_PORT ?? 3001);
-  await app.listen(port);
+  const port = Number(process.env.PORT ?? process.env.SCORE_SERVICE_PORT ?? 3001);
+  await app.listen(port, "0.0.0.0");
   Logger.log(`score-service en écoute sur le port ${port}`, "Bootstrap");
 }
 
