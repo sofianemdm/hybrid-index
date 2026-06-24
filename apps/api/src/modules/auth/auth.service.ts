@@ -47,26 +47,43 @@ export class AuthService {
 
     const passwordHash = await bcrypt.hash(req.password, 10);
 
-    const user = await this.prisma.user.create({
-      data: {
-        email,
-        passwordHash,
-        dateOfBirth: req.dateOfBirth,
-        ageVerified: true,
-        consents: { tos: true, acceptedAt: new Date().toISOString() },
-        identities: { create: { provider: "email", providerSubject: email } },
-        profile: {
-          create: {
-            displayName,
-            sex: req.sex,
-            goal: req.goal,
-            equipmentPref: req.equipmentPref,
+    let user;
+    try {
+      user = await this.prisma.user.create({
+        data: {
+          email,
+          passwordHash,
+          dateOfBirth: req.dateOfBirth,
+          ageVerified: true,
+          consents: { tos: true, acceptedAt: new Date().toISOString() },
+          identities: { create: { provider: "email", providerSubject: email } },
+          profile: {
+            create: {
+              displayName,
+              sex: req.sex,
+              goal: req.goal,
+              equipmentPref: req.equipmentPref,
+            },
           },
         },
-      },
-    });
+      });
+    } catch (e) {
+      throw this.uniqueViolation(e); // course email/pseudo concurrente → 409 ciblé (pas 500)
+    }
 
     return this.sign(user.id, email, displayName);
+  }
+
+  /** Traduit une violation d'unicité Prisma (P2002, course concurrente sur email/pseudo) en
+   *  ConflictException ciblée. Renvoie l'erreur d'origine si ce n'est pas un P2002. */
+  private uniqueViolation(e: unknown): unknown {
+    const err = e as { code?: string; meta?: { target?: string[] | string } };
+    if (err?.code !== "P2002") return e;
+    const target = Array.isArray(err.meta?.target) ? err.meta!.target.join(",") : String(err.meta?.target ?? "");
+    if (target.includes("displayName")) {
+      return new ConflictException({ code: "CONFLICT", message: "Ce pseudo est déjà pris." });
+    }
+    return new ConflictException({ code: "CONFLICT", message: "Cet email est déjà utilisé." });
   }
 
   async login(req: LoginRequest): Promise<AuthResponse> {
@@ -120,23 +137,28 @@ export class AuthService {
     const nameTaken = await this.prisma.profile.findUnique({ where: { displayName } });
     if (nameTaken) throw new ConflictException({ code: "CONFLICT", message: "Ce pseudo est déjà pris." });
 
-    const user = await this.prisma.user.create({
-      data: {
-        email,
-        dateOfBirth: req.profile.dateOfBirth,
-        ageVerified: true,
-        consents: { tos: true, provider: "google", acceptedAt: new Date().toISOString() },
-        identities: { create: { provider: "google", providerSubject: sub } },
-        profile: {
-          create: {
-            displayName,
-            sex: req.profile.sex,
-            goal: req.profile.goal,
-            equipmentPref: req.profile.equipmentPref,
+    let user;
+    try {
+      user = await this.prisma.user.create({
+        data: {
+          email,
+          dateOfBirth: req.profile.dateOfBirth,
+          ageVerified: true,
+          consents: { tos: true, provider: "google", acceptedAt: new Date().toISOString() },
+          identities: { create: { provider: "google", providerSubject: sub } },
+          profile: {
+            create: {
+              displayName,
+              sex: req.profile.sex,
+              goal: req.profile.goal,
+              equipmentPref: req.profile.equipmentPref,
+            },
           },
         },
-      },
-    });
+      });
+    } catch (e) {
+      throw this.uniqueViolation(e);
+    }
     return { ...this.sign(user.id, email, displayName), isNew: true };
   }
 

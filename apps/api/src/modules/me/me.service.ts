@@ -35,14 +35,24 @@ export class MeService {
 
     const goalChanged = req.goal !== undefined && req.goal !== profile.goal;
 
-    const updated = await this.prisma.profile.update({
-      where: { userId },
-      data: {
-        ...(req.displayName !== undefined ? { displayName: req.displayName.trim() } : {}),
-        ...(req.goal !== undefined ? { goal: req.goal } : {}),
-        ...(req.equipmentPref !== undefined ? { equipmentPref: req.equipmentPref } : {}),
-      },
-    });
+    let updated;
+    try {
+      updated = await this.prisma.profile.update({
+        where: { userId },
+        data: {
+          ...(req.displayName !== undefined ? { displayName: req.displayName.trim() } : {}),
+          ...(req.goal !== undefined ? { goal: req.goal } : {}),
+          ...(req.equipmentPref !== undefined ? { equipmentPref: req.equipmentPref } : {}),
+        },
+      });
+    } catch (e) {
+      // Course concurrente sur le pseudo (P2002) après le findUnique ci-dessus → 409 ciblé.
+      const err = e as { code?: string };
+      if (err?.code === "P2002") {
+        throw new ConflictException({ code: "CONFLICT", message: "Ce pseudo est déjà pris." });
+      }
+      throw e;
+    }
 
     // L'objectif change la pondération de l'Index → on recalcule à partir des efforts persistés.
     if (goalChanged) {

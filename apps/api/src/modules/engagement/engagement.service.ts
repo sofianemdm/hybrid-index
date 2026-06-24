@@ -263,6 +263,8 @@ export class EngagementService {
       this.prisma.user.delete({ where: { id: userId } }),
     ]);
     if (profile) await this.redis.remove(profile.sex, userId);
+    // Invalide le cache de statut du guard JWT → le token du compte supprimé est rejeté immédiatement.
+    await this.redis.del(`usrok:${userId}`);
     return { deleted: true };
   }
 }

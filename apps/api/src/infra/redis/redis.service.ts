@@ -108,6 +108,33 @@ export class RedisService implements OnModuleDestroy {
     }
   }
 
+  /** Lecture d'une clé simple (cache). `null` si absente ou Redis indisponible. */
+  async get(key: string): Promise<string | null> {
+    try {
+      return await this.client.get(key);
+    } catch {
+      return null;
+    }
+  }
+
+  /** Écriture d'une clé simple avec TTL (secondes). No-op si Redis indisponible. */
+  async setEx(key: string, value: string, ttlSec: number): Promise<void> {
+    try {
+      await this.client.set(key, value, "EX", ttlSec);
+    } catch {
+      // ignore — cache best-effort.
+    }
+  }
+
+  /** Suppression d'une clé simple (invalidation de cache). No-op si Redis indisponible. */
+  async del(key: string): Promise<void> {
+    try {
+      await this.client.del(key);
+    } catch {
+      // ignore.
+    }
+  }
+
   /** Compteur de fenêtre glissante (rate-limit). Incrémente `rl:{key}` et pose un TTL au 1er hit.
    *  Renvoie le nombre d'appels dans la fenêtre, ou `null` si Redis indisponible (→ fail-open :
    *  on ne bloque jamais un utilisateur légitime sur une panne d'infra). */
