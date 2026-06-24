@@ -167,6 +167,13 @@ on indexChanged(U, oldIndex, newIndex):
 
 > Source : §9.2. Bornes verrouillées dans le cahier — reprises **à l'identique**.
 
+> **Note display-v2 (2026-06-24).** Le **rang affiché** dérive désormais de l'OVR /100 (`display-v2`, cf. sport-science §4.4)
+> via `rankFromIndex`. La **table de bornes faisant autorité est dans le code** : `packages/contracts/src/enums/index.ts`
+> (`RANK_BANDS`). Bornes /100 recalibrées : `rookie [40,44)` · `bronze [44,52)` · `silver [52,64)` · `gold [64,73)` ·
+> `platinum [73,85)` · `diamond [85,92)` · `elite [92,100]`. Ancrages : médian ~57 → **silver**, BON ~77 → **platinum**,
+> élite nationale ~88 → **diamond**, pro ~93 → **elite**. La table /1000 ci-dessous reste la lecture **interne** historique
+> et n'est plus la source du rang affiché ; `RANK_ORDER` (l'ordre des 7 rangs) est **inchangé**.
+
 ### 3.1 Bornes & cosmétiques
 
 | Rang | Index | Convention de borne | Déblocage cosmétique | Célébration |

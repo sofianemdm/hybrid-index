@@ -2,21 +2,26 @@ import { describe, expect, it } from "vitest";
 import { RANK_BANDS } from "../enums";
 import { clampIndex, rankBandFromIndex, rankFromIndex, rankProgress } from "./rank";
 
-// Bandes sur l'échelle d'AFFICHAGE /100 (note dérivée display-v2 ; les bornes elles-mêmes sont stables) :
-// rookie [40,55) bronze [55,65) silver [65,72) gold [72,79) platinum [79,85) diamond [85,92) elite [92,100].
+// Bandes recalibrées display-v2 (2026-06-24) :
+// rookie [40,44) bronze [44,52) silver [52,64) gold [64,73) platinum [73,85) diamond [85,92) elite [92,100].
 describe("rankFromIndex", () => {
   it("mappe chaque OVR /100 sur le bon rang", () => {
     expect(rankFromIndex(40)).toBe("rookie");
-    expect(rankFromIndex(54)).toBe("rookie");
-    expect(rankFromIndex(55)).toBe("bronze");
-    expect(rankFromIndex(64)).toBe("bronze");
-    expect(rankFromIndex(65)).toBe("silver");
-    expect(rankFromIndex(67)).toBe("silver");
+    expect(rankFromIndex(43)).toBe("rookie");
+    expect(rankFromIndex(44)).toBe("bronze"); // débutant display-v2
+    expect(rankFromIndex(51)).toBe("bronze");
+    expect(rankFromIndex(52)).toBe("silver");
+    expect(rankFromIndex(57)).toBe("silver"); // médian display-v2
+    expect(rankFromIndex(63)).toBe("silver"); // au-dessus de la moyenne
+    expect(rankFromIndex(64)).toBe("gold");
     expect(rankFromIndex(72)).toBe("gold");
-    expect(rankFromIndex(79)).toBe("platinum");
-    expect(rankFromIndex(82)).toBe("platinum");
+    expect(rankFromIndex(73)).toBe("platinum");
+    expect(rankFromIndex(77)).toBe("platinum"); // BON pratiquant display-v2
+    expect(rankFromIndex(84)).toBe("platinum"); // très bon amateur
     expect(rankFromIndex(85)).toBe("diamond");
+    expect(rankFromIndex(88)).toBe("diamond"); // élite nationale display-v2
     expect(rankFromIndex(92)).toBe("elite");
+    expect(rankFromIndex(93)).toBe("elite"); // pro / élite internationale
     expect(rankFromIndex(100)).toBe("elite");
   });
 
@@ -50,11 +55,11 @@ describe("clampIndex", () => {
 
 describe("rankProgress", () => {
   it("calcule la progression vers le rang suivant", () => {
-    const p = rankProgress(75); // en Or [72,79)
+    const p = rankProgress(70); // en Or [64,73)
     expect(p.current).toBe("gold");
     expect(p.next).toBe("platinum");
-    expect(p.pointsToNext).toBe(4); // « Encore 4 pts avant PLATINE » (79 - 75)
-    expect(p.progress).toBeCloseTo((75 - 72) / (79 - 72), 5);
+    expect(p.pointsToNext).toBe(3); // « Encore 3 pts avant PLATINE » (73 - 70)
+    expect(p.progress).toBeCloseTo((70 - 64) / (73 - 64), 5);
   });
 
   it("au rang max (elite), pas de suivant", () => {
@@ -66,6 +71,6 @@ describe("rankProgress", () => {
   });
 
   it("renvoie le bon band complet", () => {
-    expect(rankBandFromIndex(80)).toEqual({ rank: "platinum", min: 79, max: 85 });
+    expect(rankBandFromIndex(80)).toEqual({ rank: "platinum", min: 73, max: 85 });
   });
 });

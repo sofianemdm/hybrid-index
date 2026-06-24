@@ -85,14 +85,17 @@ export interface RankBand {
 }
 
 /** Source d'autorité des bornes de rang — DOIT rester identique à gamification.md §3.1. */
-// Bandes de rang sur l'échelle d'AFFICHAGE /100 (« type FIFA », cf. gamification index-v2).
-// Granularité concentrée sur 55–92 (où vit la masse) ; elite ≥ 92 (frontière pro, rare).
+// Bandes de rang sur l'échelle d'AFFICHAGE /100 (« type FIFA »), recalibrées pour display-v2 (2026-06-24).
+// Granularité concentrée sur 44–85 (où vit la masse réelle, ~44–84) ; diamond ≥ 85 (élite nationale),
+// elite ≥ 92 (frontière pro/élite internationale, rare mais atteignable par un très bon athlète).
+// Ancrages display-v2 (§4.4 sport-science) : sédentaire ~36→rookie, débutant ~44→bronze, médian ~57→silver,
+// au-dessus moyenne ~63→silver, BON ~77→platinum, très bon amateur ~84→platinum, élite nat. ~88→diamond, pro ~93→elite.
 export const RANK_BANDS: readonly RankBand[] = [
-  { rank: "rookie", min: 40, max: 55 },
-  { rank: "bronze", min: 55, max: 65 },
-  { rank: "silver", min: 65, max: 72 },
-  { rank: "gold", min: 72, max: 79 },
-  { rank: "platinum", min: 79, max: 85 },
+  { rank: "rookie", min: 40, max: 44 },
+  { rank: "bronze", min: 44, max: 52 },
+  { rank: "silver", min: 52, max: 64 },
+  { rank: "gold", min: 64, max: 73 },
+  { rank: "platinum", min: 73, max: 85 },
   { rank: "diamond", min: 85, max: 92 },
   { rank: "elite", min: 92, max: 100 },
 ] as const;
