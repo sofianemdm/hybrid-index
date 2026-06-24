@@ -46,7 +46,10 @@ Write-Host "    Compilation (env. 1 min la 1re fois)..." -ForegroundColor DarkGr
 # --pwa-strategy=none : PAS de service worker en local. Sinon le navigateur (surtout Chrome, qui
 # avait garde le SW de l'ancien `flutter run` debug) sert un shell perime en cache -> page blanche
 # + chargement infini. Inutile en dev ; evite tout cache fantome entre deux builds.
-& $flutter build web --pwa-strategy=none
+# --dart-define API_BASE_URL : on force l'API LOCALE (localhost:3000). Indispensable car un build
+# Netlify (qui pointe vers Railway) a pu ecraser build/web -> sinon "API injoignable" en local
+# (Railway refuse l'origine localhost:8080 par CORS).
+& $flutter build web --pwa-strategy=none --dart-define=API_BASE_URL=http://localhost:3000
 if ($LASTEXITCODE -ne 0) {
   Write-Host "Echec du build Flutter web. Verifie l'installation Flutter (C:\flutter\bin)." -ForegroundColor Red
   exit 1
