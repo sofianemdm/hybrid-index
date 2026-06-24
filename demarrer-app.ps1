@@ -43,7 +43,10 @@ Set-Location "$root\apps\mobile"
 # qui donne un écran blanc dans les autres navigateurs). Le release marche dans TOUS les navigateurs
 # du PC. API locale par défaut (http://localhost:3000, cf. Env.apiBaseUrl) → aucun --dart-define.
 Write-Host "    Compilation (env. 1 min la 1re fois)..." -ForegroundColor DarkGray
-& $flutter build web
+# --pwa-strategy=none : PAS de service worker en local. Sinon le navigateur (surtout Chrome, qui
+# avait garde le SW de l'ancien `flutter run` debug) sert un shell perime en cache -> page blanche
+# + chargement infini. Inutile en dev ; evite tout cache fantome entre deux builds.
+& $flutter build web --pwa-strategy=none
 if ($LASTEXITCODE -ne 0) {
   Write-Host "Echec du build Flutter web. Verifie l'installation Flutter (C:\flutter\bin)." -ForegroundColor Red
   exit 1
