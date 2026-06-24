@@ -70,6 +70,12 @@ export const BADGES: BadgeDef[] = [
 
 const RANK_ORDER = ["rookie", "bronze", "silver", "gold", "platinum", "diamond", "elite"];
 
+/** Cosmétiques actifs = les `cosmeticUnlock` des badges possédés. Pur (pas d'accès DB) → réutilisé
+ *  par /me, /profiles/:id, le classement. cf. cosmetics.dart côté Flutter pour le rendu. */
+export function cosmeticsFor(ownedBadgeIds: Set<string>): string[] {
+  return BADGES.filter((b) => b.cosmeticUnlock && ownedBadgeIds.has(b.id)).map((b) => b.cosmeticUnlock as string);
+}
+
 export interface BadgeContext {
   logCount: number;
   followersCount: number; // nombre d'athlètes qui SUIVENT l'utilisateur (followers)

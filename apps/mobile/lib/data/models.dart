@@ -608,6 +608,8 @@ class PublicProfile {
   final bool isFollowing;
   final bool isMe;
   final bool isConfirmed;
+  final AvatarConfig? avatar; // avatar évolutif visible sur le profil public (IC-03)
+  final List<String> activeCosmetics; // cosmétiques débloqués (auras/couronne)
   const PublicProfile({
     required this.userId,
     required this.displayName,
@@ -620,6 +622,8 @@ class PublicProfile {
     required this.isFollowing,
     required this.isMe,
     this.isConfirmed = false,
+    this.avatar,
+    this.activeCosmetics = const [],
   });
 
   factory PublicProfile.fromJson(Map<String, dynamic> j) => PublicProfile(
@@ -636,6 +640,8 @@ class PublicProfile {
         isFollowing: j['isFollowing'] as bool? ?? false,
         isMe: j['isMe'] as bool? ?? false,
         isConfirmed: j['isConfirmed'] as bool? ?? false,
+        avatar: j['avatar'] == null ? null : AvatarConfig.fromJson(j['avatar'] as Map<String, dynamic>),
+        activeCosmetics: ((j['activeCosmetics'] as List?) ?? const []).map((e) => e as String).toList(),
       );
 }
 

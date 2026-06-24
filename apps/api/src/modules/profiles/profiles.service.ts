@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { ProfileScoringService } from "../profile/profile-scoring.service";
 import { LeaderboardService } from "../leaderboard/leaderboard.service";
+import { cosmeticsFor } from "../engagement/badges.data";
 
 /** Profil public d'un athlète (tout est public — décision verrouillée). */
 @Injectable()
@@ -30,9 +31,11 @@ export class ProfilesService {
       isFollowing = !!f;
     }
 
-    const [resultCount, followCount] = await Promise.all([
+    const [resultCount, followCount, badges, avatar] = await Promise.all([
       this.prisma.wodResult.count({ where: { userId } }),
       this.prisma.follow.count({ where: { followeeId: userId } }), // followers (suivi PAR)
+      this.prisma.userBadge.findMany({ where: { userId }, select: { badgeId: true } }),
+      this.prisma.avatar.findUnique({ where: { userId } }),
     ]);
 
     return {
@@ -47,6 +50,19 @@ export class ProfilesService {
       position: pos?.position ?? null,
       isFollowing,
       isMe: viewerId === userId,
+      // Avatar évolutif visible sur le profil public (IC-03) + cosmétiques débloqués (G-03).
+      avatar: avatar
+        ? {
+            skinTone: avatar.skinTone,
+            hairStyle: avatar.hairStyle,
+            hairColor: avatar.hairColor,
+            beardStyle: avatar.beardStyle,
+            accessory: avatar.accessory,
+            background: avatar.background,
+            photoData: avatar.photoData,
+          }
+        : null,
+      activeCosmetics: cosmeticsFor(new Set(badges.map((b) => b.badgeId))),
     };
   }
 }

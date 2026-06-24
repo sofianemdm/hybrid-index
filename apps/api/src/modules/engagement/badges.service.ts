@@ -143,4 +143,13 @@ export class BadgesService {
       unlockedAt: owned.get(b.id)?.toISOString() ?? null,
     }));
   }
+
+  /** Cosmétiques actifs d'un utilisateur = les `cosmeticUnlock` des badges qu'il a débloqués.
+   *  Lecture seule (PAS d'évaluation) → sûr et rapide pour le profil/le classement. */
+  async activeCosmetics(userId: string): Promise<string[]> {
+    const owned = new Set(
+      (await this.prisma.userBadge.findMany({ where: { userId }, select: { badgeId: true } })).map((b) => b.badgeId),
+    );
+    return BADGES.filter((b) => b.cosmeticUnlock && owned.has(b.id)).map((b) => b.cosmeticUnlock as string);
+  }
 }

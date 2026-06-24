@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
 import '../data/models.dart';
+import '../theme/cosmetics.dart';
 import '../theme/tokens.dart';
 
 /// Palettes de l'avatar (indices stockés côté serveur).
@@ -46,12 +47,16 @@ class HiAvatar extends StatelessWidget {
   final String rank;
   final double size;
   final bool showRing;
+  /// Cosmétiques débloqués (aura/couronne/pastille). Si null → rendu historique par rang
+  /// (rétrocompatible). Si fourni → l'aura/la couronne suivent les cosmétiques (récompenses badges).
+  final CosmeticSet? cosmetics;
   const HiAvatar({
     super.key,
     required this.config,
     this.rank = 'rookie',
     this.size = 96,
     this.showRing = true,
+    this.cosmetics,
   });
 
   @override
@@ -86,7 +91,7 @@ class HiAvatar extends StatelessWidget {
         children: [
           if (bg != null)
             Positioned.fill(child: DecoratedBox(decoration: BoxDecoration(shape: BoxShape.circle, color: bg))),
-          CustomPaint(size: Size(size, size), painter: _AvatarPainter(config, ringColor, rank, showRing)),
+          CustomPaint(size: Size(size, size), painter: _AvatarPainter(config, ringColor, rank, showRing, cosmetics)),
         ],
       ),
     );
@@ -98,7 +103,8 @@ class _AvatarPainter extends CustomPainter {
   final Color rankColor;
   final String rank;
   final bool showRing;
-  _AvatarPainter(this.c, this.rankColor, this.rank, this.showRing);
+  final CosmeticSet? cosmetics;
+  _AvatarPainter(this.c, this.rankColor, this.rank, this.showRing, this.cosmetics);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -108,7 +114,21 @@ class _AvatarPainter extends CustomPainter {
     final hair = AvatarPalettes.hair[c.hairColor % AvatarPalettes.hair.length];
 
     // Aura cosmétique selon le rang (l'avatar évolue avec la progression).
-    if (rank == 'diamond' || rank == 'elite') {
+    // Aura : pilotée par les cosmétiques débloqués si fournis (récompense de badge), sinon repli
+    // historique sur le rang (diamant/élite). Rendu statique (alpha médian) — sûr dans les listes.
+    final cos = cosmetics;
+    if (cos != null) {
+      final aura = cos.aura;
+      if (aura != null) {
+        canvas.drawCircle(
+          Offset(cx, cx),
+          s * 0.49,
+          Paint()
+            ..color = aura.color.withValues(alpha: aura.color2 != null ? 0.34 : 0.28)
+            ..maskFilter = MaskFilter.blur(BlurStyle.normal, s * 0.05),
+        );
+      }
+    } else if (rank == 'diamond' || rank == 'elite') {
       canvas.drawCircle(
         Offset(cx, cx),
         s * 0.49,
@@ -152,7 +172,8 @@ class _AvatarPainter extends CustomPainter {
     _drawHair(canvas, cx, headCy, headR, hair);
 
     // Couronne Élite (cosmétique du plus haut rang).
-    if (rank == 'elite') {
+    final showCrown = cosmetics != null ? cosmetics!.hasCrown : rank == 'elite';
+    if (showCrown) {
       final gold = Paint()..color = const Color(0xFFF3C13A);
       final topY = headCy - headR * (c.hairStyle == 0 ? 1.05 : 1.25);
       final w = headR * 0.9;
@@ -254,5 +275,6 @@ class _AvatarPainter extends CustomPainter {
       old.c.hairColor != c.hairColor ||
       old.c.beardStyle != c.beardStyle ||
       old.rank != rank ||
-      old.rankColor != rankColor;
+      old.rankColor != rankColor ||
+      old.cosmetics?.ids.join() != cosmetics?.ids.join();
 }

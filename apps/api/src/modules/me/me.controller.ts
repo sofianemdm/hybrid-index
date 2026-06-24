@@ -4,6 +4,7 @@ import { JwtAuthGuard, type AuthenticatedUser } from "../auth/jwt-auth.guard";
 import { ZodValidationPipe } from "../../common/zod-validation.pipe";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { ProfileScoringService, type PersistedProfile } from "../profile/profile-scoring.service";
+import { cosmeticsFor } from "../engagement/badges.data";
 import { MeService } from "./me.service";
 import { UpdateAvatarRequest, UpdateMeRequest } from "./me.dto";
 
@@ -19,7 +20,10 @@ export class MeController {
   /** Identité + profil de base de l'utilisateur connecté. */
   @Get()
   async me(@CurrentUser() user: AuthenticatedUser): Promise<unknown> {
-    const profile = await this.prisma.profile.findUnique({ where: { userId: user.userId } });
+    const [profile, badges] = await Promise.all([
+      this.prisma.profile.findUnique({ where: { userId: user.userId } }),
+      this.prisma.userBadge.findMany({ where: { userId: user.userId }, select: { badgeId: true } }),
+    ]);
     if (!profile) throw new NotFoundException({ code: "NOT_FOUND", message: "Profil introuvable." });
     return {
       id: user.userId,
@@ -29,6 +33,7 @@ export class MeController {
       goal: profile.goal,
       equipmentPref: profile.equipmentPref,
       rank: profile.rank,
+      activeCosmetics: cosmeticsFor(new Set(badges.map((b) => b.badgeId))),
     };
   }
 

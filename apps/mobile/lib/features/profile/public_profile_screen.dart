@@ -7,6 +7,8 @@ import '../../data/session.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import '../messaging/chat_screen.dart';
+import '../../theme/cosmetics.dart';
+import '../../widgets/hi_avatar.dart';
 import '../../widgets/index_ring.dart';
 import '../../widgets/radar_view.dart';
 import '../../widgets/overlay_radar.dart';
@@ -235,6 +237,16 @@ class PublicProfileScreen extends ConsumerWidget {
                 constraints: const BoxConstraints(maxWidth: 480),
                 child: Column(
                   children: [
+                    // Avatar évolutif + cosmétiques débloqués (IC-03 / G-03).
+                    if (p.avatar != null) ...[
+                      HiAvatar(
+                        config: p.avatar!,
+                        rank: p.rank,
+                        size: 96,
+                        cosmetics: CosmeticSet(p.activeCosmetics),
+                      ),
+                      const SizedBox(height: HiSpace.md),
+                    ],
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
