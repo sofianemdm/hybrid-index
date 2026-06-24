@@ -186,7 +186,7 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(AppLocalizations.of(context).wodDetailYou, style: HiType.body.copyWith(color: HiColors.textSecondary)),
-                  Text(formatWodResult(d.myBestRaw!, d.scoreType),
+                  Text(formatWodResult(d.myBestRaw!, d.scoreType, wodId: widget.wodId),
                       style: HiType.body.copyWith(color: HiColors.brandPrimary, fontWeight: FontWeight.w800)),
                   if (d.myBestSubScore != null)
                     Text('  ·  ${AppLocalizations.of(context).wodDetailPoints(d.myBestSubScore!)}', style: HiType.body.copyWith(color: HiColors.textTertiary)),
@@ -205,7 +205,7 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
       child: Row(
         children: [
           Expanded(child: Text(label, style: HiType.body.copyWith(color: color, fontWeight: FontWeight.w600))),
-          Text(formatWodResult(value, scoreType),
+          Text(formatWodResult(value, scoreType, wodId: widget.wodId),
               style: HiType.body.copyWith(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
         ],
       ),
@@ -451,7 +451,7 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
         children: [
           SizedBox(width: 70, child: Text(date, style: HiType.caption.copyWith(color: HiColors.textTertiary))),
           Expanded(
-            child: Text(formatWodResult(h.rawResult, scoreType),
+            child: Text(formatWodResult(h.rawResult, scoreType, wodId: widget.wodId),
                 style: HiType.body.copyWith(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
           ),
           if (!h.rxCompliant)
@@ -500,7 +500,7 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
                   ),
                   RankBadge(rank: e.rank, fontSize: 10),
                   const SizedBox(width: HiSpace.sm),
-                  Text(formatWodResult(e.rawResult, scoreType),
+                  Text(formatWodResult(e.rawResult, scoreType, wodId: widget.wodId),
                       style: HiType.body.copyWith(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
                 ],
               ),

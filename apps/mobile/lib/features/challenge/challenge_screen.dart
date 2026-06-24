@@ -136,7 +136,7 @@ class _ChallengeScreenState extends ConsumerState<ChallengeScreen> {
                 const SizedBox(height: HiSpace.md),
                 Text(t.challengeLeaderboard, style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
                 const SizedBox(height: HiSpace.sm),
-                _boardSection(c.scoreType),
+                _boardSection(c.scoreType, c.wodId),
               ],
             );
           },
@@ -247,7 +247,7 @@ class _ChallengeScreenState extends ConsumerState<ChallengeScreen> {
     );
   }
 
-  Widget _boardSection(String scoreType) {
+  Widget _boardSection(String scoreType, String wodId) {
     return FutureBuilder<List<WodLeaderboardEntry>>(
       future: _board,
       builder: (context, snap) {
@@ -278,7 +278,7 @@ class _ChallengeScreenState extends ConsumerState<ChallengeScreen> {
                 ),
                 RankBadge(rank: e.rank, fontSize: 10),
                 const SizedBox(width: HiSpace.sm),
-                Text(formatWodResult(e.rawResult, scoreType),
+                Text(formatWodResult(e.rawResult, scoreType, wodId: wodId),
                     style: HiType.bodyStrong.copyWith(color: HiColors.textPrimary)),
               ]),
             );

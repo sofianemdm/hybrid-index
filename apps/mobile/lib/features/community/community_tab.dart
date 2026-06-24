@@ -312,7 +312,7 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
               borderRadius: BorderRadius.circular(HiRadius.pill),
             ),
             child: Text(
-              '${formatWodResult(raw, scoreType)}'
+              '${formatWodResult(raw, scoreType, wodId: a.payload['wodId']?.toString())}'
               '${a.payload['subScore'] is num ? '  ·  ${a.payload['subScore']}/100' : ''}',
               style: TextStyle(color: HiColors.brandPrimary, fontWeight: FontWeight.w800),
             ),

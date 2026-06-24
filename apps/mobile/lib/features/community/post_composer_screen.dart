@@ -167,7 +167,7 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
                       overflow: TextOverflow.ellipsis,
                       style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
                 ),
-                Text(formatWodResult(r.rawResult, r.scoreType),
+                Text(formatWodResult(r.rawResult, r.scoreType, wodId: r.wodId),
                     style: HiType.numericM.copyWith(color: HiColors.brandPrimary)),
                 if (r.subScore != null)
                   Text('  ${r.subScore} pts', style: HiType.caption.copyWith(color: HiColors.textTertiary)),

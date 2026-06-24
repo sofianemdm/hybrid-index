@@ -5,7 +5,10 @@
  *
  * Source d'autorité : agent sport-science.
  * - Benchmarks CrossFit (Fran, Grace, Jackie, Helen, Karen, Cindy) : standards CANONIQUES,
- *   livres convertis aux paliers de barre réalistes (43/30, 61/43, 20/15, 9/6, 24/16 kg…).
+ *   livres convertis à des paliers de barre métriques RONDS et crédibles
+ *   (Fran 40/30, Grace & Isabel 60/40, Jackie 20/15, Helen KB 24/16, wall ball 9/6 kg…).
+ *   Les charges Rx ne sont PAS la conversion exacte des livres (ex. 95 lb ≈ 43,1 kg) :
+ *   on privilégie un nombre rond proche, conforme aux disques disponibles en salle.
  * - Séances maison (Sprint HYROX, Benchmark Zéro, Machine & Mur, courses) : structures alignées
  *   sur les médianes de score de `apps/score-service/src/wods/wods.data.ts`.
  *
@@ -48,7 +51,7 @@ export const WOD_PRESCRIPTIONS: Record<string, WodPrescription> = {
   },
 
   // ─────────────────────────────────────────────────────────────────────────
-  // 2. Fran (benchmark) — 21-15-9 Thrusters + Tractions, Thruster 43/30 kg.
+  // 2. Fran (benchmark) — 21-15-9 Thrusters + Tractions, Thruster 40/30 kg.
   // ─────────────────────────────────────────────────────────────────────────
   fran: {
     summary:
@@ -63,7 +66,7 @@ export const WOD_PRESCRIPTIONS: Record<string, WodPrescription> = {
     weights: [
       {
         movement: "Thruster",
-        rxMale: 43,
+        rxMale: 40,
         rxFemale: 30,
         scaledMale: 30,
         scaledFemale: 20,
@@ -75,7 +78,7 @@ export const WOD_PRESCRIPTIONS: Record<string, WodPrescription> = {
   },
 
   // ─────────────────────────────────────────────────────────────────────────
-  // 3. Grace (benchmark) — 30 Épaulés-jetés, 61/43 kg.
+  // 3. Grace (benchmark) — 30 Épaulés-jetés, 60/40 kg.
   // ─────────────────────────────────────────────────────────────────────────
   grace: {
     summary:
@@ -87,9 +90,9 @@ export const WOD_PRESCRIPTIONS: Record<string, WodPrescription> = {
     weights: [
       {
         movement: "Épaulé-jeté",
-        rxMale: 61,
-        rxFemale: 43,
-        scaledMale: 43,
+        rxMale: 60,
+        rxFemale: 40,
+        scaledMale: 40,
         scaledFemale: 30,
         unit: "kg",
         note: "barre",
@@ -400,7 +403,7 @@ export const WOD_PRESCRIPTIONS: Record<string, WodPrescription> = {
     summary: "Benchmark CrossFit : 30 arrachés (snatch) le plus vite possible. Puissance et technique d'haltérophilie sous fatigue.",
     format: "30 répétitions, pour le temps",
     blocks: [{ reps: "30", movement: "Arrachés (snatch)" }],
-    weights: [{ movement: "Snatch", rxMale: 61, rxFemale: 43, scaledMale: 43, scaledFemale: 30, unit: "kg", note: "barre" }],
+    weights: [{ movement: "Snatch", rxMale: 60, rxFemale: 40, scaledMale: 40, scaledFemale: 30, unit: "kg", note: "barre" }],
     scoringNote: SCORE_TIME,
   },
   murph: {

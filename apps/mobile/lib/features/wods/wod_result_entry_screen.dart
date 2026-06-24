@@ -12,6 +12,7 @@ import '../../data/review_prompt.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/attribute_gains.dart';
 import '../../widgets/celebration.dart';
+import 'wod_format.dart';
 import '../../widgets/hi_button.dart';
 import '../share/share_card_screen.dart';
 
@@ -205,7 +206,7 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
                 ],
                 Text(_isFreeRun
                     ? 'Ton temps'
-                    : 'Ton résultat (${_isTime ? 'temps' : widget.scoreType == 'load' ? 'kg' : widget.scoreType == 'distance' ? 'mètres' : 'reps'})',
+                    : 'Ton résultat (${_isTime ? 'temps' : wodUnitLabel(widget.wodId, widget.scoreType)})',
                     style: HiType.body.copyWith(color: HiColors.textSecondary)),
                 const SizedBox(height: 8),
                 if (_isTime)

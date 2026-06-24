@@ -17,7 +17,9 @@ export const WOD_LEVELS: Record<string, { male: WodLevels; female: WodLevels }> 
   row_2k: { male: { champion: 336, intermediate: 450, occasional: 540 }, female: { champion: 381, intermediate: 510, occasional: 630 } },
   helen: { male: { champion: 390, intermediate: 590, occasional: 840 }, female: { champion: 450, intermediate: 674, occasional: 960 } },
   karen: { male: { champion: 300, intermediate: 555, occasional: 780 }, female: { champion: 360, intermediate: 660, occasional: 900 } },
-  cindy: { male: { champion: 28, intermediate: 15, occasional: 8 }, female: { champion: 24, intermediate: 12, occasional: 6 } },
+  // Cindy = AMRAP : score en TOURS (1 tour = 5 tractions + 10 pompes + 15 air squats), PAS en reps.
+  // champion = proReference (élite), intermédiaire = médiane régulier, occasionnel = débutant. Monotonie reps : champion > intermédiaire > occasionnel.
+  cindy: { male: { champion: 27, intermediate: 15, occasional: 8 }, female: { champion: 23, intermediate: 12, occasional: 6 } },
   benchmark_zero: { male: { champion: 345, intermediate: 570, occasional: 840 }, female: { champion: 390, intermediate: 645, occasional: 945 } },
   run_5k: { male: { champion: 1020, intermediate: 1620, occasional: 2400 }, female: { champion: 1170, intermediate: 1860, occasional: 2700 } },
   run_3k: { male: { champion: 600, intermediate: 990, occasional: 1470 }, female: { champion: 690, intermediate: 1170, occasional: 1650 } },
