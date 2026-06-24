@@ -115,8 +115,13 @@ export interface PopulationBand {
   band: string;
 }
 
-/** Paliers d'affichage (du plus rare au plus large). On affiche le plus petit palier atteint. */
-const DISPLAY_BANDS = [1, 2, 5, 10, 15, 25, 35, 50] as const;
+/** Paliers d'affichage (du plus rare au plus large). On affiche le plus petit palier atteint.
+ *  EXPORTÉ pour rester l'UNIQUE source de vérité de l'ordre des bandes (cf. BAND_ORDER côté API). */
+export const DISPLAY_BANDS = [1, 2, 5, 10, 15, 25, 35, 50] as const;
+
+/** Ordre des bandes du MEILLEUR (pop_top_1) au moins bon (pop_building), dérivé de DISPLAY_BANDS.
+ *  Toute clé renvoyée par `bandFromP` y figure → les montées de bande sont toujours détectées. */
+export const POP_BAND_ORDER: string[] = [...DISPLAY_BANDS.map((b) => `pop_top_${b}`), "pop_building"];
 
 /**
  * Bande de message à partir d'un percentile population. Honnête : on n'affiche jamais de décimale

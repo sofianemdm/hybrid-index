@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { ATTRIBUTE_KEYS, type AttributeKey, type Goal, type Sex, type internalScore, rankFromIndex, rankProgress } from "@hybrid-index/contracts";
-import { type AttributeResult, bandFromP, coverageAdjustedValue, indexPercentile, popPercentileIndex, ratingFromInternal } from "@hybrid-index/scoring-core";
+import { type AttributeResult, bandFromP, coverageAdjustedValue, indexPercentile, POP_BAND_ORDER, popPercentileIndex, ratingFromInternal } from "@hybrid-index/scoring-core";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { RedisService } from "../../infra/redis/redis.service";
 import { ScoreClient } from "../../infra/score-client/score-client.service";
@@ -467,7 +467,9 @@ export class ProfileScoringService {
 }
 
 /** Ordre des bandes population, de la meilleure à la moins bonne. */
-const BAND_ORDER = ["pop_top_1", "pop_top_2", "pop_top_5", "pop_top_10", "pop_top_20", "pop_top_30", "pop_top_50", "pop_building"];
+// Source unique : POP_BAND_ORDER dérivé de DISPLAY_BANDS (scoring-core). L'ancien tableau codé en
+// dur listait pop_top_20/30 (jamais produits) et omettait 15/25/35 → célébrations muettes (BUG-006).
+const BAND_ORDER = POP_BAND_ORDER;
 
 /** Vrai si `next` est une bande STRICTEMENT meilleure que `prev` (montée). */
 function bandImproved(prev: string | null, next: string): boolean {

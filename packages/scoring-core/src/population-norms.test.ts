@@ -3,6 +3,7 @@ import type { AttributeKey, Sex } from "@hybrid-index/contracts";
 import type { AttributeResult } from "./attribute";
 import { P_MAX, P_MIN } from "./distribution";
 import {
+  POP_BAND_ORDER,
   POP_NORMS_V1,
   POPNORM_VERSION,
   bandFromP,
@@ -21,6 +22,24 @@ const attr = (attribute: AttributeKey, score: number, opts: Partial<AttributeRes
   isStale: false,
   bestAgeWeeks: 0,
   ...opts,
+});
+
+describe("POP_BAND_ORDER — cohérence avec bandFromP (régression BUG-006)", () => {
+  it("toute bande renvoyée par bandFromP existe dans POP_BAND_ORDER", () => {
+    for (let i = 0; i <= 1000; i++) {
+      const popP = i / 1000;
+      const { band } = bandFromP(popP);
+      expect(POP_BAND_ORDER).toContain(band);
+    }
+  });
+
+  it("une montée de bande est détectable (index strictement décroissant = meilleur)", () => {
+    // pop_top_50 (large) doit être APRÈS pop_top_15 (plus rare) dans l'ordre best→worst.
+    expect(POP_BAND_ORDER.indexOf("pop_top_15")).toBeLessThan(POP_BAND_ORDER.indexOf("pop_top_50"));
+    expect(POP_BAND_ORDER.indexOf("pop_top_50")).toBeLessThan(POP_BAND_ORDER.indexOf("pop_building"));
+    // Les bandes réellement produites 15/25/35 sont présentes (l'ancien BAND_ORDER les omettait).
+    for (const b of ["pop_top_15", "pop_top_25", "pop_top_35"]) expect(POP_BAND_ORDER).toContain(b);
+  });
 });
 
 describe("popnorm-v1 — version + tables", () => {
