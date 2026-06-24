@@ -395,18 +395,27 @@ export class ProfileScoringService {
     above: number,
   ): Promise<PersistedProfile["rival"]> {
     if (above <= 0) return null; // leader de la ligue : pas de rival au-dessus
+    // Rival = athlète à la valeur immédiatement SUPÉRIEURE (tie-break userId asc → choix stable).
     const rivalIdx = await this.prisma.hybridIndex.findFirst({
       where: { value: { gt: myValue }, user: { profile: { sex: sex as never } } },
-      orderBy: { value: "asc" },
+      orderBy: [{ value: "asc" }, { userId: "asc" }],
       select: { userId: true, value: true },
     });
     if (!rivalIdx) return null;
+    // VRAIE position du rival dans l'ordre total (value desc, userId asc) — cohérente avec le
+    // classement. L'ancien `above` (count value>maValeur) surcomptait les ex æquo du rival (BUG-009).
+    const rbase = { user: { profile: { sex: sex as never } } };
+    const [rivalStrictlyAbove, rivalTiedEarlier] = await Promise.all([
+      this.prisma.hybridIndex.count({ where: { ...rbase, value: { gt: rivalIdx.value } } }),
+      this.prisma.hybridIndex.count({ where: { ...rbase, value: rivalIdx.value, userId: { lt: rivalIdx.userId } } }),
+    ]);
+    const rivalPosition = rivalStrictlyAbove + rivalTiedEarlier + 1;
     const rp = await this.prisma.profile.findUnique({
       where: { userId: rivalIdx.userId },
       select: { displayName: true, rank: true },
     });
-    // Vue rival = logique pure et testée (cf. rival.logic.ts).
-    return buildRival(myValue, above, { value: rivalIdx.value, displayName: rp?.displayName ?? null, rank: rp?.rank ?? null });
+    // Vue rival = logique pure et testée (cf. rival.logic.ts). On passe la vraie position du rival.
+    return buildRival(myValue, rivalPosition, { value: rivalIdx.value, displayName: rp?.displayName ?? null, rank: rp?.rank ?? null });
   }
 
   async getMyProfile(userId: string): Promise<PersistedProfile | null> {

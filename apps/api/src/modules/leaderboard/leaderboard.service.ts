@@ -42,7 +42,7 @@ export class LeaderboardService {
     if (memberIds) {
       const found = await this.prisma.hybridIndex.findMany({
         where: { userId: { in: memberIds }, user: { profile: { sex: sex as Sex } } },
-        orderBy: { value: "desc" },
+        orderBy: [{ value: "desc" }, { userId: "asc" }], // tie-break déterministe (ordre total stable)
         take: limit,
         select: { userId: true, value: true },
       });
@@ -51,6 +51,9 @@ export class LeaderboardService {
       await this.ensureSynced(sex);
       rows = await this.redis.top(sex, limit);
       if (rows.length === 0) rows = await this.pgTop(sex, limit);
+      // Redis départage les ex æquo par membre (userId) en ordre LEXICOGRAPHIQUE INVERSE, à l'opposé
+      // de Postgres (userId asc). On re-trie pour un ordre total IDENTIQUE quelle que soit la source.
+      rows = [...rows].sort((a, b) => b.value - a.value || (a.userId < b.userId ? -1 : a.userId > b.userId ? 1 : 0));
     }
 
     const names = await this.namesFor(rows.map((r) => r.userId));
@@ -70,10 +73,13 @@ export class LeaderboardService {
       if (meUserId) {
         const mine = await this.prisma.hybridIndex.findUnique({ where: { userId: meUserId }, select: { value: true } });
         if (mine) {
-          const above = await this.prisma.hybridIndex.count({
-            where: { userId: { in: memberIds }, value: { gt: mine.value }, user: { profile: { sex: sex as Sex } } },
-          });
-          me = { position: above + 1, value: mine.value };
+          // Position club avec le MÊME tie-break (value desc, userId asc) que la liste affichée.
+          const base = { userId: { in: memberIds }, user: { profile: { sex: sex as Sex } } };
+          const [strictlyAbove, tiedEarlier] = await Promise.all([
+            this.prisma.hybridIndex.count({ where: { ...base, value: { gt: mine.value } } }),
+            this.prisma.hybridIndex.count({ where: { ...base, value: mine.value, userId: { lt: meUserId } } }),
+          ]);
+          me = { position: strictlyAbove + tiedEarlier + 1, value: mine.value };
         }
       }
     } else {
@@ -87,19 +93,25 @@ export class LeaderboardService {
     return { sex, total, entries, me: me ? { position: me.position, value: ovr(me.value) } : null };
   }
 
-  /** Position 1-indexée + valeur d'un utilisateur, via Redis puis Postgres. */
+  /** Position 1-indexée d'un utilisateur dans l'ordre total (value desc, userId asc). Calculée sur
+   *  Postgres (le zrevrank Redis départage les ex æquo différemment → on ne l'utilise PAS pour la
+   *  position, afin que liste, « ma position » et profil affichent TOUS le même rang). */
   async positionOf(sex: string, userId: string): Promise<{ position: number; value: number } | null> {
     const idx = await this.prisma.hybridIndex.findUnique({ where: { userId }, select: { value: true } });
     if (!idx) return null;
-
-    const rRank = await this.redis.rank(sex, userId);
-    if (rRank !== null) return { position: rRank + 1, value: idx.value };
-
-    // Postgres : combien d'athlètes du même sexe ont un Index strictement supérieur.
-    const above = await this.prisma.hybridIndex.count({
-      where: { value: { gt: idx.value }, user: { profile: { sex: sex as Sex } } },
-    });
+    const above = await this.aboveInTotalOrder(sex, idx.value, userId);
     return { position: above + 1, value: idx.value };
+  }
+
+  /** Nombre d'athlètes du même sexe STRICTEMENT devant dans l'ordre total : Index supérieur, OU
+   *  Index égal mais userId inférieur (tie-break déterministe identique au tri des entrées). */
+  private async aboveInTotalOrder(sex: string, value: number, userId: string): Promise<number> {
+    const where = { user: { profile: { sex: sex as Sex } } };
+    const [strictlyAbove, tiedEarlier] = await Promise.all([
+      this.prisma.hybridIndex.count({ where: { ...where, value: { gt: value } } }),
+      this.prisma.hybridIndex.count({ where: { ...where, value, userId: { lt: userId } } }),
+    ]);
+    return strictlyAbove + tiedEarlier;
   }
 
   // Anti-COUNT : on ne revérifie la synchro Redis/Postgres qu'au plus une fois par minute et par
@@ -125,7 +137,7 @@ export class LeaderboardService {
   private async pgAll(sex: string): Promise<Array<{ userId: string; value: number }>> {
     const rows = await this.prisma.hybridIndex.findMany({
       where: { user: { profile: { sex: sex as Sex } } },
-      orderBy: { value: "desc" },
+      orderBy: [{ value: "desc" }, { userId: "asc" }], // tie-break déterministe (ordre total stable)
       select: { userId: true, value: true },
     });
     return rows.map((r) => ({ userId: r.userId, value: r.value }));
@@ -134,7 +146,7 @@ export class LeaderboardService {
   private async pgTop(sex: string, limit: number): Promise<Array<{ userId: string; value: number }>> {
     const rows = await this.prisma.hybridIndex.findMany({
       where: { user: { profile: { sex: sex as Sex } } },
-      orderBy: { value: "desc" },
+      orderBy: [{ value: "desc" }, { userId: "asc" }], // tie-break déterministe (ordre total stable)
       take: limit,
       select: { userId: true, value: true },
     });

@@ -415,10 +415,12 @@ export class WodsService {
         rxCompliant: rx,
         ...(memberIds ? { userId: { in: memberIds } } : {}), // filtre « Mon club » (C3)
       },
-      orderBy: [{ rawResult: better }],
+      // Tie-break déterministe : à perf égale, l'effort le plus ANCIEN puis le plus petit userId →
+      // ordre stable et reproductible (plus de positions qui « sautent » d'une requête à l'autre).
+      orderBy: [{ rawResult: better }, { performedAt: "asc" }, { userId: "asc" }],
       distinct: ["userId"], // meilleur effort par utilisateur (premier dans l'ordre = sa meilleure perf)
       take: 100,
-      select: { userId: true, subScore: true, rawResult: true },
+      select: { userId: true, subScore: true, rawResult: true, performedAt: true },
     });
     const userIds = rows.map((r) => r.userId);
     const profiles = await this.prisma.profile.findMany({
