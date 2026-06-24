@@ -1238,8 +1238,12 @@ class AppLocalizationsFr extends AppLocalizations {
   String get revealYourIndex => 'TON HYBRID INDEX';
 
   @override
-  String get revealProvisional =>
-      'Index provisoire — affine-le en loggant plus de séances.';
+  String get revealEstimateTitle => 'Ceci est une estimation';
+
+  @override
+  String revealEstimateBody(int coverage) {
+    return 'Ton Index de départ s\'appuie sur $coverage/6 attributs. Logge quelques séances de plus pour débloquer les 6 et révéler ton vrai HYBRID INDEX.';
+  }
 
   @override
   String get revealRadar => 'TON RADAR';

@@ -114,6 +114,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     try {
       await ref.read(apiClientProvider).deleteAccount();
       await ref.read(sessionProvider.notifier).logout();
+      // Compte supprimé → on vide la pile de navigation pour revenir à l'AuthGate (écran
+      // d'inscription), sinon l'écran Réglages (route empilée) resterait visible par-dessus.
+      if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
     } catch (e) {
       _toast('$e');
     }
@@ -251,7 +254,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ),
                       const SizedBox(height: HiSpace.md),
                       TextButton(
-                        onPressed: () => ref.read(sessionProvider.notifier).logout(),
+                        onPressed: () async {
+                          await ref.read(sessionProvider.notifier).logout();
+                          if (context.mounted) Navigator.of(context).popUntil((r) => r.isFirst);
+                        },
                         child: Text(t.settingsSignOut, style: TextStyle(color: HiColors.textTertiary)),
                       ),
                     ],

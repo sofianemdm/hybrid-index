@@ -1230,8 +1230,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get revealYourIndex => 'YOUR HYBRID INDEX';
 
   @override
-  String get revealProvisional =>
-      'Provisional Index — refine it by logging more sessions.';
+  String get revealEstimateTitle => 'This is an estimate';
+
+  @override
+  String revealEstimateBody(int coverage) {
+    return 'Your starting Index is based on $coverage/6 attributes. Log a few more sessions to unlock all 6 and reveal your true HYBRID INDEX.';
+  }
 
   @override
   String get revealRadar => 'YOUR RADAR';

@@ -101,10 +101,37 @@ class _RevealScreenState extends ConsumerState<RevealScreen> {
                       child: Column(
                         children: [
                           RankBadge(rank: idx.rank, fontSize: 15),
-                          if (idx.isProvisional) ...[
-                            const SizedBox(height: HiSpace.sm),
-                            Text(t.revealProvisional,
-                                textAlign: TextAlign.center, style: HiType.caption.copyWith(color: HiColors.warn)),
+                          // Premier Index = ESTIMATION tant que les 6 attributs ne sont pas mesurés.
+                          // Bandeau clair et explicite : c'est un point de départ, à compléter.
+                          if (idx.isProvisional || idx.isEstimated || idx.radarCoverage < 6) ...[
+                            const SizedBox(height: HiSpace.md),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(HiSpace.md),
+                              decoration: BoxDecoration(
+                                color: HiColors.warn.withValues(alpha: 0.10),
+                                borderRadius: BorderRadius.circular(HiRadius.md),
+                                border: Border.all(color: HiColors.warn.withValues(alpha: 0.30)),
+                              ),
+                              child: Column(
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.auto_graph, color: HiColors.warn, size: 18),
+                                      const SizedBox(width: HiSpace.sm),
+                                      Text(t.revealEstimateTitle,
+                                          style: TextStyle(
+                                              color: HiColors.warn, fontWeight: FontWeight.w800, fontSize: 14)),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(t.revealEstimateBody(idx.radarCoverage),
+                                      textAlign: TextAlign.center,
+                                      style: HiType.caption.copyWith(color: HiColors.textSecondary, height: 1.35)),
+                                ],
+                              ),
+                            ),
                           ],
                           if (widget.profile.socialProof != null) ...[
                             const SizedBox(height: HiSpace.lg),

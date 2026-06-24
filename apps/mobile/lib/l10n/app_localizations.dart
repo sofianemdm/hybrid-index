@@ -2210,11 +2210,17 @@ abstract class AppLocalizations {
   /// **'YOUR HYBRID INDEX'**
   String get revealYourIndex;
 
-  /// No description provided for @revealProvisional.
+  /// No description provided for @revealEstimateTitle.
   ///
   /// In en, this message translates to:
-  /// **'Provisional Index — refine it by logging more sessions.'**
-  String get revealProvisional;
+  /// **'This is an estimate'**
+  String get revealEstimateTitle;
+
+  /// No description provided for @revealEstimateBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your starting Index is based on {coverage}/6 attributes. Log a few more sessions to unlock all 6 and reveal your true HYBRID INDEX.'**
+  String revealEstimateBody(int coverage);
 
   /// No description provided for @revealRadar.
   ///

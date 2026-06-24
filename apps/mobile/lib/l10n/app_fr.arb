@@ -352,7 +352,13 @@
   "socialProofAppPrefix": "Top ",
   "socialProofAppSuffix": " des athlètes HYBRID",
   "revealYourIndex": "TON HYBRID INDEX",
-  "revealProvisional": "Index provisoire — affine-le en loggant plus de séances.",
+  "revealEstimateTitle": "Ceci est une estimation",
+  "revealEstimateBody": "Ton Index de départ s'appuie sur {coverage}/6 attributs. Logge quelques séances de plus pour débloquer les 6 et révéler ton vrai HYBRID INDEX.",
+  "@revealEstimateBody": {
+    "placeholders": {
+      "coverage": { "type": "int" }
+    }
+  },
   "revealRadar": "TON RADAR",
   "revealDiscoverProfile": "Découvrir mon profil",
   "revealShareCard": "Partager ma carte",
