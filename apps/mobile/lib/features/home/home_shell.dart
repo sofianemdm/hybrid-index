@@ -11,7 +11,6 @@ import '../../theme/haptics.dart';
 import '../../theme/tokens.dart';
 import '../leaderboard/leaderboard_screen.dart';
 import '../log/log_wod_screen.dart';
-import '../progression/progression_screen.dart';
 import '../community/community_tab.dart';
 import '../wods/wod_tab.dart';
 import '../wods/wod_builder_screen.dart';
@@ -123,17 +122,20 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     final t = AppLocalizations.of(context);
     final tab = ref.watch(homeTabProvider);
     return Scaffold(
+      extendBody: true, // le contenu glisse sous la barre translucide
       body: IndexedStack(
         index: tab,
-        children: const [HomeScreen(), WodTab(), CommunityTab(), ProgressionScreen(), LeaderboardScreen()],
+        // 4 onglets (Progression sortie de la barre → accessible via la carte Index de l'Accueil).
+        children: const [HomeScreen(), WodTab(), CommunityTab(), LeaderboardScreen()],
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: Container(
         decoration: BoxDecoration(shape: BoxShape.circle, boxShadow: HiShadow.glowBrand(0.4)),
         child: FloatingActionButton(
           backgroundColor: HiColors.brandPrimary,
           foregroundColor: HiColors.textOnBrand,
           elevation: 0,
+          shape: const CircleBorder(),
           tooltip: t.homeAddSessionTitle,
           onPressed: () {
             HiHaptics.tap();
@@ -142,18 +144,17 @@ class _HomeShellState extends ConsumerState<HomeShell> {
           child: const Icon(Icons.add_rounded, size: 28),
         ),
       ),
-      bottomNavigationBar: _floatingNav(t),
+      bottomNavigationBar: _notchedNav(t),
     );
   }
 
-  /// Barre de navigation flottante (pilule arrondie + flou d'arrière-plan) — feel premium.
-  Widget _floatingNav(AppLocalizations t) {
-    final tabs = <(IconData, IconData, String)>[
-      (Icons.bolt_outlined, Icons.bolt_rounded, t.navHome),
-      (Icons.fitness_center_outlined, Icons.fitness_center_rounded, t.navSessions),
-      (Icons.groups_outlined, Icons.groups_rounded, t.navCommunity),
-      (Icons.emoji_events_outlined, Icons.emoji_events_rounded, t.navProgress),
-      (Icons.leaderboard_outlined, Icons.leaderboard_rounded, t.navLeaderboard),
+  /// Barre de navigation à encoche (4 onglets + action centrale dockée) — pattern AAA (Strava/IG).
+  Widget _notchedNav(AppLocalizations t) {
+    final tabs = <(IconData, IconData, String, int)>[
+      (Icons.bolt_outlined, Icons.bolt_rounded, t.navHome, 0),
+      (Icons.fitness_center_outlined, Icons.fitness_center_rounded, t.navSessions, 1),
+      (Icons.groups_outlined, Icons.groups_rounded, t.navCommunity, 2),
+      (Icons.leaderboard_outlined, Icons.leaderboard_rounded, t.navLeaderboard, 3),
     ];
     return SafeArea(
       top: false,
@@ -163,18 +164,20 @@ class _HomeShellState extends ConsumerState<HomeShell> {
           borderRadius: BorderRadius.circular(HiRadius.pill),
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-            child: Container(
+            child: BottomAppBar(
+              color: HiColors.bgElevated2.withValues(alpha: 0.86),
+              elevation: 0,
               height: 64,
-              decoration: BoxDecoration(
-                color: HiColors.bgElevated2.withValues(alpha: 0.86),
-                borderRadius: BorderRadius.circular(HiRadius.pill),
-                border: Border.all(color: HiColors.strokeSubtle),
-                boxShadow: HiShadow.e2,
-              ),
+              padding: EdgeInsets.zero,
+              shape: const CircularNotchedRectangle(),
+              notchMargin: 8,
               child: Row(
                 children: [
-                  for (var i = 0; i < tabs.length; i++)
-                    Expanded(child: _navItem(i, tabs[i].$1, tabs[i].$2, tabs[i].$3)),
+                  Expanded(child: _navItem(tabs[0])),
+                  Expanded(child: _navItem(tabs[1])),
+                  const SizedBox(width: 64), // place de l'encoche / FAB central
+                  Expanded(child: _navItem(tabs[2])),
+                  Expanded(child: _navItem(tabs[3])),
                 ],
               ),
             ),
@@ -184,31 +187,37 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     );
   }
 
-  Widget _navItem(int i, IconData icon, IconData activeIcon, String label) {
+  Widget _navItem((IconData, IconData, String, int) tab) {
+    final i = tab.$4;
     final active = ref.watch(homeTabProvider) == i;
     final color = active ? HiColors.brandPrimary : HiColors.textTertiary;
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: () {
-        HiHaptics.tap();
-        ref.read(homeTabProvider.notifier).state = i;
-      },
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          AnimatedScale(
-            scale: active ? 1.0 : 0.9,
-            duration: HiMotion.fast,
-            curve: Curves.easeOut,
-            child: Icon(active ? activeIcon : icon, color: color, size: 23),
-          ),
-          const SizedBox(height: 2),
-          Text(label,
-              maxLines: 1,
-              overflow: TextOverflow.clip,
-              style: HiType.caption.copyWith(
-                  color: color, fontSize: 10, fontWeight: active ? FontWeight.w700 : FontWeight.w500)),
-        ],
+    return Semantics(
+      label: tab.$3,
+      selected: active,
+      button: true,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          HiHaptics.tap();
+          ref.read(homeTabProvider.notifier).state = i;
+        },
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            AnimatedScale(
+              scale: active ? 1.0 : 0.9,
+              duration: HiMotion.fast,
+              curve: Curves.easeOut,
+              child: Icon(active ? tab.$2 : tab.$1, color: color, size: 23),
+            ),
+            const SizedBox(height: 2),
+            Text(tab.$3,
+                maxLines: 1,
+                overflow: TextOverflow.clip,
+                style: HiType.caption.copyWith(
+                    color: color, fontSize: 10, fontWeight: active ? FontWeight.w700 : FontWeight.w500)),
+          ],
+        ),
       ),
     );
   }

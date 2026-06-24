@@ -22,6 +22,7 @@ import 'weekly_recap_card.dart';
 import '../avatar/avatar_editor_screen.dart';
 import '../coach/coach_screen.dart';
 import '../history/history_screen.dart';
+import '../progression/progression_screen.dart';
 import '../notifications/notifications_screen.dart';
 import '../settings/settings_screen.dart';
 import '../share/share_card_screen.dart';
@@ -121,8 +122,18 @@ class HomeScreen extends ConsumerWidget {
       children: [
         // HÉROS : l'Index domine l'écran (264 + glow), le grade chevauche le bas de l'anneau
         // (translation négative → on lit « Index + grade » comme un seul bloc).
-        Center(child: IndexRing(value: p.index.value, percentile: p.index.percentile)),
-        Transform.translate(offset: const Offset(0, -10), child: GradeBlock(profile: p)),
+        // Tap sur l'Index → écran Progression (courbe + radar + badges). La Progression vit désormais
+        // dans le header de l'Accueil (pattern Strava), plus dans la barre d'onglets (4 onglets).
+        GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const ProgressionScreen()),
+          ),
+          child: Column(children: [
+            Center(child: IndexRing(value: p.index.value, percentile: p.index.percentile)),
+            Transform.translate(offset: const Offset(0, -10), child: GradeBlock(profile: p)),
+          ]),
+        ),
         // Projection motivante (« à ce rythme, X+ dans N sem ») — seulement si tendance positive.
         ref.watch(indexHistoryProvider).maybeWhen(
               data: (h) {
@@ -144,7 +155,7 @@ class HomeScreen extends ConsumerWidget {
             // Bascule sur l'onglet Classement (index 4 du HomeShell) plutôt que de pousser
             // LeaderboardScreen en route : cet écran n'a pas de Scaffold (c'est un corps d'onglet),
             // le pousser donnait un écran blanc. cf. home_shell.dart (IndexedStack).
-            onTap: () => ref.read(homeTabProvider.notifier).state = 4,
+            onTap: () => ref.read(homeTabProvider.notifier).state = 3,
           ),
           const SizedBox(height: HiSpace.md),
         ],
