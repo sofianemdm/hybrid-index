@@ -319,11 +319,11 @@ export const WOD_PRESCRIPTIONS: Record<string, WodPrescription> = {
   // ─────────────────────────────────────────────────────────────────────────
   burpees_7min: {
     summary:
-      "Maximum de burpees en 7 minutes. Test de moteur tout-corps et de mental : tenir une cadence " +
-      "régulière sans exploser.",
+      "Maximum de burpees SUR PLACE en 7 minutes (pas de déplacement). Test de moteur tout-corps et " +
+      "de mental : tenir une cadence régulière sans exploser.",
     format: "AMRAP 7 min, pour le nombre",
     timeCapSec: 420,
-    blocks: [{ reps: "Max en 7 min", movement: "Burpees" }],
+    blocks: [{ reps: "Max", movement: "Burpees sur place", detail: "le plus de répétitions en 7 min" }],
     weights: [],
     scoringNote: SCORE_REPS,
   },

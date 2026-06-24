@@ -8,15 +8,27 @@ $ErrorActionPreference = "Stop"
 $root = $PSScriptRoot
 $flutter = "C:\flutter\bin\flutter.bat"
 
-Write-Host "==> 1/4  Base de données (Docker : Postgres + Redis)..." -ForegroundColor Cyan
+Write-Host "==> 1/5  Base de données (Docker : Postgres + Redis)..." -ForegroundColor Cyan
 docker compose -f "$root\infra\docker-compose.yml" up -d postgres redis | Out-Null
 
-Write-Host "==> 2/4  score-service (port 3001)..." -ForegroundColor Cyan
+Write-Host "==> 2/5  Build du backend (pnpm build)..." -ForegroundColor Cyan
+# On reconstruit le backend (api + score-service) AVANT de le lancer, sinon `node dist/main.js`
+# tourne sur l'ancien code compile -> les changements (seance masquee, faux users, etc.) ne sont
+# pas pris en compte en local. Turbo met en cache : rapide si rien n'a change.
+$env:NODE_OPTIONS = "--use-system-ca"
+Set-Location $root
+pnpm build
+if ($LASTEXITCODE -ne 0) {
+  Write-Host "Echec du build backend (pnpm build). Corrige l'erreur ci-dessus puis relance." -ForegroundColor Red
+  exit 1
+}
+
+Write-Host "==> 3/5  score-service (port 3001)..." -ForegroundColor Cyan
 Start-Process -WindowStyle Minimized powershell -ArgumentList @(
   "-NoExit","-Command","cd '$root\apps\score-service'; node dist/main.js"
 )
 
-Write-Host "==> 3/4  api (port 3000)..." -ForegroundColor Cyan
+Write-Host "==> 4/5  api (port 3000)..." -ForegroundColor Cyan
 Start-Process -WindowStyle Minimized powershell -ArgumentList @(
   "-NoExit","-Command","cd '$root\apps\api'; node --env-file-if-exists=.env dist/main.js"
 )
@@ -37,7 +49,7 @@ if (-not $ok) {
 }
 else { Write-Host "    Services OK." -ForegroundColor Green }
 
-Write-Host "==> 4/4  App Flutter : build RELEASE + serveur local (port 8080)..." -ForegroundColor Cyan
+Write-Host "==> 5/5  App Flutter : build RELEASE + serveur local (port 8080)..." -ForegroundColor Cyan
 Set-Location "$root\apps\mobile"
 # Build RELEASE (dart2js) plutôt que `flutter run -d chrome` (build DEBUG lié à UNE fenêtre Chrome,
 # qui donne un écran blanc dans les autres navigateurs). Le release marche dans TOUS les navigateurs

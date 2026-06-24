@@ -180,7 +180,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get wodTabSubtitle =>
-      'Pick a workout (also called a \"WOD\"), see the records and where you stand.';
+      'Pick a workout, see the records and where you stand.';
 
   @override
   String get wodTabFlagshipSection => '⭐ Flagship workouts';

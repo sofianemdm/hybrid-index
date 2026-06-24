@@ -131,13 +131,15 @@ function rand(min: number, max: number): number {
   return Math.floor(min + Math.random() * (max - min + 1));
 }
 
-/** Distribution réaliste d'Index (la plupart 300-650, quelques élites). */
+/** Faux utilisateurs de classement FACILES À BATTRE : aucun ne dépasse le niveau INTERMÉDIAIRE
+ *  (plafond 560 interne ≈ 70/100). Plus aucun « fort » ni « élite » → leurs Index ET leurs temps
+ *  par séance (dérivés de l'Index, cf. plus bas) restent battables. Distribution débutant →
+ *  intermédiaire. (Les athlètes d'élite « Références Pro » restent hors classement, cf. seed plus bas.) */
 function sampleIndex(): number {
   const r = Math.random();
-  if (r < 0.05) return rand(720, 880); // élites
-  if (r < 0.25) return rand(560, 720); // forts
-  if (r < 0.75) return rand(360, 560); // milieu
-  return rand(180, 360); // débutants
+  if (r < 0.35) return rand(450, 560); // intermédiaire (le plafond, à battre)
+  if (r < 0.75) return rand(300, 450); // milieu
+  return rand(160, 300); // débutants
 }
 
 async function main(): Promise<void> {

@@ -425,7 +425,7 @@ abstract class AppLocalizations {
   /// No description provided for @wodTabSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Pick a workout (also called a \"WOD\"), see the records and where you stand.'**
+  /// **'Pick a workout, see the records and where you stand.'**
   String get wodTabSubtitle;
 
   /// No description provided for @wodTabFlagshipSection.

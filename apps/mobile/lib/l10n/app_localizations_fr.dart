@@ -181,7 +181,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get wodTabSubtitle =>
-      'Choisis une séance (aussi appelée « WOD »), vois les records et où tu te situes.';
+      'Choisis une séance, vois les records et où tu te situes.';
 
   @override
   String get wodTabFlagshipSection => '⭐ Séances phares';
