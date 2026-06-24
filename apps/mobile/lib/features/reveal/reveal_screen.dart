@@ -101,7 +101,7 @@ class _RevealScreenState extends ConsumerState<RevealScreen> {
                       visible: _step >= 2,
                       child: Column(
                         children: [
-                          RankBadge(rank: idx.rank, fontSize: 15),
+                          RankBadge(rank: idx.rank, ovr: idx.value, fontSize: 15),
                           // Premier Index = ESTIMATION tant que les 6 attributs ne sont pas mesurés.
                           // Bandeau clair et explicite : c'est un point de départ, à compléter.
                           if (idx.isProvisional || idx.isEstimated || idx.radarCoverage < 6) ...[

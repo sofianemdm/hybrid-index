@@ -420,11 +420,18 @@ export class WodsService {
       take: 100,
       select: { userId: true, subScore: true, rawResult: true },
     });
+    const userIds = rows.map((r) => r.userId);
     const profiles = await this.prisma.profile.findMany({
-      where: { userId: { in: rows.map((r) => r.userId) } },
+      where: { userId: { in: userIds } },
       select: { userId: true, displayName: true, rank: true },
     });
     const names = new Map(profiles.map((p) => [p.userId, p]));
+    // OVR /100 global de chaque athlète → grade affiché (cohérence du score, IC-01).
+    const indices = await this.prisma.hybridIndex.findMany({
+      where: { userId: { in: userIds } },
+      select: { userId: true, value: true },
+    });
+    const ovrByUser = new Map(indices.map((h) => [h.userId, Math.round(ratingFromInternal(h.value))]));
     return {
       wodId: id,
       sex,
@@ -433,6 +440,7 @@ export class WodsService {
         userId: r.userId,
         displayName: names.get(r.userId)?.displayName ?? "—",
         rank: names.get(r.userId)?.rank ?? "rookie",
+        index: ovrByUser.get(r.userId) ?? null,
         rawResult: Number(r.rawResult),
         subScore: ovrSub(r.subScore),
         isMe: r.userId === userId,

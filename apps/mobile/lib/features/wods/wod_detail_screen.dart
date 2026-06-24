@@ -498,7 +498,7 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
                         style: HiType.body.copyWith(
                             color: HiColors.textPrimary, fontWeight: e.isMe ? FontWeight.w800 : FontWeight.w500)),
                   ),
-                  RankBadge(rank: e.rank, fontSize: 10),
+                  RankBadge(rank: e.rank, ovr: e.index, fontSize: 10),
                   const SizedBox(width: HiSpace.sm),
                   Text(formatWodResult(e.rawResult, scoreType, wodId: widget.wodId),
                       style: HiType.body.copyWith(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),

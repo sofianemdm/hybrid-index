@@ -249,7 +249,7 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
                             style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
                       ),
                       const SizedBox(width: 8),
-                      RankBadge(rank: a.actorRank, fontSize: 10),
+                      RankBadge(rank: a.actorRank, ovr: a.actorIndex, fontSize: 10),
                     ],
                   ),
                 ),

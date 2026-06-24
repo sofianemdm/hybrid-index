@@ -94,7 +94,7 @@ class _ConversationsScreenState extends ConsumerState<ConversationsScreen> {
                 style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
           ),
           const SizedBox(width: 8),
-          RankBadge(rank: c.otherRank, fontSize: 9),
+          RankBadge(rank: c.otherRank, ovr: c.otherIndex, fontSize: 9),
         ]),
         subtitle: Text(preview,
             maxLines: 1,

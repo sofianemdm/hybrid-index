@@ -256,7 +256,7 @@ class _CardState extends State<_Card> with TickerProviderStateMixin {
                                 Text(loc.shareCardOvr,
                                     style: TextStyle(color: skin.frame.withValues(alpha: 0.75), fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 3)),
                                 const SizedBox(height: 8),
-                                RankBadge(rank: idx.rank, fontSize: 12),
+                                RankBadge(rank: idx.rank, ovr: idx.value, fontSize: 12),
                                 const SizedBox(height: 4),
                                 Text('${widget.sex == 'female' ? '♀' : '♂'}  ${loc.shareCardLeague} ${widget.sex == 'female' ? 'FEMME' : 'HOMME'}',
                                     style: const TextStyle(color: _inkSoft, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 0.5)),

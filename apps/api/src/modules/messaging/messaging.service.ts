@@ -1,7 +1,12 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { dmAgeAllowed } from "@hybrid-index/contracts";
+import { ratingFromInternal } from "@hybrid-index/scoring-core";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { ModerationService } from "../moderation/moderation.service";
+
+/** OVR /100 d'un Index interne /1000 (grade affiché), ou null. */
+const ovr = (internal: number | null | undefined): number | null =>
+  internal == null ? null : Math.round(ratingFromInternal(internal));
 
 const MAX_BODY = 2000;
 
@@ -88,28 +93,33 @@ export class MessagingService {
       orderBy: { lastMessageAt: "desc" },
       take: 50,
       include: {
-        userA: { include: { profile: { select: { displayName: true, rank: true } } } },
-        userB: { include: { profile: { select: { displayName: true, rank: true } } } },
+        userA: { include: { profile: { select: { displayName: true, rank: true } }, hybridIndex: { select: { value: true } } } },
+        userB: { include: { profile: { select: { displayName: true, rank: true } }, hybridIndex: { select: { value: true } } } },
         // Aperçu : ignorer les messages masqués par modération.
         messages: { where: { status: "visible" }, orderBy: { createdAt: "desc" }, take: 1 },
       },
     });
+    // Non-lus en UNE requête groupée (au lieu d'un COUNT par conversation — BUG-022 N+1).
+    const unreadRows = await this.prisma.message.groupBy({
+      by: ["conversationId"],
+      where: { conversationId: { in: convs.map((c) => c.id) }, senderId: { not: me }, readAt: null, status: "visible" },
+      _count: { _all: true },
+    });
+    const unreadByConv = new Map(unreadRows.map((r) => [r.conversationId, r._count._all]));
     const result = [];
     for (const c of convs) {
       const other = c.userAId === me ? c.userB : c.userA;
       const last = c.messages[0];
-      const unread = await this.prisma.message.count({
-        where: { conversationId: c.id, senderId: { not: me }, readAt: null, status: "visible" },
-      });
       result.push({
         id: c.id,
         other: {
           userId: other.id,
           displayName: other.profile?.displayName ?? "—",
           rank: other.profile?.rank ?? "rookie",
+          index: ovr(other.hybridIndex?.value),
         },
         lastMessage: last ? { body: last.body, createdAt: last.createdAt.toISOString(), isMine: last.senderId === me } : null,
-        unread,
+        unread: unreadByConv.get(c.id) ?? 0,
       });
     }
     return result;

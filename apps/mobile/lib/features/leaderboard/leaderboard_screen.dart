@@ -198,7 +198,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                 style: (e.isMe ? HiType.bodyStrong : HiType.body).copyWith(color: HiColors.textPrimary),
               ),
             ),
-            RankBadge(rank: e.rank, fontSize: 11),
+            RankBadge(rank: e.rank, ovr: e.value, fontSize: 11),
             const SizedBox(width: HiSpace.md),
             Text('${e.value}', style: HiType.numericM.copyWith(color: HiColors.textPrimary)),
           ],

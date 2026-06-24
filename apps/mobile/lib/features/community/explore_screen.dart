@@ -134,7 +134,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         contentPadding: EdgeInsets.zero,
         title: Text(a.displayName, style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
         subtitle: Text('${HiLabels.goal(a.goal)} · Index ${a.index ?? '—'}', style: HiType.caption.copyWith(color: HiColors.textTertiary)),
-        trailing: RankBadge(rank: a.rank, fontSize: 10),
+        trailing: RankBadge(rank: a.rank, ovr: a.index, fontSize: 10),
         onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => PublicProfileScreen(userId: a.userId))),
       );
 }

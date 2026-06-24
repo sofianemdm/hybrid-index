@@ -276,7 +276,7 @@ class _ChallengeScreenState extends ConsumerState<ChallengeScreen> {
                       overflow: TextOverflow.ellipsis,
                       style: HiType.body.copyWith(color: HiColors.textPrimary, fontWeight: e.isMe ? FontWeight.w800 : FontWeight.w500)),
                 ),
-                RankBadge(rank: e.rank, fontSize: 10),
+                RankBadge(rank: e.rank, ovr: e.index, fontSize: 10),
                 const SizedBox(width: HiSpace.sm),
                 Text(formatWodResult(e.rawResult, scoreType, wodId: wodId),
                     style: HiType.bodyStrong.copyWith(color: HiColors.textPrimary)),

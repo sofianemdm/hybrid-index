@@ -264,6 +264,7 @@ class ConversationSummary {
   final String otherUserId;
   final String otherName;
   final String otherRank;
+  final int? otherIndex; // OVR /100 de l'interlocuteur (grade affiché)
   final String? lastBody;
   final bool lastIsMine;
   final int unread;
@@ -272,6 +273,7 @@ class ConversationSummary {
     required this.otherUserId,
     required this.otherName,
     required this.otherRank,
+    this.otherIndex,
     this.lastBody,
     required this.lastIsMine,
     required this.unread,
@@ -285,6 +287,7 @@ class ConversationSummary {
       otherUserId: other['userId'] as String? ?? '',
       otherName: other['displayName'] as String? ?? '—',
       otherRank: other['rank'] as String? ?? 'rookie',
+      otherIndex: (other['index'] as num?)?.toInt(),
       lastBody: last?['body'] as String?,
       lastIsMine: last?['isMine'] as bool? ?? false,
       unread: (j['unread'] as num?)?.toInt() ?? 0,
@@ -909,6 +912,7 @@ class FeedActivity {
   final String actorUserId;
   final String actorName;
   final String actorRank;
+  final int? actorIndex; // OVR /100 de l'acteur (grade affiché)
   final bool isMe;
   final Map<String, dynamic> payload;
   final Map<String, int> reactions;
@@ -920,6 +924,7 @@ class FeedActivity {
     required this.actorUserId,
     required this.actorName,
     required this.actorRank,
+    this.actorIndex,
     required this.isMe,
     required this.payload,
     required this.reactions,
@@ -939,6 +944,7 @@ class FeedActivity {
       actorUserId: actor['userId'] as String,
       actorName: actor['displayName'] as String? ?? '—',
       actorRank: actor['rank'] as String? ?? 'rookie',
+      actorIndex: (actor['index'] as num?)?.toInt(),
       isMe: actor['isMe'] as bool? ?? false,
       payload: (j['payload'] as Map?)?.cast<String, dynamic>() ?? {},
       reactions: reactions,
@@ -1337,6 +1343,7 @@ class WodLeaderboardEntry {
   final String userId;
   final String displayName;
   final String rank;
+  final int? index; // OVR /100 global de l'athlète (grade affiché)
   final num rawResult;
   final int? subScore;
   final bool isMe;
@@ -1345,6 +1352,7 @@ class WodLeaderboardEntry {
     required this.userId,
     required this.displayName,
     required this.rank,
+    this.index,
     required this.rawResult,
     required this.subScore,
     required this.isMe,
@@ -1355,6 +1363,7 @@ class WodLeaderboardEntry {
         userId: j['userId'] as String,
         displayName: j['displayName'] as String? ?? '—',
         rank: j['rank'] as String? ?? 'rookie',
+        index: (j['index'] as num?)?.toInt(),
         rawResult: j['rawResult'] as num,
         subScore: (j['subScore'] as num?)?.toInt(),
         isMe: j['isMe'] as bool? ?? false,

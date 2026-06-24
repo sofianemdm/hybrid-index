@@ -115,7 +115,12 @@ export class SocialService {
         orderBy: { createdAt: "desc" },
         take: FEED_LIMIT,
         include: {
-          actor: { include: { profile: { select: { displayName: true, rank: true } } } },
+          actor: {
+            include: {
+              profile: { select: { displayName: true, rank: true } },
+              hybridIndex: { select: { value: true } },
+            },
+          },
           reactions: { select: { emoji: true, fromUserId: true } },
         },
       }),
@@ -138,6 +143,7 @@ export class SocialService {
           userId: e.actorId,
           displayName: e.actor.profile?.displayName ?? "—",
           rank: e.actor.profile?.rank ?? "rookie",
+          index: ovr(e.actor.hybridIndex?.value),
           isMe: e.actorId === me,
         },
         payload: e.payload,
