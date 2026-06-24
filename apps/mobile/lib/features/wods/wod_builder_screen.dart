@@ -11,6 +11,9 @@ import '../../widgets/hi_button.dart';
 import 'wod_detail_screen.dart';
 import 'wod_format.dart';
 
+// Le format « distance » est RETIRÉ du builder : le moteur ne le note pas correctement (la
+// distribution dégénère → résultat rejeté/aberrant, audit BUG-005). À réintroduire avec une vraie
+// notation par allure/distance. La course se mesure via les WODs de course existants.
 const _formats = {
   'for_time': 'For Time',
   'amrap': 'AMRAP',
@@ -19,7 +22,6 @@ const _formats = {
   'interval': 'Intervalles',
   'tabata': 'Tabata',
   'strength': 'Force',
-  'distance': 'Distance/Temps',
 };
 
 String _scoreTypeFor(String wodType) {

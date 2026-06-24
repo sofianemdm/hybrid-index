@@ -126,46 +126,77 @@ export class WodsService {
       attributesAffected = scored.attributesAffected as AttributeKey[];
     }
 
-    const created = await this.prisma.wodResult.create({
-      data: {
-        userId,
-        wodId,
-        sex: profile.sex,
-        rawResult: body.rawResult,
-        distanceMeters: body.distanceMeters ?? null,
-        subScore,
-        percentile,
-        attributesAffected,
-        source: "declared",
-        scoringVersionId: SCORING_VERSION_UUID,
-        rxCompliant: body.rxCompliant ?? true,
-        performedAt: new Date(),
-      },
+    // Anti-triche (cf. results.service / cahier §5.5) : saut > +30 % du sous-score vs meilleur effort
+    // ALL-TIME ET résultat au niveau quasi-élite (percentile ≥ 0.85) → flaggé pending_review (exclu
+    // des classements/Index). 1er effort jamais flaggé. Mêmes seuils que l'autre voie de log.
+    const allTimeBest = await this.prisma.wodResult.aggregate({
+      where: { userId, wodId, review: "ok", subScore: { not: null } },
+      _max: { subScore: true },
     });
-    await this.prisma.wod.update({ where: { id: wodId }, data: { resultCount: { increment: 1 } } });
+    const prevBest = allTimeBest._max.subScore;
+    const isAnomaly =
+      subScore !== null && prevBest != null && prevBest > 0 && subScore > prevBest * 1.3 && (percentile ?? 0) >= 0.85;
+
+    const data = {
+      userId,
+      wodId,
+      sex: profile.sex,
+      rawResult: body.rawResult,
+      distanceMeters: body.distanceMeters ?? null,
+      subScore,
+      percentile,
+      attributesAffected,
+      source: "declared" as const,
+      scoringVersionId: SCORING_VERSION_UUID,
+      rxCompliant: body.rxCompliant ?? true,
+      performedAt: new Date(),
+      review: (isAnomaly ? "pending_review" : "ok") as "pending_review" | "ok",
+    };
+    // Idempotent si une clé est fournie (retry réseau / double-tap mobile) → pas de doublon.
+    const existing = body.idempotencyKey
+      ? await this.prisma.wodResult.findUnique({
+          where: { userId_idempotencyKey: { userId, idempotencyKey: body.idempotencyKey } },
+          select: { id: true },
+        })
+      : null;
+    const created = body.idempotencyKey
+      ? await this.prisma.wodResult.upsert({
+          where: { userId_idempotencyKey: { userId, idempotencyKey: body.idempotencyKey } },
+          create: { ...data, idempotencyKey: body.idempotencyKey },
+          update: {}, // rejoué → on NE modifie rien (le 1er enregistrement fait foi)
+        })
+      : await this.prisma.wodResult.create({ data });
+    // N'incrémente le compteur QUE pour une vraie première écriture (jamais sur un rejeu idempotent).
+    if (!existing) {
+      await this.prisma.wod.update({ where: { id: wodId }, data: { resultCount: { increment: 1 } } });
+    }
     const recomputed = await this.profileScoring.recomputeForUser(userId);
 
-    // Feed : PR (nouveau meilleur) ou simple log.
+    // Feed : PR (nouveau meilleur) ou simple log. PAS d'événement sur un rejeu idempotent (sinon
+    // double post dans le feed). Un effort flaggé anti-triche ne génère pas de PR non plus.
     const best = await this.prisma.wodResult.aggregate({
       where: { userId, wodId, review: "ok", subScore: { not: null } },
       _max: { subScore: true },
     });
-    const isPr = subScore !== null && best._max.subScore === subScore;
-    await this.feedEvents.emit(userId, isPr ? "pr" : "wod_logged", {
-      wodId,
-      wodName: wod.name,
-      subScore,
-      rawResult: body.rawResult,
-    });
-
-    // Classement de progression hebdo (B1) — best-effort.
-    await this.progress
-      .awardForResult(userId, created.sex, {
-        wodResultId: created.id,
+    const isPr = !isAnomaly && subScore !== null && best._max.subScore === subScore;
+    if (!existing) {
+      await this.feedEvents.emit(userId, isPr ? "pr" : "wod_logged", {
         wodId,
+        wodName: wod.name,
         subScore,
-        performedAt: created.performedAt,
-      })
+        rawResult: body.rawResult,
+      });
+    }
+
+    // Classement de progression hebdo (B1) — best-effort. Pas sur un rejeu.
+    if (!existing)
+      await this.progress
+        .awardForResult(userId, created.sex, {
+          wodResultId: created.id,
+          wodId,
+          subScore,
+          performedAt: created.performedAt,
+        })
       .catch(() => undefined);
 
     return {

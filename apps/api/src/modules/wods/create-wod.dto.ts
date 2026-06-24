@@ -28,5 +28,7 @@ export const LogWodResultRequest = z.object({
   rxCompliant: z.boolean().optional(),
   /** Distance parcourue en mètres — REQUIS pour la course à distance libre (`run_free_distance`). */
   distanceMeters: z.number().int().positive().optional(),
+  /** Clé d'idempotence (anti double-comptage sur retry réseau / double-tap). */
+  idempotencyKey: z.string().min(1).max(128).optional(),
 });
 export type LogWodResultRequest = z.infer<typeof LogWodResultRequest>;

@@ -34,6 +34,9 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
   final _sec = TextEditingController();
   bool _rx = true;
   bool _loading = false;
+  // Clé d'idempotence STABLE pour cette saisie : un double-tap ou un retry réseau réutilise la même
+  // clé → le serveur dédoublonne (pas de double comptage, audit BUG-014).
+  final String _idempotencyKey = 'log-${DateTime.now().microsecondsSinceEpoch}-${UniqueKey()}';
 
   bool get _isTime => widget.scoreType == 'time';
   bool get _isFreeRun => widget.wodId == 'run_free_distance';
@@ -99,6 +102,7 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
       final payload = <String, dynamic>{
         'rawResult': raw,
         'rxCompliant': _rx,
+        'idempotencyKey': _idempotencyKey,
         if (distanceMeters != null) 'distanceMeters': distanceMeters,
       };
       final profile = await ref.read(apiClientProvider).logWodResult(widget.wodId, payload);
