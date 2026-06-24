@@ -1213,6 +1213,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get revealYourIndex => 'YOUR HYBRID INDEX';
 
   @override
+  String get revealDoProfilExpress => 'Do the Express Profile';
+
+  @override
   String get revealEstimateTitle => 'This is an estimate';
 
   @override

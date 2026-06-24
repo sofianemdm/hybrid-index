@@ -2180,6 +2180,12 @@ abstract class AppLocalizations {
   /// **'YOUR HYBRID INDEX'**
   String get revealYourIndex;
 
+  /// No description provided for @revealDoProfilExpress.
+  ///
+  /// In en, this message translates to:
+  /// **'Do the Express Profile'**
+  String get revealDoProfilExpress;
+
   /// No description provided for @revealEstimateTitle.
   ///
   /// In en, this message translates to:

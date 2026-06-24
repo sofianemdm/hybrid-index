@@ -735,6 +735,7 @@
   "socialProofAppPrefix": "Top ",
   "socialProofAppSuffix": " of HYBRID athletes",
   "revealYourIndex": "YOUR HYBRID INDEX",
+  "revealDoProfilExpress": "Do the Express Profile",
   "revealEstimateTitle": "This is an estimate",
   "revealEstimateBody": "Your starting Index is based on {coverage}/6 attributes. Log a few more sessions to unlock all 6 and reveal your true HYBRID INDEX.",
   "@revealEstimateBody": {
