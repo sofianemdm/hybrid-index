@@ -62,12 +62,13 @@ class GradeBlock extends ConsumerWidget {
       return Text(t.gradeSummitReached,
           style: TextStyle(color: color, fontSize: 13, fontWeight: FontWeight.w800));
     }
-    // Objectif = le PROCHAIN POINT (ex. 74 → 75). Remplissage = progression réelle vers ce point
-    // (via la note à la décimale).
-    final r = (profile.index.rating ?? ovr.toDouble()).clamp(0.0, 99.999);
-    final cur = r.floor();
+    // Objectif = le PROCHAIN POINT au-dessus de la note AFFICHÉE (ex. 79 → 80). On ancre sur `ovr`
+    // (= round(rating), le grand nombre montré) et NON sur floor(rating), sinon quand la décimale
+    // est ≥ .5 (ex. 78,6 → affiché 79) l'objectif tombait sur 79 → « viser 79 » alors qu'on EST à 79.
+    final r = (profile.index.rating ?? ovr.toDouble());
+    final cur = ovr;
     final next = cur + 1;
-    final fill = (r - cur).clamp(0.0, 1.0);
+    final fill = (r - cur).clamp(0.0, 1.0); // 0 si on vient juste d'atteindre ce point (arrondi au sup)
     final nextColor = HiGrade.color(next);
     return Column(
       children: [
@@ -229,8 +230,8 @@ class GradeBlock extends ConsumerWidget {
   Widget _actionMessage(BuildContext context, int ovr) {
     final t = AppLocalizations.of(context);
     final weak = profile.weakest;
-    // Objectif = le prochain POINT (ex. 75), pas le prochain palier de grade.
-    final next = '${(profile.index.rating ?? ovr.toDouble()).floor() + 1}';
+    // Objectif = le prochain POINT au-dessus de la note affichée (ovr+1), cohérent avec _progressBar.
+    final next = '${ovr + 1}';
     if (weak == null) {
       return Text(t.gradeClimbTo(next),
           textAlign: TextAlign.center, style: TextStyle(color: HiColors.textSecondary, fontSize: 13));

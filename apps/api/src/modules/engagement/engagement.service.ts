@@ -48,7 +48,15 @@ export class EngagementService {
     const monday = weekStart(new Date());
     const nextMonday = addWeeks(monday, 1);
     const [sessions, idx, before, streak] = await Promise.all([
-      this.prisma.wodResult.count({ where: { userId, performedAt: { gte: monday, lt: nextMonday } } }),
+      // Séances RÉELLES de la semaine : on exclut les efforts d'onboarding (auto-évaluation à
+      // l'inscription, clé `onboarding:*`) — ce ne sont pas des séances faites cette semaine.
+      this.prisma.wodResult.count({
+        where: {
+          userId,
+          performedAt: { gte: monday, lt: nextMonday },
+          NOT: { idempotencyKey: { startsWith: "onboarding:" } },
+        },
+      }),
       this.prisma.hybridIndex.findUnique({ where: { userId }, select: { value: true } }),
       // Dernier point d'historique AVANT lundi = Index de référence du début de semaine.
       this.prisma.hybridIndexHistory.findFirst({

@@ -208,6 +208,20 @@ export class WodsService {
 
     const sessions: Array<{ wodId: string; name: string; requiresEquipment: boolean; covers: string[] }> = [];
     const chosen = new Set<string>();
+    // Nouvel arrivant (aucun attribut encore mesuré POUR DE VRAI, ex. juste après l'onboarding) :
+    // on conseille « Profil Express » EN PREMIER — une seule séance sans matériel qui estime les 6
+    // qualités, pour un Index de départ plus complet/fin. Les séances ciblées ci-dessous le
+    // préciseront ensuite pour de vrai (profil_express ne réduit pas `remaining` : reste estimé).
+    if (done.size === 0) {
+      const pe = await this.prisma.wod.findUnique({
+        where: { id: "profil_express" },
+        select: { id: true, name: true, requiresEquipment: true },
+      });
+      if (pe) {
+        sessions.push({ wodId: pe.id, name: pe.name, requiresEquipment: pe.requiresEquipment, covers: [...remaining] });
+        chosen.add(pe.id);
+      }
+    }
     while (remaining.size > 0) {
       let best: (typeof wods)[number] | null = null;
       let bestCover: string[] = [];

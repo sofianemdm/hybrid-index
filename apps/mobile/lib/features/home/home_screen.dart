@@ -5,6 +5,7 @@ import '../../app.dart';
 import '../../data/models.dart';
 import '../../data/projection.dart';
 import '../../data/session.dart';
+import '../../data/ui_state.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/hi_avatar.dart';
@@ -21,7 +22,6 @@ import 'weekly_recap_card.dart';
 import '../avatar/avatar_editor_screen.dart';
 import '../coach/coach_screen.dart';
 import '../history/history_screen.dart';
-import '../leaderboard/leaderboard_screen.dart';
 import '../notifications/notifications_screen.dart';
 import '../settings/settings_screen.dart';
 import '../share/share_card_screen.dart';
@@ -135,9 +135,10 @@ class HomeScreen extends ConsumerWidget {
           RivalCard(
             rival: p.rival,
             leaguePosition: p.leaguePosition,
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const LeaderboardScreen()),
-            ),
+            // Bascule sur l'onglet Classement (index 4 du HomeShell) plutôt que de pousser
+            // LeaderboardScreen en route : cet écran n'a pas de Scaffold (c'est un corps d'onglet),
+            // le pousser donnait un écran blanc. cf. home_shell.dart (IndexedStack).
+            onTap: () => ref.read(homeTabProvider.notifier).state = 4,
           ),
           const SizedBox(height: HiSpace.md),
         ],

@@ -48,6 +48,7 @@ export class LeaderboardService {
       });
       rows = found.map((r) => ({ userId: r.userId, value: r.value }));
     } else {
+      await this.ensureSynced(sex);
       rows = await this.redis.top(sex, limit);
       if (rows.length === 0) rows = await this.pgTop(sex, limit);
     }
@@ -99,6 +100,18 @@ export class LeaderboardService {
       where: { value: { gt: idx.value }, user: { profile: { sex: sex as Sex } } },
     });
     return { position: above + 1, value: idx.value };
+  }
+
+  /** Auto-répare le sorted set Redis si son cardinal diffère de Postgres (seed sans REDIS_URL,
+   *  flush Redis, comptes supprimés…). Postgres = source de vérité ; Redis = cache de tri rapide
+   *  (décision verrouillée). Une fois synchronisé, les lectures suivantes ne reconstruisent plus. */
+  private async ensureSynced(sex: string): Promise<void> {
+    const [rCount, pgCount] = await Promise.all([this.redis.total(sex), this.pgCount(sex)]);
+    if (rCount === null) return; // Redis indisponible → pgTop prend le relais en lecture
+    if (rCount !== pgCount) {
+      const all = await this.pgTop(sex, 1_000_000); // toutes les entrées du sexe (source de vérité)
+      await this.redis.rebuild(sex, all);
+    }
   }
 
   private async pgTop(sex: string, limit: number): Promise<Array<{ userId: string; value: number }>> {

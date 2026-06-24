@@ -52,6 +52,24 @@ export class RedisService implements OnModuleDestroy {
     }
   }
 
+  /** Reconstruit ENTIÈREMENT le classement d'un sexe depuis Postgres (source de vérité) : supprime
+   *  le sorted set puis ré-injecte toutes les entrées. Auto-réparation quand Redis a été vidé ou
+   *  jamais peuplé (ex. seed lancé sans REDIS_URL). No-op silencieux si Redis indisponible. */
+  async rebuild(sex: string, entries: Array<{ userId: string; value: number }>): Promise<void> {
+    try {
+      const pipe = this.client.pipeline();
+      pipe.del(this.key(sex));
+      if (entries.length > 0) {
+        const args: Array<string | number> = [];
+        for (const e of entries) args.push(e.value, e.userId);
+        pipe.zadd(this.key(sex), ...args);
+      }
+      await pipe.exec();
+    } catch {
+      // ignore — Postgres reste la source de vérité (le repli pgTop couvre la lecture).
+    }
+  }
+
   /** Rang (0-indexé, meilleur = 0) ou null si absent / Redis indisponible. */
   async rank(sex: string, userId: string): Promise<number | null> {
     try {
