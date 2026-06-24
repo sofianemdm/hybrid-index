@@ -278,6 +278,24 @@ abstract class AppLocalizations {
   /// **'Max bodyweight squats (one set)'**
   String get onbMaxSquats;
 
+  /// No description provided for @onbMaxPullups.
+  ///
+  /// In en, this message translates to:
+  /// **'Max strict pull-ups (one set)'**
+  String get onbMaxPullups;
+
+  /// No description provided for @onbSquat1rm.
+  ///
+  /// In en, this message translates to:
+  /// **'Squat 1RM (max load, 1 rep)'**
+  String get onbSquat1rm;
+
+  /// No description provided for @onbSquat1rmHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Your heaviest back squat for a single rep, in kilograms.'**
+  String get onbSquat1rmHint;
+
   /// No description provided for @onbRevealCta.
   ///
   /// In en, this message translates to:

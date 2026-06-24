@@ -35,6 +35,8 @@ const WODS: Array<{
   { id: "ergo_skill", name: "Machine & Mur", scoreType: "time", requiresEquipment: true, targetAttributes: ["strength", "muscular_endurance", "engine", "power"] },
   { id: "run_free_distance", name: "Course distance libre", scoreType: "time", requiresEquipment: false, targetAttributes: ["engine", "speed"] },
   { id: "max_air_squats", name: "Max air squats (une série)", scoreType: "reps", requiresEquipment: false, targetAttributes: ["muscular_endurance", "strength"] },
+  { id: "max_strict_pullups", name: "Max tractions strictes (une série)", scoreType: "reps", requiresEquipment: true, targetAttributes: ["strength", "muscular_endurance"] },
+  { id: "squat_1rm", name: "Squat 1RM (charge max, 1 rép)", scoreType: "load", requiresEquipment: true, targetAttributes: ["strength", "power"] },
   // Épreuves « Autre » (réelles, jouables, rangées à part de l'écran Séances).
   { id: "hyrox_solo", name: "HYROX (solo)", scoreType: "time", requiresEquipment: true, targetAttributes: ["engine", "power", "hybrid", "muscular_endurance"] },
   { id: "isabel", name: "Isabel", scoreType: "time", requiresEquipment: true, targetAttributes: ["power", "strength"] },

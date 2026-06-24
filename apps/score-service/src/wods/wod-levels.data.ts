@@ -25,6 +25,8 @@ export const WOD_LEVELS: Record<string, { male: WodLevels; female: WodLevels }> 
   run_1k: { male: { champion: 131, intermediate: 300, occasional: 450 }, female: { champion: 148, intermediate: 360, occasional: 540 } },
   max_pushups: { male: { champion: 60, intermediate: 25, occasional: 10 }, female: { champion: 35, intermediate: 12, occasional: 4 } },
   max_air_squats_2min: { male: { champion: 85, intermediate: 50, occasional: 30 }, female: { champion: 80, intermediate: 45, occasional: 28 } },
+  max_strict_pullups: { male: { champion: 30, intermediate: 9, occasional: 2 }, female: { champion: 18, intermediate: 3, occasional: 0 } },
+  squat_1rm: { male: { champion: 220, intermediate: 100, occasional: 50 }, female: { champion: 145, intermediate: 60, occasional: 32 } },
   burpees_7min: { male: { champion: 125, intermediate: 70, occasional: 40 }, female: { champion: 110, intermediate: 60, occasional: 35 } },
   ergo_skill: { male: { champion: 360, intermediate: 600, occasional: 900 }, female: { champion: 420, intermediate: 690, occasional: 1020 } },
   // Épreuves « Autre » jouables (sport-science, 22 juin). champion = proReference (record/élite),

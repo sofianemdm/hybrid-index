@@ -26,7 +26,12 @@ export const OnboardingEstimateRequest = z.object({
   course: OnboardingCourse.optional(),
   /** Auto-évaluation 5bis : max de pompes strictes en UNE série (estimé). */
   estimatedPushups: z.number().int().min(0).optional(),
-  /** Auto-évaluation : max de squats à vide en UNE série (estimé). */
+  /** Auto-évaluation : max de tractions strictes en UNE série (estimé). */
+  estimatedStrictPullups: z.number().int().min(0).optional(),
+  /** Auto-évaluation : squat 1RM (charge max sur 1 répétition) en kilogrammes. */
+  estimatedSquat1rmKg: z.number().min(0).optional(),
+  /** @deprecated Squats à vide : conservé pour compat ; plus demandé à l'onboarding (remplacé par
+   *  tractions strictes + squat 1RM). */
   estimatedAirSquats: z.number().int().min(0).optional(),
 });
 export type OnboardingEstimateRequest = z.infer<typeof OnboardingEstimateRequest>;

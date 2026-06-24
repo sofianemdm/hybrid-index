@@ -62,6 +62,39 @@ describe("score-service — calcul (e2e)", () => {
         .expect(404);
     });
 
+    it("note les tractions strictes (reps, plus = mieux) de façon monotone et cible force + endurance", async () => {
+      const low = await request(app.getHttpServer())
+        .post("/v1/score/sub-score")
+        .send({ wodId: "max_strict_pullups", sex: "male", scoreType: "reps", rawResult: 3 })
+        .expect(201);
+      const high = await request(app.getHttpServer())
+        .post("/v1/score/sub-score")
+        .send({ wodId: "max_strict_pullups", sex: "male", scoreType: "reps", rawResult: 25 })
+        .expect(201);
+      expect(high.body.subScore).toBeGreaterThan(low.body.subScore);
+      expect(high.body.attributesAffected).toEqual(expect.arrayContaining(["strength", "muscular_endurance"]));
+    });
+
+    it("note le squat 1RM (charge kg, scoreType load) de façon monotone et cible la force", async () => {
+      const low = await request(app.getHttpServer())
+        .post("/v1/score/sub-score")
+        .send({ wodId: "squat_1rm", sex: "female", scoreType: "load", rawResult: 40 })
+        .expect(201);
+      const high = await request(app.getHttpServer())
+        .post("/v1/score/sub-score")
+        .send({ wodId: "squat_1rm", sex: "female", scoreType: "load", rawResult: 140 })
+        .expect(201);
+      expect(high.body.subScore).toBeGreaterThan(low.body.subScore);
+      expect(high.body.attributesAffected).toContain("strength");
+    });
+
+    it("rejette un squat 1RM hors bornes (422)", async () => {
+      await request(app.getHttpServer())
+        .post("/v1/score/sub-score")
+        .send({ wodId: "squat_1rm", sex: "male", scoreType: "load", rawResult: 500 })
+        .expect(422);
+    });
+
     it("rejette une entrée invalide (400)", async () => {
       const res = await request(app.getHttpServer())
         .post("/v1/score/sub-score")

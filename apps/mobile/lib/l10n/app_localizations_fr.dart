@@ -104,6 +104,16 @@ class AppLocalizationsFr extends AppLocalizations {
   String get onbMaxSquats => 'Max squats à vide (une série)';
 
   @override
+  String get onbMaxPullups => 'Max tractions strictes (une série)';
+
+  @override
+  String get onbSquat1rm => 'Squat 1RM (charge max, 1 rép)';
+
+  @override
+  String get onbSquat1rmHint =>
+      'Ta charge la plus lourde en squat sur une seule répétition, en kilos.';
+
+  @override
   String get onbRevealCta => 'Révéler mon HYBRID INDEX';
 
   @override

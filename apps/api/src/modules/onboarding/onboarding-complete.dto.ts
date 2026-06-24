@@ -15,7 +15,11 @@ export const OnboardingCompleteRequest = z.object({
     .optional(),
   /** Max de pompes strictes en UNE série. */
   estimatedPushups: z.number().int().min(0).optional(),
-  /** Max de squats à vide en UNE série. */
+  /** Max de tractions strictes en UNE série. */
+  estimatedStrictPullups: z.number().int().min(0).optional(),
+  /** Squat 1RM (charge max sur 1 répétition) en kilogrammes. */
+  estimatedSquat1rmKg: z.number().min(0).optional(),
+  /** @deprecated Squats à vide : conservé pour compat, plus demandé à l'onboarding. */
   estimatedAirSquats: z.number().int().min(0).optional(),
 });
 export type OnboardingCompleteRequest = z.infer<typeof OnboardingCompleteRequest>;

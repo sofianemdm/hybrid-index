@@ -34,8 +34,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   bool _withPushups = true;
   double _pushups = 25;
 
-  bool _withAirSquats = false;
-  double _airSquats = 40;
+  bool _withPullups = false;
+  double _pullups = 5;
+
+  bool _withSquat = false;
+  final _squat = TextEditingController();
 
   Profile? _preview;
   bool _previewing = false;
@@ -46,6 +49,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     _km.dispose();
     _min.dispose();
     _sec.dispose();
+    _squat.dispose();
     super.dispose();
   }
 
@@ -65,7 +69,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   bool get _courseValid => _distanceMeters != null && _courseSeconds != null;
-  bool get _hasInput => _courseValid || _withPushups || _withAirSquats;
+
+  /// Charge du squat 1RM en kg si la saisie est valide (1 à 320 kg).
+  int? get _squatKg {
+    if (!_withSquat) return null;
+    final kg = int.tryParse(_squat.text);
+    return (kg != null && kg >= 1 && kg <= 320) ? kg : null;
+  }
+
+  bool get _hasInput => _courseValid || _withPushups || _withPullups || _squatKg != null;
 
   Map<String, dynamic> _buildPayload() {
     final payload = <String, dynamic>{};
@@ -73,7 +85,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       payload['course'] = {'distanceMeters': _distanceMeters, 'timeSeconds': _courseSeconds};
     }
     if (_withPushups) payload['estimatedPushups'] = _pushups.round();
-    if (_withAirSquats) payload['estimatedAirSquats'] = _airSquats.round();
+    if (_withPullups) payload['estimatedStrictPullups'] = _pullups.round();
+    if (_squatKg != null) payload['estimatedSquat1rmKg'] = _squatKg;
     return payload;
   }
 
@@ -192,16 +205,18 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         ),
         const SizedBox(height: HiSpace.md),
         _repsCard(
-          title: AppLocalizations.of(context).onbMaxSquats,
-          enabled: _withAirSquats,
-          value: _airSquats,
-          max: 200,
+          title: AppLocalizations.of(context).onbMaxPullups,
+          enabled: _withPullups,
+          value: _pullups,
+          max: 50,
           onToggle: (v) {
-            setState(() => _withAirSquats = v);
+            setState(() => _withPullups = v);
             _refreshPreview();
           },
-          onChanged: (v) => setState(() => _airSquats = v),
+          onChanged: (v) => setState(() => _pullups = v),
         ),
+        const SizedBox(height: HiSpace.md),
+        _squatCard(),
         const SizedBox(height: HiSpace.lg),
         _previewCard(),
         const SizedBox(height: HiSpace.lg),
@@ -256,6 +271,42 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               ),
               const SizedBox(height: 6),
               Text(AppLocalizations.of(context).onbRunHint,
+                  style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _squatCard() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(HiSpace.md),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(AppLocalizations.of(context).onbSquat1rm,
+                      style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w600)),
+                ),
+                Switch(
+                  value: _withSquat,
+                  activeThumbColor: HiColors.brandPrimary,
+                  onChanged: (v) {
+                    setState(() => _withSquat = v);
+                    _refreshPreview();
+                  },
+                ),
+              ],
+            ),
+            if (_withSquat) ...[
+              const SizedBox(height: HiSpace.sm),
+              SizedBox(width: 150, child: _field(_squat, 'kg', suffix: 'kg')),
+              const SizedBox(height: 6),
+              Text(AppLocalizations.of(context).onbSquat1rmHint,
                   style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
             ],
           ],

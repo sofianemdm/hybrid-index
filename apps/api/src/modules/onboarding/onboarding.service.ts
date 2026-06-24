@@ -21,7 +21,7 @@ export class OnboardingService {
   ) {}
 
   async estimate(req: onboardingDto.OnboardingEstimateRequest): Promise<onboardingDto.RevealResponse> {
-    const efforts = this.toEfforts(req.course, req.estimatedPushups, req.estimatedAirSquats);
+    const efforts = this.toEfforts(req);
     if (efforts.length === 0) {
       throw new BadRequestException({
         code: "VALIDATION_ERROR",
@@ -59,11 +59,11 @@ export class OnboardingService {
     const profile = await this.prisma.profile.findUnique({ where: { userId } });
     if (!profile) throw new NotFoundException({ code: "NOT_FOUND", message: "Profil introuvable." });
 
-    const efforts = this.toEfforts(req.course, req.estimatedPushups, req.estimatedAirSquats);
+    const efforts = this.toEfforts(req);
     if (efforts.length === 0) {
       throw new BadRequestException({
         code: "VALIDATION_ERROR",
-        message: "Fournis au moins une course, des pompes ou des squats.",
+        message: "Fournis au moins une course, des pompes, des tractions ou un squat.",
       });
     }
 
@@ -92,26 +92,36 @@ export class OnboardingService {
     return result;
   }
 
-  private toEfforts(
-    course: { distanceMeters: number; timeSeconds: number } | undefined,
-    estimatedPushups: number | undefined,
-    estimatedAirSquats: number | undefined,
-  ): internalScore.EffortInput[] {
+  private toEfforts(req: {
+    course?: { distanceMeters: number; timeSeconds: number };
+    estimatedPushups?: number;
+    estimatedStrictPullups?: number;
+    estimatedSquat1rmKg?: number;
+    estimatedAirSquats?: number;
+  }): internalScore.EffortInput[] {
     const efforts: internalScore.EffortInput[] = [];
-    if (course) {
+    if (req.course) {
       // Course à distance libre : normalisée via Riegel côté score-service.
       efforts.push({
         wodId: "run_free_distance",
-        rawResult: course.timeSeconds,
-        distanceMeters: course.distanceMeters,
+        rawResult: req.course.timeSeconds,
+        distanceMeters: req.course.distanceMeters,
         ageWeeks: 0,
       });
     }
-    if (estimatedPushups !== undefined) {
-      efforts.push({ wodId: "max_pushups", rawResult: estimatedPushups, ageWeeks: 0 });
+    if (req.estimatedPushups !== undefined) {
+      efforts.push({ wodId: "max_pushups", rawResult: req.estimatedPushups, ageWeeks: 0 });
     }
-    if (estimatedAirSquats !== undefined) {
-      efforts.push({ wodId: "max_air_squats", rawResult: estimatedAirSquats, ageWeeks: 0 });
+    if (req.estimatedStrictPullups !== undefined) {
+      efforts.push({ wodId: "max_strict_pullups", rawResult: req.estimatedStrictPullups, ageWeeks: 0 });
+    }
+    if (req.estimatedSquat1rmKg !== undefined) {
+      // Squat 1RM : charge en kg (scoreType "load", plus = mieux), notée par le score-service.
+      efforts.push({ wodId: "squat_1rm", rawResult: req.estimatedSquat1rmKg, ageWeeks: 0 });
+    }
+    // Squats à vide : conservé pour compat (plus demandé à l'onboarding).
+    if (req.estimatedAirSquats !== undefined) {
+      efforts.push({ wodId: "max_air_squats", rawResult: req.estimatedAirSquats, ageWeeks: 0 });
     }
     return efforts;
   }

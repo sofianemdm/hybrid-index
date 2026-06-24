@@ -441,6 +441,46 @@ export const WODS: ReadonlyArray<WodDefinition> = [
       female: { model: normal(70, 27), hardMin: 15, hardMax: 280, proReference: 135 },
     },
   },
+  {
+    // Max tractions strictes en UNE série (pronation, sans élan), à l'échec. Mesure de FORCE de
+    // tirage réelle (le tirage vertical dos/biceps est l'étalon haut-du-corps, la majorité plafonne
+    // < 15 reps → chaque rep mobilise un % élevé de la force) + endurance musculaire. ≠ pompes :
+    // strength en RÉEL ici (pas un simple proxy). Distribution sport-science 24 juin (normes
+    // calisthénie/ACSM). Forte asymétrie → normal tronqué à 0.
+    id: "max_strict_pullups",
+    name: "Max tractions strictes (une série)",
+    scoreType: "reps",
+    requiresEquipment: true,
+    isBenchmark: true,
+    targetAttributes: [
+      { attribute: "strength", estimated: false },
+      { attribute: "muscular_endurance", estimated: false },
+    ],
+    bySex: {
+      male: { model: normal(9, 6), hardMin: 0, hardMax: 50, proReference: 30 },
+      female: { model: normal(3, 3), hardMin: 0, hardMax: 35, proReference: 18 },
+    },
+  },
+  {
+    // Back squat 1RM en CHARGE ABSOLUE (kg), 1 rép max. L'app n'ayant pas le poids de corps ici, on
+    // note la charge absolue, normalisée PAR SEXE (décision verrouillée → intègre la morphologie
+    // H/F). Force des membres inférieurs = mesure de FORCE pure (estimated:false). power ajouté en
+    // ESTIMÉ : un 1RM élevé conditionne la puissance mais un test à 1 rép lente ne mesure pas la
+    // vitesse. Distribution sport-science 24 juin (tables ExRx/Strength Level « Intermediate »).
+    id: "squat_1rm",
+    name: "Squat 1RM (charge max, 1 rép)",
+    scoreType: "load",
+    requiresEquipment: true,
+    isBenchmark: true,
+    targetAttributes: [
+      { attribute: "strength", estimated: false },
+      { attribute: "power", estimated: true },
+    ],
+    bySex: {
+      male: { model: normal(100, 35), hardMin: 20, hardMax: 320, proReference: 220 },
+      female: { model: normal(60, 22), hardMin: 15, hardMax: 220, proReference: 145 },
+    },
+  },
 
   // ---------------- Épreuves « Autre » jouables (sport-science, 22 juin) ----------------
   // Ajoutées comme séances classables. proReference = record/élite réel sourcé ; médiane =
