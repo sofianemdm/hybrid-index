@@ -1,0 +1,22 @@
+# NE JAMAIS copier les node_modules de l'hôte (Windows) dans l'image Linux : leurs symlinks pnpm
+# sont invalides sous Linux et écrasent l'install faite dans l'image → builds cassés (tsc introuvable).
+# pnpm install (dans le Dockerfile) recrée proprement les dépendances dans l'image.
+**/node_modules
+
+# Artefacts de build (refaits dans l'image)
+**/dist
+**/.turbo
+
+# Flutter (jamais nécessaire pour les images backend) — allège fortement le contexte de build
+apps/mobile/.dart_tool
+apps/mobile/build
+apps/mobile/.flutter-plugins-dependencies
+
+# Divers
+.git
+.github
+**/*.log
+**/.env
+.env
+**/.DS_Store
+build/web

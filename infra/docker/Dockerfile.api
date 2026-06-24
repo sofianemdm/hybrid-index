@@ -6,18 +6,26 @@ WORKDIR /repo
 # --- deps + build ---
 FROM base AS build
 COPY pnpm-workspace.yaml package.json pnpm-lock.yaml tsconfig.base.json ./
+# Tous les manifests du workspace pnpm (4 membres) → install déterministe (sinon pnpm ne lie pas
+# correctement les devDeps comme TypeScript). Les sources inutiles ne sont PAS copiées.
 COPY packages/contracts/package.json packages/contracts/package.json
 COPY packages/scoring-core/package.json packages/scoring-core/package.json
 COPY apps/api/package.json apps/api/package.json
+COPY apps/score-service/package.json apps/score-service/package.json
 RUN pnpm install --frozen-lockfile
 COPY packages/contracts packages/contracts
 COPY packages/scoring-core packages/scoring-core
 COPY apps/api apps/api
-RUN pnpm --filter @hybrid-index/contracts build \
- && pnpm --filter @hybrid-index/scoring-core build \
+# On compile via `pnpm exec tsc` (résolution fiable du binaire) plutôt que le script `build` du
+# paquet : dans l'install minimal Docker, pnpm ne crée pas toujours le shim .bin/tsc par paquet.
+RUN pnpm --filter @hybrid-index/contracts exec tsc -p tsconfig.json \
+ && pnpm --filter @hybrid-index/scoring-core exec tsc -p tsconfig.json \
  && pnpm --filter @hybrid-index/api exec prisma generate \
- && pnpm --filter @hybrid-index/api build \
- && pnpm --filter @hybrid-index/api --prod deploy /out
+ && pnpm --filter @hybrid-index/api exec tsc -p tsconfig.build.json \
+ && pnpm --filter @hybrid-index/api --prod deploy --legacy /out
+# pnpm deploy n'embarque PAS le client Prisma généré (dossier .prisma du store) → on l'extrait
+# vers un emplacement fixe pour le recopier dans l'image runtime.
+RUN cp -r /repo/node_modules/.pnpm/@prisma+client*/node_modules/.prisma /prisma-client
 
 # --- runtime ---
 FROM node:22-alpine AS runtime
@@ -26,5 +34,7 @@ ENV NODE_ENV=production
 COPY --from=build /out/dist ./dist
 COPY --from=build /out/node_modules ./node_modules
 COPY --from=build /out/package.json ./package.json
+# Client Prisma généré (sinon « Cannot find module '.prisma/client/default' » au démarrage).
+COPY --from=build /prisma-client ./node_modules/.prisma
 EXPOSE 3000
 CMD ["node", "dist/main.js"]
