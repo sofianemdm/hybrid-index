@@ -2066,36 +2066,6 @@ abstract class AppLocalizations {
   /// **'One session is enough to kick off the week.'**
   String get recapMessageStart;
 
-  /// No description provided for @scoreV2Title.
-  ///
-  /// In en, this message translates to:
-  /// **'New: your Index out of 100 🎯'**
-  String get scoreV2Title;
-
-  /// No description provided for @scoreV2Body.
-  ///
-  /// In en, this message translates to:
-  /// **'The HYBRID INDEX is now shown out of 100, like a game rating. Your level hasn\'t changed — only the way it\'s displayed evolves, to be more readable.'**
-  String get scoreV2Body;
-
-  /// No description provided for @scoreV2YourIndex.
-  ///
-  /// In en, this message translates to:
-  /// **'Your HYBRID INDEX'**
-  String get scoreV2YourIndex;
-
-  /// No description provided for @scoreV2Benchmarks.
-  ///
-  /// In en, this message translates to:
-  /// **'Benchmarks: beginner ~45 · good level ~80 · pro ~92+'**
-  String get scoreV2Benchmarks;
-
-  /// No description provided for @scoreV2Got.
-  ///
-  /// In en, this message translates to:
-  /// **'Got it 💪'**
-  String get scoreV2Got;
-
   /// No description provided for @streakDetailValidated.
   ///
   /// In en, this message translates to:

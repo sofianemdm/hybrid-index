@@ -1117,23 +1117,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recapMessageStart => 'One session is enough to kick off the week.';
 
   @override
-  String get scoreV2Title => 'New: your Index out of 100 🎯';
-
-  @override
-  String get scoreV2Body =>
-      'The HYBRID INDEX is now shown out of 100, like a game rating. Your level hasn\'t changed — only the way it\'s displayed evolves, to be more readable.';
-
-  @override
-  String get scoreV2YourIndex => 'Your HYBRID INDEX';
-
-  @override
-  String get scoreV2Benchmarks =>
-      'Benchmarks: beginner ~45 · good level ~80 · pro ~92+';
-
-  @override
-  String get scoreV2Got => 'Got it 💪';
-
-  @override
   String streakDetailValidated(Object current) {
     return 'Week validated ✅ — streak of $current';
   }

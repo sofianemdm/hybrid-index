@@ -1125,23 +1125,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get recapMessageStart => 'Une séance suffit pour lancer la semaine.';
 
   @override
-  String get scoreV2Title => 'Nouveau : ton Index sur 100 🎯';
-
-  @override
-  String get scoreV2Body =>
-      'Le HYBRID INDEX s\'affiche désormais sur 100, comme une note de jeu. Ton niveau n\'a pas changé — seule la façon de l\'afficher évolue, en plus lisible.';
-
-  @override
-  String get scoreV2YourIndex => 'Ton HYBRID INDEX';
-
-  @override
-  String get scoreV2Benchmarks =>
-      'Repères : débutant ~45 · bon niveau ~80 · pro ~92+';
-
-  @override
-  String get scoreV2Got => 'J\'ai compris 💪';
-
-  @override
   String streakDetailValidated(Object current) {
     return 'Semaine validée ✅ — série de $current';
   }
