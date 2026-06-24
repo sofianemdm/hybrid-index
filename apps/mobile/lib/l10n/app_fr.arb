@@ -54,7 +54,7 @@
   "deleteAccountTitle": "Supprimer le compte ?",
   "deleteAccountBody": "Cette action est définitive : toutes tes données seront effacées.",
   "wodTabTitle": "Séances",
-  "wodTabSubtitle": "Choisis une séance (aussi appelée « WOD »), vois les records et où tu te situes.",
+  "wodTabSubtitle": "Choisis une séance, vois les records et où tu te situes.",
   "wodTabFlagshipSection": "⭐ Séances phares",
   "wodTabFlagshipCaption": "Les 4 grands défis où tout le monde se mesure.",
   "wodTabNoEquipment": "Sans matériel",

@@ -60,7 +60,7 @@
   "deleteAccountTitle": "Delete account?",
   "deleteAccountBody": "This action is permanent: all your data will be erased.",
   "wodTabTitle": "Workouts",
-  "wodTabSubtitle": "Pick a workout (also called a \"WOD\"), see the records and where you stand.",
+  "wodTabSubtitle": "Pick a workout, see the records and where you stand.",
   "wodTabFlagshipSection": "⭐ Flagship workouts",
   "wodTabFlagshipCaption": "The 4 big challenges everyone measures themselves against.",
   "wodTabNoEquipment": "No equipment",
