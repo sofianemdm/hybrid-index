@@ -107,4 +107,41 @@ describe("api — anti-triche resultats (e2e reel)", () => {
     // performedAt doit etre ~maintenant, jamais dans 90 jours.
     expect(row!.performedAt.getTime()).toBeLessThan(Date.now() + 5 * 60 * 1000);
   });
+
+  // La VRAIE voie de log du mobile : /v1/wods/:id/results (wods.service), pas /v1/results.
+  it("voie /v1/wods/:id/results : anti-triche actif (saut > +30 % quasi-élite -> pending_review)", async () => {
+    // helen 700s (honnête) puis 400s (proche champion ~390s) → saut suspect.
+    await request(api.getHttpServer())
+      .post("/v1/wods/helen/results")
+      .set("authorization", `Bearer ${token}`)
+      .send({ rawResult: 700 })
+      .expect(201);
+    await request(api.getHttpServer())
+      .post("/v1/wods/helen/results")
+      .set("authorization", `Bearer ${token}`)
+      .send({ rawResult: 400 })
+      .expect(201);
+    const flagged = await prisma.wodResult.findFirst({
+      where: { userId, wodId: "helen", rawResult: 400 },
+      orderBy: { createdAt: "desc" },
+    });
+    expect(flagged?.review).toBe("pending_review");
+  });
+
+  it("voie /v1/wods/:id/results : idempotence (même clé -> un seul résultat)", async () => {
+    const key = `e2e_idem_${stamp}`;
+    const body = { rawResult: 480, idempotencyKey: key };
+    await request(api.getHttpServer())
+      .post("/v1/wods/row_2k/results")
+      .set("authorization", `Bearer ${token}`)
+      .send(body)
+      .expect(201);
+    await request(api.getHttpServer())
+      .post("/v1/wods/row_2k/results")
+      .set("authorization", `Bearer ${token}`)
+      .send(body)
+      .expect(201); // rejeu accepté, mais pas de doublon
+    const count = await prisma.wodResult.count({ where: { userId, idempotencyKey: key } });
+    expect(count).toBe(1);
+  });
 });

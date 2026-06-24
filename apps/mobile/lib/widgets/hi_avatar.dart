@@ -114,9 +114,10 @@ class _AvatarPainter extends CustomPainter {
     final hair = AvatarPalettes.hair[c.hairColor % AvatarPalettes.hair.length];
 
     // Aura cosmétique selon le rang (l'avatar évolue avec la progression).
-    // Aura : pilotée par les cosmétiques débloqués si fournis (récompense de badge), sinon repli
-    // historique sur le rang (diamant/élite). Rendu statique (alpha médian) — sûr dans les listes.
-    final cos = cosmetics;
+    // Aura : pilotée par les cosmétiques débloqués si fournis ET non vides (récompense de badge),
+    // sinon repli historique sur le rang (diamant/élite). Un set VIDE ne masque pas l'aura de rang
+    // (un élite fraîchement promu, badge pas encore attribué, garde sa couronne). Rendu statique.
+    final cos = (cosmetics != null && cosmetics!.ids.isNotEmpty) ? cosmetics : null;
     if (cos != null) {
       final aura = cos.aura;
       if (aura != null) {
@@ -172,7 +173,7 @@ class _AvatarPainter extends CustomPainter {
     _drawHair(canvas, cx, headCy, headR, hair);
 
     // Couronne Élite (cosmétique du plus haut rang).
-    final showCrown = cosmetics != null ? cosmetics!.hasCrown : rank == 'elite';
+    final showCrown = cos != null ? cos.hasCrown : rank == 'elite';
     if (showCrown) {
       final gold = Paint()..color = const Color(0xFFF3C13A);
       final topY = headCy - headR * (c.hairStyle == 0 ? 1.05 : 1.25);

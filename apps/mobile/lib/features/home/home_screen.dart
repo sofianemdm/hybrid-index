@@ -127,7 +127,14 @@ class HomeScreen extends ConsumerWidget {
         GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: () => Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const ProgressionScreen()),
+            // Enveloppée dans un Scaffold+AppBar : la Progression n'est plus un corps d'onglet (qui
+            // fournissait le Scaffold) mais une route poussée → il lui faut son propre cadre + retour.
+            MaterialPageRoute(
+              builder: (_) => Scaffold(
+                appBar: AppBar(title: Text(t.navProgress), backgroundColor: Colors.transparent, elevation: 0),
+                body: const ProgressionScreen(),
+              ),
+            ),
           ),
           child: Column(children: [
             Center(child: IndexRing(value: p.index.value, percentile: p.index.percentile)),
