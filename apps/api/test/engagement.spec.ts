@@ -1,5 +1,5 @@
 import { addWeeks, isoWeekKey, isoWeekKeyToMonday, weekStart } from "../src/modules/engagement/iso-week";
-import { matchesCondition, type BadgeContext } from "../src/modules/engagement/badges.data";
+import { BADGES, matchesCondition, type BadgeContext } from "../src/modules/engagement/badges.data";
 
 describe("iso-week (semaines ISO-8601, UTC)", () => {
   it("clé ISO d'un lundi connu", () => {
@@ -27,11 +27,12 @@ describe("iso-week (semaines ISO-8601, UTC)", () => {
 describe("matchesCondition (moteur de badges)", () => {
   const base: BadgeContext = {
     logCount: 10,
-    followsCount: 6,
+    followersCount: 6,
+    leagueTotal: 250,
     distinctWods: 6,
     equipmentFreeCount: 8,
     rank: "gold",
-    index: 760,
+    index: 76,
     percentile: 96,
     humanityTopPercent: 4,
     attributesAllUnlocked: true,
@@ -39,10 +40,19 @@ describe("matchesCondition (moteur de badges)", () => {
     streakBest: 12,
   };
 
-  it("« confirmed » = 5 séances ET 5 relations", () => {
-    expect(matchesCondition("confirmed", base)).toBe(true); // 10 séances, 6 relations
-    expect(matchesCondition("confirmed", { ...base, followsCount: 4 })).toBe(false);
-    expect(matchesCondition("confirmed", { ...base, logCount: 3 })).toBe(false);
+  it("« logs>=5 » (athlète confirmé) = 5 séances, sans exigence sociale", () => {
+    expect(matchesCondition("logs>=5", base)).toBe(true); // 10 séances
+    expect(matchesCondition("logs>=5", { ...base, logCount: 3 })).toBe(false);
+  });
+
+  it("« has_index » (premier Index) = un Index existe (> plancher)", () => {
+    expect(matchesCondition("has_index", base)).toBe(true);
+    expect(matchesCondition("has_index", { ...base, index: 0 })).toBe(false);
+  });
+
+  it("« followers>=N » = nombre de followers (pas de suivis)", () => {
+    expect(matchesCondition("followers>=1", base)).toBe(true); // 6 followers
+    expect(matchesCondition("followers>=10", base)).toBe(false);
   });
 
   it("« humanity<=X » : top X% des humains", () => {
@@ -54,8 +64,8 @@ describe("matchesCondition (moteur de badges)", () => {
   it("comparateurs >= sur rang/index/percentile/streak/wods", () => {
     expect(matchesCondition("rank>=gold", base)).toBe(true);
     expect(matchesCondition("rank>=diamond", base)).toBe(false);
-    expect(matchesCondition("index>=750", base)).toBe(true);
-    expect(matchesCondition("index>=900", base)).toBe(false);
+    expect(matchesCondition("index>=75", base)).toBe(true); // OVR /100
+    expect(matchesCondition("index>=90", base)).toBe(false);
     expect(matchesCondition("percentile>=95", base)).toBe(true);
     expect(matchesCondition("percentile>=99", base)).toBe(false);
     expect(matchesCondition("streak>=4", base)).toBe(true);
@@ -68,5 +78,53 @@ describe("matchesCondition (moteur de badges)", () => {
     expect(matchesCondition("attribute_unlocked:all", base)).toBe(true);
     expect(matchesCondition("attribute_unlocked:all", { ...base, attributesAllUnlocked: false })).toBe(false);
     expect(matchesCondition("pro_gap<=10", base)).toBe(false); // non implémenté → jamais vrai
+  });
+});
+
+describe("catalogue de badges (garde-fous audit)", () => {
+  const indexThresholds = BADGES.filter((b) => /^index>=/.test(b.condition)).map((b) => Number(b.condition.slice(7)));
+
+  it("aucun palier d'Index inatteignable (>98) ni auto-débloqué (<=35) — G-05/G-06", () => {
+    for (const t of indexThresholds) {
+      expect(t).toBeGreaterThan(35); // plancher display-v2
+      expect(t).toBeLessThanOrEqual(98); // plafond display-v2
+    }
+  });
+
+  it("ids uniques", () => {
+    const ids = BADGES.map((b) => b.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it("first-index et all-attributes ont des conditions DIFFÉRENTES — G-09", () => {
+    const first = BADGES.find((b) => b.id === "first-index")!;
+    const all = BADGES.find((b) => b.id === "all-attributes")!;
+    expect(first.condition).not.toBe(all.condition);
+  });
+
+  it("humanity-25 et humanity-15 reclassés common — G-10", () => {
+    expect(BADGES.find((b) => b.id === "humanity-25")!.rarity).toBe("common");
+    expect(BADGES.find((b) => b.id === "humanity-15")!.rarity).toBe("common");
+  });
+
+  it("catégories consistency et social non vides — G-04", () => {
+    expect(BADGES.some((b) => b.category === "consistency")).toBe(true);
+    expect(BADGES.some((b) => b.category === "social")).toBe(true);
+  });
+
+  it("tout cosmeticUnlock est rendu par le designer (pas de cosmétique mort) — G-03", () => {
+    // Doit correspondre EXACTEMENT au catalogue de cosmetics.dart côté Flutter.
+    const rendered = new Set([
+      "avatar_glow_gold",
+      "avatar_aura_diamond",
+      "avatar_aura_top5",
+      "avatar_aura_top1",
+      "avatar_crown_elite",
+      "avatar_badge_arsenal",
+      "radar_skin_full",
+    ]);
+    for (const b of BADGES) {
+      if (b.cosmeticUnlock) expect(rendered.has(b.cosmeticUnlock)).toBe(true);
+    }
   });
 });

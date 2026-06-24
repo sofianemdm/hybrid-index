@@ -9,7 +9,20 @@ import { BADGES, type BadgeContext, type BadgeDef, matchesCondition } from "./ba
 
 /** Population minimale d'une ligue pour que les badges « Top X% » aient du sens (cf. décision
  *  verrouillée : classements crédibles à partir de ~200 users). En dessous, on ne les attribue pas. */
-const MIN_LEAGUE_FOR_PERCENTILE = 20;
+/** Population minimale d'une ligue pour attribuer les badges « Top X% » (décision verrouillée :
+ *  classements crédibles à partir de ~200 users). En dessous, on ne les attribue pas (audit G-08). */
+const MIN_LEAGUE_FOR_PERCENTILE = 200;
+
+/** Effectif minimal pour qu'un palier « Top X% » fin ait des places réelles (jamais de flatterie à
+ *  vide) : Top 1 % exige ≥1000 users, Top 5 % ≥200, le reste ≥ MIN_LEAGUE_FOR_PERCENTILE. */
+function leagueBadgeAllowed(condition: string, leagueTotal: number): boolean {
+  const m = condition.match(/^percentile>=(.+)$/);
+  if (!m) return true;
+  const p = Number(m[1]);
+  if (p >= 99) return leagueTotal >= 1000;
+  if (p >= 95) return leagueTotal >= 200;
+  return leagueTotal >= MIN_LEAGUE_FOR_PERCENTILE;
+}
 
 export interface BadgeView extends BadgeDef {
   unlocked: boolean;
@@ -31,7 +44,7 @@ export class BadgesService {
     const idx = await this.prisma.hybridIndex.findUnique({ where: { userId } });
     const sex = (profile?.sex ?? "male") as Sex;
 
-    const [logCount, followsCount, distinct, equipmentFreeCount, unlockedAttrs, streakState, attrRows] = await Promise.all([
+    const [logCount, followersCount, distinct, equipmentFreeCount, unlockedAttrs, streakState, attrRows] = await Promise.all([
       this.prisma.wodResult.count({ where: { userId } }),
       this.prisma.follow.count({ where: { followeeId: userId } }), // followers (suivi PAR)
       this.prisma.wodResult.findMany({ where: { userId }, distinct: ["wodId"], select: { wodId: true } }),
@@ -58,24 +71,26 @@ export class BadgesService {
 
     // Percentile de ligue : seulement si la population est suffisante (sinon « Top 1% » trivial).
     let percentile = 0;
+    let leagueTotal = 0;
     if (idx) {
-      const total = await this.prisma.hybridIndex.count({ where: { user: { profile: { sex } } } });
-      if (total >= MIN_LEAGUE_FOR_PERCENTILE) {
+      leagueTotal = await this.prisma.hybridIndex.count({ where: { user: { profile: { sex } } } });
+      if (leagueTotal >= MIN_LEAGUE_FOR_PERCENTILE) {
         const above = await this.prisma.hybridIndex.count({
           where: { value: { gt: idx.value }, user: { profile: { sex } } },
         });
-        percentile = (1 - above / total) * 100;
+        percentile = (1 - above / leagueTotal) * 100;
       }
     }
 
     return {
       logCount,
-      followsCount,
+      followersCount,
       distinctWods: distinct.length,
       equipmentFreeCount,
       rank: profile?.rank ?? "rookie",
       index: idx ? Math.round(ratingFromInternal(idx.value)) : 0, // OVR /100 (valeur déjà ajustée par couverture)
       percentile,
+      leagueTotal,
       humanityTopPercent,
       attributesAllUnlocked: unlockedAttrs >= 6,
       streakCurrent: streakState.current,
@@ -97,6 +112,9 @@ export class BadgesService {
     for (const badge of BADGES) {
       if (owned.has(badge.id)) continue;
       if (!matchesCondition(badge.condition, ctx)) continue;
+      // Paliers « Top X% » de ligue : bornés par effectif (Top 1 % ≥1000, Top 5 % ≥200) → plus de
+      // « Top 1 % » mensonger à 20 membres (audit G-08).
+      if (badge.category === "performance" && !leagueBadgeAllowed(badge.condition, ctx.leagueTotal)) continue;
       try {
         await this.prisma.userBadge.create({ data: { userId, badgeId: badge.id } });
         newly.push(badge); // poussé UNIQUEMENT si l'attribution a réussi (anti double-célébration).

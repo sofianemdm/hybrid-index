@@ -477,19 +477,20 @@ export class WodsService {
         select: { rawResult: true, subScore: true },
       });
       if (myBest) {
-        // Meilleur effort de chaque utilisateur, puis on compte ceux STRICTEMENT devant moi.
+        // Meilleur effort de chaque utilisateur (min pour le temps, max sinon), puis on compte ceux
+        // STRICTEMENT devant moi. On agrège les deux (_min/_max) pour éviter une clé undefined.
         const groups = await this.prisma.wodResult.groupBy({
           by: ["userId"],
           where: baseWhere,
-          _min: better === "asc" ? { rawResult: true } : undefined,
-          _max: better === "desc" ? { rawResult: true } : undefined,
+          _min: { rawResult: true },
+          _max: { rawResult: true },
         });
         const myVal = Number(myBest.rawResult);
         const isBetter = (v: number) => (better === "asc" ? v < myVal : v > myVal);
         let above = 0;
         for (const g of groups) {
           if (g.userId === userId) continue;
-          const v = Number((better === "asc" ? g._min?.rawResult : g._max?.rawResult) ?? myVal);
+          const v = Number((better === "asc" ? g._min.rawResult : g._max.rawResult) ?? myVal);
           if (isBetter(v)) above++;
           else if (v === myVal && g.userId < userId) above++; // ex æquo → tie-break userId asc
         }
