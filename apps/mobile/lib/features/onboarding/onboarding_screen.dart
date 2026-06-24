@@ -70,11 +70,20 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   bool get _courseValid => _distanceMeters != null && _courseSeconds != null;
 
-  /// Charge du squat 1RM en kg si la saisie est valide (1 à 320 kg).
+  // Bornes par sexe alignées sur le score-service (wods.data.ts : hardMin/hardMax). On clampe la
+  // saisie front à ces bornes pour qu'AUCUN effort ne soit refusé (422) au reveal — un seul effort
+  // hors bornes ferait échouer tout le calcul du profil. Source de vérité = score-service.
+  bool get _isFemale => (ref.read(sessionProvider).sex ?? 'male') == 'female';
+  double get _pushupsMax => _isFemale ? 80 : 100; // hardMax 80 F / 110 H (slider plafonné à 100)
+  double get _pullupsMax => _isFemale ? 35 : 50; // hardMax 35 F / 50 H
+  int get _squatMin => _isFemale ? 15 : 20; // hardMin 15 F / 20 H
+  int get _squatMax => _isFemale ? 220 : 320; // hardMax 220 F / 320 H
+
+  /// Charge du squat 1RM en kg si la saisie est valide (dans les bornes plausibles du sexe).
   int? get _squatKg {
     if (!_withSquat) return null;
     final kg = int.tryParse(_squat.text);
-    return (kg != null && kg >= 1 && kg <= 320) ? kg : null;
+    return (kg != null && kg >= _squatMin && kg <= _squatMax) ? kg : null;
   }
 
   bool get _hasInput => _courseValid || _withPushups || _withPullups || _squatKg != null;
@@ -195,8 +204,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         _repsCard(
           title: AppLocalizations.of(context).onbMaxPushups,
           enabled: _withPushups,
-          value: _pushups,
-          max: 100,
+          value: _pushups.clamp(0, _pushupsMax),
+          max: _pushupsMax,
           onToggle: (v) {
             setState(() => _withPushups = v);
             _refreshPreview();
@@ -207,8 +216,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         _repsCard(
           title: AppLocalizations.of(context).onbMaxPullups,
           enabled: _withPullups,
-          value: _pullups,
-          max: 50,
+          value: _pullups.clamp(0, _pullupsMax),
+          max: _pullupsMax,
           onToggle: (v) {
             setState(() => _withPullups = v);
             _refreshPreview();
@@ -304,9 +313,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             ),
             if (_withSquat) ...[
               const SizedBox(height: HiSpace.sm),
-              SizedBox(width: 150, child: _field(_squat, 'kg', suffix: 'kg')),
+              SizedBox(width: 150, child: _field(_squat, '$_squatMin–$_squatMax', suffix: 'kg')),
               const SizedBox(height: 6),
-              Text(AppLocalizations.of(context).onbSquat1rmHint,
+              Text('${AppLocalizations.of(context).onbSquat1rmHint} ($_squatMin–$_squatMax kg)',
                   style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
             ],
           ],

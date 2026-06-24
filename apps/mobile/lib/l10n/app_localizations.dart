@@ -272,12 +272,6 @@ abstract class AppLocalizations {
   /// **'Max strict push-ups (one set)'**
   String get onbMaxPushups;
 
-  /// No description provided for @onbMaxSquats.
-  ///
-  /// In en, this message translates to:
-  /// **'Max bodyweight squats (one set)'**
-  String get onbMaxSquats;
-
   /// No description provided for @onbMaxPullups.
   ///
   /// In en, this message translates to:

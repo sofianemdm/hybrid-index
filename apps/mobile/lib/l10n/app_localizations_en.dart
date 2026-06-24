@@ -100,9 +100,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onbMaxPushups => 'Max strict push-ups (one set)';
 
   @override
-  String get onbMaxSquats => 'Max bodyweight squats (one set)';
-
-  @override
   String get onbMaxPullups => 'Max strict pull-ups (one set)';
 
   @override

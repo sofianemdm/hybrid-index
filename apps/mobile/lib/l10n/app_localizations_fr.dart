@@ -101,9 +101,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get onbMaxPushups => 'Max pompes strictes (une série)';
 
   @override
-  String get onbMaxSquats => 'Max squats à vide (une série)';
-
-  @override
   String get onbMaxPullups => 'Max tractions strictes (une série)';
 
   @override
