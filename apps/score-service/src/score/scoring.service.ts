@@ -67,8 +67,11 @@ export class ScoringService {
     }
 
     const { subScore, percentile } = this.scoreEffort(wod, req.sex, req.rawResult);
+    // Effort « Scaled » (mouvements adaptés, ex. pompes sur genoux) : légère décote du sous-score
+    // (honnêteté). Jamais sur les courses (le client n'envoie pas `scaled` pour elles).
+    const adjusted = req.scaled ? Math.round(subScore * 0.9) : subScore;
     return {
-      subScore,
+      subScore: adjusted,
       percentile,
       attributesAffected: wod.targetAttributes.map((t) => t.attribute),
       scoringVersionId: this.versions.getActiveVersionId(),

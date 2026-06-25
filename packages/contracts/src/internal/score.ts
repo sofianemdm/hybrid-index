@@ -34,6 +34,8 @@ export const ComputeSubScoreRequest = z.object({
   rawResult: z.number(),
   /** Distance parcourue en mètres — requis pour la course à distance libre (`run_free_distance`). */
   distanceMeters: z.number().positive().optional(),
+  /** Effort réalisé en « Scaled » (mouvements adaptés) plutôt qu'en Rx → légère décote du sous-score. */
+  scaled: z.boolean().optional(),
 });
 export type ComputeSubScoreRequest = z.infer<typeof ComputeSubScoreRequest>;
 

@@ -120,6 +120,7 @@ export class WodsService {
         scoreType: wod.scoreType,
         rawResult: body.rawResult,
         distanceMeters: body.distanceMeters,
+        scaled: body.rxCompliant === false, // non-Rx (mouvements adaptés) → décote côté score-service
       });
       subScore = scored.subScore;
       percentile = scored.percentile;
