@@ -35,7 +35,10 @@ class _ProgressionScreenState extends ConsumerState<ProgressionScreen> {
     final t = AppLocalizations.of(context);
     return SafeArea(
       child: RefreshIndicator(
-        onRefresh: () async => setState(_load),
+        onRefresh: () async {
+          setState(_load);
+          await _future;
+        },
         child: FutureBuilder<List<BadgeModel>>(
           future: _future,
           builder: (context, snap) {

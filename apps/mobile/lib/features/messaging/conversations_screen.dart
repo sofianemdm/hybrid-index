@@ -43,7 +43,10 @@ class _ConversationsScreenState extends ConsumerState<ConversationsScreen> {
       appBar: AppBar(title: Text(t.conversationsTitle), backgroundColor: Colors.transparent, elevation: 0),
       body: SafeArea(
         child: RefreshIndicator(
-          onRefresh: () async => setState(_load),
+          onRefresh: () async {
+            setState(_load);
+            await _future;
+          },
           child: FutureBuilder<List<ConversationSummary>>(
             future: _future,
             builder: (context, snap) {

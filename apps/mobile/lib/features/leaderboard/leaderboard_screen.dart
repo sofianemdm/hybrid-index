@@ -128,7 +128,10 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                       child: Text(t.leaderboardEmpty, style: TextStyle(color: HiColors.textTertiary)));
                 }
                 return RefreshIndicator(
-                  onRefresh: () async => setState(_load),
+                  onRefresh: () async {
+                    setState(_load);
+                    await _future; // l'indicateur reste jusqu'à l'arrivée réelle des données
+                  },
                   child: ListView.separated(
                     padding: const EdgeInsets.fromLTRB(HiSpace.lg, 0, HiSpace.lg, 96),
                     itemCount: lb.entries.length,

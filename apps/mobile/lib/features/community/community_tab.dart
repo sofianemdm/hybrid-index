@@ -40,16 +40,38 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
 
   Future<void> _react(FeedActivity a, String emoji) async {
     HiHaptics.tap();
+    final had = a.myReactions.contains(emoji);
+    // Mise à jour OPTIMISTE en place (réactions/myReactions sont mutables) → kudos instantané, sans
+    // refetch ni flicker ni saut de scroll. On réconcilie avec le serveur ensuite ; on revient en
+    // arrière en cas d'échec (BUG-026).
+    void apply(bool add) {
+      if (add) {
+        a.myReactions.add(emoji);
+        a.reactions[emoji] = (a.reactions[emoji] ?? 0) + 1;
+      } else {
+        a.myReactions.remove(emoji);
+        final n = (a.reactions[emoji] ?? 1) - 1;
+        if (n <= 0) {
+          a.reactions.remove(emoji);
+        } else {
+          a.reactions[emoji] = n;
+        }
+      }
+    }
+
+    setState(() => apply(!had));
     try {
       final api = ref.read(apiClientProvider);
-      if (a.myReactions.contains(emoji)) {
+      if (had) {
         await api.unreact(a.id, isPost: a.isPost);
       } else {
         await api.react(a.id, emoji, isPost: a.isPost);
       }
-      setState(_load);
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+      if (mounted) {
+        setState(() => apply(had)); // échec → on annule la modif optimiste
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+      }
     }
   }
 
@@ -104,7 +126,10 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
     final t = AppLocalizations.of(context);
     return SafeArea(
       child: RefreshIndicator(
-        onRefresh: () async => setState(_load),
+        onRefresh: () async {
+          setState(_load);
+          await _future;
+        },
         child: FutureBuilder<List<FeedActivity>>(
           future: _future,
           builder: (context, snap) {

@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../app.dart';
 import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../l10n/app_localizations.dart';
@@ -29,19 +32,41 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   bool _loading = true;
   bool _sending = false;
   String? _error;
+  Timer? _poll;
 
   @override
   void initState() {
     super.initState();
     _convId = widget.conversationId;
     _load();
+    // Polling léger : tant que le fil est ouvert, on récupère les nouveaux messages reçus (BUG-027).
+    // Pas de websocket pour l'instant ; 6 s est un bon compromis réactivité/charge.
+    _poll = Timer.periodic(const Duration(seconds: 6), (_) => _pollMessages());
   }
 
   @override
   void dispose() {
+    _poll?.cancel();
     _input.dispose();
     _scroll.dispose();
     super.dispose();
+  }
+
+  /// Rafraîchit silencieusement les messages (n'affiche ni spinner ni erreur ; n'écrase pas une
+  /// saisie en cours). Met à jour la pastille de non-lus globale au passage.
+  Future<void> _pollMessages() async {
+    if (_convId == null || _sending) return;
+    try {
+      final c = await ref.read(apiClientProvider).conversationMessages(_convId!);
+      if (!mounted) return;
+      if (c.messages.length != _messages.length) {
+        setState(() => _messages = c.messages);
+        _jumpToEnd();
+        ref.invalidate(unreadMessagesProvider);
+      }
+    } catch (_) {
+      // silencieux — simple tentative de rafraîchissement
+    }
   }
 
   Future<void> _load() async {
