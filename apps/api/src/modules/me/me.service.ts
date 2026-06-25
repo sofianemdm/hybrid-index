@@ -11,6 +11,8 @@ const DEFAULT_AVATAR = {
   accessory: 0,
   background: 0,
   photoData: null as string | null,
+  diceStyle: null as string | null,
+  diceSeed: null as string | null,
 };
 
 @Injectable()
@@ -79,6 +81,8 @@ export class MeService {
       accessory: avatar.accessory,
       background: avatar.background,
       photoData: avatar.photoData,
+      diceStyle: avatar.diceStyle,
+      diceSeed: avatar.diceSeed,
     };
   }
 
@@ -91,6 +95,8 @@ export class MeService {
       accessory: req.accessory ?? 0,
       background: req.background ?? 0,
       photoData: req.photoData ?? null,
+      diceStyle: req.diceStyle ?? null,
+      diceSeed: req.diceSeed ?? null,
     };
     await this.prisma.avatar.upsert({
       where: { userId },

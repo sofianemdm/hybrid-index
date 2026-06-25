@@ -25,5 +25,8 @@ export const UpdateAvatarRequest = z.object({
   background: z.number().int().min(0).max(7).optional(),
   /** Photo de profil en data URL base64 (optionnelle, ≈ ≤ 400 Ko d'image). null = retirer. */
   photoData: z.string().max(600_000).nullable().optional(),
+  /** Avatar DiceBear : style + seed (rendu via image). null = pas d'avatar DiceBear. */
+  diceStyle: z.string().max(40).nullable().optional(),
+  diceSeed: z.string().max(80).nullable().optional(),
 });
 export type UpdateAvatarRequest = z.infer<typeof UpdateAvatarRequest>;
