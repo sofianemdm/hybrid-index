@@ -7,6 +7,7 @@ import { StreakService } from "../engagement/streak.service";
 import { BadgesService } from "../engagement/badges.service";
 import { FeedEventsService } from "../social/feed-events.service";
 import { ProgressService } from "../progress/progress.service";
+import { LeaguePointsService } from "../league/league-points.service";
 import type { BadgeDef } from "../engagement/badges.data";
 import { SCORING_VERSION_UUID } from "../../common/constants";
 import type { LogResultRequest } from "./results.dto";
@@ -43,6 +44,7 @@ export class ResultsService {
     private readonly badges: BadgesService,
     private readonly feedEvents: FeedEventsService,
     private readonly progress: ProgressService,
+    private readonly league: LeaguePointsService,
   ) {}
 
   async log(userId: string, req: LogResultRequest): Promise<LogResultResponse> {
@@ -136,6 +138,17 @@ export class ResultsService {
         performedAt: created.performedAt,
       })
       .catch((e) => this.logger.warn(`Progress échoué (${userId}) : ${e}`));
+
+    // Synergie « 1 log → 2 usages » : le même résultat alimente aussi la Ligue mensuelle (best-effort).
+    await this.league
+      .awardForResult(userId, profile.sex, {
+        wodResultId: created.id,
+        wodId: req.wodId,
+        subScore: scored.subScore,
+        performedAt: created.performedAt,
+        review: created.review,
+      })
+      .catch((e) => this.logger.warn("Ligue échouée (" + userId + ") : " + e));
 
     return {
       result: {
