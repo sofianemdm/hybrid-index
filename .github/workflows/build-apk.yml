@@ -1,0 +1,48 @@
+name: Build Android APK
+
+# Fabrique l'APK Android d'Athlete League dans le cloud (aucun outil à installer en local).
+# Lancement : onglet "Actions" du dépôt GitHub → "Build Android APK" → "Run workflow".
+# Résultat : l'APK est téléchargeable en bas de la page du run (section "Artifacts").
+on:
+  workflow_dispatch: # bouton manuel
+  push:
+    branches: [main]
+    paths: # ne reconstruit sur push que si le code mobile change
+      - "apps/mobile/**"
+      - ".github/workflows/build-apk.yml"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/mobile
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.44.2"
+          channel: stable
+          cache: true
+
+      - name: Dépendances
+        run: flutter pub get
+
+      - name: Build APK (release, signé debug → installable pour tester)
+        run: >
+          flutter build apk --release
+          --dart-define=API_BASE_URL=https://api-production-9a50.up.railway.app
+          --dart-define=PUSH_ENABLED=true
+
+      - name: Publier l'APK (téléchargeable dans les Artifacts du run)
+        uses: actions/upload-artifact@v4
+        with:
+          name: athlete-league-apk
+          path: apps/mobile/build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
