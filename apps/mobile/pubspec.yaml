@@ -23,8 +23,6 @@ dependencies:
   in_app_review: ^2.0.9
   share_plus: ^10.1.2
   image_picker: ^1.1.2
-  # Avatars premium personnalisables (SVG, hors-ligne) — successeur maintenu de fluttermoji.
-  avatar_maker: ^1.7.0
   # Notifications push (Android/iOS). Initialisé seulement quand PUSH_ENABLED=true ET hors web.
   firebase_core: ^3.6.0
   firebase_messaging: ^15.1.3

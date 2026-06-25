@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:avatar_maker/avatar_maker.dart';
 
 import 'app.dart';
 import 'data/analytics.dart';
@@ -81,7 +80,7 @@ class _HybridIndexAppState extends ConsumerState<HybridIndexApp> with WidgetsBin
   Widget build(BuildContext context) {
     final themeMode = ref.watch(themeModeProvider);
     final locale = ref.watch(localeProvider);
-    return AvatarMakerProvider(child: MaterialApp(
+    return MaterialApp(
       title: 'Athlete League',
       debugShowCheckedModeBanner: false,
       theme: buildHiTheme(Brightness.light),
@@ -97,6 +96,6 @@ class _HybridIndexAppState extends ConsumerState<HybridIndexApp> with WidgetsBin
         return child!;
       },
       home: const AuthGate(),
-    ));
+    );
   }
 }
