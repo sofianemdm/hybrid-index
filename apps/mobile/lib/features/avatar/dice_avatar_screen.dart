@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../app.dart'; // avatarProvider + myProfileProvider
 import '../../data/api_client.dart';
 import '../../data/dicebear.dart';
 import '../../data/models.dart';
