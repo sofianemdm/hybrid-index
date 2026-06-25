@@ -280,6 +280,13 @@ class ApiClient {
     return LeagueMe.fromJson(j);
   }
 
+  // --- Records personnels (A8 — PR Wall) ---
+  Future<List<PrItem>> personalRecords() async {
+    final j = await _send('GET', '/v1/results/prs') as List<dynamic>;
+    return j.map((e) => PrItem.fromJson(Map<String, dynamic>.from(e as Map))).toList();
+  }
+
+
 
   // --- Communauté ---
   Future<List<FeedActivity>> feed() async {

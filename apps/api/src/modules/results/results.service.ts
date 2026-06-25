@@ -200,4 +200,23 @@ export class ResultsService {
       performedAt: r.performedAt.toISOString(),
     }));
   }
+
+  /** Records personnels : le meilleur effort (par sous-score) de chaque WOD loggé (A8 — PR Wall). */
+  async personalRecords(userId: string): Promise<unknown[]> {
+    const rows = await this.prisma.wodResult.findMany({
+      where: { userId, review: "ok", subScore: { not: null } },
+      orderBy: [{ subScore: "desc" }, { performedAt: "asc" }],
+      include: { wod: { select: { name: true, scoreType: true } } },
+    });
+    const best = new Map<string, (typeof rows)[number]>();
+    for (const r of rows) if (!best.has(r.wodId)) best.set(r.wodId, r);
+    return [...best.values()].map((r) => ({
+      wodId: r.wodId,
+      wodName: r.wod.name,
+      scoreType: r.wod.scoreType,
+      rawResult: Number(r.rawResult),
+      subScore: r.subScore == null ? 0 : Math.round(ratingFromInternal(r.subScore)), // /100
+      performedAt: r.performedAt.toISOString(),
+    }));
+  }
 }

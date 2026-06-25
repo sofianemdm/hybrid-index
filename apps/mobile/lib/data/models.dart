@@ -1574,3 +1574,29 @@ class LeagueMe {
         weeksPlayed: (j['weeksPlayed'] as num?)?.toInt() ?? 0,
       );
 }
+
+class PrItem {
+  final String wodId;
+  final String wodName;
+  final String scoreType;
+  final num rawResult;
+  final int subScore; // /100
+  final DateTime performedAt;
+  const PrItem({
+    required this.wodId,
+    required this.wodName,
+    required this.scoreType,
+    required this.rawResult,
+    required this.subScore,
+    required this.performedAt,
+  });
+
+  factory PrItem.fromJson(Map<String, dynamic> j) => PrItem(
+        wodId: j['wodId'] as String,
+        wodName: j['wodName'] as String? ?? j['wodId'] as String,
+        scoreType: j['scoreType'] as String? ?? 'time',
+        rawResult: j['rawResult'] as num,
+        subScore: (j['subScore'] as num?)?.toInt() ?? 0,
+        performedAt: DateTime.parse(j['performedAt'] as String),
+      );
+}

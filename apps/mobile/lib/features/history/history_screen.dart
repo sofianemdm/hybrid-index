@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'pr_wall_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app.dart';
@@ -77,7 +78,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: Text(t.historyTitle), backgroundColor: Colors.transparent, elevation: 0),
+      appBar: AppBar(title: Text(t.historyTitle), backgroundColor: Colors.transparent, elevation: 0, actions: [IconButton(icon: const Icon(Icons.emoji_events_rounded), tooltip: 'Mes records', onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const PrWallScreen())))]),
       body: SafeArea(
         child: FutureBuilder<List<WodResultItem>>(
           future: _future,

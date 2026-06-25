@@ -25,6 +25,12 @@ export class ResultsController {
     return this.results.list(user.userId);
   }
 
+  /** Mes records personnels : le meilleur effort par WOD (A8 — PR Wall). */
+  @Get("prs")
+  prs(@CurrentUser() user: AuthenticatedUser): Promise<unknown[]> {
+    return this.results.personalRecords(user.userId);
+  }
+
   /** Supprime un de mes résultats → recalcule l'Index. */
   @Delete(":id")
   remove(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string): Promise<unknown> {
