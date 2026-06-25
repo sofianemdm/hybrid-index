@@ -1,0 +1,44 @@
+name: Deploy Web (Netlify)
+
+# Reconstruit l'app Flutter Web et la redéploie sur Netlify à chaque modif du code mobile.
+# Résultat : le site (hybrid-index.netlify.app) a toujours la dernière version — il suffit de
+# rafraîchir la page pour mettre à jour (aucune installation).
+# Prérequis : 2 secrets GitHub à ajouter (Settings → Secrets and variables → Actions) :
+#   - NETLIFY_AUTH_TOKEN : Netlify → User settings → Applications → Personal access tokens
+#   - NETLIFY_SITE_ID    : Netlify → ton site → Site configuration → Site ID
+on:
+  workflow_dispatch: # bouton manuel
+  push:
+    branches: [main]
+    paths:
+      - "apps/mobile/**"
+      - ".github/workflows/deploy-web.yml"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/mobile
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.44.2"
+          channel: stable
+          cache: true
+
+      - name: Dépendances
+        run: flutter pub get
+
+      - name: Build web (pointé sur l'API de prod)
+        run: flutter build web --release --dart-define=API_BASE_URL=https://api-production-9a50.up.railway.app
+
+      - name: Déployer sur Netlify
+        run: |
+          npm i -g netlify-cli
+          netlify deploy --dir=build/web --prod --no-build
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
