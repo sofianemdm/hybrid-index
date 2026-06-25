@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../data/models.dart';
 import '../theme/cosmetics.dart';
+import '../data/dicebear.dart';
 import '../theme/tokens.dart';
 
 /// Palettes de l'avatar (indices stockés côté serveur).
@@ -75,6 +76,31 @@ class HiAvatar extends StatelessWidget {
               : null,
           child: ClipOval(
             child: Image.memory(photo, width: size, height: size, fit: BoxFit.cover, gaplessPlayback: true),
+          ),
+        ),
+      );
+    }
+
+    // Avatar DiceBear (image générée) : remplace l'avatar dessiné, avec cadre de rang.
+    if (config.diceSeed != null && config.diceSeed!.isNotEmpty) {
+      return SizedBox(
+        width: size,
+        height: size,
+        child: Container(
+          decoration: showRing
+              ? BoxDecoration(shape: BoxShape.circle, border: Border.all(color: ringColor, width: size * 0.04))
+              : null,
+          child: ClipOval(
+            child: Image.network(
+              diceBearUrl(style: config.diceStyle ?? kDiceBearDefaultStyle, seed: config.diceSeed!, size: (size * 2).round()),
+              width: size,
+              height: size,
+              fit: BoxFit.cover,
+              gaplessPlayback: true,
+              errorBuilder: (_, __, ___) => Container(color: HiColors.bgElevated2),
+              loadingBuilder: (ctx, child, progress) =>
+                  progress == null ? child : Container(color: HiColors.bgElevated2),
+            ),
           ),
         ),
       );

@@ -757,6 +757,8 @@ class AvatarConfig {
 
   /// Photo de profil (data URL base64). Si présente, elle remplace l'avatar dessiné.
   final String? photoData;
+  final String? diceStyle; // DiceBear : style (null = avatar dessiné)
+  final String? diceSeed; // DiceBear : seed
   const AvatarConfig({
     required this.skinTone,
     required this.hairStyle,
@@ -765,6 +767,8 @@ class AvatarConfig {
     this.accessory = 0,
     this.background = 0,
     this.photoData,
+    this.diceStyle,
+    this.diceSeed,
   });
 
   factory AvatarConfig.fromJson(Map<String, dynamic> j) => AvatarConfig(
@@ -775,6 +779,8 @@ class AvatarConfig {
         accessory: (j['accessory'] as num?)?.toInt() ?? 0,
         background: (j['background'] as num?)?.toInt() ?? 0,
         photoData: j['photoData'] as String?,
+        diceStyle: j['diceStyle'] as String?,
+        diceSeed: j['diceSeed'] as String?,
       );
 
   AvatarConfig copyWith({
@@ -787,6 +793,8 @@ class AvatarConfig {
     int? background,
     String? photoData,
     bool clearPhoto = false,
+    String? diceStyle,
+    String? diceSeed,
   }) =>
       AvatarConfig(
         skinTone: skinTone ?? this.skinTone,
@@ -796,6 +804,8 @@ class AvatarConfig {
         accessory: accessory ?? this.accessory,
         background: background ?? this.background,
         photoData: clearPhoto ? null : (photoData ?? this.photoData),
+        diceStyle: diceStyle ?? this.diceStyle,
+        diceSeed: diceSeed ?? this.diceSeed,
       );
 
   Map<String, dynamic> toJson() => {
@@ -806,6 +816,8 @@ class AvatarConfig {
         'accessory': accessory,
         'background': background,
         'photoData': photoData,
+        'diceStyle': diceStyle,
+        'diceSeed': diceSeed,
       };
 }
 
