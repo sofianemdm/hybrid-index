@@ -13,8 +13,6 @@ import '../../widgets/index_ring.dart';
 import '../../widgets/radar_view.dart';
 import '../../widgets/rank_badge.dart';
 import '../../widgets/social_proof_card.dart';
-import '../share/share_card_screen.dart';
-import '../wods/wod_detail_screen.dart';
 
 /// L'écran « waouh » : séquence orchestrée (suspense → l'Index se remplit en comptant → le rang
 /// et la preuve sociale apparaissent → le radar → CTA). Tap n'importe où pour tout révéler.
@@ -130,20 +128,6 @@ class _RevealScreenState extends ConsumerState<RevealScreen> {
                                   Text(t.revealEstimateBody(idx.radarCoverage),
                                       textAlign: TextAlign.center,
                                       style: HiType.caption.copyWith(color: HiColors.textSecondary, height: 1.35)),
-                                  const SizedBox(height: HiSpace.md),
-                                  // Action concrète proposée dès l'inscription : LA séance qui estime
-                                  // les 6 qualités d'un coup → l'Index le plus complet le plus vite.
-                                  HiButton(
-                                    label: t.revealDoProfilExpress,
-                                    icon: Icons.bolt_rounded,
-                                    onPressed: () {
-                                      Analytics.capture('reveal_profil_express');
-                                      Navigator.of(context).push(MaterialPageRoute(
-                                        builder: (_) =>
-                                            const WodDetailScreen(wodId: 'profil_express', wodName: 'Profil Express'),
-                                      ));
-                                    },
-                                  ),
                                 ],
                               ),
                             ),
@@ -185,17 +169,6 @@ class _RevealScreenState extends ConsumerState<RevealScreen> {
                               onPressed: () {
                                 ref.invalidate(myProfileProvider);
                                 Navigator.of(context).popUntil((r) => r.isFirst);
-                              },
-                            ),
-                            const SizedBox(height: HiSpace.sm),
-                            HiButtonSecondary(
-                              label: t.revealShareCard,
-                              icon: Icons.ios_share_rounded,
-                              onPressed: () {
-                                ref.invalidate(myProfileProvider);
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(builder: (_) => const ShareCardScreen()),
-                                );
                               },
                             ),
                           ],
