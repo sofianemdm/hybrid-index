@@ -255,8 +255,12 @@ export class WodsService {
           select: { id: true, name: true, requiresEquipment: true },
         });
         if (pe) {
-          sessions.push({ wodId: pe.id, name: pe.name, requiresEquipment: pe.requiresEquipment, covers: [...remaining] });
-          chosen.add(pe.id);
+          // Nouvel arrivant : on propose UNIQUEMENT le Profil Express d'abord (1 séance qui estime
+          // les 6 qualités → Index complet estimé). Les séances de PRÉCISION viennent APRÈS l'avoir fait.
+          return {
+            missing,
+            sessions: [{ wodId: pe.id, name: pe.name, requiresEquipment: pe.requiresEquipment, covers: [...remaining] }],
+          };
         }
       }
     }

@@ -27,7 +27,8 @@ export class LeagueLifecycleService implements OnApplicationBootstrap {
    */
   async onApplicationBootstrap(): Promise<void> {
     // En test, on n'ouvre pas de saison automatiquement (les e2e gèrent leurs propres saisons).
-    if (process.env.NODE_ENV === "test") return;
+    // JEST_WORKER_ID est défini dans tout worker Jest → détection fiable (NODE_ENV ne l'est pas toujours).
+    if (process.env.NODE_ENV === "test" || process.env.JEST_WORKER_ID) return;
     await this.closeOverdueSeasons().catch((e) => this.logger.warn(`Clôture échues au boot KO : ${e}`));
     await this.openCurrentSeason().catch((e) => this.logger.warn(`Ouverture saison au boot KO : ${e}`));
   }

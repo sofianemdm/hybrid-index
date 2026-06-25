@@ -12,7 +12,11 @@ export class LeagueService {
   constructor(private readonly prisma: PrismaService) {}
 
   private async activeSeason() {
-    return this.prisma.leagueSeason.findFirst({ where: { status: "active" } });
+    // « La » saison active = celle qui COUVRE le moment présent (une saison future ne compte pas).
+    const now = new Date();
+    return this.prisma.leagueSeason.findFirst({
+      where: { status: "active", opensAt: { lte: now }, closesAt: { gt: now } },
+    });
   }
 
   /** Semaine courante (WOD imposé) d'une saison, selon la semaine ISO du jour. */

@@ -12,7 +12,10 @@ export class LeagueEnrollmentService {
     if (!profile) {
       throw new ForbiddenException({ code: "PROFILE_REQUIRED", message: "Profil requis pour rejoindre la Ligue." });
     }
-    const season = await this.prisma.leagueSeason.findFirst({ where: { status: "active" } });
+    const now = new Date();
+    const season = await this.prisma.leagueSeason.findFirst({
+      where: { status: "active", opensAt: { lte: now }, closesAt: { gt: now } },
+    });
     if (!season) {
       throw new NotFoundException({ code: "NO_ACTIVE_SEASON", message: "Aucune saison de Ligue en cours." });
     }
