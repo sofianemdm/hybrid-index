@@ -38,7 +38,13 @@ describe("matchesCondition (moteur de badges)", () => {
     attributesAllUnlocked: true,
     streakCurrent: 5,
     streakBest: 12,
+    isLeaguePioneer: false,
   };
+
+  it("« league_pioneer » (Pionnier) : vrai seulement si inscrit à la 1re saison de Ligue", () => {
+    expect(matchesCondition("league_pioneer", base)).toBe(false);
+    expect(matchesCondition("league_pioneer", { ...base, isLeaguePioneer: true })).toBe(true);
+  });
 
   it("« logs>=5 » (athlète confirmé) = 5 séances, sans exigence sociale", () => {
     expect(matchesCondition("logs>=5", base)).toBe(true); // 10 séances

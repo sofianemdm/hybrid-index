@@ -43,6 +43,7 @@ export const BADGES: BadgeDef[] = [
   { id: "all-attributes", category: "collection", name: "Profil complet", description: "Débloque les 6 attributs du radar.", rarity: "rare", condition: "attribute_unlocked:all", cosmeticUnlock: "radar_skin_full" },
   { id: "full-arsenal", category: "collection", name: "Arsenal complet", description: "Complète 15 séances de référence.", rarity: "epic", condition: "wods_distinct>=15", cosmeticUnlock: "avatar_badge_arsenal" },
   { id: "no-gear-hero", category: "collection", name: "Sans matériel", description: "Logue 7 séances sans matériel. Aucune excuse.", rarity: "rare", condition: "equipment_free_count>=7", cosmeticUnlock: null },
+  { id: "league-pioneer", category: "collection", name: "Pionnier", description: "Parmi les premiers à rejoindre la Ligue. Tu y étais dès le début.", rarity: "rare", condition: "league_pioneer", cosmeticUnlock: null },
   // PERFORMANCE — classement de ligue (top X% de ta ligue)
   { id: "top-50", category: "performance", name: "Top 50 %", description: "Entre dans la moitié haute de ta ligue.", rarity: "common", condition: "percentile>=50", cosmeticUnlock: null },
   { id: "top-25", category: "performance", name: "Top 25 %", description: "Entre dans le top 25 % de ta ligue.", rarity: "rare", condition: "percentile>=75", cosmeticUnlock: null },
@@ -89,6 +90,7 @@ export interface BadgeContext {
   attributesAllUnlocked: boolean;
   streakCurrent: number;
   streakBest: number;
+  isLeaguePioneer: boolean; // inscrit à la toute première saison de Ligue (badge « Pionnier »)
 }
 
 /** Évalue une condition machine contre le contexte de l'utilisateur. */
@@ -96,6 +98,8 @@ export function matchesCondition(condition: string, ctx: BadgeContext): boolean 
   if (condition === "attribute_unlocked:all") return ctx.attributesAllUnlocked;
   // « Premier Index » : au moins un attribut débloqué → un Index existe (> plancher).
   if (condition === "has_index") return ctx.index > 0;
+  // « Pionnier » : inscrit à la toute première saison de Ligue.
+  if (condition === "league_pioneer") return ctx.isLeaguePioneer;
 
   // « humanity<=X » : faire partie des X% des humains les plus en forme.
   const le = condition.match(/^humanity<=(.+)$/);

@@ -82,6 +82,15 @@ export class BadgesService {
       }
     }
 
+    // « Pionnier » : inscrit à la toute première saison de Ligue.
+    const firstSeason = await this.prisma.leagueSeason.findFirst({ orderBy: { createdAt: "asc" }, select: { id: true } });
+    const isLeaguePioneer = firstSeason
+      ? (await this.prisma.leagueEntry.findUnique({
+          where: { seasonId_userId: { seasonId: firstSeason.id, userId } },
+          select: { userId: true },
+        })) != null
+      : false;
+
     return {
       logCount,
       followersCount,
@@ -95,6 +104,7 @@ export class BadgesService {
       attributesAllUnlocked: unlockedAttrs >= 6,
       streakCurrent: streakState.current,
       streakBest: streakState.best,
+      isLeaguePioneer,
     };
   }
 
