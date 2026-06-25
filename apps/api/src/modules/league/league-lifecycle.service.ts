@@ -1,8 +1,13 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable, Logger, type OnApplicationBootstrap } from "@nestjs/common";
+import { Cron } from "@nestjs/schedule";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { isoWeekKey } from "../engagement/iso-week";
 import { addDaysUTC, isoWeeksOfMonth, monthBounds, monthKeyOf, pickMonthlyWods } from "./league.rotation";
 import { totalsBestPerWeek, rankTotals } from "./league.aggregate";
+
+// WODs SANS matériel exclus du pool imposé (trop longs / non répétables chaque semaine sans risque) —
+// cf. spec sport-science. Ils restent jouables pour l'Index, mais ne sont jamais imposés en Ligue.
+const LEAGUE_EXCLUDED_WODS = ["marathon", "half_marathon", "track_10000m", "run_free_distance", "max_air_squats", "murph"];
 
 /**
  * Cycle de vie d'une saison de Ligue (mensuelle). Au lancement : 2 ligues H/F, 1 WOD sans matériel
@@ -10,10 +15,38 @@ import { totalsBestPerWeek, rankTotals } from "./league.aggregate";
  * les tests, ou un cron (@nestjs/schedule, à brancher quand la dépendance est ajoutée).
  */
 @Injectable()
-export class LeagueLifecycleService {
+export class LeagueLifecycleService implements OnApplicationBootstrap {
   private readonly logger = new Logger(LeagueLifecycleService.name);
 
   constructor(private readonly prisma: PrismaService) {}
+
+  /**
+   * Au démarrage de l'app : clôture les saisons échues et assure la saison du mois courant
+   * (idempotent). Garantit qu'une Ligue existe dès le déploiement, sans attendre le 1er du mois.
+   * Best-effort : une erreur (ex. WODs non seedés) est loguée mais ne bloque pas le boot.
+   */
+  async onApplicationBootstrap(): Promise<void> {
+    // En test, on n'ouvre pas de saison automatiquement (les e2e gèrent leurs propres saisons).
+    if (process.env.NODE_ENV === "test") return;
+    await this.closeOverdueSeasons().catch((e) => this.logger.warn(`Clôture échues au boot KO : ${e}`));
+    await this.openCurrentSeason().catch((e) => this.logger.warn(`Ouverture saison au boot KO : ${e}`));
+  }
+
+  /** Bascule mensuelle : le 1er du mois à 00:05 UTC, clôt la saison écoulée et ouvre la nouvelle. */
+  @Cron("5 0 1 * *")
+  async monthlyRollover(): Promise<void> {
+    await this.closeOverdueSeasons();
+    await this.openCurrentSeason();
+  }
+
+  /** Clôt toutes les saisons `active` dont la date de fin est passée (archivage + reset par mois suivant). */
+  async closeOverdueSeasons(now = new Date()): Promise<void> {
+    const overdue = await this.prisma.leagueSeason.findMany({
+      where: { status: "active", closesAt: { lte: now } },
+      select: { monthKey: true },
+    });
+    for (const s of overdue) await this.closeSeason(s.monthKey);
+  }
 
   /** Ouvre (idempotent) la saison du mois courant. */
   async openCurrentSeason(now = new Date()): Promise<{ id: string; monthKey: string }> {
@@ -111,7 +144,7 @@ export class LeagueLifecycleService {
 
   private async bodyweightWodPool(): Promise<string[]> {
     const wods = await this.prisma.wod.findMany({
-      where: { requiresEquipment: false, isCustom: false },
+      where: { requiresEquipment: false, isCustom: false, id: { notIn: LEAGUE_EXCLUDED_WODS } },
       select: { id: true },
       orderBy: { id: "asc" },
     });

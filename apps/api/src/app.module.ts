@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 import { APP_GUARD } from "@nestjs/core";
+import { ScheduleModule } from "@nestjs/schedule";
 import { RateLimitGuard } from "./common/rate-limit.guard";
 import { HealthController } from "./health/health.controller";
 import { PrismaModule } from "./infra/prisma/prisma.module";
@@ -28,6 +29,7 @@ import { LeagueModule } from "./modules/league/league.module";
   imports: [
     PrismaModule,
     RedisModule,
+    ScheduleModule.forRoot(),
     ModerationModule,
     PostsModule,
     SocialModule,
