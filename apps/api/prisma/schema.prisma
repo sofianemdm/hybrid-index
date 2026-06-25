@@ -171,25 +171,25 @@ model User {
   hybridIndex       HybridIndex?
   attributeScores   AttributeScore[]
   wodResults        WodResult[]
-  wodsCreated       Wod[]             @relation("WodCreator")
-  feedEvents        FeedEvent[]       @relation("FeedActor")
-  reactions         Reaction[]        @relation("ReactionAuthor")
+  wodsCreated       Wod[]              @relation("WodCreator")
+  feedEvents        FeedEvent[]        @relation("FeedActor")
+  reactions         Reaction[]         @relation("ReactionAuthor")
   streak            Streak?
   notificationPrefs NotificationPrefs?
   userBadges        UserBadge[]
-  following         Follow[]          @relation("Follower")
-  followers         Follow[]          @relation("Followee")
+  following         Follow[]           @relation("Follower")
+  followers         Follow[]           @relation("Followee")
   progressEvents    ProgressEvent[]
-  posts             Post[]            @relation("PostAuthor")
-  postReactions     PostReaction[]    @relation("PostReactionAuthor")
-  reports           Report[]          @relation("Reporter")
-  clubsOwned        Club[]            @relation("ClubOwner")
+  posts             Post[]             @relation("PostAuthor")
+  postReactions     PostReaction[]     @relation("PostReactionAuthor")
+  reports           Report[]           @relation("Reporter")
+  clubsOwned        Club[]             @relation("ClubOwner")
   clubMemberships   ClubMember[]
-  conversationsA    Conversation[]    @relation("ConvUserA")
-  conversationsB    Conversation[]    @relation("ConvUserB")
-  messages          Message[]         @relation("MessageSender")
-  blocksMade        Block[]           @relation("Blocker")
-  blocksReceived    Block[]           @relation("Blocked")
+  conversationsA    Conversation[]     @relation("ConvUserA")
+  conversationsB    Conversation[]     @relation("ConvUserB")
+  messages          Message[]          @relation("MessageSender")
+  blocksMade        Block[]            @relation("Blocker")
+  blocksReceived    Block[]            @relation("Blocked")
   pushTokens        PushToken[]
 
   @@map("user")
@@ -232,12 +232,12 @@ model ProgressEvent {
 
 // Agrégat hebdo par utilisateur (repli classement + meilleure semaine perso).
 model ProgressWeekly {
-  userId      String  @map("user_id") @db.Uuid
-  weekKey     String  @map("week_key")
-  sex         Sex
-  ep          Int     @default(0)
-  activeDays  Int     @default(0) @map("active_days")
-  prCount     Int     @default(0) @map("pr_count")
+  userId     String @map("user_id") @db.Uuid
+  weekKey    String @map("week_key")
+  sex        Sex
+  ep         Int    @default(0)
+  activeDays Int    @default(0) @map("active_days")
+  prCount    Int    @default(0) @map("pr_count")
 
   @@id([userId, weekKey])
   @@index([weekKey, sex, ep(sort: Desc)])
@@ -526,21 +526,21 @@ model Profile {
 }
 
 model HybridIndex {
-  userId           String   @id @map("user_id") @db.Uuid
-  value            Int
-  percentile       Decimal  @db.Decimal(5, 4)
-  isProvisional    Boolean  @map("is_provisional")
-  isEstimated      Boolean  @map("is_estimated")
-  radarCoverage    Int      @map("radar_coverage") @db.SmallInt
-  projectedValue   Int?     @map("projected_value")
-  confidenceLevel  String   @map("confidence_level")
+  userId               String   @id @map("user_id") @db.Uuid
+  value                Int
+  percentile           Decimal  @db.Decimal(5, 4)
+  isProvisional        Boolean  @map("is_provisional")
+  isEstimated          Boolean  @map("is_estimated")
+  radarCoverage        Int      @map("radar_coverage") @db.SmallInt
+  projectedValue       Int?     @map("projected_value")
+  confidenceLevel      String   @map("confidence_level")
   // Preuve sociale « population générale » (popnorm-v1) — cosmétique, distincte du percentile compétitif.
   populationPercentile Decimal? @map("population_percentile") @db.Decimal(5, 4)
   populationBand       String?  @map("population_band")
   // Position dans la ligue au dernier recalcul (snapshot pour détecter « quelqu'un t'a dépassé »).
-  leaguePosition   Int?     @map("league_position")
-  scoringVersionId String   @map("scoring_version_id") @db.Uuid
-  computedAt       DateTime @default(now()) @map("computed_at") @db.Timestamptz(6)
+  leaguePosition       Int?     @map("league_position")
+  scoringVersionId     String   @map("scoring_version_id") @db.Uuid
+  computedAt           DateTime @default(now()) @map("computed_at") @db.Timestamptz(6)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -588,8 +588,8 @@ model Wod {
   createdAt         DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt         DateTime       @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  creator    User?       @relation("WodCreator", fields: [createdById], references: [id], onDelete: SetNull)
-  results    WodResult[]
+  creator User?       @relation("WodCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  results WodResult[]
 
   @@index([requiresEquipment])
   @@index([isCustom, visibility, createdAt(sort: Desc)])
@@ -637,18 +637,173 @@ model League {
   @@schema("app")
 }
 
+// ----------------------------- Mode Ligue (saison mensuelle opt-in, séparée de l'Index) -----------------------------
+// Décision humaine 25/06 : « saisons » réintroduites UNIQUEMENT pour ce système ; l'Index ne se
+// réinitialise JAMAIS. Lancement = 2 ligues H/F, mêmes WODs sans matériel pour tous. Les colonnes
+// filiere/niveau + divisionTier sont présentes dès maintenant (defaults) pour activer les évolutions
+// futures (filière matériel, Rx/Scaled, divisions) SANS nouvelle migration.
+// userId/wodId scalaires (pas de relation) = même pattern que ProgressWeekly ⇒ zéro churn User/Wod.
+
+enum LeagueSeasonStatus {
+  upcoming
+  active
+  closed
+
+  @@schema("app")
+}
+
+enum LeagueFiliere {
+  bodyweight
+  equipped
+
+  @@schema("app")
+}
+
+enum LeagueLevel {
+  rx
+  scaled
+
+  @@schema("app")
+}
+
+// Une saison = un mois. Les points repartent à zéro à chaque saison ; l'Index NON.
+model LeagueSeason {
+  id           String             @id @default(uuid()) @db.Uuid
+  monthKey     String             @unique @map("month_key") // "2026-07" (UTC)
+  status       LeagueSeasonStatus @default(upcoming)
+  divisionTier Int                @default(1) @map("division_tier") // 1 = ligue unique ; 3 ; 10 (figé à l'ouverture)
+  opensAt      DateTime           @map("opens_at") @db.Timestamptz(6)
+  closesAt     DateTime           @map("closes_at") @db.Timestamptz(6)
+  closedAt     DateTime?          @map("closed_at") @db.Timestamptz(6)
+  createdAt    DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  weeks     LeagueWeek[]
+  entries   LeagueEntry[]
+  points    LeaguePoints[]
+  divisions LeagueDivision[]
+  standings LeagueStanding[]
+
+  @@index([status])
+  @@map("league_season")
+  @@schema("app")
+}
+
+// WOD imposé d'une semaine (au lancement : 1/semaine, filière bodyweight). wodId = FK logique (cron valide).
+model LeagueWeek {
+  id        String        @id @default(uuid()) @db.Uuid
+  seasonId  String        @map("season_id") @db.Uuid
+  weekIndex Int           @map("week_index") // 1..4(5)
+  weekKey   String        @map("week_key") // isoWeekKey, ex. "2026-W27"
+  wodId     String        @map("wod_id")
+  filiere   LeagueFiliere @default(bodyweight)
+  opensAt   DateTime      @map("opens_at") @db.Timestamptz(6)
+  closesAt  DateTime      @map("closes_at") @db.Timestamptz(6)
+
+  season LeagueSeason @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+
+  @@unique([seasonId, weekIndex, filiere])
+  @@unique([seasonId, weekKey, filiere])
+  @@index([weekKey])
+  @@map("league_week")
+  @@schema("app")
+}
+
+// Inscription OPT-IN à une saison (immuable une fois inscrit).
+model LeagueEntry {
+  seasonId   String        @map("season_id") @db.Uuid
+  userId     String        @map("user_id") @db.Uuid
+  sex        Sex
+  filiere    LeagueFiliere @default(bodyweight)
+  level      LeagueLevel   @default(rx)
+  divisionId String?       @map("division_id") @db.Uuid
+  joinedAt   DateTime      @default(now()) @map("joined_at") @db.Timestamptz(6)
+
+  season   LeagueSeason    @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  division LeagueDivision? @relation(fields: [divisionId], references: [id], onDelete: SetNull)
+
+  @@id([seasonId, userId])
+  @@index([seasonId, sex])
+  @@index([seasonId, divisionId])
+  @@map("league_entry")
+  @@schema("app")
+}
+
+// Ledger durable des points (= source de vérité du classement mensuel). 1 résultat → 1 ligne (idempotent).
+model LeaguePoints {
+  id          String        @id @default(uuid()) @db.Uuid
+  seasonId    String        @map("season_id") @db.Uuid
+  weekId      String        @map("week_id") @db.Uuid
+  userId      String        @map("user_id") @db.Uuid
+  sex         Sex
+  filiere     LeagueFiliere @default(bodyweight)
+  level       LeagueLevel   @default(rx)
+  wodResultId String        @unique @map("wod_result_id") @db.Uuid // anti-double-comptage Index/Ligue
+  points      Int
+  subScore    Int           @map("sub_score")
+  review      ResultReview  @default(ok)
+  createdAt   DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  season LeagueSeason @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+
+  @@index([seasonId, userId])
+  @@index([seasonId, sex, points(sort: Desc)])
+  @@map("league_points")
+  @@schema("app")
+}
+
+// Divisions internes (créées quand divisionTier > 1 ; inutilisées au lancement).
+model LeagueDivision {
+  id       String        @id @default(uuid()) @db.Uuid
+  seasonId String        @map("season_id") @db.Uuid
+  sex      Sex
+  filiere  LeagueFiliere @default(bodyweight)
+  level    LeagueLevel   @default(rx)
+  tier     Int // 1 = élite ... N = débutants
+  label    String
+
+  season  LeagueSeason  @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  entries LeagueEntry[]
+
+  @@unique([seasonId, sex, filiere, level, tier])
+  @@index([seasonId, sex])
+  @@map("league_division")
+  @@schema("app")
+}
+
+// Archive du classement final d'une saison close (historique des saisons passées).
+model LeagueStanding {
+  id          String        @id @default(uuid()) @db.Uuid
+  seasonId    String        @map("season_id") @db.Uuid
+  userId      String        @map("user_id") @db.Uuid
+  sex         Sex
+  filiere     LeagueFiliere @default(bodyweight)
+  level       LeagueLevel   @default(rx)
+  divisionId  String?       @map("division_id") @db.Uuid
+  finalRank   Int           @map("final_rank")
+  totalPoints Int           @map("total_points")
+  movement    String? // "promoted" | "relegated" | "stay" | null si tier=1
+
+  season LeagueSeason @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+
+  @@unique([seasonId, userId])
+  @@index([seasonId, sex, finalRank])
+  @@index([userId, seasonId])
+  @@map("league_standing")
+  @@schema("app")
+}
+
 model Streak {
-  userId                 String    @id @map("user_id") @db.Uuid
-  current                Int       @default(0)
-  best                   Int       @default(0)
-  weeklyGoal             Int       @default(3) @map("weekly_goal")
-  freezeTokens           Int       @default(1) @map("freeze_tokens")
+  userId                  String    @id @map("user_id") @db.Uuid
+  current                 Int       @default(0)
+  best                    Int       @default(0)
+  weeklyGoal              Int       @default(3) @map("weekly_goal")
+  freezeTokens            Int       @default(1) @map("freeze_tokens")
   freezeTokensRefreshedAt DateTime? @map("freeze_tokens_refreshed_at") @db.Timestamptz(6)
-  plannedRest            Boolean   @default(false) @map("planned_rest")
-  lastWeekEvaluated      String?   @map("last_week_evaluated")
-  lastOutcome            String?   @map("last_outcome")
-  validatedActiveWeeks   Int       @default(0) @map("validated_active_weeks")
-  updatedAt              DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  plannedRest             Boolean   @default(false) @map("planned_rest")
+  lastWeekEvaluated       String?   @map("last_week_evaluated")
+  lastOutcome             String?   @map("last_outcome")
+  validatedActiveWeeks    Int       @default(0) @map("validated_active_weeks")
+  updatedAt               DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -710,7 +865,6 @@ model UserBadge {
   @@map("user_badge")
   @@schema("app")
 }
-
 
 model FeedEvent {
   id         String        @id @default(uuid()) @db.Uuid
