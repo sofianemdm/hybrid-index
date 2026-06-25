@@ -1438,3 +1438,139 @@ class CompletionSession {
         covers: (j['covers'] as List<dynamic>? ?? []).map((e) => e as String).toList(),
       );
 }
+
+// ----------------------------- Mode Ligue (saison mensuelle opt-in, séparée de l'Index) -----------------------------
+
+class LeagueWeekInfo {
+  final int weekIndex;
+  final String weekKey;
+  final String wodId;
+  final String wodName;
+  final DateTime opensAt;
+  final DateTime closesAt;
+  const LeagueWeekInfo({
+    required this.weekIndex,
+    required this.weekKey,
+    required this.wodId,
+    required this.wodName,
+    required this.opensAt,
+    required this.closesAt,
+  });
+
+  factory LeagueWeekInfo.fromJson(Map<String, dynamic> j) => LeagueWeekInfo(
+        weekIndex: (j['weekIndex'] as num).toInt(),
+        weekKey: j['weekKey'] as String,
+        wodId: j['wodId'] as String,
+        wodName: j['wodName'] as String? ?? j['wodId'] as String,
+        opensAt: DateTime.parse(j['opensAt'] as String),
+        closesAt: DateTime.parse(j['closesAt'] as String),
+      );
+}
+
+class LeagueSeason {
+  final String monthKey;
+  final String status;
+  final int divisionTier;
+  final DateTime opensAt;
+  final DateTime closesAt;
+  final LeagueWeekInfo? currentWeek;
+  final bool enrolled;
+  const LeagueSeason({
+    required this.monthKey,
+    required this.status,
+    required this.divisionTier,
+    required this.opensAt,
+    required this.closesAt,
+    this.currentWeek,
+    required this.enrolled,
+  });
+
+  factory LeagueSeason.fromJson(Map<String, dynamic> j) => LeagueSeason(
+        monthKey: j['monthKey'] as String,
+        status: j['status'] as String? ?? 'active',
+        divisionTier: (j['divisionTier'] as num?)?.toInt() ?? 1,
+        opensAt: DateTime.parse(j['opensAt'] as String),
+        closesAt: DateTime.parse(j['closesAt'] as String),
+        currentWeek: j['currentWeek'] == null
+            ? null
+            : LeagueWeekInfo.fromJson(Map<String, dynamic>.from(j['currentWeek'] as Map)),
+        enrolled: j['enrolled'] as bool? ?? false,
+      );
+}
+
+class LeagueStandingEntry {
+  final int position;
+  final String userId;
+  final String displayName;
+  final int points;
+  final bool isMe;
+  const LeagueStandingEntry({
+    required this.position,
+    required this.userId,
+    required this.displayName,
+    required this.points,
+    required this.isMe,
+  });
+
+  factory LeagueStandingEntry.fromJson(Map<String, dynamic> j) => LeagueStandingEntry(
+        position: (j['position'] as num).toInt(),
+        userId: j['userId'] as String,
+        displayName: j['displayName'] as String? ?? '—',
+        points: (j['points'] as num).toInt(),
+        isMe: j['isMe'] as bool? ?? false,
+      );
+}
+
+class LeagueStandings {
+  final String? monthKey;
+  final String sex;
+  final int total;
+  final List<LeagueStandingEntry> entries;
+  final int? myPosition;
+  final int? myPoints;
+  const LeagueStandings({
+    this.monthKey,
+    required this.sex,
+    required this.total,
+    required this.entries,
+    this.myPosition,
+    this.myPoints,
+  });
+
+  factory LeagueStandings.fromJson(Map<String, dynamic> j) {
+    final me = j['me'] as Map<String, dynamic>?;
+    return LeagueStandings(
+      monthKey: j['monthKey'] as String?,
+      sex: j['sex'] as String? ?? 'male',
+      total: (j['total'] as num?)?.toInt() ?? 0,
+      entries: (j['entries'] as List<dynamic>? ?? const [])
+          .map((e) => LeagueStandingEntry.fromJson(Map<String, dynamic>.from(e as Map)))
+          .toList(),
+      myPosition: me == null ? null : (me['position'] as num?)?.toInt(),
+      myPoints: me == null ? null : (me['points'] as num?)?.toInt(),
+    );
+  }
+}
+
+class LeagueMe {
+  final bool enrolled;
+  final String? monthKey;
+  final int points;
+  final int? position;
+  final int weeksPlayed;
+  const LeagueMe({
+    required this.enrolled,
+    this.monthKey,
+    required this.points,
+    this.position,
+    required this.weeksPlayed,
+  });
+
+  factory LeagueMe.fromJson(Map<String, dynamic> j) => LeagueMe(
+        enrolled: j['enrolled'] as bool? ?? false,
+        monthKey: j['monthKey'] as String?,
+        points: (j['points'] as num?)?.toInt() ?? 0,
+        position: (j['position'] as num?)?.toInt(),
+        weeksPlayed: (j['weeksPlayed'] as num?)?.toInt() ?? 0,
+      );
+}

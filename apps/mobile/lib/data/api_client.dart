@@ -261,6 +261,26 @@ class ApiClient {
   Future<void> updateNotificationPrefs(Map<String, dynamic> payload) async =>
       _send('PATCH', '/v1/me/notifications', payload);
 
+  // --- Ligue (mode mensuel opt-in) ---
+  Future<LeagueSeason?> leagueSeason() async {
+    final dynamic j = await _send('GET', '/v1/league/season/current');
+    if (j is! Map || j['monthKey'] == null) return null;
+    return LeagueSeason.fromJson(Map<String, dynamic>.from(j));
+  }
+
+  Future<void> leagueEnroll() async => _send('POST', '/v1/league/enroll', {});
+
+  Future<LeagueStandings> leagueStandings(String sex) async {
+    final j = await _send('GET', '/v1/league/standings?sex=$sex') as Map<String, dynamic>;
+    return LeagueStandings.fromJson(j);
+  }
+
+  Future<LeagueMe> leagueMe() async {
+    final j = await _send('GET', '/v1/league/me') as Map<String, dynamic>;
+    return LeagueMe.fromJson(j);
+  }
+
+
   // --- Communauté ---
   Future<List<FeedActivity>> feed() async {
     final j = await _send('GET', '/v1/feed') as List<dynamic>;

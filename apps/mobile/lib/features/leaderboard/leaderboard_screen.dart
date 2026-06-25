@@ -10,6 +10,7 @@ import '../../widgets/hi_skeleton.dart';
 import '../../widgets/rank_badge.dart';
 import '../profile/public_profile_screen.dart';
 import 'progress_board_screen.dart';
+import '../league/league_screen.dart';
 
 /// Classement public par ligue (Hommes / Femmes), trié par HYBRID INDEX.
 class LeaderboardScreen extends ConsumerStatefulWidget {
@@ -78,6 +79,21 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
               label: Text(t.leaderboardWeeklyProgress),
               onPressed: () => Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const ProgressBoardScreen()),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(HiSpace.lg, 0, HiSpace.lg, HiSpace.sm),
+            child: ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size.fromHeight(44),
+                backgroundColor: HiColors.brandSecondary,
+                foregroundColor: HiColors.textOnBrand,
+              ),
+              icon: const Icon(Icons.military_tech_rounded),
+              label: const Text('Ligue du mois'),
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const LeagueScreen()),
               ),
             ),
           ),
