@@ -9,6 +9,7 @@ import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../data/ui_state.dart';
 import '../../data/review_prompt.dart';
+import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/attribute_gains.dart';
 import '../../widgets/celebration.dart';
@@ -76,24 +77,25 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
   }
 
   Future<void> _submit() async {
+    final t = AppLocalizations.of(context); // capturé avant tout await (pas de context post-async)
     // Les secondes doivent rester dans [0,59] (sinon « 4:90 » serait enregistré comme 5:30, BUG-013).
     if (_isTime) {
       final sec = int.tryParse(_sec.text) ?? 0;
       if (sec > 59) {
-        _toast('Les secondes doivent être entre 0 et 59.');
+        _toast(t.wreSecondsRange);
         return;
       }
     }
     final raw = _raw;
     if (raw == null) {
-      _toast('Saisis un résultat valide.');
+      _toast(t.wreInvalidResult);
       return;
     }
     int? distanceMeters;
     if (_isFreeRun) {
       distanceMeters = int.tryParse(_distance.text.trim());
       if (distanceMeters == null || distanceMeters <= 0) {
-        _toast('Saisis la distance parcourue (en mètres).');
+        _toast(t.wreNeedDistance);
         return;
       }
     }
@@ -121,9 +123,9 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
             context,
             value: '${profile.index.value}',
             title: bandText,
-            subtitle: hasGains ? _gainsLine(profile.gains) : 'Ton HYBRID INDEX grimpe.',
+            subtitle: hasGains ? _gainsLine(profile.gains) : AppLocalizations.of(context).wreIndexClimbs,
             intensity: CelebrationIntensity.strong,
-            actionLabel: 'Partager mon exploit',
+            actionLabel: AppLocalizations.of(context).wreShareFeat,
             onAction: () {
               if (mounted) {
                 Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ShareCardScreen()));
@@ -135,7 +137,7 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
           await Celebration.show(
             context,
             value: '${profile.index.value}',
-            title: 'Tu progresses 💪',
+            title: AppLocalizations.of(context).wreProgressTitle,
             subtitle: _gainsLine(profile.gains),
             intensity: CelebrationIntensity.medium,
           );
@@ -145,7 +147,7 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
             context: context,
             builder: (_) => AlertDialog(
               backgroundColor: HiColors.bgElevated,
-              title: Text('Résultat enregistré 💪', style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
+              title: Text(AppLocalizations.of(context).wreProgressTitle, style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
               content: Column(mainAxisSize: MainAxisSize.min, children: [
                 Text('HYBRID INDEX', style: HiType.overline.copyWith(color: HiColors.textSecondary)),
                 const SizedBox(height: 8),
@@ -153,7 +155,7 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
                 const SizedBox(height: 12),
                 AttributeGains(gains: profile.gains, weakest: profile.weakest),
               ]),
-              actions: [TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Continuer'))],
+              actions: [TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(AppLocalizations.of(context).commonContinue))],
             ),
           );
         }
@@ -172,7 +174,7 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
         Navigator.of(context).popUntil((r) => r.isFirst);
       }
     } on ApiException catch (e) {
-      _toast(e.code == 'WOD_RESULT_OUT_OF_BOUNDS' ? 'Résultat hors des bornes plausibles.' : e.message);
+      _toast(e.code == 'WOD_RESULT_OUT_OF_BOUNDS' ? t.wreOutOfBounds : e.message);
     } catch (e) {
       _toast('$e');
     } finally {
@@ -182,7 +184,7 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
 
   /// Résumé des gains d'attributs (« Engine +3 · Force +2 »).
   String _gainsLine(List<AttributeGain> gains) {
-    if (gains.isEmpty) return 'Ton HYBRID INDEX grimpe.';
+    if (gains.isEmpty) return AppLocalizations.of(context).wreIndexClimbs;
     return gains.map((g) => '${HiLabels.attribute(g.attribute)} +${g.delta}').join(' · ');
   }
 
@@ -199,6 +201,7 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final pref = ref.watch(sessionProvider).sex;
     return Scaffold(
       appBar: AppBar(title: Text(widget.wodName), backgroundColor: Colors.transparent, elevation: 0),
@@ -211,14 +214,14 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 if (_isFreeRun) ...[
-                  Text('Distance parcourue (mètres)', style: HiType.body.copyWith(color: HiColors.textSecondary)),
+                  Text(t.wreDistanceLabel, style: HiType.body.copyWith(color: HiColors.textSecondary)),
                   const SizedBox(height: 8),
-                  _num(_distance, 'ex. 5000'),
+                  _num(_distance, t.wreDistanceHint),
                   const SizedBox(height: HiSpace.lg),
                 ],
                 Text(_isFreeRun
-                    ? 'Ton temps'
-                    : 'Ton résultat (${_isTime ? 'temps' : wodUnitLabel(widget.wodId, widget.scoreType)})',
+                    ? t.wreYourTime
+                    : t.wreYourResult(_isTime ? t.wreUnitTime : wodUnitLabel(widget.wodId, widget.scoreType)),
                     style: HiType.body.copyWith(color: HiColors.textSecondary)),
                 const SizedBox(height: 8),
                 if (_isTime)
@@ -228,25 +231,25 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
                     Expanded(child: _num(_sec, 'sec')),
                   ])
                 else
-                  _num(_value, 'résultat', decimal: widget.scoreType == 'load'),
+                  _num(_value, t.wreResultHint, decimal: widget.scoreType == 'load'),
                 // Échelle Rx/Scaled : uniquement pour les WODs à charge ; Pro/Open pour HYROX solo.
                 if (_isHyrox || _hasScale) ...[
                   const SizedBox(height: HiSpace.lg),
-                  Text(_isHyrox ? 'Catégorie' : 'Échelle', style: HiType.body.copyWith(color: HiColors.textSecondary)),
+                  Text(_isHyrox ? t.wreCategory : t.wreScale, style: HiType.body.copyWith(color: HiColors.textSecondary)),
                   const SizedBox(height: 8),
                   Row(children: [
-                    _scaleChip(_isHyrox ? 'Pro' : 'Rx (prescrit)', true),
+                    _scaleChip(_isHyrox ? t.wrePro : t.wreRx, true),
                     const SizedBox(width: 8),
-                    _scaleChip(_isHyrox ? 'Open' : 'Scaled (adapté)', false),
+                    _scaleChip(_isHyrox ? t.wreOpen : t.wreScaled, false),
                   ]),
                   if (_isHyrox || pref != null) ...[
                     const SizedBox(height: HiSpace.sm),
-                    Text(_isHyrox ? 'Les classements Pro et Open sont séparés.' : 'Le classement Rx et Scaled sont séparés.',
+                    Text(_isHyrox ? t.wreSeparatedPro : t.wreSeparatedRx,
                         style: HiType.caption.copyWith(color: HiColors.textTertiary)),
                   ],
                 ],
                 const SizedBox(height: HiSpace.xl),
-                HiButton(label: 'Enregistrer', loading: _loading, onPressed: _submit),
+                HiButton(label: t.wreSave, loading: _loading, onPressed: _submit),
               ],
             ),
           ),

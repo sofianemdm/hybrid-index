@@ -81,6 +81,74 @@ class AppLocalizationsFr extends AppLocalizations {
   String get commonContinue => 'Continuer';
 
   @override
+  String get wreSecondsRange => 'Les secondes doivent être entre 0 et 59.';
+
+  @override
+  String get wreInvalidResult => 'Saisis un résultat valide.';
+
+  @override
+  String get wreNeedDistance => 'Saisis la distance parcourue (en mètres).';
+
+  @override
+  String get wreIndexClimbs => 'Ton HYBRID INDEX grimpe.';
+
+  @override
+  String get wreShareFeat => 'Partager mon exploit';
+
+  @override
+  String get wreProgressTitle => 'Tu progresses 💪';
+
+  @override
+  String get wreOutOfBounds => 'Résultat hors des bornes plausibles.';
+
+  @override
+  String get wreYourTime => 'Ton temps';
+
+  @override
+  String wreYourResult(String unit) {
+    return 'Ton résultat ($unit)';
+  }
+
+  @override
+  String get wreUnitTime => 'temps';
+
+  @override
+  String get wreDistanceLabel => 'Distance parcourue (mètres)';
+
+  @override
+  String get wreDistanceHint => 'ex. 5000';
+
+  @override
+  String get wreResultHint => 'résultat';
+
+  @override
+  String get wreCategory => 'Catégorie';
+
+  @override
+  String get wreScale => 'Échelle';
+
+  @override
+  String get wrePro => 'Pro';
+
+  @override
+  String get wreRx => 'Rx (prescrit)';
+
+  @override
+  String get wreOpen => 'Open';
+
+  @override
+  String get wreScaled => 'Scaled (adapté)';
+
+  @override
+  String get wreSeparatedPro => 'Les classements Pro et Open sont séparés.';
+
+  @override
+  String get wreSeparatedRx => 'Les classements Rx et Scaled sont séparés.';
+
+  @override
+  String get wreSave => 'Enregistrer';
+
+  @override
   String get commonLogout => 'Déconnexion';
 
   @override

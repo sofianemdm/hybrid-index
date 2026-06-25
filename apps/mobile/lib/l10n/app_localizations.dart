@@ -236,6 +236,138 @@ abstract class AppLocalizations {
   /// **'Continue'**
   String get commonContinue;
 
+  /// No description provided for @wreSecondsRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Seconds must be between 0 and 59.'**
+  String get wreSecondsRange;
+
+  /// No description provided for @wreInvalidResult.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid result.'**
+  String get wreInvalidResult;
+
+  /// No description provided for @wreNeedDistance.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the distance covered (in meters).'**
+  String get wreNeedDistance;
+
+  /// No description provided for @wreIndexClimbs.
+  ///
+  /// In en, this message translates to:
+  /// **'Your HYBRID INDEX is climbing.'**
+  String get wreIndexClimbs;
+
+  /// No description provided for @wreShareFeat.
+  ///
+  /// In en, this message translates to:
+  /// **'Share my achievement'**
+  String get wreShareFeat;
+
+  /// No description provided for @wreProgressTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re progressing 💪'**
+  String get wreProgressTitle;
+
+  /// No description provided for @wreOutOfBounds.
+  ///
+  /// In en, this message translates to:
+  /// **'Result outside plausible bounds.'**
+  String get wreOutOfBounds;
+
+  /// No description provided for @wreYourTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Your time'**
+  String get wreYourTime;
+
+  /// No description provided for @wreYourResult.
+  ///
+  /// In en, this message translates to:
+  /// **'Your result ({unit})'**
+  String wreYourResult(String unit);
+
+  /// No description provided for @wreUnitTime.
+  ///
+  /// In en, this message translates to:
+  /// **'time'**
+  String get wreUnitTime;
+
+  /// No description provided for @wreDistanceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Distance covered (meters)'**
+  String get wreDistanceLabel;
+
+  /// No description provided for @wreDistanceHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. 5000'**
+  String get wreDistanceHint;
+
+  /// No description provided for @wreResultHint.
+  ///
+  /// In en, this message translates to:
+  /// **'result'**
+  String get wreResultHint;
+
+  /// No description provided for @wreCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get wreCategory;
+
+  /// No description provided for @wreScale.
+  ///
+  /// In en, this message translates to:
+  /// **'Scale'**
+  String get wreScale;
+
+  /// No description provided for @wrePro.
+  ///
+  /// In en, this message translates to:
+  /// **'Pro'**
+  String get wrePro;
+
+  /// No description provided for @wreRx.
+  ///
+  /// In en, this message translates to:
+  /// **'Rx (prescribed)'**
+  String get wreRx;
+
+  /// No description provided for @wreOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get wreOpen;
+
+  /// No description provided for @wreScaled.
+  ///
+  /// In en, this message translates to:
+  /// **'Scaled'**
+  String get wreScaled;
+
+  /// No description provided for @wreSeparatedPro.
+  ///
+  /// In en, this message translates to:
+  /// **'Pro and Open leaderboards are separate.'**
+  String get wreSeparatedPro;
+
+  /// No description provided for @wreSeparatedRx.
+  ///
+  /// In en, this message translates to:
+  /// **'Rx and Scaled leaderboards are separate.'**
+  String get wreSeparatedRx;
+
+  /// No description provided for @wreSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get wreSave;
+
   /// No description provided for @commonLogout.
   ///
   /// In en, this message translates to:

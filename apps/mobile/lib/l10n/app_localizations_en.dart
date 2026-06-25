@@ -80,6 +80,74 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonContinue => 'Continue';
 
   @override
+  String get wreSecondsRange => 'Seconds must be between 0 and 59.';
+
+  @override
+  String get wreInvalidResult => 'Enter a valid result.';
+
+  @override
+  String get wreNeedDistance => 'Enter the distance covered (in meters).';
+
+  @override
+  String get wreIndexClimbs => 'Your HYBRID INDEX is climbing.';
+
+  @override
+  String get wreShareFeat => 'Share my achievement';
+
+  @override
+  String get wreProgressTitle => 'You\'re progressing 💪';
+
+  @override
+  String get wreOutOfBounds => 'Result outside plausible bounds.';
+
+  @override
+  String get wreYourTime => 'Your time';
+
+  @override
+  String wreYourResult(String unit) {
+    return 'Your result ($unit)';
+  }
+
+  @override
+  String get wreUnitTime => 'time';
+
+  @override
+  String get wreDistanceLabel => 'Distance covered (meters)';
+
+  @override
+  String get wreDistanceHint => 'e.g. 5000';
+
+  @override
+  String get wreResultHint => 'result';
+
+  @override
+  String get wreCategory => 'Category';
+
+  @override
+  String get wreScale => 'Scale';
+
+  @override
+  String get wrePro => 'Pro';
+
+  @override
+  String get wreRx => 'Rx (prescribed)';
+
+  @override
+  String get wreOpen => 'Open';
+
+  @override
+  String get wreScaled => 'Scaled';
+
+  @override
+  String get wreSeparatedPro => 'Pro and Open leaderboards are separate.';
+
+  @override
+  String get wreSeparatedRx => 'Rx and Scaled leaderboards are separate.';
+
+  @override
+  String get wreSave => 'Save';
+
+  @override
   String get commonLogout => 'Log out';
 
   @override
