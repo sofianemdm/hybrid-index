@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "702021189861",
+    "project_id": "hybrid-index-ffe2c",
+    "storage_bucket": "hybrid-index-ffe2c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:702021189861:android:a4a0d6dfeeff82ad4e940c",
+        "android_client_info": {
+          "package_name": "app.hybridindex"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC6T1p_oQslVZy5MLZGLzueyEknv8413ms"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
