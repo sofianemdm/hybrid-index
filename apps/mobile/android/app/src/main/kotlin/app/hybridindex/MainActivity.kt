@@ -1,4 +1,4 @@
-package com.example.hybrid_index
+package app.hybridindex
 
 import io.flutter.embedding.android.FlutterActivity
 
