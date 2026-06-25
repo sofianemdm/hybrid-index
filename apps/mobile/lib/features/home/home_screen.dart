@@ -20,7 +20,7 @@ import '../../widgets/streak_chip.dart';
 import 'grade_block.dart';
 import 'rival_card.dart';
 import 'weekly_recap_card.dart';
-import '../avatar/avatar_editor_screen.dart';
+import '../avatar/avatar_maker_screen.dart';
 import '../coach/coach_screen.dart';
 import '../history/history_screen.dart';
 import '../progression/progression_screen.dart';
@@ -53,7 +53,7 @@ class HomeScreen extends ConsumerWidget {
               children: [
                 GestureDetector(
                   onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const AvatarEditorScreen()),
+                    MaterialPageRoute(builder: (_) => const AvatarMakerScreen()),
                   ),
                   child: ref.watch(avatarProvider).maybeWhen(
                         data: (a) => Hero(
