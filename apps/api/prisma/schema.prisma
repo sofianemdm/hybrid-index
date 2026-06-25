@@ -190,8 +190,24 @@ model User {
   messages          Message[]         @relation("MessageSender")
   blocksMade        Block[]           @relation("Blocker")
   blocksReceived    Block[]           @relation("Blocked")
+  pushTokens        PushToken[]
 
   @@map("user")
+  @@schema("app")
+}
+
+// Device token push (FCM) d'un utilisateur — un par appareil. Persisté (survit aux redéploiements).
+model PushToken {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  token     String   @unique
+  platform  String   @default("android")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("push_token")
   @@schema("app")
 }
 

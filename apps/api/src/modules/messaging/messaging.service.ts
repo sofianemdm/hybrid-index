@@ -3,6 +3,7 @@ import { dmAgeAllowed } from "@hybrid-index/contracts";
 import { ratingFromInternal } from "@hybrid-index/scoring-core";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { ModerationService } from "../moderation/moderation.service";
+import { PushService } from "../engagement/push.service";
 
 /** OVR /100 d'un Index interne /1000 (grade affiché), ou null. */
 const ovr = (internal: number | null | undefined): number | null =>
@@ -25,6 +26,7 @@ export class MessagingService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly moderation: ModerationService,
+    private readonly push: PushService,
   ) {}
 
   /** Couple canonique (ordre stable) pour une conversation 1‑à‑1. */
@@ -80,10 +82,22 @@ export class MessagingService {
     const msg = await this.prisma.message.create({
       data: { conversationId: conv.id, senderId: me, body },
     });
+    // Notification push au destinataire (best-effort, no-op si push inactif).
+    void this.notifyRecipient(me, toUserId);
     return {
       conversationId: conv.id,
       message: { id: msg.id, senderId: me, body: msg.body, createdAt: msg.createdAt.toISOString(), isMine: true },
     };
+  }
+
+  /** Pousse une notif « nouveau message » au destinataire (jamais bloquant pour l'envoi). */
+  private async notifyRecipient(senderId: string, toUserId: string): Promise<void> {
+    try {
+      const sender = await this.prisma.profile.findUnique({ where: { userId: senderId }, select: { displayName: true } });
+      await this.push.notifyNewMessage(toUserId, sender?.displayName ?? "Un athlète");
+    } catch {
+      // best-effort
+    }
   }
 
   /** Mes conversations (autre participant + dernier message + non-lus). */

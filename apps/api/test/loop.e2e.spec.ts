@@ -245,6 +245,24 @@ describe("api — boucle complète persistée (e2e réel)", () => {
     expect(res.body.dailyCap).toBe(1);
   });
 
+  it("push : enregistrement du device token persisté (table push_token)", async () => {
+    const fcmToken = `fake-fcm-${stamp}`;
+    await request(api.getHttpServer())
+      .post("/v1/me/push-token")
+      .set("authorization", `Bearer ${token}`)
+      .send({ token: fcmToken })
+      .expect(201);
+    const row = await prisma.pushToken.findUnique({ where: { token: fcmToken } });
+    expect(row?.userId).toBe(userId);
+    // Idempotent : ré-enregistrer le même token ne crée pas de doublon.
+    await request(api.getHttpServer())
+      .post("/v1/me/push-token")
+      .set("authorization", `Bearer ${token}`)
+      .send({ token: fcmToken })
+      .expect(201);
+    expect(await prisma.pushToken.count({ where: { token: fcmToken } })).toBe(1);
+  });
+
   it("RGPD : export contient profil + résultats, sans hash de mot de passe", async () => {
     const res = await request(api.getHttpServer())
       .get("/v1/me/export")

@@ -1,4 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
+import { JWT } from "google-auth-library";
+import { PrismaService } from "../../infra/prisma/prisma.service";
 
 /** Charge utile d'une notification push (copie déjà localisée FR). */
 export interface PushMessage {
@@ -7,66 +9,97 @@ export interface PushMessage {
   data?: Record<string, string>;
 }
 
+interface ServiceAccount {
+  project_id: string;
+  client_email: string;
+  private_key: string;
+}
+
 /**
- * Service push « prêt mais inactif ».
- *
- * Tout le code d'envoi et les déclencheurs amicaux sont en place ; l'envoi RÉEL n'est activé que
- * si `FCM_SERVER_KEY` est présent dans l'environnement (sinon on journalise sans envoyer). C'est
- * l'interrupteur : le jour où le projet Firebase est créé et la clé fournie, le push s'allume
- * sans toucher au code.
- *
- * NB — stockage des tokens : en mémoire pour l'instant (suffisant tant que le push est inactif).
- * À l'ACTIVATION : remplacer la Map par une table `PushToken` persistée (1 migration) — voir
- * `registerToken`. Aucune fonctionnalité active ne dépend de ce store aujourd'hui.
+ * Service push (FCM HTTP v1). S'active quand `FCM_SERVICE_ACCOUNT` (JSON du compte de service
+ * Firebase) est présent dans l'environnement ; sinon on journalise sans envoyer (dév/local).
+ * Les device tokens sont PERSISTÉS en base (table `push_token`) — survit aux redéploiements.
  */
 @Injectable()
 export class PushService {
   private readonly logger = new Logger(PushService.name);
-  private readonly tokens = new Map<string, Set<string>>();
+  private jwtClient: JWT | null = null;
+  private serviceAccount: ServiceAccount | null = null;
 
-  /** Le push est-il réellement activé (clé Firebase présente) ? */
+  constructor(private readonly prisma: PrismaService) {}
+
+  /** Le push est-il réellement activé (compte de service Firebase fourni) ? */
   get enabled(): boolean {
-    return Boolean(process.env.FCM_SERVER_KEY);
+    return Boolean(process.env.FCM_SERVICE_ACCOUNT);
   }
 
-  /** Enregistre un device token pour un utilisateur (idempotent). */
-  registerToken(userId: string, token: string): void {
+  /** Charge (paresseusement, une fois) le compte de service + le client OAuth2. */
+  private auth(): { client: JWT; projectId: string } | null {
+    if (!this.enabled) return null;
+    if (!this.jwtClient || !this.serviceAccount) {
+      try {
+        const sa = JSON.parse(process.env.FCM_SERVICE_ACCOUNT as string) as ServiceAccount;
+        this.serviceAccount = sa;
+        this.jwtClient = new JWT({
+          email: sa.client_email,
+          key: sa.private_key,
+          scopes: ["https://www.googleapis.com/auth/firebase.messaging"],
+        });
+      } catch (e) {
+        this.logger.error(`FCM_SERVICE_ACCOUNT invalide : ${e}`);
+        return null;
+      }
+    }
+    return { client: this.jwtClient, projectId: this.serviceAccount.project_id };
+  }
+
+  /** Enregistre un device token (idempotent) : 1 token = 1 appareil, ré-affecté au bon user. */
+  async registerToken(userId: string, token: string, platform = "android"): Promise<void> {
     if (!token) return;
-    const set = this.tokens.get(userId) ?? new Set<string>();
-    set.add(token);
-    this.tokens.set(userId, set);
+    await this.prisma.pushToken.upsert({
+      where: { token },
+      create: { userId, token, platform },
+      update: { userId, platform },
+    });
   }
 
-  removeToken(userId: string, token: string): void {
-    this.tokens.get(userId)?.delete(token);
+  async removeToken(userId: string, token: string): Promise<void> {
+    await this.prisma.pushToken.deleteMany({ where: { userId, token } });
   }
 
-  /** Envoie une notification à tous les devices d'un utilisateur. No-op (journalisé) si inactif. */
+  /** Envoie une notification à tous les appareils d'un utilisateur. No-op (journalisé) si inactif. */
   async sendToUser(userId: string, msg: PushMessage): Promise<void> {
     if (!this.enabled) {
       this.logger.debug(`[push inactif] → ${userId} : ${msg.title} — ${msg.body}`);
       return;
     }
-    const tokens = [...(this.tokens.get(userId) ?? [])];
-    if (tokens.length === 0) return;
-    await Promise.all(tokens.map((t) => this.sendToToken(t, msg).catch((e) => this.logger.warn(`push KO: ${e}`))));
+    const rows = await this.prisma.pushToken.findMany({ where: { userId }, select: { token: true } });
+    await Promise.all(rows.map((r) => this.sendToToken(r.token, msg).catch((e) => this.logger.warn(`push KO: ${e}`))));
   }
 
-  /** Appel FCM (HTTP legacy). Exécuté uniquement quand `enabled`. */
+  /** Appel FCM HTTP v1 (OAuth2). Un token invalide (404/UNREGISTERED) est supprimé de la base. */
   private async sendToToken(token: string, msg: PushMessage): Promise<void> {
-    const res = await fetch("https://fcm.googleapis.com/fcm/send", {
+    const a = this.auth();
+    if (!a) return;
+    const accessToken = (await a.client.getAccessToken()).token;
+    const res = await fetch(`https://fcm.googleapis.com/v1/projects/${a.projectId}/messages:send`, {
       method: "POST",
-      headers: {
-        Authorization: `key=${process.env.FCM_SERVER_KEY}`,
-        "Content-Type": "application/json",
-      },
+      headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        to: token,
-        notification: { title: msg.title, body: msg.body },
-        data: msg.data ?? {},
+        message: {
+          token,
+          notification: { title: msg.title, body: msg.body },
+          data: msg.data ?? {},
+        },
       }),
     });
-    if (!res.ok) this.logger.warn(`FCM ${res.status} pour token ${token.slice(0, 8)}…`);
+    if (!res.ok) {
+      this.logger.warn(`FCM ${res.status} pour token ${token.slice(0, 8)}…`);
+      // Token périmé / désinstallé → on le purge pour ne pas réessayer indéfiniment.
+      if (res.status === 404 || res.status === 400) {
+        await this.prisma.pushToken.deleteMany({ where: { token } }).catch(() => undefined);
+      }
+    }
   }
 
   // --- Déclencheurs amicaux (copie FR verrouillée, ton bienveillant) ---
@@ -108,6 +141,15 @@ export class PushService {
       title: "Ta semaine en bref",
       body: `+${deltaIndex} pts d'Index, ${sessions} séance${sessions > 1 ? "s" : ""}. Belle semaine. 📈`,
       data: { type: "weekly-recap" },
+    });
+  }
+
+  /** Nouveau message privé reçu. `senderName` = pseudo de l'expéditeur. */
+  notifyNewMessage(userId: string, senderName: string): Promise<void> {
+    return this.sendToUser(userId, {
+      title: `Message de ${senderName}`,
+      body: "Ouvre la conversation pour répondre.",
+      data: { type: "new-message" },
     });
   }
 }

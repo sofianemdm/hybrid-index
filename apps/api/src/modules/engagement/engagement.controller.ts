@@ -36,11 +36,11 @@ export class EngagementController {
   /** Enregistre le device token push (FCM). « Prêt mais inactif » : stocké, envoyé seulement
    *  quand FCM_SERVER_KEY est configuré. */
   @Post("push-token")
-  registerPushToken(
+  async registerPushToken(
     @CurrentUser() user: AuthenticatedUser,
     @Body(new ZodValidationPipe(RegisterPushTokenRequest)) body: z.infer<typeof RegisterPushTokenRequest>,
-  ): { enabled: boolean } {
-    this.push.registerToken(user.userId, body.token);
+  ): Promise<{ enabled: boolean }> {
+    await this.push.registerToken(user.userId, body.token);
     return { enabled: this.push.enabled };
   }
 
