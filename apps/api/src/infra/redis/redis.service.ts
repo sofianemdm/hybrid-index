@@ -11,6 +11,10 @@ export class RedisService implements OnModuleDestroy {
   private readonly logger = new Logger(RedisService.name);
   private readonly client: Redis;
   private available = true;
+  // Sexes dont une écriture Redis (setIndex/remove) a ÉCHOUÉ → le sorted set est potentiellement
+  // périmé À CARDINAL INCHANGÉ (ensureSynced ne le détecterait pas). Flag en mémoire (process-local,
+  // survit à un hoquet Redis transitoire) → force une reconstruction à la prochaine lecture (BUG-010).
+  private readonly dirtySex = new Set<string>();
 
   constructor() {
     this.client = new Redis(process.env.REDIS_URL ?? "redis://localhost:6379", {
@@ -39,8 +43,15 @@ export class RedisService implements OnModuleDestroy {
     try {
       await this.client.zadd(this.key(sex), value, userId);
     } catch {
-      // ignore — Postgres reste la source de vérité.
+      // Échec → la valeur en cache est périmée mais le cardinal n'a pas bougé : on marque le sexe
+      // « dirty » pour forcer une reconstruction depuis Postgres à la prochaine lecture.
+      this.dirtySex.add(sex);
     }
+  }
+
+  /** Le classement de ce sexe a-t-il une écriture ratée en attente ? Consomme le flag (true une fois). */
+  consumeDirty(sex: string): boolean {
+    return this.dirtySex.delete(sex);
   }
 
   /** Retire un utilisateur du classement de son sexe (suppression de compte). */
@@ -48,7 +59,7 @@ export class RedisService implements OnModuleDestroy {
     try {
       await this.client.zrem(this.key(sex), userId);
     } catch {
-      // ignore — Postgres reste la source de vérité.
+      this.dirtySex.add(sex);
     }
   }
 

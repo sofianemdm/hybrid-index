@@ -123,6 +123,14 @@ export class LeaderboardService {
    *  flush Redis, comptes supprimés…). Postgres = source de vérité ; Redis = cache de tri rapide
    *  (décision verrouillée). Throttlé à 1×/min/sexe ; une fois synchro, plus de reconstruction. */
   private async ensureSynced(sex: string): Promise<void> {
+    // Une écriture Redis ratée (setIndex/remove) a marqué le sexe « dirty » → reconstruction
+    // IMMÉDIATE depuis Postgres, sans attendre le throttle ni un écart de cardinal (BUG-010 : un
+    // score périmé à cardinal inchangé n'était jamais réparé).
+    if (this.redis.consumeDirty(sex)) {
+      await this.redis.rebuild(sex, await this.pgAll(sex));
+      this.lastSyncAt.set(sex, Date.now());
+      return;
+    }
     const now = Date.now();
     if (now - (this.lastSyncAt.get(sex) ?? 0) < 60_000) return;
     const [rCount, pgCount] = await Promise.all([this.redis.total(sex), this.pgCount(sex)]);
