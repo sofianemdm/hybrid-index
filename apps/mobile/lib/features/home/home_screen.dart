@@ -14,6 +14,7 @@ import '../../widgets/hi_card.dart';
 import '../../widgets/hi_skeleton.dart';
 import '../../widgets/index_ring.dart';
 import '../../widgets/radar_view.dart';
+import '../../widgets/radar_insight.dart';
 import '../../widgets/social_proof_card.dart';
 import '../../widgets/streak_chip.dart';
 import 'grade_block.dart';
@@ -201,6 +202,8 @@ class HomeScreen extends ConsumerWidget {
                   MaterialPageRoute(builder: (_) => CoachScreen(initialAttribute: attr)),
                 ),
               ),
+              const SizedBox(height: HiSpace.md),
+              RadarInsight(radar: p.radar),
             ],
           ),
         ),
