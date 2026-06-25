@@ -7,8 +7,8 @@ import '../../data/session.dart';
 import '../../theme/haptics.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/hi_skeleton.dart';
-import '../log/log_wod_screen.dart';
 import '../profile/public_profile_screen.dart';
+import '../wods/wod_detail_screen.dart';
 
 /// Mode LIGUE — compétition mensuelle opt-in, SÉPARÉE de l'Index.
 /// Signature visuelle violette (`brandSecondary`) pour ne jamais confondre avec l'Index (cyan).
@@ -65,11 +65,12 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
     }
   }
 
-  Future<void> _openLog() async {
-    final changed = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(builder: (_) => const LogWodScreen()),
+  /// Ouvre DIRECTEMENT le WOD imposé de la semaine (pas un sélecteur générique).
+  Future<void> _doWeekWod(LeagueWeekInfo week) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => WodDetailScreen(wodId: week.wodId, wodName: week.wodName)),
     );
-    if (changed == true) setState(_load);
+    if (mounted) setState(_load); // rafraîchit le classement au retour
   }
 
   @override
@@ -205,7 +206,7 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
               ),
               icon: const Icon(Icons.play_arrow_rounded),
               label: const Text('Faire ce WOD'),
-              onPressed: _openLog,
+              onPressed: () => _doWeekWod(week),
             ),
           ),
         ],
