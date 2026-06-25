@@ -154,4 +154,28 @@ describe("api — mode Ligue (e2e réel)", () => {
     expect(res.body.currentWeek?.wodId).toBe(IMPOSED_WOD);
     expect(res.body.enrolled).toBe(true);
   });
+
+  it("relog d'un même résultat devenu suspect (pending_review) : retiré du classement Ligue (B2)", async () => {
+    const key = `e2e_league_relog_${stamp}`;
+    // 1) Log honnête du WOD imposé (clé idempotente) → ligne de points créée.
+    await request(api.getHttpServer())
+      .post("/v1/results")
+      .set("authorization", `Bearer ${token}`)
+      .send({ wodId: IMPOSED_WOD, scoreType: "time", rawResult: 360, idempotencyKey: key })
+      .expect(201);
+    const wr = await prisma.wodResult.findFirst({ where: { userId, idempotencyKey: key } });
+    expect(wr).toBeTruthy();
+    expect(await prisma.leaguePoints.count({ where: { wodResultId: wr!.id } })).toBe(1);
+
+    // 2) Relog MÊME clé avec un temps quasi-champion (saut > +30 %) → le résultat passe en
+    //    pending_review (anti-triche) ; la ligne de points Ligue doit DISPARAÎTRE.
+    await request(api.getHttpServer())
+      .post("/v1/results")
+      .set("authorization", `Bearer ${token}`)
+      .send({ wodId: IMPOSED_WOD, scoreType: "time", rawResult: 120, idempotencyKey: key })
+      .expect(201);
+    const wr2 = await prisma.wodResult.findFirst({ where: { userId, idempotencyKey: key } });
+    expect(wr2!.review).toBe("pending_review");
+    expect(await prisma.leaguePoints.count({ where: { wodResultId: wr!.id } })).toBe(0);
+  });
 });

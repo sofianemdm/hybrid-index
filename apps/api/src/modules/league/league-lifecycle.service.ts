@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { PrismaService } from "../../infra/prisma/prisma.service";
-import { isoWeekKey, weekStart } from "../engagement/iso-week";
-import { addDaysUTC, monthBounds, monthKeyOf, pickMonthlyWods } from "./league.rotation";
+import { isoWeekKey } from "../engagement/iso-week";
+import { addDaysUTC, isoWeeksOfMonth, monthBounds, monthKeyOf, pickMonthlyWods } from "./league.rotation";
 import { totalsBestPerWeek, rankTotals } from "./league.aggregate";
 
 /**
@@ -30,9 +30,10 @@ export class LeagueLifecycleService {
       // Garde-fou : WODs non seedés ⇒ on ne crée pas une saison cassée (cf. seed obligatoire en prod).
       throw new Error("Aucun WOD sans matériel en base — seed manquant ?");
     }
-    const wodIds = pickMonthlyWods(pool, monthKey, 4);
     const { opensAt, closesAt } = monthBounds(monthKey);
-    const firstMonday = weekStart(opensAt);
+    // Une semaine imposée par SEMAINE ISO du mois (4 à 6) → aucun jour du mois sans WOD imposé.
+    const weekStarts = isoWeeksOfMonth(monthKey);
+    const wodIds = pickMonthlyWods(pool, monthKey, weekStarts.length);
 
     const season = await this.prisma.leagueSeason.create({
       data: {
@@ -42,21 +43,18 @@ export class LeagueLifecycleService {
         opensAt,
         closesAt,
         weeks: {
-          create: wodIds.map((wodId, i) => {
-            const wkStart = addDaysUTC(firstMonday, i * 7);
-            return {
-              weekIndex: i + 1,
-              weekKey: isoWeekKey(wkStart),
-              wodId,
-              filiere: "bodyweight" as const,
-              opensAt: wkStart,
-              closesAt: addDaysUTC(wkStart, 7),
-            };
-          }),
+          create: weekStarts.map((wkStart, i) => ({
+            weekIndex: i + 1,
+            weekKey: isoWeekKey(wkStart),
+            wodId: wodIds[i % wodIds.length],
+            filiere: "bodyweight" as const,
+            opensAt: wkStart,
+            closesAt: addDaysUTC(wkStart, 7),
+          })),
         },
       },
     });
-    this.logger.log(`Saison de Ligue ouverte (${monthKey}) — WODs : ${wodIds.join(", ")}`);
+    this.logger.log(`Saison de Ligue ouverte (${monthKey}) — ${weekStarts.length} semaines, WODs : ${wodIds.join(", ")}`);
     return { id: season.id, monthKey };
   }
 

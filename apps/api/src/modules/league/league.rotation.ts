@@ -1,3 +1,5 @@
+import { weekStart } from "../engagement/iso-week";
+
 /**
  * Sélection DÉTERMINISTE des WODs imposés d'un mois + bornes temporelles d'une saison.
  *
@@ -44,5 +46,21 @@ export function pickMonthlyWods(pool: string[], monthKey: string, count = 4): st
   const start = (monthIndexFromKey(monthKey) * n) % pool.length;
   const out: string[] = [];
   for (let i = 0; i < n; i++) out.push(pool[(start + i) % pool.length]);
+  return out;
+}
+
+/**
+ * Lundis (UTC) de TOUTES les semaines ISO qui chevauchent le mois — pas seulement 4.
+ * Garantit qu'aucun jour du mois ne tombe dans une semaine sans WOD imposé (corrige le trou de la
+ * dernière semaine civile quand le 1er ne tombe pas un lundi).
+ */
+export function isoWeeksOfMonth(monthKey: string): Date[] {
+  const { opensAt, closesAt } = monthBounds(monthKey);
+  const out: Date[] = [];
+  let cur = weekStart(opensAt); // lundi de la semaine ISO contenant le 1er
+  while (cur < closesAt) {
+    out.push(cur);
+    cur = addDaysUTC(cur, 7);
+  }
   return out;
 }

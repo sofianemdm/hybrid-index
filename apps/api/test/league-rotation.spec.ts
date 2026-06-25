@@ -4,6 +4,7 @@ import {
   monthBounds,
   addDaysUTC,
   pickMonthlyWods,
+  isoWeeksOfMonth,
 } from "../src/modules/league/league.rotation";
 
 describe("league.rotation — sélection déterministe des WODs du mois", () => {
@@ -51,5 +52,35 @@ describe("league.rotation — sélection déterministe des WODs du mois", () => 
 
   it("pool vide ⇒ aucun WOD", () => {
     expect(pickMonthlyWods([], "2026-07")).toEqual([]);
+  });
+});
+
+describe("isoWeeksOfMonth — couvre TOUTES les semaines ISO du mois (corrige B1)", () => {
+  const covers = (weeks: Date[], d: Date) => weeks.some((w) => w <= d && d < addDaysUTC(w, 7));
+
+  // 2026-08 : le 1er est un samedi ⇒ le mois chevauche 6 semaines ISO (cas qui révélait le trou).
+  it("août 2026 (1er = samedi) : aucun jour du mois sans semaine imposée", () => {
+    const weeks = isoWeeksOfMonth("2026-08");
+    const { opensAt, closesAt } = monthBounds("2026-08");
+    const lastDay = new Date(closesAt.getTime() - 1);
+    expect(weeks.length).toBeGreaterThanOrEqual(5); // > 4 : c'est tout l'intérêt du correctif
+    expect(covers(weeks, opensAt)).toBe(true); // 1er du mois couvert
+    expect(covers(weeks, lastDay)).toBe(true); // dernier jour du mois couvert
+  });
+
+  it("toutes les semaines débutent un lundi (UTC) et sont consécutives (+7 j)", () => {
+    const weeks = isoWeeksOfMonth("2026-08");
+    expect(weeks.every((w) => w.getUTCDay() === 1)).toBe(true);
+    for (let i = 1; i < weeks.length; i++) {
+      expect(weeks[i].getTime() - weeks[i - 1].getTime()).toBe(7 * 86_400_000);
+    }
+  });
+
+  it("février 2026 : chaque jour du mois est couvert par une semaine", () => {
+    const weeks = isoWeeksOfMonth("2026-02");
+    const { opensAt, closesAt } = monthBounds("2026-02");
+    for (let d = new Date(opensAt); d < closesAt; d = addDaysUTC(d, 1)) {
+      expect(covers(weeks, d)).toBe(true);
+    }
   });
 });

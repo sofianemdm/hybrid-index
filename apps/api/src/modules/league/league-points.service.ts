@@ -28,8 +28,13 @@ export class LeaguePointsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async awardForResult(userId: string, sex: "male" | "female", input: LeagueAwardInput): Promise<void> {
-    if (input.subScore == null) return; // effort invalide / hors bornes
-    if (input.review !== "ok") return; // suspect → exclu (même garde-fou que l'Index)
+    // Effort invalide (hors bornes) ou suspect (anti-triche) : exclu de la Ligue — MÊME garde-fou que
+    // l'Index. Et si une ligne existait déjà (relog d'un même résultat passé en `pending_review`), on
+    // la retire du classement pour rester cohérent avec l'Index (sinon un tricheur resterait classé).
+    if (input.subScore == null || input.review !== "ok") {
+      await this.prisma.leaguePoints.deleteMany({ where: { wodResultId: input.wodResultId } });
+      return;
+    }
 
     const performedAt = input.performedAt;
     const season = await this.prisma.leagueSeason.findFirst({
@@ -68,7 +73,18 @@ export class LeaguePointsService {
         subScore: input.subScore,
         review: "ok",
       },
-      update: { points, subScore: input.subScore },
+      // Rafraîchit aussi semaine/saison : au relog, `performedAt` est ré-horodaté côté serveur, donc la
+      // semaine peut changer (M1). On garde la ligne cohérente avec le résultat courant.
+      update: {
+        seasonId: season.id,
+        weekId: week.id,
+        sex,
+        filiere: entry.filiere,
+        level: entry.level,
+        points,
+        subScore: input.subScore,
+        review: "ok",
+      },
     });
     this.logger.debug(`Points Ligue : user=${userId} +${points} (WOD ${input.wodId}, ${weekKey}).`);
   }
