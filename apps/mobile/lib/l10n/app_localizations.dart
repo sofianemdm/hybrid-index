@@ -674,6 +674,24 @@ abstract class AppLocalizations {
   /// **'Be the first to post a result 💪'**
   String get wodDetailLeaderboardEmpty;
 
+  /// No description provided for @wodDetailVariantRx.
+  ///
+  /// In en, this message translates to:
+  /// **'Rx'**
+  String get wodDetailVariantRx;
+
+  /// No description provided for @wodDetailVariantScaled.
+  ///
+  /// In en, this message translates to:
+  /// **'Scaled'**
+  String get wodDetailVariantScaled;
+
+  /// No description provided for @wodDetailYouShort.
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get wodDetailYouShort;
+
   /// No description provided for @wodDetailLeaderboardYou.
   ///
   /// In en, this message translates to:

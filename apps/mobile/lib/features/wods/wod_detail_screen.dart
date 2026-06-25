@@ -27,8 +27,9 @@ class WodDetailScreen extends ConsumerStatefulWidget {
 class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
   late String _sex;
   late Future<WodDetail> _detail;
-  late Future<List<WodLeaderboardEntry>> _leaderboard;
+  late Future<WodLeaderboard> _leaderboard;
   bool _clubScope = false;
+  String _variant = 'rx'; // 'rx' (Rx) ou 'scaled' (allégé) — classements séparés
 
   @override
   void initState() {
@@ -43,6 +44,7 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
     _leaderboard = ref.read(apiClientProvider).wodLeaderboard(
       widget.wodId,
       _sex,
+      variant: _variant,
       clubId: _clubScope ? widget.clubId : null,
     );
   }
@@ -467,47 +469,79 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
   }
 
   Widget _leaderboardSection(String scoreType) {
-    return FutureBuilder<List<WodLeaderboardEntry>>(
-      future: _leaderboard,
-      builder: (context, snap) {
-        if (snap.connectionState == ConnectionState.waiting) {
-          return Padding(padding: const EdgeInsets.all(24), child: Center(child: CircularProgressIndicator(color: HiColors.brandPrimary)));
-        }
-        if (snap.hasError) return Text('${snap.error}', style: HiType.body.copyWith(color: HiColors.error));
-        final entries = snap.data!;
-        if (entries.isEmpty) {
-          return Text(AppLocalizations.of(context).wodDetailLeaderboardEmpty, style: HiType.body.copyWith(color: HiColors.textTertiary));
-        }
-        return Column(
-          children: entries.map((e) {
-            return Container(
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-              color: e.isMe ? HiColors.brandPrimary.withValues(alpha: 0.12) : Colors.transparent,
-              child: Row(
-                children: [
-                  SizedBox(
-                    width: 32,
-                    child: Text('#${e.position}',
-                        style: HiType.body.copyWith(
-                            color: e.position <= 3 ? HiColors.brandPrimary : HiColors.textTertiary,
-                            fontWeight: FontWeight.w700)),
-                  ),
-                  Expanded(
-                    child: Text(e.isMe ? AppLocalizations.of(context).wodDetailLeaderboardYou(e.displayName) : e.displayName,
-                        overflow: TextOverflow.ellipsis,
-                        style: HiType.body.copyWith(
-                            color: HiColors.textPrimary, fontWeight: e.isMe ? FontWeight.w800 : FontWeight.w500)),
-                  ),
-                  RankBadge(rank: e.rank, ovr: e.index, fontSize: 10),
-                  const SizedBox(width: HiSpace.sm),
-                  Text(formatWodResult(e.rawResult, scoreType, wodId: widget.wodId),
-                      style: HiType.body.copyWith(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
+    final t = AppLocalizations.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Sélecteur Rx / Scaled (classements séparés, UX-07) — recharge le classement à la bascule.
+        Padding(
+          padding: const EdgeInsets.only(bottom: HiSpace.sm),
+          child: SegmentedButton<String>(
+            segments: [
+              ButtonSegment(value: 'rx', label: Text(t.wodDetailVariantRx)),
+              ButtonSegment(value: 'scaled', label: Text(t.wodDetailVariantScaled)),
+            ],
+            selected: {_variant},
+            showSelectedIcon: false,
+            onSelectionChanged: (s) => setState(() {
+              _variant = s.first;
+              _loadLeaderboard();
+            }),
+          ),
+        ),
+        FutureBuilder<WodLeaderboard>(
+          future: _leaderboard,
+          builder: (context, snap) {
+            if (snap.connectionState == ConnectionState.waiting) {
+              return Padding(padding: const EdgeInsets.all(24), child: Center(child: CircularProgressIndicator(color: HiColors.brandPrimary)));
+            }
+            if (snap.hasError) return Text('${snap.error}', style: HiType.body.copyWith(color: HiColors.error));
+            final lb = snap.data!;
+            if (lb.entries.isEmpty) {
+              return Text(t.wodDetailLeaderboardEmpty, style: HiType.body.copyWith(color: HiColors.textTertiary));
+            }
+            return Column(
+              children: [
+                ...lb.entries.map((e) => _lbRow(e.position, e.displayName, e.rank, e.index, e.rawResult, scoreType, e.isMe)),
+                // « Toi #N » épinglé quand je suis hors du top affiché (UX-06).
+                if (lb.me != null && !lb.meInEntries) ...[
+                  Divider(color: HiColors.strokeSubtle),
+                  _lbRow(lb.me!.position, t.wodDetailYouShort, 'rookie', null, lb.me!.rawResult, scoreType, true),
                 ],
-              ),
+              ],
             );
-          }).toList(),
-        );
-      },
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _lbRow(int position, String name, String rank, int? index, num rawResult, String scoreType, bool isMe) {
+    final t = AppLocalizations.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+      color: isMe ? HiColors.brandPrimary.withValues(alpha: 0.12) : Colors.transparent,
+      child: Row(
+        children: [
+          SizedBox(
+            width: 32,
+            child: Text('#$position',
+                style: HiType.body.copyWith(
+                    color: position <= 3 ? HiColors.brandPrimary : HiColors.textTertiary, fontWeight: FontWeight.w700)),
+          ),
+          Expanded(
+            child: Text(isMe ? t.wodDetailLeaderboardYou(name) : name,
+                overflow: TextOverflow.ellipsis,
+                style: HiType.body.copyWith(color: HiColors.textPrimary, fontWeight: isMe ? FontWeight.w800 : FontWeight.w500)),
+          ),
+          if (index != null) ...[
+            RankBadge(rank: rank, ovr: index, fontSize: 10),
+            const SizedBox(width: HiSpace.sm),
+          ],
+          Text(formatWodResult(rawResult, scoreType, wodId: widget.wodId),
+              style: HiType.body.copyWith(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
+        ],
+      ),
     );
   }
 }

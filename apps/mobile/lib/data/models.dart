@@ -1376,6 +1376,26 @@ class WodLeaderboardEntry {
       );
 }
 
+/// Classement d'un WOD : top N + « ma position » (même hors top 100, UX-05/06).
+class WodLeaderboard {
+  final List<WodLeaderboardEntry> entries;
+  final ({int position, num rawResult, int? subScore})? me;
+  const WodLeaderboard({required this.entries, this.me});
+
+  factory WodLeaderboard.fromJson(Map<String, dynamic> j) {
+    final m = j['me'] as Map<String, dynamic>?;
+    return WodLeaderboard(
+      entries: ((j['entries'] as List?) ?? []).map((e) => WodLeaderboardEntry.fromJson(e as Map<String, dynamic>)).toList(),
+      me: m == null
+          ? null
+          : (position: (m['position'] as num).toInt(), rawResult: m['rawResult'] as num, subScore: (m['subScore'] as num?)?.toInt()),
+    );
+  }
+
+  /// Vrai si je suis déjà visible dans le top affiché (inutile d'épingler).
+  bool get meInEntries => entries.any((e) => e.isMe);
+}
+
 /// WOD du catalogue (sous-ensemble utile au log).
 class WodCatalogItem {
   final String id;

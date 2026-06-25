@@ -342,10 +342,10 @@ class ApiClient {
     return WodDetail.fromJson(j);
   }
 
-  Future<List<WodLeaderboardEntry>> wodLeaderboard(String id, String sex, {String variant = 'rx', String? clubId}) async {
+  Future<WodLeaderboard> wodLeaderboard(String id, String sex, {String variant = 'rx', String? clubId}) async {
     final q = clubId != null ? '&clubId=$clubId' : '';
     final j = await _send('GET', '/v1/wods/$id/leaderboard?sex=$sex&variant=$variant$q') as Map<String, dynamic>;
-    return ((j['entries'] as List?) ?? []).map((e) => WodLeaderboardEntry.fromJson(e as Map<String, dynamic>)).toList();
+    return WodLeaderboard.fromJson(j);
   }
 
   // --- Défi de la semaine ---

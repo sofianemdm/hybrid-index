@@ -320,6 +320,15 @@ class AppLocalizationsFr extends AppLocalizations {
       'Sois le premier à poster un résultat 💪';
 
   @override
+  String get wodDetailVariantRx => 'Rx';
+
+  @override
+  String get wodDetailVariantScaled => 'Allégé';
+
+  @override
+  String get wodDetailYouShort => 'Toi';
+
+  @override
   String wodDetailLeaderboardYou(String name) {
     return '$name (toi)';
   }

@@ -318,6 +318,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get wodDetailLeaderboardEmpty => 'Be the first to post a result 💪';
 
   @override
+  String get wodDetailVariantRx => 'Rx';
+
+  @override
+  String get wodDetailVariantScaled => 'Scaled';
+
+  @override
+  String get wodDetailYouShort => 'You';
+
+  @override
   String wodDetailLeaderboardYou(String name) {
     return '$name (you)';
   }

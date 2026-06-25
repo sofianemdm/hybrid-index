@@ -123,6 +123,9 @@
   "wodDetailElite": "⭐ Elite",
   "wodDetailMyPerformances": "My performances",
   "wodDetailLeaderboardEmpty": "Be the first to post a result 💪",
+  "wodDetailVariantRx": "Rx",
+  "wodDetailVariantScaled": "Scaled",
+  "wodDetailYouShort": "You",
   "wodDetailLeaderboardYou": "{name} (you)",
   "@wodDetailLeaderboardYou": {
     "placeholders": {
