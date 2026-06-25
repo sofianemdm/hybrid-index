@@ -208,103 +208,10 @@ async function main(): Promise<void> {
     await redis.zrem("leaderboard:female", u.id).catch(() => undefined);
   }
   await prisma.user.deleteMany({ where: { email: { startsWith: "seed_" } } });
-  const sexes: Sex[] = ["male", "female"];
   let created = 0;
-  for (const sex of sexes) {
-    for (let i = 0; i < 10; i++) {
-      const email = `seed_${sex}_${i}@hybrid.local`;
-      const displayName = displayNameFor(i, sex);
-      const goal = GOALS[i % GOALS.length];
-      const value = sampleIndex();
-      const percentile = Math.min(0.9999, Math.max(0.0001, value / 1000));
-      // value est interne /1000 ; le rang se calcule sur la note d'affichage /100.
-      const rank = rankFromIndex(Math.round(ratingFromInternal(value)));
 
-      const user = await prisma.user.upsert({
-        where: { email },
-        create: {
-          email,
-          dateOfBirth: new Date(`${rand(1985, 2007)}-0${rand(1, 9)}-1${rand(0, 8)}`),
-          ageVerified: true,
-          consents: { seed: true },
-          profile: { create: { displayName, sex, goal, equipmentPref: "both", rank } },
-        },
-        update: { profile: { update: { rank } } },
-      });
-
-      await prisma.hybridIndex.upsert({
-        where: { userId: user.id },
-        create: {
-          userId: user.id,
-          value,
-          percentile,
-          isProvisional: false,
-          isEstimated: false,
-          radarCoverage: 6, // les seeds ont leurs 6 attributs débloqués → couverture pleine (pas d'ajustement)
-          confidenceLevel: "medium",
-          scoringVersionId: SCORING_VERSION_UUID,
-        },
-        update: { value, percentile, scoringVersionId: SCORING_VERSION_UUID },
-      });
-
-      for (const attribute of ATTRS) {
-        const score = Math.min(1000, Math.max(0, value + rand(-120, 120)));
-        await prisma.attributeScore.upsert({
-          where: { userId_attribute: { userId: user.id, attribute } },
-          create: {
-            userId: user.id,
-            attribute,
-            score,
-            percentile: Math.min(0.9999, score / 1000),
-            unlocked: true,
-            isEstimated: false,
-            isStale: false,
-            scoringVersionId: SCORING_VERSION_UUID,
-          },
-          update: { score, scoringVersionId: SCORING_VERSION_UUID },
-        });
-      }
-
-      // Séances historiques figées : peuplent les classements par séance ; performedAt dans le passé
-      // (14-200 j) → exclues du classement de progression hebdo. Sous-ensemble aléatoire, perfs
-      // corrélées à l'Index de l'athlète, rendu réaliste pour chaque séance.
-      const seedableWodIds = Object.keys(SEED_PERF);
-      const picked = new Set<string>();
-      const nbSessions = rand(4, 9);
-      while (picked.size < nbSessions) {
-        picked.add(seedableWodIds[rand(0, seedableWodIds.length - 1)]);
-      }
-      const wodResults = [...picked].map((wodId) => {
-        const perf = SEED_PERF[wodId];
-        const meta = WODS.find((w) => w.id === wodId)!;
-        const sub = Math.min(999, Math.max(50, value + rand(-110, 110)));
-        const frac = sub / 1000;
-        const [elite, beg] = sex === "male" ? perf.m : perf.f;
-        const raw = Math.max(1, Math.round(beg + (elite - beg) * frac + rand(-3, 3)));
-        return {
-          userId: user.id,
-          wodId,
-          sex,
-          rawResult: raw,
-          subScore: sub,
-          percentile: Math.min(0.9999, Math.max(0.0001, frac)),
-          attributesAffected: meta.targetAttributes as AttributeKey[],
-          rxCompliant: true,
-          scoringVersionId: SCORING_VERSION_UUID,
-          idempotencyKey: `seed_${wodId}`,
-          performedAt: new Date(Date.now() - rand(14, 200) * 86400000),
-        };
-      });
-      await prisma.wodResult.createMany({ data: wodResults, skipDuplicates: true });
-
-      if (redisOk) {
-        await redis.zadd(`leaderboard:${sex}`, value, user.id).catch(() => {
-          redisOk = false;
-        });
-      }
-      created++;
-    }
-  }
+  // Faux athlètes « battables » du classement RETIRÉS (app 100% réelle, décision 25/06).
+  // Seules les « Références Pro » ci-dessous subsistent, et UNIQUEMENT dans le feed (hors classement).
 
   // --- Athlètes d'élite (personas fictifs, perfs réalistes, posts publics qui animent le feed) ---
   console.log("Seed: athlètes d'élite (personas fictifs)…");
