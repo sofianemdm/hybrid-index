@@ -11,7 +11,8 @@ contredit jamais ses "Décisions verrouillées". Si une décision pose problème
 à l'humain — on ne la modifie pas unilatéralement.
 
 ## Décisions verrouillées (ne JAMAIS contourner)
-- Nom de l'app ET du score : HYBRID INDEX ; score normalisé PAR SEXE uniquement.
+- Nom de l'APP : « Athlete League » ; nom du SCORE : « Athlete Index » (renommage validé par
+  l'humain le 25 juin 2026, ex-« HYBRID INDEX »). Score normalisé PAR SEXE uniquement.
 - iOS + Android, base de code unique ; 100 % gratuit pour l'instant ; données déclarées.
 - App 100 % utilisable sans matériel ni box ; question "avec/sans matériel".
 - ~3 entraînements suffisent pour un Index complet ; avatar créé en 30 s max.

@@ -50,7 +50,7 @@ class _ShareCardScreenState extends ConsumerState<ShareCardScreen> {
       if (bytes == null || !mounted) return;
       final shareText = AppLocalizations.of(context).shareCardShareText;
       await Share.shareXFiles(
-        [XFile.fromData(bytes, name: 'hybrid-index.png', mimeType: 'image/png')],
+        [XFile.fromData(bytes, name: 'athlete-index.png', mimeType: 'image/png')],
         text: shareText,
       );
       Analytics.capture('share_card_shared');
@@ -63,7 +63,7 @@ class _ShareCardScreenState extends ConsumerState<ShareCardScreen> {
     try {
       final bytes = await _capture();
       if (bytes == null || !mounted) return;
-      final ok = await downloadBytes(bytes, 'hybrid-index.png');
+      final ok = await downloadBytes(bytes, 'athlete-index.png');
       if (!mounted) return;
       final t = AppLocalizations.of(context);
       ScaffoldMessenger.of(context).showSnackBar(

@@ -104,7 +104,7 @@ class _Splash extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('HYBRID INDEX',
+            Text('ATHLETE LEAGUE',
                 style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, letterSpacing: 3, color: HiColors.textPrimary)),
             const SizedBox(height: 20),
             SizedBox(width: 28, height: 28, child: CircularProgressIndicator(color: HiColors.brandPrimary, strokeWidth: 2.5)),

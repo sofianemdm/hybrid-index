@@ -257,7 +257,7 @@ abstract class AppLocalizations {
   /// No description provided for @wreIndexClimbs.
   ///
   /// In en, this message translates to:
-  /// **'Your HYBRID INDEX is climbing.'**
+  /// **'Your Athlete Index is climbing.'**
   String get wreIndexClimbs;
 
   /// No description provided for @wreShareFeat.
@@ -425,7 +425,7 @@ abstract class AppLocalizations {
   /// No description provided for @onbRevealCta.
   ///
   /// In en, this message translates to:
-  /// **'Reveal my HYBRID INDEX'**
+  /// **'Reveal my Athlete Index'**
   String get onbRevealCta;
 
   /// No description provided for @onbRunTitle.
@@ -1067,7 +1067,7 @@ abstract class AppLocalizations {
   /// No description provided for @communityMsgMemberJoined.
   ///
   /// In en, this message translates to:
-  /// **'just joined us with a HYBRID INDEX of {index} 👋'**
+  /// **'just joined us with a Athlete Index of {index} 👋'**
   String communityMsgMemberJoined(String index);
 
   /// No description provided for @communityMsgPostPerf.
@@ -1451,7 +1451,7 @@ abstract class AppLocalizations {
   /// No description provided for @clubDetailRankingTitle.
   ///
   /// In en, this message translates to:
-  /// **'Club ranking (Hybrid Index)'**
+  /// **'Club ranking (Athlete Index)'**
   String get clubDetailRankingTitle;
 
   /// No description provided for @clubDetailLeaveButton.
@@ -2363,7 +2363,7 @@ abstract class AppLocalizations {
   /// No description provided for @revealYourIndex.
   ///
   /// In en, this message translates to:
-  /// **'YOUR HYBRID INDEX'**
+  /// **'YOUR ATHLETE INDEX'**
   String get revealYourIndex;
 
   /// No description provided for @revealDoProfilExpress.
@@ -2381,7 +2381,7 @@ abstract class AppLocalizations {
   /// No description provided for @revealEstimateBody.
   ///
   /// In en, this message translates to:
-  /// **'Your starting Index is based on {coverage}/6 attributes. Log a few more sessions to unlock all 6 and reveal your true HYBRID INDEX.'**
+  /// **'Your starting Index is based on {coverage}/6 attributes. Log a few more sessions to unlock all 6 and reveal your true Athlete Index.'**
   String revealEstimateBody(int coverage);
 
   /// No description provided for @revealRadar.
@@ -2417,7 +2417,7 @@ abstract class AppLocalizations {
   /// No description provided for @shareCardShareText.
   ///
   /// In en, this message translates to:
-  /// **'My HYBRID INDEX 💪 What\'s yours? #HybridIndex'**
+  /// **'My Athlete Index 💪 What\'s yours? #AthleteIndex'**
   String get shareCardShareText;
 
   /// No description provided for @shareCardDownloaded.

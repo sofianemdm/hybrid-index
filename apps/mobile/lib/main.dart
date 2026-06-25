@@ -81,7 +81,7 @@ class _HybridIndexAppState extends ConsumerState<HybridIndexApp> with WidgetsBin
     final themeMode = ref.watch(themeModeProvider);
     final locale = ref.watch(localeProvider);
     return MaterialApp(
-      title: 'HYBRID INDEX',
+      title: 'Athlete League',
       debugShowCheckedModeBanner: false,
       theme: buildHiTheme(Brightness.light),
       darkTheme: buildHiTheme(Brightness.dark),

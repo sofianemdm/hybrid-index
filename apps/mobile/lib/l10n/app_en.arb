@@ -32,7 +32,7 @@
   "wreSecondsRange": "Seconds must be between 0 and 59.",
   "wreInvalidResult": "Enter a valid result.",
   "wreNeedDistance": "Enter the distance covered (in meters).",
-  "wreIndexClimbs": "Your HYBRID INDEX is climbing.",
+  "wreIndexClimbs": "Your Athlete Index is climbing.",
   "wreShareFeat": "Share my achievement",
   "wreProgressTitle": "You're progressing 💪",
   "wreOutOfBounds": "Result outside plausible bounds.",
@@ -61,7 +61,7 @@
   "onbMaxPullups": "Max strict pull-ups (one set)",
   "onbSquat1rm": "Squat 1RM (max load, 1 rep)",
   "onbSquat1rmHint": "Your heaviest back squat for a single rep, in kilograms.",
-  "onbRevealCta": "Reveal my HYBRID INDEX",
+  "onbRevealCta": "Reveal my Athlete Index",
   "onbRunTitle": "Run (enter your distance)",
   "onbRunHint": "E.g. 3 km in 15:00. We compute your pace and adjust it to any distance.",
   "onbEstimatedIndexHere": "Your estimated Index will appear here.",
@@ -245,7 +245,7 @@
       }
     }
   },
-  "communityMsgMemberJoined": "just joined us with a HYBRID INDEX of {index} 👋",
+  "communityMsgMemberJoined": "just joined us with a Athlete Index of {index} 👋",
   "@communityMsgMemberJoined": {
     "placeholders": {
       "index": {
@@ -358,7 +358,7 @@
   "clubDetailJoin": "Join the club",
   "clubDetailProgression": "Progress",
   "clubDetailBySeance": "By session",
-  "clubDetailRankingTitle": "Club ranking (Hybrid Index)",
+  "clubDetailRankingTitle": "Club ranking (Athlete Index)",
   "clubDetailLeaveButton": "Leave the club",
   "clubDetailMembers": "{count, plural, one{{count} member} other{{count} members}}",
   "@clubDetailMembers": {
@@ -780,10 +780,10 @@
   "socialProofTopSuffix": " fittest humans",
   "socialProofAppPrefix": "Top ",
   "socialProofAppSuffix": " of HYBRID athletes",
-  "revealYourIndex": "YOUR HYBRID INDEX",
+  "revealYourIndex": "YOUR ATHLETE INDEX",
   "revealDoProfilExpress": "Do the Express Profile",
   "revealEstimateTitle": "This is an estimate",
-  "revealEstimateBody": "Your starting Index is based on {coverage}/6 attributes. Log a few more sessions to unlock all 6 and reveal your true HYBRID INDEX.",
+  "revealEstimateBody": "Your starting Index is based on {coverage}/6 attributes. Log a few more sessions to unlock all 6 and reveal your true Athlete Index.",
   "@revealEstimateBody": {
     "placeholders": {
       "coverage": { "type": "int" }
@@ -794,7 +794,7 @@
   "revealShareCard": "Share my card",
   "revealComputing": "Computing your Index…",
   "shareCardTitle": "My card",
-  "shareCardShareText": "My HYBRID INDEX 💪 What's yours? #HybridIndex",
+  "shareCardShareText": "My Athlete Index 💪 What's yours? #AthleteIndex",
   "shareCardDownloaded": "Card downloaded 📥",
   "shareCardDownloadUnsupported": "Download not supported here.",
   "shareCardNoIndex": "No Index to share.",

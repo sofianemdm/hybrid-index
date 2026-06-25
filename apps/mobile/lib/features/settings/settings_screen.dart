@@ -84,7 +84,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     try {
       final data = await ref.read(apiClientProvider).exportData();
       final bytes = Uint8List.fromList(utf8.encode(const JsonEncoder.withIndent('  ').convert(data)));
-      final ok = await downloadBytes(bytes, 'hybrid-index-donnees.json');
+      final ok = await downloadBytes(bytes, 'athlete-league-donnees.json');
       _toast(ok ? 'Données exportées 📥' : 'Export non supporté ici.');
     } catch (e) {
       _toast('$e');

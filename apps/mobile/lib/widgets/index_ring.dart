@@ -85,7 +85,7 @@ class _IndexRingState extends State<IndexRing> with SingleTickerProviderStateMix
                         color: HiColors.textPrimary,
                       ),
                     ),
-                    Text('HYBRID INDEX', style: HiType.overline.copyWith(color: HiColors.textSecondary)),
+                    Text('ATHLETE INDEX', style: HiType.overline.copyWith(color: HiColors.textSecondary)),
                     const SizedBox(height: 6),
                     Text('TOP $top %', style: HiType.numericM.copyWith(color: HiColors.brandPrimary, fontSize: 16)),
                   ],

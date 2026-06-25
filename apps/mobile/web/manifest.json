@@ -1,11 +1,11 @@
 {
-    "name": "HYBRID INDEX",
-    "short_name": "HYBRID INDEX",
+    "name": "Athlete League",
+    "short_name": "Athlete League",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0B0E14",
     "theme_color": "#0B0E14",
-    "description": "Ta condition physique hybride, resumee en un seul score comparable : le HYBRID INDEX. Radar d'attributs, classement, progression. Avec ou sans materiel.",
+    "description": "Ta condition physique hybride, resumee en un seul score comparable : l’Athlete Index. Radar d'attributs, classement, progression. Avec ou sans materiel.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

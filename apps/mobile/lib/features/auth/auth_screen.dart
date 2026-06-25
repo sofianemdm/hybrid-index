@@ -133,7 +133,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     ),
                   ),
                   const SizedBox(height: HiSpace.md),
-                  Text('HYBRID INDEX',
+                  Text('ATHLETE LEAGUE',
                       textAlign: TextAlign.center,
                       style: HiType.displayL.copyWith(fontSize: 36, color: HiColors.textPrimary, letterSpacing: 1)),
                   const SizedBox(height: 6),

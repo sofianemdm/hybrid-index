@@ -149,7 +149,7 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
               backgroundColor: HiColors.bgElevated,
               title: Text(AppLocalizations.of(context).wreProgressTitle, style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
               content: Column(mainAxisSize: MainAxisSize.min, children: [
-                Text('HYBRID INDEX', style: HiType.overline.copyWith(color: HiColors.textSecondary)),
+                Text('ATHLETE INDEX', style: HiType.overline.copyWith(color: HiColors.textSecondary)),
                 const SizedBox(height: 8),
                 Text('${profile.index.value}', style: HiType.displayL.copyWith(color: HiColors.brandPrimary)),
                 const SizedBox(height: 12),

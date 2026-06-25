@@ -90,7 +90,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get wreNeedDistance => 'Saisis la distance parcourue (en mètres).';
 
   @override
-  String get wreIndexClimbs => 'Ton HYBRID INDEX grimpe.';
+  String get wreIndexClimbs => 'Ton Athlete Index grimpe.';
 
   @override
   String get wreShareFeat => 'Partager mon exploit';
@@ -179,7 +179,7 @@ class AppLocalizationsFr extends AppLocalizations {
       'Ta charge la plus lourde en squat sur une seule répétition, en kilos.';
 
   @override
-  String get onbRevealCta => 'Révéler mon HYBRID INDEX';
+  String get onbRevealCta => 'Révéler mon Athlete Index';
 
   @override
   String get onbRunTitle => 'Course (saisis ta distance)';
@@ -537,7 +537,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String communityMsgMemberJoined(String index) {
-    return 'vient de nous rejoindre avec un HYBRID INDEX de $index 👋';
+    return 'vient de nous rejoindre avec un Athlete Index de $index 👋';
   }
 
   @override
@@ -755,7 +755,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get clubDetailBySeance => 'Par séance';
 
   @override
-  String get clubDetailRankingTitle => 'Classement du club (Hybrid Index)';
+  String get clubDetailRankingTitle => 'Classement du club (Athlete Index)';
 
   @override
   String get clubDetailLeaveButton => 'Quitter le club';
@@ -1324,7 +1324,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get socialProofAppSuffix => ' des athlètes HYBRID';
 
   @override
-  String get revealYourIndex => 'TON HYBRID INDEX';
+  String get revealYourIndex => 'TON ATHLETE INDEX';
 
   @override
   String get revealDoProfilExpress => 'Faire le Profil Express';
@@ -1334,7 +1334,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String revealEstimateBody(int coverage) {
-    return 'Ton Index de départ s\'appuie sur $coverage/6 attributs. Logge quelques séances de plus pour débloquer les 6 et révéler ton vrai HYBRID INDEX.';
+    return 'Ton Index de départ s\'appuie sur $coverage/6 attributs. Logge quelques séances de plus pour débloquer les 6 et révéler ton vrai Athlete Index.';
   }
 
   @override
@@ -1354,7 +1354,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get shareCardShareText =>
-      'Mon HYBRID INDEX 💪 Et toi, c\'est combien ? #HybridIndex';
+      'Mon Athlete Index 💪 Et toi, c\'est combien ? #AthleteIndex';
 
   @override
   String get shareCardDownloaded => 'Carte téléchargée 📥';
