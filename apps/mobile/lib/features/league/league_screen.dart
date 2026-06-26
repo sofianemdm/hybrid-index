@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../data/api_client.dart';
 import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../theme/haptics.dart';
@@ -11,7 +10,8 @@ import '../../widgets/hi_avatar.dart';
 import '../profile/public_profile_screen.dart';
 import '../wods/wod_detail_screen.dart';
 
-/// Mode LIGUE — compétition mensuelle opt-in, SÉPARÉE de l'Index.
+/// Mode LIGUE — compétition mensuelle OUVERTE À TOUS, SÉPARÉE de l'Index.
+/// Pas d'inscription : tout le monde est classé dès qu'il fait le WOD imposé de la semaine.
 /// Signature visuelle violette (`brandSecondary`) pour ne jamais confondre avec l'Index (cyan).
 /// Les points repartent à zéro chaque mois ; l'Index, lui, ne bouge jamais ici.
 class LeagueScreen extends ConsumerStatefulWidget {
@@ -25,7 +25,6 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
   late String _sex;
   late Future<LeagueSeason?> _season;
   Future<LeagueStandings>? _standings;
-  bool _enrolling = false;
 
   @override
   void initState() {
@@ -44,26 +43,6 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
     setState(_load);
     await _season;
     if (_standings != null) await _standings;
-  }
-
-  Future<void> _enroll() async {
-    if (_enrolling) return;
-    setState(() => _enrolling = true);
-    HiHaptics.tap();
-    try {
-      await ref.read(apiClientProvider).leagueEnroll();
-      if (!mounted) return;
-      HiHaptics.celebrate();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Bienvenue dans la Ligue ! Fais le WOD de la semaine pour marquer des points.')),
-      );
-      setState(_load);
-    } on ApiException catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
-    } finally {
-      if (mounted) setState(() => _enrolling = false);
-    }
   }
 
   /// Ouvre DIRECTEMENT le WOD imposé de la semaine (pas un sélecteur générique).
@@ -118,14 +97,13 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
                 children: [
                   _seasonHeader(season),
                   const SizedBox(height: HiSpace.md),
-                  if (season.currentWeek != null) _wodCard(season.currentWeek!, season.enrolled),
+                  _explainerCard(),
                   const SizedBox(height: HiSpace.md),
-                  // Pas inscrit : on propose de rejoindre, MAIS le classement reste visible pour tous.
-                  if (!season.enrolled) ...[
-                    _joinCard(),
+                  if (season.currentWeek != null) ...[
+                    _wodCard(season.currentWeek!),
                     const SizedBox(height: HiSpace.md),
                   ],
-                  _standingsSection(season.enrolled),
+                  _standingsSection(),
                 ],
               );
             },
@@ -174,8 +152,41 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
     );
   }
 
-  // Carte du WOD imposé de la semaine + CTA (cliquable seulement si inscrit).
-  Widget _wodCard(LeagueWeekInfo week, bool enrolled) {
+  // « La Ligue du mois, c'est quoi ? » — explication claire en haut de page (ouverte à tous).
+  Widget _explainerCard() {
+    return Container(
+      padding: const EdgeInsets.all(HiSpace.lg),
+      decoration: BoxDecoration(
+        color: HiColors.bgElevated2,
+        borderRadius: BorderRadius.circular(HiRadius.sm),
+        border: Border.all(color: HiColors.brandSecondary.withValues(alpha: 0.4)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.info_outline_rounded, color: HiColors.brandSecondaryText, size: 18),
+              const SizedBox(width: 8),
+              Text('La Ligue du mois, c\'est quoi ?',
+                  style: HiType.bodyStrong.copyWith(color: HiColors.textPrimary)),
+            ],
+          ),
+          const SizedBox(height: HiSpace.sm),
+          Text(
+            'Chaque mois, une nouvelle saison. Tu es classé AUTOMATIQUEMENT parmi les athlètes de ton '
+            'sexe — aucune inscription. Fais le WOD imposé de la semaine : tu marques des points selon '
+            'ta performance, et le même effort compte aussi pour ton Index. Les points de Ligue '
+            'repartent à zéro chaque mois ; ton Index, lui, ne bouge jamais.',
+            style: HiType.body.copyWith(color: HiColors.textSecondary),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Carte du WOD imposé de la semaine + CTA (ouvert à tous : faire le WOD classe directement).
+  Widget _wodCard(LeagueWeekInfo week) {
     return Container(
       padding: const EdgeInsets.all(HiSpace.lg),
       decoration: BoxDecoration(
@@ -209,57 +220,10 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
                 backgroundColor: HiColors.brandSecondary,
                 foregroundColor: HiColors.textOnBrand,
                 minimumSize: const Size.fromHeight(48),
-                disabledBackgroundColor: HiColors.bgElevatedHi,
-                disabledForegroundColor: HiColors.textTertiary,
               ),
-              icon: Icon(enrolled ? Icons.play_arrow_rounded : Icons.lock_outline_rounded),
+              icon: const Icon(Icons.play_arrow_rounded),
               label: const Text('Faire ce WOD'),
-              // Cliquable seulement si inscrit (sinon l'effort ne marquerait aucun point de Ligue).
-              onPressed: enrolled ? () => _doWeekWod(week) : null,
-            ),
-          ),
-          if (!enrolled) ...[
-            const SizedBox(height: HiSpace.sm),
-            Text('Rejoins la Ligue ci-dessous pour faire ce WOD et marquer des points.',
-                style: HiType.caption.copyWith(color: HiColors.textTertiary)),
-          ],
-        ],
-      ),
-    );
-  }
-
-  // Pas inscrit : accroche + bouton rejoindre.
-  Widget _joinCard() {
-    return Container(
-      padding: const EdgeInsets.all(HiSpace.lg),
-      decoration: BoxDecoration(
-        color: HiColors.bgElevated2,
-        borderRadius: BorderRadius.circular(HiRadius.sm),
-        border: Border.all(color: HiColors.brandSecondary.withValues(alpha: 0.4)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Rejoins la Ligue', style: HiType.titleL.copyWith(color: HiColors.textPrimary)),
-          const SizedBox(height: HiSpace.sm),
-          Text(
-            'Affronte les autres athlètes ce mois-ci sur un WOD par semaine. '
-            'Chaque effort rapporte des points selon ta performance — et compte aussi pour ton Index.',
-            style: HiType.body.copyWith(color: HiColors.textSecondary),
-          ),
-          const SizedBox(height: HiSpace.md),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: HiColors.brandSecondary,
-                foregroundColor: HiColors.textOnBrand,
-                minimumSize: const Size.fromHeight(48),
-              ),
-              onPressed: _enrolling ? null : _enroll,
-              child: _enrolling
-                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Text('Rejoindre la Ligue'),
+              onPressed: () => _doWeekWod(week),
             ),
           ),
         ],
@@ -267,8 +231,8 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
     );
   }
 
-  // Classement du mois — visible par TOUS (inscrits ou non). « Ma position » seulement si inscrit.
-  Widget _standingsSection(bool enrolled) {
+  // Classement du mois — visible par TOUS, avec « Ma position » (vide tant qu'on n'a pas fait le WOD).
+  Widget _standingsSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -289,10 +253,8 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (enrolled) ...[
-                  _myCard(s),
-                  const SizedBox(height: HiSpace.md),
-                ],
+                _myCard(s),
+                const SizedBox(height: HiSpace.md),
                 Text('Classement du mois', style: HiType.bodyStrong.copyWith(color: HiColors.textPrimary)),
                 const SizedBox(height: HiSpace.sm),
                 if (s.entries.isEmpty)

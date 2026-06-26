@@ -110,17 +110,23 @@ describe("api — mode Ligue (e2e réel)", () => {
     delete process.env.SCORE_SERVICE_URL;
   });
 
-  it("pas inscrit : loguer le WOD imposé ne donne AUCUN point de Ligue", async () => {
+  it("auto-inscription : loguer le WOD imposé classe DIRECTEMENT (sans rejoindre)", async () => {
+    // Plus d'opt-in : faire le WOD de la semaine inscrit l'athlète à la volée et crée ses points.
     await request(api.getHttpServer())
       .post("/v1/results")
       .set("authorization", `Bearer ${token}`)
-      .send({ wodId: IMPOSED_WOD, scoreType: "time", rawResult: 360 })
+      .send({ wodId: IMPOSED_WOD, scoreType: "time", rawResult: 360, idempotencyKey: `e2e_auto_${stamp}` })
       .expect(201);
     const count = await prisma.leaguePoints.count({ where: { seasonId, userId } });
-    expect(count).toBe(0);
+    expect(count).toBe(1);
+    const meView = await request(api.getHttpServer())
+      .get("/v1/league/me")
+      .set("authorization", `Bearer ${token}`)
+      .expect(200);
+    expect(meView.body.enrolled).toBe(true); // inscription automatique effectuée
   });
 
-  it("inscription opt-in : 201 + enrolled", async () => {
+  it("endpoint enroll (toujours dispo) : 201 + enrolled", async () => {
     const res = await request(api.getHttpServer())
       .post("/v1/league/enroll")
       .set("authorization", `Bearer ${token}`)
@@ -129,11 +135,13 @@ describe("api — mode Ligue (e2e réel)", () => {
     expect(res.body.sex).toBe("male");
   });
 
-  it("inscrit + log du WOD imposé : points de Ligue créés (= barème) et visibles au classement", async () => {
+  it("log du WOD imposé : points de Ligue créés (= barème) et visibles au classement", async () => {
+    // Même clé idempotente que le test d'auto-inscription : on reste sur UNE seule ligne de points
+    // (le classement somme les points → doit rester égal au barème d'une séance).
     await request(api.getHttpServer())
       .post("/v1/results")
       .set("authorization", `Bearer ${token}`)
-      .send({ wodId: IMPOSED_WOD, scoreType: "time", rawResult: 360 })
+      .send({ wodId: IMPOSED_WOD, scoreType: "time", rawResult: 360, idempotencyKey: `e2e_auto_${stamp}` })
       .expect(201);
 
     const row = await prisma.leaguePoints.findFirst({ where: { seasonId, userId }, orderBy: { createdAt: "desc" } });

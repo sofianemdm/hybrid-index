@@ -18,8 +18,9 @@ export interface LeagueAwardInput {
  * la Ligue (ici). Anti-double-comptage garanti par `league_points.wodResultId UNIQUE`.
  *
  * Ne compte QUE si : (a) sous-score valide, (b) résultat non suspect (`review === "ok"`), (c) une
- * saison est active à la date de l'effort, (d) l'athlète est inscrit, (e) l'effort porte sur le WOD
- * imposé de SA semaine/filière. Sinon : no-op silencieux.
+ * saison est active à la date de l'effort, (d) l'effort porte sur le WOD imposé de SA semaine/filière.
+ * Sinon : no-op silencieux. Plus d'opt-in : l'athlète est inscrit AUTOMATIQUEMENT à sa première séance
+ * comptée (tout le monde participe et est classé dès qu'il fait le WOD de la semaine).
  */
 @Injectable()
 export class LeaguePointsService {
@@ -43,11 +44,14 @@ export class LeaguePointsService {
     });
     if (!season) return; // hors saison
 
-    const entry = await this.prisma.leagueEntry.findUnique({
+    // Inscription AUTOMATIQUE (plus d'opt-in) : tout athlète qui fait le WOD de la semaine est inscrit
+    // et classé à la volée. Filière/niveau de lancement : bodyweight / rx (cf. LeagueEnrollmentService).
+    const entry = await this.prisma.leagueEntry.upsert({
       where: { seasonId_userId: { seasonId: season.id, userId } },
+      create: { seasonId: season.id, userId, sex, filiere: "bodyweight", level: "rx" },
+      update: {},
       select: { filiere: true, level: true },
     });
-    if (!entry) return; // pas inscrit (opt-in)
 
     const weekKey = isoWeekKey(performedAt);
     const week = await this.prisma.leagueWeek.findFirst({
