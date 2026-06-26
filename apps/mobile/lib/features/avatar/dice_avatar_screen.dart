@@ -39,7 +39,8 @@ class _DiceAvatarScreenState extends ConsumerState<DiceAvatarScreen> {
     _load();
   }
 
-  String _newSeed() => _rng.nextInt(1 << 32).toRadixString(36);
+  // Borne SANS décalage de bits : `1 << 32` peut valoir 0 sur le web (dart2js) → nextInt(0) plante.
+  String _newSeed() => _rng.nextInt(1000000000).toRadixString(36);
 
   void _shuffle() => setState(() {
         _variations = List.generate(8, (_) => _newSeed());
