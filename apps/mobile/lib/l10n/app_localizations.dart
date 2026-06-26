@@ -182,6 +182,12 @@ abstract class AppLocalizations {
   /// **'Sessions that build your {attribute}'**
   String sessionsAttributeHeader(String attribute);
 
+  /// No description provided for @leaderboardIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'The ranking of every athlete in your league (your sex), sorted by Athlete Index — normalized by sex for fairness. Climb by improving your score.'**
+  String get leaderboardIntro;
+
   /// No description provided for @commonRetry.
   ///
   /// In en, this message translates to:

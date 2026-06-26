@@ -67,6 +67,21 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
               child: Text(t.leaderboardTitle, style: HiType.titleL.copyWith(color: HiColors.textPrimary)),
             ),
           ),
+          // Explication claire de ce qu'est la Ligue dès l'arrivée sur la page.
+          Padding(
+            padding: const EdgeInsets.fromLTRB(HiSpace.lg, 0, HiSpace.lg, HiSpace.md),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.info_outline_rounded, size: 16, color: HiColors.textTertiary),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(t.leaderboardIntro,
+                      style: HiType.caption.copyWith(color: HiColors.textSecondary, height: 1.35)),
+                ),
+              ],
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.fromLTRB(HiSpace.lg, 0, HiSpace.lg, HiSpace.sm),
             child: OutlinedButton.icon(

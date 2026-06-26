@@ -33,11 +33,11 @@ export const WOD_REFERENCES: Record<string, WodReference[]> = {
     { tier: "elite", sex: "female", athlete: null, result: 80, note: "~1:20 (haut niveau)", source: "estimation élite" },
   ],
   row_2k: [
-    // Concept2 = MARQUE du rameur / logbook officiel (la source), PAS un athlète. On n'attribue pas
-    // le record à une personne nommée faute de certitude sur le détenteur actuel (cf. sport-science,
-    // règle « pas de chiffre/nom inventé »). Formulation neutre : « record du monde indoor ».
-    { tier: "record", sex: "male", athlete: null, result: 336, note: "~5:36 · record du monde indoor (catégorie lourde)", source: "Concept2 (logbook officiel)" },
-    { tier: "record", sex: "female", athlete: null, result: 381, note: "~6:21 · record du monde indoor", source: "Concept2 (logbook officiel)" },
+    // Record du monde indoor 2000 m (catégorie lourde). « Concept2 » est la MARQUE / le logbook,
+    // PAS un athlète → on nomme le vrai détenteur. Homme : Simon van Dorp 5:33.4 (a battu O. Zeidler
+    // 5:34.7). Femme : détenteur non nommé faute de certitude vérifiée (formulation neutre).
+    { tier: "record", sex: "male", athlete: "Simon van Dorp", result: 333, note: "5:33.4 · record du monde indoor (catégorie lourde)", source: "World Rowing" },
+    { tier: "record", sex: "female", athlete: null, result: 381, note: "~6:21 · record du monde indoor (catégorie lourde)", source: "World Rowing" },
   ],
   run_5k: [
     { tier: "record", sex: "male", athlete: "Joshua Cheptegei", result: 755, note: "12:35 · record du monde (piste)", source: "World Athletics" },

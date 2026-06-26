@@ -14,6 +14,7 @@
   "sessionsByFocus": "Séances par axe",
   "sessionsWeeklyTitle": "La séance de la semaine",
   "sessionsAttributeHeader": "Les séances qui développent ton {attribute}",
+  "leaderboardIntro": "Le classement de tous les athlètes de ta ligue (ton sexe), trié par Athlete Index — normalisé par sexe pour rester équitable. Grimpe en améliorant ton score.",
   "commonRetry": "Réessayer",
   "settingsLanguage": "Langue",
   "languageFrench": "Français",

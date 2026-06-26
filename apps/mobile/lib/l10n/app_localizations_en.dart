@@ -54,6 +54,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get leaderboardIntro =>
+      'The ranking of every athlete in your league (your sex), sorted by Athlete Index — normalized by sex for fairness. Climb by improving your score.';
+
+  @override
   String get commonRetry => 'Retry';
 
   @override

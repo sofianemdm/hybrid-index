@@ -15,6 +15,7 @@
   "sessionsWeeklyTitle": "Session of the week",
   "sessionsAttributeHeader": "Sessions that build your {attribute}",
   "@sessionsAttributeHeader": { "placeholders": { "attribute": { "type": "String" } } },
+  "leaderboardIntro": "The ranking of every athlete in your league (your sex), sorted by Athlete Index — normalized by sex for fairness. Climb by improving your score.",
   "commonRetry": "Retry",
   "settingsLanguage": "Language",
   "languageFrench": "Français",
