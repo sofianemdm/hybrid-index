@@ -182,9 +182,12 @@ async function main(): Promise<void> {
   // Seules les « Références Pro » ci-dessous subsistent, et UNIQUEMENT dans le feed (hors classement).
 
   // --- Athlètes d'élite (personas fictifs, perfs réalistes, posts publics qui animent le feed) ---
-  console.log("Seed: athlètes d'élite (personas fictifs)…");
+  // App 100 % réelle : AUCUN utilisateur seedé (ni faux comptes « battables » ni « Références Pro »).
+  // Décision utilisateur (26/06). Repasser SEED_DEMO_USERS à true pour réactiver des personas de démo.
+  const SEED_DEMO_USERS = false;
+  console.log(SEED_DEMO_USERS ? "Seed: personas d'élite…" : "Seed: aucun utilisateur seedé (app 100% réelle).");
   let eliteIdx = 0;
-  for (const disc of ELITE_DISCIPLINES) {
+  for (const disc of (SEED_DEMO_USERS ? ELITE_DISCIPLINES : [])) {
     const roster: Array<{ name: string; sex: Sex }> = [
       ...disc.males.map((name) => ({ name, sex: "male" as Sex })),
       ...disc.females.map((name) => ({ name, sex: "female" as Sex })),
