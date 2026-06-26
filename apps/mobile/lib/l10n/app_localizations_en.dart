@@ -40,6 +40,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsUpdated => 'Profile updated.';
 
   @override
+  String get sessionsTitle => 'Sessions';
+
+  @override
+  String get sessionsByFocus => 'Sessions by focus';
+
+  @override
+  String get sessionsWeeklyTitle => 'Session of the week';
+
+  @override
+  String sessionsAttributeHeader(String attribute) {
+    return 'Sessions that build your $attribute';
+  }
+
+  @override
   String get commonRetry => 'Retry';
 
   @override

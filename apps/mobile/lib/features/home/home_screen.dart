@@ -22,6 +22,7 @@ import 'rival_card.dart';
 import 'weekly_recap_card.dart';
 import '../avatar/dice_avatar_screen.dart';
 import '../coach/coach_screen.dart';
+import '../coach/sessions_by_attribute_screen.dart';
 import '../history/history_screen.dart';
 import '../progression/progression_screen.dart';
 import '../notifications/notifications_screen.dart';
@@ -199,7 +200,7 @@ class HomeScreen extends ConsumerWidget {
               RadarView(
                 radar: p.radar,
                 onTapAttribute: (attr) => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => CoachScreen(initialAttribute: attr)),
+                  MaterialPageRoute(builder: (_) => SessionsByAttributeScreen(attribute: attr)),
                 ),
               ),
               const SizedBox(height: HiSpace.md),
@@ -249,7 +250,7 @@ class HomeScreen extends ConsumerWidget {
     final one = stale.length == 1;
     return HiCard(
       onTap: () => Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => CoachScreen(initialAttribute: stale.first.attribute)),
+        MaterialPageRoute(builder: (_) => SessionsByAttributeScreen(attribute: stale.first.attribute)),
       ),
       child: Row(
         children: [

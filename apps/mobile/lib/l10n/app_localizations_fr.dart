@@ -41,6 +41,20 @@ class AppLocalizationsFr extends AppLocalizations {
   String get settingsUpdated => 'Profil mis à jour.';
 
   @override
+  String get sessionsTitle => 'Séances';
+
+  @override
+  String get sessionsByFocus => 'Séances par axe';
+
+  @override
+  String get sessionsWeeklyTitle => 'La séance de la semaine';
+
+  @override
+  String sessionsAttributeHeader(String attribute) {
+    return 'Les séances qui développent ton $attribute';
+  }
+
+  @override
   String get commonRetry => 'Réessayer';
 
   @override

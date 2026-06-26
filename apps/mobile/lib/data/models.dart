@@ -544,6 +544,9 @@ class CoachSession {
   final int durationMin;
   final String intensity;
   final String description;
+
+  /// Poids de l'attribut demandé (0..1) — renseigné par /v1/coach/library, sinon null.
+  final double? weight;
   const CoachSession({
     required this.id,
     required this.name,
@@ -552,6 +555,7 @@ class CoachSession {
     required this.durationMin,
     required this.intensity,
     required this.description,
+    this.weight,
   });
 
   factory CoachSession.fromJson(Map<String, dynamic> j) => CoachSession(
@@ -562,6 +566,7 @@ class CoachSession {
         durationMin: (j['durationMin'] as num).toInt(),
         intensity: j['intensity'] as String,
         description: j['description'] as String,
+        weight: (j['weight'] as num?)?.toDouble(),
       );
 }
 

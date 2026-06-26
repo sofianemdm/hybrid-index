@@ -214,6 +214,18 @@ class ApiClient {
     return CoachResult.fromJson(j);
   }
 
+  /// Bibliothèque de séances qui travaillent un attribut, triées par pertinence (poids décroissant).
+  Future<List<CoachSession>> coachLibrary(String attribute) async {
+    final j = await _send('GET', '/v1/coach/library?attribute=$attribute') as Map<String, dynamic>;
+    return (j['sessions'] as List<dynamic>).map((e) => CoachSession.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  /// La « séance de la semaine » (Le Forgeron).
+  Future<CoachSession> weeklySession() async {
+    final j = await _send('GET', '/v1/coach/weekly') as Map<String, dynamic>;
+    return CoachSession.fromJson(j['session'] as Map<String, dynamic>);
+  }
+
   Future<PublicProfile> publicProfile(String userId) async {
     final j = await _send('GET', '/v1/profiles/$userId') as Map<String, dynamic>;
     return PublicProfile.fromJson(j);

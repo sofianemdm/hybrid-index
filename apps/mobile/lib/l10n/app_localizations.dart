@@ -158,6 +158,30 @@ abstract class AppLocalizations {
   /// **'Profile updated.'**
   String get settingsUpdated;
 
+  /// No description provided for @sessionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sessions'**
+  String get sessionsTitle;
+
+  /// No description provided for @sessionsByFocus.
+  ///
+  /// In en, this message translates to:
+  /// **'Sessions by focus'**
+  String get sessionsByFocus;
+
+  /// No description provided for @sessionsWeeklyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Session of the week'**
+  String get sessionsWeeklyTitle;
+
+  /// No description provided for @sessionsAttributeHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'Sessions that build your {attribute}'**
+  String sessionsAttributeHeader(String attribute);
+
   /// No description provided for @commonRetry.
   ///
   /// In en, this message translates to:
