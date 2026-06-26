@@ -83,6 +83,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get bugReportTooShort => 'Add a few words describing the bug.';
 
   @override
+  String get wodPredictionTitle => 'Based on your level, you\'d do';
+
+  @override
+  String get wodPredictionChallenge =>
+      'Your move: go all out and beat this estimate 🔥';
+
+  @override
   String get homeBetaBanner => 'Beta version — found a bug? Tap to learn more';
 
   @override

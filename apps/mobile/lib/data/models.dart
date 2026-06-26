@@ -587,6 +587,18 @@ class CardBadge {
       );
 }
 
+/// Prédiction de perf sur un WOD d'après le niveau de l'utilisateur (/v1/wods/:id/prediction).
+class WodPrediction {
+  final int? predictedRaw; // secondes (time) / reps / kg / m selon scoreType ; null si non prédictible
+  final String scoreType;
+  const WodPrediction({this.predictedRaw, required this.scoreType});
+
+  factory WodPrediction.fromJson(Map<String, dynamic> j) => WodPrediction(
+        predictedRaw: (j['predictedRaw'] as num?)?.toInt(),
+        scoreType: j['scoreType'] as String? ?? 'time',
+      );
+}
+
 class CoachResult {
   final String targetAttribute;
   final int current;

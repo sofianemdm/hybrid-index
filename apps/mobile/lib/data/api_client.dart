@@ -255,6 +255,16 @@ class ApiClient {
     await _send('POST', '/v1/feedback', {'message': message, if (context != null) 'context': context});
   }
 
+  /// Temps/score prédit pour un WOD d'après le niveau de l'utilisateur. Null si non prédictible.
+  Future<WodPrediction?> wodPrediction(String wodId) async {
+    try {
+      final j = await _send('GET', '/v1/wods/$wodId/prediction') as Map<String, dynamic>;
+      return WodPrediction.fromJson(j);
+    } catch (_) {
+      return null; // non bloquant : on n'affiche simplement pas la carte
+    }
+  }
+
   Future<WeeklyRecap> weeklyRecap() async {
     final j = await _send('GET', '/v1/me/weekly-recap') as Map<String, dynamic>;
     return WeeklyRecap.fromJson(j);

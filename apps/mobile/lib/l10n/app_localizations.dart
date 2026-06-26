@@ -236,6 +236,18 @@ abstract class AppLocalizations {
   /// **'Add a few words describing the bug.'**
   String get bugReportTooShort;
 
+  /// No description provided for @wodPredictionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Based on your level, you\'d do'**
+  String get wodPredictionTitle;
+
+  /// No description provided for @wodPredictionChallenge.
+  ///
+  /// In en, this message translates to:
+  /// **'Your move: go all out and beat this estimate 🔥'**
+  String get wodPredictionChallenge;
+
   /// No description provided for @homeBetaBanner.
   ///
   /// In en, this message translates to:

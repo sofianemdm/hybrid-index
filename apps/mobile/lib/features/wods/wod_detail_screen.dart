@@ -28,6 +28,7 @@ class WodDetailScreen extends ConsumerStatefulWidget {
 class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
   late String _sex;
   late Future<WodDetail> _detail;
+  late Future<WodPrediction?> _prediction;
   late Future<WodLeaderboard> _leaderboard;
   bool _clubScope = false;
   String _variant = 'rx'; // 'rx' (Rx) ou 'scaled' (allégé) — classements séparés
@@ -38,6 +39,7 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
     _sex = ref.read(sessionProvider).sex ?? 'male';
     _clubScope = widget.clubId != null; // ouvert depuis un club → on montre le club par défaut
     _detail = ref.read(apiClientProvider).wodDetail(widget.wodId);
+    _prediction = ref.read(apiClientProvider).wodPrediction(widget.wodId);
     _loadLeaderboard();
   }
 
@@ -59,6 +61,7 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
     if (changed == true && mounted) {
       setState(() {
         _detail = ref.read(apiClientProvider).wodDetail(widget.wodId);
+        _prediction = ref.read(apiClientProvider).wodPrediction(widget.wodId);
         _loadLeaderboard();
       });
     }
@@ -119,6 +122,7 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
                 const SizedBox(height: HiSpace.sm),
                 _leaderboardSection(d.scoreType),
                 const SizedBox(height: HiSpace.lg),
+                _predictionCard(),
                 HiButton(label: t.wodDetailDoThisWorkout, onPressed: () => _doWod(d.scoreType)),
               ],
             );
@@ -220,6 +224,63 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
     final m = sec ~/ 60;
     final s = (sec % 60).toString().padLeft(2, '0');
     return '$m:$s';
+  }
+
+  String _fmtPredicted(int raw, String scoreType) {
+    switch (scoreType) {
+      case 'reps':
+        return '$raw reps';
+      case 'load':
+        return '$raw kg';
+      case 'distance':
+        return '$raw m';
+      default:
+        return _fmtCap(raw); // time
+    }
+  }
+
+  /// Carte « Temps estimé pour toi » : prédiction d'après le niveau + phrase qui pousse à faire mieux.
+  Widget _predictionCard() {
+    return FutureBuilder<WodPrediction?>(
+      future: _prediction,
+      builder: (context, snap) {
+        final p = snap.data;
+        if (p == null || p.predictedRaw == null) return const SizedBox.shrink();
+        final t = AppLocalizations.of(context);
+        return Container(
+          margin: const EdgeInsets.only(bottom: HiSpace.md),
+          padding: const EdgeInsets.all(HiSpace.md),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(colors: [
+              HiColors.brandPrimary.withValues(alpha: 0.14),
+              HiColors.accentVictory.withValues(alpha: 0.10),
+            ]),
+            borderRadius: BorderRadius.circular(HiRadius.lg),
+            border: Border.all(color: HiColors.brandPrimary.withValues(alpha: 0.4)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.track_changes_rounded, color: HiColors.brandPrimary, size: 18),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(t.wodPredictionTitle,
+                        style: HiType.caption.copyWith(color: HiColors.textSecondary)),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 2),
+              Text('~${_fmtPredicted(p.predictedRaw!, p.scoreType)}',
+                  style: HiType.numericL.copyWith(color: HiColors.textPrimary)),
+              const SizedBox(height: 4),
+              Text(t.wodPredictionChallenge, style: HiType.bodyStrong.copyWith(color: HiColors.brandPrimary)),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   /// Carte « Le défi » : énoncé concret de la séance + poids liés au sexe sélectionné.
