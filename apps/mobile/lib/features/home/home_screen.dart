@@ -17,6 +17,7 @@ import '../../widgets/radar_view.dart';
 import '../../widgets/radar_insight.dart';
 import '../../widgets/social_proof_card.dart';
 import '../../widgets/streak_chip.dart';
+import '../../widgets/bug_report.dart';
 import 'grade_block.dart';
 import 'rival_card.dart';
 import 'weekly_recap_card.dart';
@@ -365,14 +366,26 @@ class HomeScreen extends ConsumerWidget {
               const SizedBox(height: HiSpace.lg),
               SizedBox(
                 width: double.infinity,
-                child: ElevatedButton(
+                child: ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: HiColors.brandPrimary,
                     foregroundColor: HiColors.textOnBrand,
                     minimumSize: const Size.fromHeight(46),
                   ),
+                  icon: const Icon(Icons.bug_report_rounded, size: 18),
+                  label: Text(t.bugReportTitle),
+                  onPressed: () {
+                    Navigator.of(ctx).pop();
+                    showBugReportSheet(context);
+                  },
+                ),
+              ),
+              const SizedBox(height: HiSpace.xs),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
                   onPressed: () => Navigator.of(ctx).pop(),
-                  child: Text(t.commonGotIt),
+                  child: Text(t.commonGotIt, style: TextStyle(color: HiColors.textTertiary)),
                 ),
               ),
             ],

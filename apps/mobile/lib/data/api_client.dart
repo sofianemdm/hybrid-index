@@ -250,6 +250,11 @@ class ApiClient {
         .toList();
   }
 
+  /// Signalement de bug (bêta) → stocké côté serveur. `context` = écran/plateforme (optionnel).
+  Future<void> sendFeedback(String message, {String? context}) async {
+    await _send('POST', '/v1/feedback', {'message': message, if (context != null) 'context': context});
+  }
+
   Future<WeeklyRecap> weeklyRecap() async {
     final j = await _send('GET', '/v1/me/weekly-recap') as Map<String, dynamic>;
     return WeeklyRecap.fromJson(j);

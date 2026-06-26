@@ -67,6 +67,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonGotIt => 'Got it';
 
   @override
+  String get bugReportTitle => 'Report a bug';
+
+  @override
+  String get bugReportHint =>
+      'Describe the issue: what you were doing, what happened, which screen…';
+
+  @override
+  String get bugReportSend => 'Send';
+
+  @override
+  String get bugReportThanks => 'Thanks! Your report was sent. 🙏';
+
+  @override
+  String get bugReportTooShort => 'Add a few words describing the bug.';
+
+  @override
   String get homeBetaBanner => 'Beta version — found a bug? Tap to learn more';
 
   @override

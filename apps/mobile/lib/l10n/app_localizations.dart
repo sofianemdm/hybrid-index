@@ -206,6 +206,36 @@ abstract class AppLocalizations {
   /// **'Got it'**
   String get commonGotIt;
 
+  /// No description provided for @bugReportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Report a bug'**
+  String get bugReportTitle;
+
+  /// No description provided for @bugReportHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Describe the issue: what you were doing, what happened, which screen…'**
+  String get bugReportHint;
+
+  /// No description provided for @bugReportSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get bugReportSend;
+
+  /// No description provided for @bugReportThanks.
+  ///
+  /// In en, this message translates to:
+  /// **'Thanks! Your report was sent. 🙏'**
+  String get bugReportThanks;
+
+  /// No description provided for @bugReportTooShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a few words describing the bug.'**
+  String get bugReportTooShort;
+
   /// No description provided for @homeBetaBanner.
   ///
   /// In en, this message translates to:

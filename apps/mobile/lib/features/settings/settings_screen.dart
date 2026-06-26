@@ -13,6 +13,7 @@ import '../../data/web_download.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/hi_button.dart';
+import '../../widgets/bug_report.dart';
 import '../avatar/dice_avatar_screen.dart';
 
 /// Paramètres : modifier pseudo / objectif / matériel. Un changement d'objectif
@@ -221,6 +222,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           style: TextStyle(color: HiColors.textSecondary, fontSize: 13)),
                       const SizedBox(height: HiSpace.sm),
                       _languageSelector(),
+                      const SizedBox(height: HiSpace.xl),
+                      OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          minimumSize: const Size.fromHeight(48),
+                          side: BorderSide(color: HiColors.strokeStrong),
+                          foregroundColor: HiColors.textPrimary,
+                        ),
+                        icon: const Icon(Icons.bug_report_outlined),
+                        label: Text(t.bugReportTitle),
+                        onPressed: () => showBugReportSheet(context),
+                      ),
                       const SizedBox(height: HiSpace.xl),
                       Divider(color: HiColors.strokeSubtle),
                       const SizedBox(height: HiSpace.md),
