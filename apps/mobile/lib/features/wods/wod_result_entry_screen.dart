@@ -48,7 +48,7 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
   // Les épreuves cardio (course, rameur) et au poids du corps (pompes, squats, burpees, Cindy,
   // Benchmark Zéro, Machine & Mur…) n'ont rien à « scaler » → on masque l'échelle.
   static const _scaleWods = {
-    'fran', 'grace', 'jackie', 'karen', 'helen', 'hyrox_sprint', 'isabel', 'murph', 'profil_express',
+    'fran', 'grace', 'jackie', 'karen', 'helen', 'hyrox_sprint', 'isabel', 'murph',
   };
   bool get _hasScale => _scaleWods.contains(widget.wodId);
 

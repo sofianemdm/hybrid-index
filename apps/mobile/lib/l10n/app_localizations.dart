@@ -131,8 +131,32 @@ abstract class AppLocalizations {
   /// No description provided for @navLeaderboard.
   ///
   /// In en, this message translates to:
-  /// **'Ranking'**
+  /// **'League'**
   String get navLeaderboard;
+
+  /// No description provided for @settingsEquipmentLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Equipment — \"Equipped\" also unlocks equipment-free sessions'**
+  String get settingsEquipmentLabel;
+
+  /// No description provided for @settingsEquipmentNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No equipment'**
+  String get settingsEquipmentNone;
+
+  /// No description provided for @settingsEquipmentEquipped.
+  ///
+  /// In en, this message translates to:
+  /// **'Equipped (gym)'**
+  String get settingsEquipmentEquipped;
+
+  /// No description provided for @settingsUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile updated.'**
+  String get settingsUpdated;
 
   /// No description provided for @commonRetry.
   ///
@@ -2483,7 +2507,7 @@ abstract class AppLocalizations {
   /// No description provided for @leaderboardTitle.
   ///
   /// In en, this message translates to:
-  /// **'Leaderboard'**
+  /// **'League'**
   String get leaderboardTitle;
 
   /// No description provided for @leaderboardWeeklyProgress.

@@ -20,7 +20,6 @@ class _GoogleProfileScreenState extends ConsumerState<GoogleProfileScreen> {
   final _displayName = TextEditingController();
   DateTime? _dob;
   String _sex = 'male';
-  String _goal = 'hyrox';
   String _equipment = 'equipped';
   bool _loading = false;
 
@@ -57,7 +56,6 @@ class _GoogleProfileScreenState extends ConsumerState<GoogleProfileScreen> {
         'displayName': _displayName.text.trim(),
         'dateOfBirth': _dob!.toIso8601String().split('T').first,
         'sex': _sex,
-        'goal': _goal,
         'equipmentPref': _equipment,
       });
       if (!mounted) return;
@@ -107,9 +105,6 @@ class _GoogleProfileScreenState extends ConsumerState<GoogleProfileScreen> {
                 const SizedBox(height: HiSpace.lg),
                 _choices('Sexe (classement équitable)', const {'male': 'Homme', 'female': 'Femme'}, _sex,
                     (v) => setState(() => _sex = v)),
-                const SizedBox(height: HiSpace.md),
-                _choices('Objectif', const {'hyrox': 'HYROX', 'crossfit_strength': 'CrossFit', 'all_round': 'Condition physique'},
-                    _goal, (v) => setState(() => _goal = v)),
                 const SizedBox(height: HiSpace.md),
                 _choices('Matériel', const {'none': 'Sans matériel', 'equipped': 'Équipé (salle de sport)'}, _equipment,
                     (v) => setState(() => _equipment = v)),

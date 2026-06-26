@@ -24,7 +24,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navProgress => 'Progress';
 
   @override
-  String get navLeaderboard => 'Ranking';
+  String get navLeaderboard => 'League';
+
+  @override
+  String get settingsEquipmentLabel =>
+      'Equipment — \"Equipped\" also unlocks equipment-free sessions';
+
+  @override
+  String get settingsEquipmentNone => 'No equipment';
+
+  @override
+  String get settingsEquipmentEquipped => 'Equipped (gym)';
+
+  @override
+  String get settingsUpdated => 'Profile updated.';
 
   @override
   String get commonRetry => 'Retry';
@@ -1381,7 +1394,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shareCardAthlete => 'Athlete';
 
   @override
-  String get leaderboardTitle => 'Leaderboard';
+  String get leaderboardTitle => 'League';
 
   @override
   String get leaderboardWeeklyProgress => 'Weekly progress (by effort)';

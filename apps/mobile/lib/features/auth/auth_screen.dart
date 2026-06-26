@@ -27,7 +27,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   final _displayName = TextEditingController();
   DateTime? _dob;
   String _sex = 'male';
-  String _goal = 'hyrox';
   String _equipment = 'equipped';
 
   @override
@@ -55,7 +54,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           'displayName': _displayName.text.trim(),
           'dateOfBirth': _dob!.toIso8601String().split('T').first,
           'sex': _sex,
-          'goal': _goal,
           'equipmentPref': _equipment,
         });
       } else {
@@ -157,12 +155,18 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   TextField(
                     controller: _email,
                     keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.next,
                     decoration: const InputDecoration(labelText: 'Email', prefixIcon: Icon(Icons.mail_outline)),
                   ),
                   const SizedBox(height: HiSpace.md),
                   TextField(
                     controller: _password,
                     obscureText: true,
+                    // Entrée valide directement (surtout en connexion : le mot de passe est le dernier champ).
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (_) {
+                      if (!_loading) _submit();
+                    },
                     decoration: const InputDecoration(labelText: 'Mot de passe (8+)', prefixIcon: Icon(Icons.lock_outline)),
                   ),
                   if (_register) ...[
@@ -184,13 +188,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       options: const {'male': 'Homme', 'female': 'Femme'},
                       value: _sex,
                       onChanged: (v) => setState(() => _sex = v),
-                    ),
-                    const SizedBox(height: HiSpace.md),
-                    _ChoiceRow(
-                      label: 'Objectif',
-                      options: const {'hyrox': 'HYROX', 'crossfit_strength': 'CrossFit', 'all_round': 'Condition physique'},
-                      value: _goal,
-                      onChanged: (v) => setState(() => _goal = v),
                     ),
                     const SizedBox(height: HiSpace.md),
                     _ChoiceRow(

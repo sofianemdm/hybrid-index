@@ -175,7 +175,10 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                 children: [
                   Expanded(child: _navItem(tabs[0])),
                   Expanded(child: _navItem(tabs[1])),
-                  const SizedBox(width: 64), // place de l'encoche / FAB central
+                  // Largeur = diamètre du FAB (56) + 2×notchMargin (8) = 72 → l'encoche s'aligne
+                  // pile au centre. 4 items Expanded égaux + cet espace centré ⇒ le FAB (centerDocked,
+                  // centré sur l'écran) tombe exactement au milieu, indépendamment du texte des items.
+                  const SizedBox(width: 72),
                   Expanded(child: _navItem(tabs[2])),
                   Expanded(child: _navItem(tabs[3])),
                 ],

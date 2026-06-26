@@ -26,7 +26,6 @@ class SettingsScreen extends ConsumerStatefulWidget {
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   final _displayName = TextEditingController();
-  String _goal = 'hyrox';
   String _equipment = 'equipped';
   bool _loading = true;
   bool _saving = false;
@@ -48,7 +47,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       final me = await ref.read(apiClientProvider).me();
       setState(() {
         _displayName.text = me['displayName'] as String? ?? '';
-        _goal = me['goal'] as String? ?? 'hyrox';
         _equipment = me['equipmentPref'] as String? ?? 'equipped';
         _loading = false;
       });
@@ -61,15 +59,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Future<void> _save() async {
     setState(() => _saving = true);
     try {
+      // Pseudo verrouillé (rejeté côté serveur) et objectif supprimé : on n'envoie que le matériel.
       await ref.read(apiClientProvider).updateMe({
-        'displayName': _displayName.text.trim(),
-        'goal': _goal,
         'equipmentPref': _equipment,
       });
       await ref.read(sessionProvider.notifier).refreshMe();
       ref.invalidate(myProfileProvider);
       if (!mounted) return;
-      _toast('Profil mis à jour.');
+      _toast(AppLocalizations.of(context).settingsUpdated);
       Navigator.of(context).pop();
     } on ApiException catch (e) {
       _toast(e.message);
@@ -183,23 +180,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     children: [
                       Text(t.authUsername, style: TextStyle(color: HiColors.textSecondary)),
                       const SizedBox(height: 8),
-                      TextField(controller: _displayName),
-                      const SizedBox(height: HiSpace.lg),
-                      _ChoiceRow(
-                        label: 'Objectif (modifie la pondération de ton Index)',
-                        options: const {'hyrox': 'HYROX', 'crossfit_strength': 'CrossFit', 'all_round': 'Condition physique'},
-                        value: _goal,
-                        onChanged: (v) => setState(() => _goal = v),
+                      // Pseudo NON modifiable après création (verrouillé aussi côté serveur) → lecture seule.
+                      InputDecorator(
+                        decoration: const InputDecoration(prefixIcon: Icon(Icons.lock_outline)),
+                        child: Text(_displayName.text.isEmpty ? '—' : _displayName.text,
+                            style: TextStyle(color: HiColors.textPrimary)),
                       ),
                       const SizedBox(height: HiSpace.lg),
                       _ChoiceRow(
-                        label: 'Matériel — « Équipé » donne aussi accès au sans-matériel',
-                        options: const {'none': 'Sans matériel', 'equipped': 'Équipé (salle de sport)'},
+                        label: t.settingsEquipmentLabel,
+                        options: {'none': t.settingsEquipmentNone, 'equipped': t.settingsEquipmentEquipped},
                         value: _equipment,
                         onChanged: (v) => setState(() => _equipment = v),
                       ),
                       const SizedBox(height: HiSpace.xl),
-                      HiButton(label: 'Enregistrer', loading: _saving, onPressed: _save),
+                      HiButton(label: t.wreSave, loading: _saving, onPressed: _save),
                       const SizedBox(height: HiSpace.lg),
                       OutlinedButton.icon(
                         style: OutlinedButton.styleFrom(
