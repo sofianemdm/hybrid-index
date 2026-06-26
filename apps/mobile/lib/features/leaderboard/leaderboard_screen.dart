@@ -7,6 +7,7 @@ import '../../l10n/app_localizations.dart';
 import '../../theme/haptics.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/hi_skeleton.dart';
+import '../../widgets/hi_avatar.dart';
 import '../../widgets/rank_badge.dart';
 import '../profile/public_profile_screen.dart';
 import 'progress_board_screen.dart';
@@ -225,6 +226,11 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                   ? Icon(Icons.workspace_premium_rounded, color: posColor, size: 22)
                   : Text('#${e.position}', style: HiType.numericM.copyWith(color: posColor, fontSize: 16)),
             ),
+            HiAvatar(
+                config: e.avatar ?? const AvatarConfig(skinTone: 2, hairStyle: 1, hairColor: 1),
+                rank: e.rank,
+                size: 26),
+            const SizedBox(width: 10),
             Expanded(
               child: Text(
                 e.isMe ? AppLocalizations.of(context).leaderboardYou(e.displayName) : e.displayName,

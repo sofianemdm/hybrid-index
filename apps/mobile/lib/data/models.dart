@@ -500,6 +500,7 @@ class LeaderboardEntry {
   final int value;
   final String rank;
   final bool isMe;
+  final AvatarConfig? avatar;
   const LeaderboardEntry({
     required this.position,
     required this.userId,
@@ -507,6 +508,7 @@ class LeaderboardEntry {
     required this.value,
     required this.rank,
     required this.isMe,
+    this.avatar,
   });
 
   factory LeaderboardEntry.fromJson(Map<String, dynamic> j) => LeaderboardEntry(
@@ -516,6 +518,7 @@ class LeaderboardEntry {
         value: (j['value'] as num).toInt(),
         rank: j['rank'] as String? ?? 'rookie',
         isMe: j['isMe'] as bool? ?? false,
+        avatar: j['avatar'] == null ? null : AvatarConfig.fromJson(j['avatar'] as Map<String, dynamic>),
       );
 }
 
@@ -1547,12 +1550,14 @@ class LeagueStandingEntry {
   final String displayName;
   final int points;
   final bool isMe;
+  final AvatarConfig? avatar;
   const LeagueStandingEntry({
     required this.position,
     required this.userId,
     required this.displayName,
     required this.points,
     required this.isMe,
+    this.avatar,
   });
 
   factory LeagueStandingEntry.fromJson(Map<String, dynamic> j) => LeagueStandingEntry(
@@ -1561,6 +1566,7 @@ class LeagueStandingEntry {
         displayName: j['displayName'] as String? ?? '—',
         points: (j['points'] as num).toInt(),
         isMe: j['isMe'] as bool? ?? false,
+        avatar: j['avatar'] == null ? null : AvatarConfig.fromJson(j['avatar'] as Map<String, dynamic>),
       );
 }
 

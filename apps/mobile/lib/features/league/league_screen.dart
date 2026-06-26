@@ -7,6 +7,7 @@ import '../../data/session.dart';
 import '../../theme/haptics.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/hi_skeleton.dart';
+import '../../widgets/hi_avatar.dart';
 import '../profile/public_profile_screen.dart';
 import '../wods/wod_detail_screen.dart';
 
@@ -374,6 +375,12 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
                   ? Icon(Icons.workspace_premium_rounded, color: posColor, size: 22)
                   : Text('#${e.position}', style: HiType.numericM.copyWith(color: posColor, fontSize: 16)),
             ),
+            HiAvatar(
+                config: e.avatar ?? const AvatarConfig(skinTone: 2, hairStyle: 1, hairColor: 1),
+                rank: 'rookie',
+                size: 26,
+                showRing: false),
+            const SizedBox(width: 10),
             Expanded(
               child: Text(
                 e.isMe ? '${e.displayName} (moi)' : e.displayName,
