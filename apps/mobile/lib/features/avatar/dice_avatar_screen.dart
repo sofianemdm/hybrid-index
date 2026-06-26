@@ -34,7 +34,9 @@ class _DiceAvatarScreenState extends ConsumerState<DiceAvatarScreen> {
   final _rng = Random();
   AvatarConfig _base = const AvatarConfig(skinTone: 2, hairStyle: 1, hairColor: 1);
   late Map<String, String> _options;
+  late List<DiceCategory> _categories;
   late String _seed;
+  String _sex = 'male';
   int _cat = 0; // catégorie active
   bool _loading = true;
   bool _saving = false;
@@ -42,7 +44,9 @@ class _DiceAvatarScreenState extends ConsumerState<DiceAvatarScreen> {
   @override
   void initState() {
     super.initState();
-    _options = Map<String, String>.from(kAvataaarsDefaults);
+    _sex = ref.read(sessionProvider).sex ?? 'male';
+    _categories = avataaarsCategoriesFor(_sex);
+    _options = Map<String, String>.from(avataaarsDefaultsFor(_sex));
     _seed = _rng.nextInt(1000000000).toRadixString(36);
     _load();
   }
@@ -54,7 +58,7 @@ class _DiceAvatarScreenState extends ConsumerState<DiceAvatarScreen> {
       setState(() {
         _base = a;
         if (a.diceOptions != null && a.diceOptions!.isNotEmpty) {
-          _options = {...kAvataaarsDefaults, ...a.diceOptions!};
+          _options = {...avataaarsDefaultsFor(_sex), ...a.diceOptions!};
         }
         if (a.diceSeed != null && a.diceSeed!.isNotEmpty) _seed = a.diceSeed!;
         _loading = false;
@@ -67,7 +71,7 @@ class _DiceAvatarScreenState extends ConsumerState<DiceAvatarScreen> {
   void _surprise() {
     HiHaptics.tap();
     setState(() {
-      for (final c in kAvataaarsCategories) {
+      for (final c in _categories) {
         _options[c.key] = c.options[_rng.nextInt(c.options.length)].value;
       }
     });
@@ -106,7 +110,7 @@ class _DiceAvatarScreenState extends ConsumerState<DiceAvatarScreen> {
   Widget build(BuildContext context) {
     final rank = ref.watch(myProfileProvider).value?.index.rank ?? 'rookie';
     final preview = _base.copyWith(diceStyle: kAvataaarsStyle, diceSeed: _seed, diceOptions: _options);
-    final cat = kAvataaarsCategories[_cat];
+    final cat = _categories[_cat];
     return Scaffold(
       appBar: AppBar(
         title: const Text('Forge ton athlète'),
@@ -148,7 +152,7 @@ class _DiceAvatarScreenState extends ConsumerState<DiceAvatarScreen> {
                     child: ListView.separated(
                       scrollDirection: Axis.horizontal,
                       padding: const EdgeInsets.symmetric(horizontal: HiSpace.lg),
-                      itemCount: kAvataaarsCategories.length,
+                      itemCount: _categories.length,
                       separatorBuilder: (_, __) => const SizedBox(width: 8),
                       itemBuilder: (_, i) => _catChip(i),
                     ),
@@ -197,7 +201,7 @@ class _DiceAvatarScreenState extends ConsumerState<DiceAvatarScreen> {
           color: active ? null : HiColors.bgElevated2,
           borderRadius: BorderRadius.circular(HiRadius.pill),
         ),
-        child: Text(kAvataaarsCategories[i].label,
+        child: Text(_categories[i].label,
             style: TextStyle(
                 color: active ? HiColors.textOnBrand : HiColors.textSecondary, fontWeight: FontWeight.w700)),
       ),
