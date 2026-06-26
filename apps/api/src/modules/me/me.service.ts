@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { ProfileScoringService } from "../profile/profile-scoring.service";
 import type { UpdateAvatarRequest, UpdateMeRequest } from "./me.dto";
@@ -23,39 +23,22 @@ export class MeService {
     private readonly profileScoring: ProfileScoringService,
   ) {}
 
-  /** Met à jour le profil. Un changement d'objectif recalcule l'Index (pondération par objectif). */
+  /** Met à jour le profil (objectif / matériel). Un changement d'objectif recalcule l'Index
+   *  (pondération par objectif). Le pseudo (`displayName`) est figé après création → non modifiable
+   *  ici (absent du DTO, rejeté en amont). */
   async update(userId: string, req: UpdateMeRequest): Promise<unknown> {
     const profile = await this.prisma.profile.findUnique({ where: { userId } });
     if (!profile) throw new NotFoundException({ code: "NOT_FOUND", message: "Profil introuvable." });
 
-    if (req.displayName !== undefined) {
-      const displayName = req.displayName.trim();
-      const taken = await this.prisma.profile.findUnique({ where: { displayName } });
-      if (taken && taken.userId !== userId) {
-        throw new ConflictException({ code: "CONFLICT", message: "Ce pseudo est déjà pris." });
-      }
-    }
-
     const goalChanged = req.goal !== undefined && req.goal !== profile.goal;
 
-    let updated;
-    try {
-      updated = await this.prisma.profile.update({
-        where: { userId },
-        data: {
-          ...(req.displayName !== undefined ? { displayName: req.displayName.trim() } : {}),
-          ...(req.goal !== undefined ? { goal: req.goal } : {}),
-          ...(req.equipmentPref !== undefined ? { equipmentPref: req.equipmentPref } : {}),
-        },
-      });
-    } catch (e) {
-      // Course concurrente sur le pseudo (P2002) après le findUnique ci-dessus → 409 ciblé.
-      const err = e as { code?: string };
-      if (err?.code === "P2002") {
-        throw new ConflictException({ code: "CONFLICT", message: "Ce pseudo est déjà pris." });
-      }
-      throw e;
-    }
+    const updated = await this.prisma.profile.update({
+      where: { userId },
+      data: {
+        ...(req.goal !== undefined ? { goal: req.goal } : {}),
+        ...(req.equipmentPref !== undefined ? { equipmentPref: req.equipmentPref } : {}),
+      },
+    });
 
     // L'objectif change la pondération de l'Index → on recalcule à partir des efforts persistés.
     if (goalChanged) {

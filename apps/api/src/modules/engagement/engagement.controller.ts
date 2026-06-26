@@ -4,7 +4,7 @@ import { ZodValidationPipe } from "../../common/zod-validation.pipe";
 import { CurrentUser } from "../auth/current-user.decorator";
 import { JwtAuthGuard, type AuthenticatedUser } from "../auth/jwt-auth.guard";
 import { StreakService, type StreakState } from "./streak.service";
-import { BadgesService, type BadgeView } from "./badges.service";
+import { BadgesService, type BadgeCard, type BadgeView } from "./badges.service";
 import { EngagementService, type FeedItem, type WeeklyRecap } from "./engagement.service";
 import { PushService } from "./push.service";
 
@@ -59,10 +59,17 @@ export class EngagementController {
     return this.streak.updateSettings(user.userId, body);
   }
 
-  /** Badges (débloqués + verrouillés). */
+  /** Badges (débloqués + verrouillés) — catalogue complet pour la grille de badges. */
   @Get("badges")
   getBadges(@CurrentUser() user: AuthenticatedUser): Promise<BadgeView[]> {
     return this.badges.listForUser(user.userId);
+  }
+
+  /** Carte de joueur : UNIQUEMENT les badges gagnés (du plus récent au plus ancien) + cosmétiques
+   *  actifs. Forme compacte pensée pour l'affichage sur la carte de l'utilisateur courant. */
+  @Get("badges/card")
+  getBadgeCard(@CurrentUser() user: AuthenticatedUser): Promise<BadgeCard> {
+    return this.badges.cardForUser(user.userId);
   }
 
   /** Préférences de notification + catalogue des déclencheurs. */

@@ -37,7 +37,8 @@ export class MeController {
     };
   }
 
-  /** Met à jour le profil (pseudo / objectif / matériel). Objectif modifié → Index recalculé. */
+  /** Met à jour le profil (objectif / matériel). Objectif modifié → Index recalculé.
+   *  Le pseudo est figé après création (non modifiable). */
   @Patch()
   update(
     @CurrentUser() user: AuthenticatedUser,

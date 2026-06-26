@@ -3,14 +3,16 @@ import { Goal, Sex } from "@hybrid-index/contracts";
 
 const EquipmentPref = z.enum(["none", "equipped", "both"]);
 
-/** Inscription : compte + profil minimal (age-gating D4 vérifié côté service). */
+/** Inscription : compte + profil minimal (age-gating D4 vérifié côté service).
+ *  `goal` est OPTIONNEL (le front ne propose plus hyrox/crossfit/condition) : défaut neutre
+ *  « all_round » (poids d'attributs égaux → scoring non biaisé, cf. scoring-core/weights.ts). */
 export const RegisterRequest = z.object({
   email: z.string().email(),
   password: z.string().min(8, "8 caractères minimum"),
   displayName: z.string().min(2).max(24),
   dateOfBirth: z.coerce.date(),
   sex: Sex,
-  goal: Goal,
+  goal: Goal.default("all_round"),
   equipmentPref: EquipmentPref.default("both"),
 });
 export type RegisterRequest = z.infer<typeof RegisterRequest>;
@@ -30,7 +32,7 @@ export const GoogleAuthRequest = z.object({
       displayName: z.string().min(2).max(24),
       dateOfBirth: z.coerce.date(),
       sex: Sex,
-      goal: Goal,
+      goal: Goal.default("all_round"), // objectif retiré du front → défaut neutre
       equipmentPref: EquipmentPref.default("equipped"),
     })
     .optional(),

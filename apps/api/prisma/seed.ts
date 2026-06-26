@@ -47,30 +47,9 @@ const WODS: Array<{
 ];
 
 const ATTRS: AttributeKey[] = ["engine", "speed", "strength", "power", "muscular_endurance", "hybrid"];
+// GOALS conservé : sert UNIQUEMENT à typer la discipline des « Références Pro » (élites, hors
+// classement). Les faux comptes de remplissage du classement ont été retirés (app 100 % réelle).
 const GOALS = ["hyrox", "crossfit_strength", "all_round"] as const;
-// Noms RÉALISTES (40 par sexe + 48 noms de famille) → pseudos crédibles, pas générés par template.
-const FIRST_M = ["Lucas", "Hugo", "Nathan", "Théo", "Maxime", "Antoine", "Raphaël", "Yanis", "Marco", "Diego", "Adam", "Noah", "Léo", "Tom", "Enzo", "Mehdi", "Sacha", "Ivan", "Karl", "Bruno", "Julien", "Thomas", "Alexandre", "Mathis", "Gabriel", "Romain", "Quentin", "Florian", "Kevin", "Samuel", "Victor", "Paul", "Louis", "Aurélien", "Damien", "Nicolas", "Pierre", "Clément", "Bastien", "Jordan"];
-const FIRST_F = ["Léa", "Manon", "Camille", "Sarah", "Chloé", "Inès", "Jade", "Lina", "Maya", "Nora", "Eva", "Zoé", "Anaïs", "Lou", "Romane", "Yasmine", "Alice", "Nina", "Clara", "Iris", "Emma", "Julie", "Marine", "Pauline", "Laura", "Élise", "Margaux", "Justine", "Audrey", "Charlotte", "Mathilde", "Océane", "Lucie", "Amandine", "Sophie", "Mélanie", "Fanny", "Céline", "Morgane", "Aurore"];
-const LAST = ["Martin", "Bernard", "Dubois", "Thomas", "Robert", "Petit", "Durand", "Leroy", "Moreau", "Simon", "Laurent", "Lefebvre", "Michel", "Garcia", "David", "Bertrand", "Roux", "Vincent", "Fournier", "Morel", "Girard", "André", "Mercier", "Blanc", "Guérin", "Boyer", "Rousseau", "Henry", "Roussel", "Nicolas", "Perrin", "Morin", "Mathieu", "Gauthier", "Dumont", "Lopez", "Fontaine", "Chevalier", "Robin", "Masson", "Sanchez", "Gérard", "Nguyen", "Faure", "Brun", "Caron", "Lambert", "Renaud"];
-
-function stripAccents(s: string): string {
-  return s.normalize("NFD").replace(/[̀-ͯ]/g, "");
-}
-
-/** Nom d'affichage crédible et unique (mix « Prénom Nom », « prenom.nom », « prenomnom »). */
-function displayNameFor(i: number, sex: Sex): string {
-  const firsts = sex === "male" ? FIRST_M : FIRST_F;
-  const first = firsts[i % firsts.length];
-  const last = LAST[(i * 13 + (sex === "male" ? 0 : 7)) % LAST.length];
-  switch (i % 4) {
-    case 1:
-      return `${stripAccents(first).toLowerCase()}.${stripAccents(last).toLowerCase()}`;
-    case 3:
-      return `${stripAccents(first).toLowerCase()}${stripAccents(last).toLowerCase()}`;
-    default:
-      return `${first} ${last}`;
-  }
-}
 
 /** Repères de perf de seed par séance : [élite, débutant] par sexe. time=true → plus bas = meilleur. */
 const SEED_PERF: Record<string, { time: boolean; m: [number, number]; f: [number, number] }> = {
@@ -129,17 +108,6 @@ const ELITE_DISCIPLINES: EliteDiscipline[] = [
 
 function rand(min: number, max: number): number {
   return Math.floor(min + Math.random() * (max - min + 1));
-}
-
-/** Faux utilisateurs de classement FACILES À BATTRE : aucun ne dépasse le niveau INTERMÉDIAIRE
- *  (plafond 560 interne ≈ 70/100). Plus aucun « fort » ni « élite » → leurs Index ET leurs temps
- *  par séance (dérivés de l'Index, cf. plus bas) restent battables. Distribution débutant →
- *  intermédiaire. (Les athlètes d'élite « Références Pro » restent hors classement, cf. seed plus bas.) */
-function sampleIndex(): number {
-  const r = Math.random();
-  if (r < 0.35) return rand(450, 560); // intermédiaire (le plafond, à battre)
-  if (r < 0.75) return rand(300, 450); // milieu
-  return rand(160, 300); // débutants
 }
 
 async function main(): Promise<void> {

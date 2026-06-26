@@ -162,4 +162,56 @@ export class BadgesService {
     );
     return BADGES.filter((b) => b.cosmeticUnlock && owned.has(b.id)).map((b) => b.cosmeticUnlock as string);
   }
+
+  /** Vue « carte de joueur » : badges RÉELLEMENT gagnés (du plus récent au plus ancien) + cosmétiques
+   *  actifs. Évalue d'abord (attribue les badges mérités), puis ne renvoie QUE les débloqués — forme
+   *  compacte destinée à l'affichage sur la carte. */
+  async cardForUser(userId: string): Promise<BadgeCard> {
+    await this.evaluate(userId);
+    const owned = await this.prisma.userBadge.findMany({
+      where: { userId },
+      select: { badgeId: true, unlockedAt: true },
+    });
+    const byId = new Map(BADGES.map((b) => [b.id, b]));
+    const earned: EarnedBadge[] = owned
+      .map((u): EarnedBadge | null => {
+        const def = byId.get(u.badgeId);
+        if (!def) return null; // badge retiré du catalogue mais encore en base → ignoré
+        return {
+          id: def.id,
+          label: def.name,
+          description: def.description,
+          category: def.category,
+          rarity: def.rarity,
+          cosmeticUnlock: def.cosmeticUnlock,
+          unlockedAt: u.unlockedAt.toISOString(),
+        };
+      })
+      .filter((b): b is EarnedBadge => b !== null)
+      .sort((a, b) => b.unlockedAt.localeCompare(a.unlockedAt)); // plus récent d'abord
+
+    const ownedIds = new Set(earned.map((b) => b.id));
+    const activeCosmetics = BADGES.filter((b) => b.cosmeticUnlock && ownedIds.has(b.id)).map(
+      (b) => b.cosmeticUnlock as string,
+    );
+    return { earned, activeCosmetics, total: earned.length };
+  }
+}
+
+/** Un badge gagné, forme compacte pour la carte de joueur. */
+export interface EarnedBadge {
+  id: string;
+  label: string; // = name du catalogue
+  description: string;
+  category: string;
+  rarity: string;
+  cosmeticUnlock: string | null;
+  unlockedAt: string; // ISO 8601
+}
+
+/** Réponse de la carte de joueur : badges gagnés + cosmétiques actifs. */
+export interface BadgeCard {
+  earned: EarnedBadge[];
+  activeCosmetics: string[];
+  total: number;
 }

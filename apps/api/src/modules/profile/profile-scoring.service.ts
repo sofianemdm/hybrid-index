@@ -198,7 +198,11 @@ export class ProfileScoringService {
     const result = toPersistedProfile(computedProfile, socialProof);
 
     // Annonce d'arrivée : UN seul événement de feed (jamais la grappe de badges du 1er calcul).
-    if (isFirstIndex && adjIndex.ratingInt != null) {
+    // On l'émet UNIQUEMENT quand l'Index est COMPLET (non estimé) : un Index encore estimé
+    // (auto-évaluation pompes/squat à l'onboarding, valeur provisoire) ne doit pas afficher au feed
+    // « X nous rejoint avec un index de Y » avec une note qui bougera. Il sera annoncé au 1er
+    // recalcul qui le rend non estimé (ex. premier WOD réel chronométré loggé).
+    if (isFirstIndex && !adjIndex.isEstimated && adjIndex.ratingInt != null) {
       await this.feedEvents.emit(userId, "member_joined", { index: adjIndex.ratingInt }).catch(() => undefined);
     }
 
