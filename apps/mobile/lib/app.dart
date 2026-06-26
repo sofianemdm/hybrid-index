@@ -24,6 +24,17 @@ final avatarProvider = FutureProvider<AvatarConfig>((ref) async {
   return ref.read(apiClientProvider).getAvatar();
 });
 
+/// Badges gagnés (forme compacte pour la carte de joueur). Tolérant : [] si erreur/déconnecté.
+final cardBadgesProvider = FutureProvider<List<CardBadge>>((ref) async {
+  final session = ref.watch(sessionProvider);
+  if (session.status != AuthStatus.loggedIn) return const [];
+  try {
+    return await ref.read(apiClientProvider).badgesCard();
+  } catch (_) {
+    return const [];
+  }
+});
+
 /// Série hebdomadaire (semaines actives). `null` si déconnecté. Tolérant : renvoie null en cas
 /// d'erreur réseau (la flamme est non bloquante, jamais une raison d'échec d'écran).
 final streakProvider = FutureProvider<StreakState?>((ref) async {

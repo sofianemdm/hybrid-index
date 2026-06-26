@@ -142,6 +142,7 @@ class _ShareCardScreenState extends ConsumerState<ShareCardScreen> {
               name: name,
               sex: ref.watch(sessionProvider).sex,
               avatar: ref.watch(avatarProvider).value,
+              badges: ref.watch(cardBadgesProvider).value ?? const [],
               exporting: _exporting,
             ),
           ),
@@ -208,6 +209,7 @@ class _Card extends StatefulWidget {
   final String name;
   final String? sex;
   final AvatarConfig? avatar;
+  final List<CardBadge> badges;
 
   /// Pendant l'export PNG : on fige (OVR plein, sans reflet animé) pour une capture propre.
   final bool exporting;
@@ -216,6 +218,7 @@ class _Card extends StatefulWidget {
     required this.name,
     this.sex,
     this.avatar,
+    this.badges = const [],
     this.exporting = false,
   });
 
@@ -675,7 +678,13 @@ class _CardState extends State<_Card> with TickerProviderStateMixin {
           // Badges (5 slots — vides tant que non branchés : dopamine honnête).
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(5, (i) => Padding(padding: const EdgeInsets.symmetric(horizontal: 5), child: _emptyBadge(skin, i, t))),
+            children: List.generate(
+              5,
+              (i) => Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 5),
+                child: i < widget.badges.length ? _realBadge(widget.badges[i], i) : _emptyBadge(skin, i, t),
+              ),
+            ),
           ),
           const SizedBox(height: 8),
           // Footer branding (slot QR réservé + wordmark).
@@ -811,6 +820,47 @@ class _CardState extends State<_Card> with TickerProviderStateMixin {
         ),
       ),
     );
+  }
+
+  /// Badge gagné : pastille teintée par rareté, glow si rare/epic/legendary.
+  Widget _realBadge(CardBadge b, int i) {
+    final color = _badgeColor(b.rarity);
+    final rare = b.rarity != 'common';
+    final appear = widget.exporting
+        ? 1.0
+        : Curves.easeOutBack.transform(((_reveal.value - (0.85 + i * 0.03)) / 0.15).clamp(0.0, 1.0));
+    return Opacity(
+      opacity: appear.clamp(0.0, 1.0),
+      child: Transform.scale(
+        scale: 0.8 + 0.2 * appear.clamp(0.0, 1.0),
+        child: Container(
+          width: 26,
+          height: 26,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: color.withValues(alpha: 0.20),
+            border: Border.all(color: color, width: 1.4),
+            boxShadow: rare ? [BoxShadow(color: color.withValues(alpha: 0.55), blurRadius: 8)] : null,
+          ),
+          alignment: Alignment.center,
+          child: const Icon(Icons.military_tech_rounded, color: Colors.white, size: 15),
+        ),
+      ),
+    );
+  }
+
+  // Couleurs fixes par rareté (la carte est indépendante du thème).
+  Color _badgeColor(String rarity) {
+    switch (rarity) {
+      case 'legendary':
+        return const Color(0xFFB98CFF);
+      case 'epic':
+        return const Color(0xFF7C5CFF);
+      case 'rare':
+        return const Color(0xFF2BD4F5);
+      default:
+        return _inkSoft;
+    }
   }
 
   /// Bande lumineuse diagonale qui traverse la carte en boucle (intensité par rang).

@@ -570,6 +570,20 @@ class CoachSession {
       );
 }
 
+/// Badge gagné, forme compacte pour la carte de joueur (/v1/me/badges/card → earned[]).
+class CardBadge {
+  final String id;
+  final String label;
+  final String rarity; // common / rare / epic / legendary
+  const CardBadge({required this.id, required this.label, required this.rarity});
+
+  factory CardBadge.fromJson(Map<String, dynamic> j) => CardBadge(
+        id: j['id'] as String,
+        label: j['label'] as String? ?? '',
+        rarity: j['rarity'] as String? ?? 'common',
+      );
+}
+
 class CoachResult {
   final String targetAttribute;
   final int current;

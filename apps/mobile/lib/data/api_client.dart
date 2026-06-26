@@ -242,6 +242,14 @@ class ApiClient {
     return j.map((e) => BadgeModel.fromJson(e as Map<String, dynamic>)).toList();
   }
 
+  /// Badges gagnés (forme compacte) pour la carte de joueur : /v1/me/badges/card.
+  Future<List<CardBadge>> badgesCard() async {
+    final j = await _send('GET', '/v1/me/badges/card') as Map<String, dynamic>;
+    return (j['earned'] as List<dynamic>? ?? const [])
+        .map((e) => CardBadge.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
   Future<WeeklyRecap> weeklyRecap() async {
     final j = await _send('GET', '/v1/me/weekly-recap') as Map<String, dynamic>;
     return WeeklyRecap.fromJson(j);
