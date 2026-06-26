@@ -9,6 +9,7 @@ import 'wod_detail_screen.dart';
 import 'other_workouts_screen.dart';
 import '../history/history_screen.dart';
 import '../coach/sessions_by_attribute_screen.dart';
+import '../../widgets/glossary_text.dart';
 
 /// Onglet WOD : catalogue des WODs (15 références + communautaires à venir).
 class WodTab extends ConsumerStatefulWidget {
@@ -177,7 +178,7 @@ class _WodTabState extends ConsumerState<WodTab> {
                 ],
               ),
               const SizedBox(height: 8),
-              Text(s.description, style: TextStyle(color: HiColors.textSecondary, fontSize: 13, height: 1.4)),
+              GlossaryText(s.description, style: TextStyle(color: HiColors.textSecondary, fontSize: 13, height: 1.4)),
             ],
           ),
         );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../widgets/glossary_text.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models.dart';
@@ -268,7 +269,7 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
           ),
           if (p.summary != null && p.summary!.isNotEmpty) ...[
             const SizedBox(height: HiSpace.md),
-            Text(p.summary!, style: HiType.body.copyWith(color: HiColors.textSecondary)),
+            GlossaryText(p.summary!, style: HiType.body.copyWith(color: HiColors.textSecondary)),
           ],
           const SizedBox(height: HiSpace.md),
           ...p.blocks.map(_blockRow),

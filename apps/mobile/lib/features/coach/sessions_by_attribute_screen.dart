@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../widgets/glossary_text.dart';
+
 import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../l10n/app_localizations.dart';
@@ -151,7 +153,7 @@ class _SessionCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
-            Text(session.description,
+            GlossaryText(session.description,
                 style: TextStyle(color: HiColors.textSecondary, fontSize: 13, height: 1.4)),
           ],
         ),
