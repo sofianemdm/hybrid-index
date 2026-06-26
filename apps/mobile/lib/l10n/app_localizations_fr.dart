@@ -50,8 +50,11 @@ class AppLocalizationsFr extends AppLocalizations {
   String get sessionsWeeklyTitle => 'La séance de la semaine';
 
   @override
+  String get sessionsCountsMost => 'Compte fort';
+
+  @override
   String sessionsAttributeHeader(String attribute) {
-    return 'Les séances qui développent ton $attribute';
+    return 'Les épreuves qui comptent pour ton score $attribute';
   }
 
   @override

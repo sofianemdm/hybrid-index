@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../widgets/glossary_text.dart';
-
 import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
+import '../wods/wod_detail_screen.dart';
 
-/// Bibliothèque de séances qui travaillent un attribut, triées par pertinence (la séance où
-/// l'attribut compte le plus en tête). Atteint depuis le menu Séances (6 axes) et le radar Accueil.
+/// Les ÉPREUVES (WODs loguables) qui comptent pour le score d'un attribut, triées par contribution
+/// (celle qui compte le plus en haut). On y arrive depuis le menu Séances (6 axes) et le radar Accueil.
+/// Taper une épreuve → fiche détaillée → « Faire ce workout » → saisie du temps.
 class SessionsByAttributeScreen extends ConsumerStatefulWidget {
   final String attribute; // clé interne : engine/speed/strength/power/muscular_endurance/hybrid
   const SessionsByAttributeScreen({super.key, required this.attribute});
@@ -19,7 +19,7 @@ class SessionsByAttributeScreen extends ConsumerStatefulWidget {
 }
 
 class _SessionsByAttributeScreenState extends ConsumerState<SessionsByAttributeScreen> {
-  late Future<List<CoachSession>> _future;
+  late Future<List<WodCatalogEntry>> _future;
 
   @override
   void initState() {
@@ -27,7 +27,21 @@ class _SessionsByAttributeScreenState extends ConsumerState<SessionsByAttributeS
     _load();
   }
 
-  void _load() => _future = ref.read(apiClientProvider).coachLibrary(widget.attribute);
+  void _load() => _future = ref.read(apiClientProvider).wodsCatalog();
+
+  /// Épreuves de référence qui MESURENT cet attribut, triées : la plus « centrée » sur l'attribut
+  /// d'abord (peu d'attributs visés ⇒ compte le plus), les grands défis remontent à contribution égale.
+  List<WodCatalogEntry> _ranked(List<WodCatalogEntry> all) {
+    int score(WodCatalogEntry w) => (100 - w.targetAttributes.length * 12) + (w.isFlagship ? 6 : 0);
+    final list = all
+        .where((w) => !w.isOther && !w.isCustom && w.targetAttributes.contains(widget.attribute))
+        .toList()
+      ..sort((a, b) {
+        final s = score(b).compareTo(score(a));
+        return s != 0 ? s : a.name.compareTo(b.name);
+      });
+    return list;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,22 +55,35 @@ class _SessionsByAttributeScreenState extends ConsumerState<SessionsByAttributeS
         elevation: 0,
       ),
       body: SafeArea(
-        child: FutureBuilder<List<CoachSession>>(
+        child: FutureBuilder<List<WodCatalogEntry>>(
           future: _future,
           builder: (context, snap) {
             if (snap.connectionState == ConnectionState.waiting) {
               return Center(child: CircularProgressIndicator(color: color));
             }
             if (snap.hasError) {
-              return _errorRetry(t);
+              return Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(t.coachLoadError,
+                        textAlign: TextAlign.center, style: TextStyle(color: HiColors.textSecondary)),
+                    const SizedBox(height: HiSpace.sm),
+                    OutlinedButton.icon(
+                      icon: const Icon(Icons.refresh, size: 18),
+                      label: Text(t.commonRetry),
+                      onPressed: () => setState(_load),
+                    ),
+                  ],
+                ),
+              );
             }
-            final sessions = snap.data ?? const <CoachSession>[];
+            final wods = _ranked(snap.data ?? const []);
             return RefreshIndicator(
               onRefresh: () async => setState(_load),
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(HiSpace.lg, HiSpace.md, HiSpace.lg, 96),
                 children: [
-                  // En-tête : barre d'accent de l'axe + phrase d'explication.
                   Container(
                     padding: const EdgeInsets.all(HiSpace.md),
                     decoration: BoxDecoration(
@@ -66,7 +93,7 @@ class _SessionsByAttributeScreenState extends ConsumerState<SessionsByAttributeS
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.fitness_center_rounded, color: color),
+                        Icon(Icons.emoji_events_rounded, color: color),
                         const SizedBox(width: HiSpace.md),
                         Expanded(
                           child: Text(t.sessionsAttributeHeader(label),
@@ -76,14 +103,14 @@ class _SessionsByAttributeScreenState extends ConsumerState<SessionsByAttributeS
                     ),
                   ),
                   const SizedBox(height: HiSpace.lg),
-                  if (sessions.isEmpty)
+                  if (wods.isEmpty)
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 40),
                       child: Text(t.coachNoSessions,
                           textAlign: TextAlign.center, style: TextStyle(color: HiColors.textTertiary)),
                     )
                   else
-                    ...sessions.map((s) => _SessionCard(session: s, accent: color)),
+                    ...wods.asMap().entries.map((e) => _wodCard(e.value, color, e.key == 0)),
                 ],
               ),
             );
@@ -93,69 +120,74 @@ class _SessionsByAttributeScreenState extends ConsumerState<SessionsByAttributeS
     );
   }
 
-  Widget _errorRetry(AppLocalizations t) => Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(t.coachLoadError, textAlign: TextAlign.center, style: TextStyle(color: HiColors.textSecondary)),
-            const SizedBox(height: HiSpace.sm),
-            OutlinedButton.icon(
-              icon: const Icon(Icons.refresh, size: 18),
-              label: Text(t.commonRetry),
-              onPressed: () => setState(_load),
-            ),
-          ],
-        ),
-      );
-}
-
-/// Carte de séance : nom (+ étoile si l'axe est primaire), tags durée/intensité/matériel, description.
-class _SessionCard extends StatelessWidget {
-  final CoachSession session;
-  final Color accent;
-  const _SessionCard({required this.session, required this.accent});
-
-  bool get _isPrimary => (session.weight ?? 0) >= 0.999;
-
-  @override
-  Widget build(BuildContext context) {
+  /// Carte d'épreuve loguable. `top` = celle qui compte le plus (mise en avant).
+  Widget _wodCard(WodCatalogEntry w, Color accent, bool top) {
     final t = AppLocalizations.of(context);
-    final intensity = session.intensity == 'high'
-        ? t.coachIntensityHigh
-        : (session.intensity == 'medium' ? t.coachIntensityMedium : t.coachIntensityLow);
-    return Card(
-      margin: const EdgeInsets.only(bottom: HiSpace.sm),
-      child: Padding(
-        padding: const EdgeInsets.all(HiSpace.md),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+    final key = w.targetAttributes.length <= 2; // épreuve très centrée sur cet axe
+    return Padding(
+      padding: const EdgeInsets.only(bottom: HiSpace.sm),
+      child: Material(
+        color: HiColors.bgElevated,
+        borderRadius: BorderRadius.circular(HiRadius.md),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(HiRadius.md),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => WodDetailScreen(wodId: w.id, wodName: w.name)),
+          ),
+          child: Container(
+            decoration: top
+                ? BoxDecoration(
+                    borderRadius: BorderRadius.circular(HiRadius.md),
+                    border: Border.all(color: accent.withValues(alpha: 0.55), width: 1.5),
+                  )
+                : null,
+            padding: const EdgeInsets.all(HiSpace.md),
+            child: Row(
               children: [
-                if (_isPrimary) ...[
-                  Icon(Icons.star_rounded, color: accent, size: 18),
-                  const SizedBox(width: 6),
-                ],
-                Expanded(
-                  child: Text(session.name,
-                      style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                      color: accent.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(HiRadius.sm)),
+                  child: Icon(w.scoreType == 'time' ? Icons.timer_outlined : Icons.repeat, color: accent, size: 20),
                 ),
-                _tag(t.coachDurationMin(session.durationMin), HiColors.textTertiary),
+                const SizedBox(width: HiSpace.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          if (top) ...[
+                            Icon(Icons.star_rounded, color: accent, size: 16),
+                            const SizedBox(width: 4),
+                          ],
+                          Flexible(
+                            child: Text(w.name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          _tag(w.requiresEquipment ? t.wodTabWithEquipment : t.wodTabNoEquipment,
+                              w.requiresEquipment ? HiColors.warn : HiColors.success),
+                          if (key) ...[
+                            const SizedBox(width: 6),
+                            _tag(t.sessionsCountsMost, accent),
+                          ],
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.chevron_right_rounded, color: HiColors.textTertiary),
               ],
             ),
-            const SizedBox(height: 6),
-            Row(
-              children: [
-                _tag(intensity, accent),
-                const SizedBox(width: 6),
-                _tag(session.requiresEquipment ? t.coachWithEquipment : t.coachNoEquipment,
-                    session.requiresEquipment ? HiColors.warn : HiColors.success),
-              ],
-            ),
-            const SizedBox(height: 8),
-            GlossaryText(session.description,
-                style: TextStyle(color: HiColors.textSecondary, fontSize: 13, height: 1.4)),
-          ],
+          ),
         ),
       ),
     );

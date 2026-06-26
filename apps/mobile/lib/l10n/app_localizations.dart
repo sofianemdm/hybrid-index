@@ -176,10 +176,16 @@ abstract class AppLocalizations {
   /// **'Session of the week'**
   String get sessionsWeeklyTitle;
 
+  /// No description provided for @sessionsCountsMost.
+  ///
+  /// In en, this message translates to:
+  /// **'Counts a lot'**
+  String get sessionsCountsMost;
+
   /// No description provided for @sessionsAttributeHeader.
   ///
   /// In en, this message translates to:
-  /// **'Sessions that build your {attribute}'**
+  /// **'Workouts that count toward your {attribute} score'**
   String sessionsAttributeHeader(String attribute);
 
   /// No description provided for @leaderboardIntro.

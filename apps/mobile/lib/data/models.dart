@@ -1084,6 +1084,9 @@ class WodCatalogEntry {
   final bool isCustom;
   final bool isFlagship;
   final bool isOther;
+
+  /// Attributs que cette épreuve MESURE (compte pour leur score). Sert au tri « par axe ».
+  final List<String> targetAttributes;
   const WodCatalogEntry({
     required this.id,
     required this.name,
@@ -1092,6 +1095,7 @@ class WodCatalogEntry {
     required this.isCustom,
     this.isFlagship = false,
     this.isOther = false,
+    this.targetAttributes = const [],
   });
 
   factory WodCatalogEntry.fromJson(Map<String, dynamic> j) => WodCatalogEntry(
@@ -1102,6 +1106,8 @@ class WodCatalogEntry {
         isCustom: j['isCustom'] as bool? ?? false,
         isFlagship: j['isFlagship'] as bool? ?? false,
         isOther: j['isOther'] as bool? ?? false,
+        targetAttributes:
+            (j['targetAttributes'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? const [],
       );
 }
 

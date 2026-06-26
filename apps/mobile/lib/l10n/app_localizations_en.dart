@@ -49,8 +49,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sessionsWeeklyTitle => 'Session of the week';
 
   @override
+  String get sessionsCountsMost => 'Counts a lot';
+
+  @override
   String sessionsAttributeHeader(String attribute) {
-    return 'Sessions that build your $attribute';
+    return 'Workouts that count toward your $attribute score';
   }
 
   @override
