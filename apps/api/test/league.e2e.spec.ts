@@ -51,6 +51,11 @@ describe("api — mode Ligue (e2e réel)", () => {
 
     // Saison active contrôlée + 1 semaine imposée = la semaine ISO courante, WOD = fran.
     const now = new Date();
+    // Robustesse : retire toute saison résiduelle couvrant « maintenant » (sinon findFirst est
+    // ambigu entre elle et la saison de test → flake). N'affecte pas les saisons futures (ex. 2026-09).
+    await prisma.leagueSeason.deleteMany({
+      where: { status: "active", opensAt: { lte: now }, closesAt: { gt: now } },
+    });
     const season = await prisma.leagueSeason.create({
       data: {
         monthKey: `e2e-${stamp}`,

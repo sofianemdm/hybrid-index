@@ -10,6 +10,7 @@ import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../theme/haptics.dart';
 import '../../theme/tokens.dart';
+import '../../widgets/celebration.dart';
 import '../../widgets/hi_avatar.dart';
 
 /// Création d'avatar premium (DiceBear) — Phase 1 : style + variations + « Surprends-moi ».
@@ -67,10 +68,17 @@ class _DiceAvatarScreenState extends ConsumerState<DiceAvatarScreen> {
 
   Future<void> _save() async {
     setState(() => _saving = true);
-    HiHaptics.celebrate();
     try {
       await ref.read(apiClientProvider).updateAvatar(_base.copyWith(diceStyle: _style, diceSeed: _seed));
       ref.invalidate(avatarProvider);
+      if (!mounted) return;
+      HiHaptics.celebrate();
+      await Celebration.show(
+        context,
+        title: 'Ton athlète est prêt !',
+        subtitle: 'Il portera tes couleurs au classement.',
+        intensity: CelebrationIntensity.medium,
+      );
       if (!mounted) return;
       Navigator.of(context).pop();
     } on ApiException catch (e) {
@@ -93,7 +101,23 @@ class _DiceAvatarScreenState extends ConsumerState<DiceAvatarScreen> {
             : ListView(
                 padding: const EdgeInsets.all(HiSpace.lg),
                 children: [
-                  Center(child: HiAvatar(config: preview, rank: rank, size: 160)),
+                  Center(
+                    // L'avatar « pop » (scale + fondu) à chaque changement de style/visage → dopamine.
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 280),
+                      transitionBuilder: (child, anim) => ScaleTransition(
+                        scale: Tween<double>(begin: 0.85, end: 1.0)
+                            .animate(CurvedAnimation(parent: anim, curve: Curves.easeOutBack)),
+                        child: FadeTransition(opacity: anim, child: child),
+                      ),
+                      child: HiAvatar(
+                        key: ValueKey('$_style-$_seed'),
+                        config: preview,
+                        rank: rank,
+                        size: 160,
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: HiSpace.sm),
                   Center(
                     child: Text('C\'est lui qui grimpera le classement.',

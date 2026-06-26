@@ -60,6 +60,8 @@ export class ProfilesService {
             accessory: avatar.accessory,
             background: avatar.background,
             photoData: avatar.photoData,
+            diceStyle: avatar.diceStyle,
+            diceSeed: avatar.diceSeed,
           }
         : null,
       activeCosmetics: cosmeticsFor(new Set(badges.map((b) => b.badgeId))),

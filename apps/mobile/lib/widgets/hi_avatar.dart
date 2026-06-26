@@ -64,6 +64,9 @@ class HiAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     final photo = decodeAvatarPhoto(config.photoData);
     final ringColor = HiColors.rank(rank);
+    // Aura de rang (or/diamant/élite/top) → lueur autour de l'avatar (image ou photo).
+    final aura = (cosmetics != null && cosmetics!.ids.isNotEmpty) ? cosmetics!.aura : null;
+    final glow = aura?.color;
 
     // Photo de profil : remplace l'avatar dessiné, avec cadre de rang.
     if (photo != null) {
@@ -71,9 +74,13 @@ class HiAvatar extends StatelessWidget {
         width: size,
         height: size,
         child: Container(
-          decoration: showRing
-              ? BoxDecoration(shape: BoxShape.circle, border: Border.all(color: ringColor, width: size * 0.04))
-              : null,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: showRing ? Border.all(color: ringColor, width: size * 0.04) : null,
+            boxShadow: glow != null
+                ? [BoxShadow(color: glow.withValues(alpha: 0.6), blurRadius: size * 0.16, spreadRadius: size * 0.03)]
+                : null,
+          ),
           child: ClipOval(
             child: Image.memory(photo, width: size, height: size, fit: BoxFit.cover, gaplessPlayback: true),
           ),
@@ -87,9 +94,13 @@ class HiAvatar extends StatelessWidget {
         width: size,
         height: size,
         child: Container(
-          decoration: showRing
-              ? BoxDecoration(shape: BoxShape.circle, border: Border.all(color: ringColor, width: size * 0.04))
-              : null,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: showRing ? Border.all(color: ringColor, width: size * 0.04) : null,
+            boxShadow: glow != null
+                ? [BoxShadow(color: glow.withValues(alpha: 0.6), blurRadius: size * 0.16, spreadRadius: size * 0.03)]
+                : null,
+          ),
           child: ClipOval(
             child: Image.network(
               diceBearUrl(style: config.diceStyle ?? kDiceBearDefaultStyle, seed: config.diceSeed!, size: (size * 2).round()),
