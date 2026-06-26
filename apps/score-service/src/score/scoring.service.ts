@@ -8,6 +8,8 @@ import {
   computeRadar,
   hybridIndex,
   percentile as percentileOf,
+  percentileFromInternal,
+  quantile,
   subScoreFromPercentile,
 } from "@hybrid-index/scoring-core";
 import { WodsService } from "../wods/wods.service";
@@ -378,6 +380,45 @@ export class ScoringService {
       throw new NotFoundException({ code: "NOT_FOUND", message: `Aucun palier de référence pour ${wodId}.` });
     }
     return { wodId, scoreType: wod.scoreType, male: levels.male, female: levels.female };
+  }
+
+  /**
+   * PRÉDICTION inverse : « d'après ton niveau, tu ferais ~X » sur un WOD de référence.
+   * On INVERSE la chaîne raw → percentile → subScore :
+   *   1. userInternal = MOYENNE SIMPLE des sous-scores (/1000) des attributs CIBLES du WOD qui sont
+   *      `unlocked` (un attribut estimé compte, du moment qu'il est débloqué). Aucun cible débloqué
+   *      ⇒ predictedRaw = null (on ne prédit pas dans le vide).
+   *   2. p = percentileFromInternal(userInternal) (inverse analytique de sigmoid-v1).
+   *   3. predictedRaw = quantile(p, modèle_du_sexe), clampé dans [hardMin, hardMax], arrondi entier.
+   * WOD inconnu OU course à distance libre (pas de résultat brut unique) ⇒ predictedRaw = null.
+   */
+  predictResult(req: internalScore.PredictResultRequest): internalScore.PredictResultResponse {
+    const wod = this.wods.find(req.wodId);
+    // WOD inconnu, ou course à distance libre (distance+temps via Riegel : pas de « raw » unique
+    // à afficher sur une fiche) ⇒ on ne prédit pas. On renvoie un scoreType par défaut cohérent.
+    if (!wod || req.wodId === FREE_RUN_ID) {
+      return { predictedRaw: null, scoreType: wod?.scoreType ?? "time" };
+    }
+
+    // Attributs CIBLES du WOD effectivement débloqués chez l'utilisateur.
+    const targets = new Set(wod.targetAttributes.map((t) => t.attribute));
+    const unlockedTargetScores = req.attributeScores
+      .filter((a) => targets.has(a.attribute) && a.unlocked)
+      .map((a) => a.score);
+    if (unlockedTargetScores.length === 0) {
+      return { predictedRaw: null, scoreType: wod.scoreType };
+    }
+
+    // Moyenne SIMPLE des sous-scores cibles débloqués (cf. note de calibration : tous les attributs
+    // cibles d'un WOD sont a priori d'égale importance ; pas de pondération par défaut côté registre).
+    const userInternal = unlockedTargetScores.reduce((s, v) => s + v, 0) / unlockedTargetScores.length;
+    const p = percentileFromInternal(userInternal);
+
+    const ref = wod.bySex[req.sex];
+    const raw = quantile(p, ref.model);
+    // Borne dans les limites physiologiques du WOD (mêmes bornes que l'anti-triche §5.5).
+    const clamped = Math.min(ref.hardMax, Math.max(ref.hardMin, raw));
+    return { predictedRaw: Math.round(clamped), scoreType: wod.scoreType };
   }
 
   /** Grand Chelem : compte les WODs de référence où le meilleur effort bat la référence pro. */

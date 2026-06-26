@@ -63,6 +63,13 @@ export class WodsController {
     return this.wods.detail(id, user?.userId);
   }
 
+  /** Prédiction « d'après ton niveau, tu ferais ~X » sur cette séance (réservé aux connectés). */
+  @Get(":id/prediction")
+  @UseGuards(JwtAuthGuard)
+  prediction(@Param("id") id: string, @CurrentUser() user: AuthenticatedUser): Promise<unknown> {
+    return this.wods.prediction(id, user.userId);
+  }
+
   /** Classement d'un WOD par sexe et variante (Rx par défaut, ou Scaled). */
   @Get(":id/leaderboard")
   async leaderboard(

@@ -434,6 +434,31 @@ export class WodsService {
     };
   }
 
+  /**
+   * Prédiction « d'après ton niveau, tu ferais ~X » sur un WOD de référence, pour la fiche du WOD.
+   * Charge les scores d'attribut + le sexe de l'utilisateur, délègue l'inversion au score-service.
+   * WOD introuvable → 404. `predictedRaw` peut être `null` (aucun attribut cible débloqué, ou WOD
+   * non prédictible côté score-service : custom/free-run) — le mobile affiche alors un état neutre.
+   */
+  async prediction(id: string, userId: string): Promise<internalScore.PredictResultResponse> {
+    const wod = await this.prisma.wod.findUnique({ where: { id }, select: { id: true } });
+    if (!wod) throw new NotFoundException({ code: "NOT_FOUND", message: "WOD introuvable." });
+
+    const profile = await this.prisma.profile.findUnique({ where: { userId }, select: { sex: true } });
+    if (!profile) throw new NotFoundException({ code: "NOT_FOUND", message: "Profil introuvable." });
+
+    const scores = await this.prisma.attributeScore.findMany({
+      where: { userId },
+      select: { attribute: true, score: true, unlocked: true },
+    });
+
+    return this.scoreClient.predictResult({
+      wodId: id,
+      sex: profile.sex,
+      attributeScores: scores.map((s) => ({ attribute: s.attribute, score: s.score, unlocked: s.unlocked })),
+    });
+  }
+
   /** Classement d'un WOD (meilleur effort par utilisateur, par sexe, variante Rx ou Scaled). */
   async leaderboard(id: string, sex: string, rx: boolean, userId?: string, memberIds?: string[]): Promise<unknown> {
     // Classement par PERFORMANCE RÉELLE (même WOD, même sexe, même variante) : le temps le plus bas

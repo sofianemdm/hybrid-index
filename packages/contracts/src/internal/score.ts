@@ -211,3 +211,32 @@ export const WodLevelsResponse = z.object({
   female: WodLevelTriple,
 });
 export type WodLevelsResponse = z.infer<typeof WodLevelsResponse>;
+
+/**
+ * POST /v1/score/predict — PRÉDIT le résultat brut (temps/reps/charge) qu'un athlète FERAIT sur un
+ * WOD de référence, à partir de son niveau courant (scores d'attribut). On INVERSE la chaîne de
+ * scoring : userInternal (moyenne des sous-scores des attributs CIBLES débloqués) → percentile →
+ * quantile(modèle). Aucun attribut cible débloqué ⇒ `predictedRaw: null`.
+ */
+export const PredictResultRequest = z.object({
+  wodId: z.string(),
+  sex: Sex,
+  attributeScores: z.array(
+    z.object({
+      attribute: AttributeKey,
+      /** Score interne /1000 de l'attribut. */
+      score: z.number().min(0).max(1000),
+      unlocked: z.boolean(),
+    }),
+  ),
+});
+export type PredictResultRequest = z.infer<typeof PredictResultRequest>;
+
+export const PredictResultResponse = z.object({
+  /** Résultat brut prédit (entier : secondes si time, reps si reps, kg si load, m si distance).
+   *  `null` si le WOD est inconnu/non-prédictible, ou si aucun attribut cible n'est débloqué. */
+  predictedRaw: z.number().int().nullable(),
+  /** Type de métrique du WOD prédit (pour formater l'affichage côté mobile). */
+  scoreType: ScoreType,
+});
+export type PredictResultResponse = z.infer<typeof PredictResultResponse>;

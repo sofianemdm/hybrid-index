@@ -69,6 +69,14 @@ export class ScoreController {
     return this.scoring.computeEstimate(body);
   }
 
+  @Post("predict")
+  predict(
+    @Body(new ZodValidationPipe(internalScore.PredictResultRequest))
+    body: internalScore.PredictResultRequest,
+  ): internalScore.PredictResultResponse {
+    return this.scoring.predictResult(body);
+  }
+
   @Get("movements")
   movements(): internalScore.MovementSummary[] {
     return this.scoring.getMovements();

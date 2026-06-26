@@ -4,6 +4,7 @@ import {
   clampPercentile,
   lognormalFromMedian,
   percentile,
+  quantile,
   subScore,
 } from "./distribution";
 
@@ -83,5 +84,65 @@ describe("clamp & sous-score bout-en-bout", () => {
     // ±2 : aux percentiles extrêmes, l'arrondi entier dépend de la précision de Φ (957–958).
     expect(subScore(40, pushupsH)).toBeGreaterThanOrEqual(956);
     expect(subScore(40, pushupsH)).toBeLessThanOrEqual(959);
+  });
+});
+
+describe("quantile — inverse de percentile", () => {
+  const graceH = { kind: "lognormal" as const, muLn: Math.log(203) - 0.43 ** 2 / 2, sigmaLn: 0.43, dir: -1 as const };
+  const pushupsH = { kind: "normal" as const, mu: 25, sigma: 11, dir: 1 as const };
+  const fiveKH: PointTableModel = {
+    kind: "pointTable",
+    dir: -1,
+    nodes: [
+      { p: 0.1, r: 3202 },
+      { p: 0.5, r: 1878 },
+      { p: 0.9, r: 1326 },
+      { p: 0.99, r: 1069 },
+    ],
+  };
+
+  it("lognormal (temps, dir=-1) : aller-retour quantile(percentile(r)) ≈ r", () => {
+    // ~3 décimales : l'aller-retour est borné par la précision de la CDF directe (erf A&S),
+    // amplifiée dans les queues. Suffisant pour prouver la réciprocité quantile∘percentile=id.
+    for (const r of [150, 203, 270, 350]) {
+      expect(quantile(percentile(r, graceH), graceH)).toBeCloseTo(r, 3);
+    }
+  });
+
+  it("lognormal : à P=0.5 renvoie la médiane (= exp(muLn))", () => {
+    const m = lognormalFromMedian(200, 0.3, -1);
+    expect(quantile(0.5, m)).toBeCloseTo(200, 6);
+  });
+
+  it("lognormal : dir=-1 ⇒ percentile plus haut = temps plus bas (meilleur)", () => {
+    expect(quantile(0.9, graceH)).toBeLessThan(quantile(0.5, graceH));
+  });
+
+  it("normal (reps, dir=+1) : aller-retour quantile(percentile(r)) ≈ r", () => {
+    // ~3 décimales (idem) : borné par la CDF directe, surtout aux valeurs extrêmes (r=55 ≈ P0.997).
+    for (const r of [10, 25, 40, 55]) {
+      expect(quantile(percentile(r, pushupsH), pushupsH)).toBeCloseTo(r, 3);
+    }
+  });
+
+  it("normal : à P=0.5 renvoie la moyenne ; dir=+1 ⇒ P haut = plus de reps", () => {
+    expect(quantile(0.5, pushupsH)).toBeCloseTo(25, 6);
+    expect(quantile(0.9, pushupsH)).toBeGreaterThan(quantile(0.5, pushupsH));
+  });
+
+  it("pointTable : aux nœuds exacts, renvoie le R du nœud", () => {
+    expect(quantile(0.5, fiveKH)).toBeCloseTo(1878, 6);
+    expect(quantile(0.9, fiveKH)).toBeCloseTo(1326, 6);
+  });
+
+  it("pointTable : aller-retour entre deux nœuds (R=1440)", () => {
+    expect(quantile(percentile(1440, fiveKH), fiveKH)).toBeCloseTo(1440, 6);
+  });
+
+  it("clampe P aux extrêmes (reste fini, monotone)", () => {
+    expect(Number.isFinite(quantile(0, graceH))).toBe(true);
+    expect(Number.isFinite(quantile(1, graceH))).toBe(true);
+    // P=1 (clampé à 0.999) ⇒ temps le plus bas atteignable.
+    expect(quantile(1, graceH)).toBeLessThan(quantile(0.5, graceH));
   });
 });

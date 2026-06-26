@@ -1,4 +1,4 @@
-import { normalCdf } from "./math/normal";
+import { normalCdf, normInv } from "./math/normal";
 import { type CurveParams, SIGMOID_V1, subScoreFromPercentile } from "./curve";
 
 /**
@@ -67,6 +67,37 @@ export function percentile(r: number, model: DistributionModel): number {
   }
 }
 
+/**
+ * Quantile : INVERSE de `percentile()`. Étant donné un percentile P ∈ (0,1), renvoie le résultat
+ * brut R correspondant pour ce modèle/sexe. Respecte `dir` exactement comme `percentile()` :
+ * dir=-1 (temps : plus bas meilleur) → P haut donne R petit ; dir=+1 (reps/charge/distance) →
+ * P haut donne R grand. P est clampé dans [P_MIN, P_MAX] (cohérent avec `percentile`). Sert à
+ * PRÉDIRE le temps/reps qu'un athlète ferait, à partir de son percentile courant.
+ *
+ * Propriété de réciprocité : `quantile(percentile(r)) ≈ r` (à la précision de l'inverse normale,
+ * et tant que r n'est pas clampé par P_MIN/P_MAX). Le clamp aux bornes physiologiques
+ * [hardMin, hardMax] reste à la charge de l'appelant (le modèle ne les connaît pas).
+ */
+export function quantile(p: number, model: DistributionModel): number {
+  const pc = clampPercentile(p);
+  switch (model.kind) {
+    case "lognormal": {
+      // percentile : P = dir===-1 ? 1-Φ(z) : Φ(z), avec z = (ln R − µ)/σ.
+      // Inverse : z = dir===-1 ? Φ⁻¹(1−P) : Φ⁻¹(P), puis R = exp(µ + σ·z).
+      const z = model.dir === -1 ? normInv(1 - pc) : normInv(pc);
+      return Math.exp(model.muLn + model.sigmaLn * z);
+    }
+    case "normal": {
+      // percentile : P = dir===1 ? Φ(z) : 1-Φ(z), avec z = (R − µ)/σ.
+      // Inverse : z = dir===1 ? Φ⁻¹(P) : Φ⁻¹(1−P), puis R = µ + σ·z.
+      const z = model.dir === 1 ? normInv(pc) : normInv(1 - pc);
+      return model.mu + model.sigma * z;
+    }
+    case "pointTable":
+      return interpPointTable(pc, model);
+  }
+}
+
 /** Sous-score [0,1000] complet : R → percentile → courbe f. */
 export function subScore(
   r: number,
@@ -113,4 +144,41 @@ function invertPointTable(r: number, model: PointTableModel): number {
   // "Pire que le pire nœud".
   const t = (r - first.r) / (second.r - first.r);
   return first.p + t * (second.p - first.p);
+}
+
+/**
+ * Inverse de `invertPointTable` : interpole R à partir de P (les nœuds sont {P→R}, P croissant).
+ * Interpolation linéaire en P entre nœuds ; extrapolation linéaire bornée au segment extrême
+ * au-delà des P extrêmes. P est supposé déjà clampé dans [P_MIN, P_MAX] par l'appelant.
+ */
+function interpPointTable(p: number, model: PointTableModel): number {
+  const nodes = [...model.nodes].sort((a, b) => a.p - b.p);
+  if (nodes.length < 2) {
+    throw new Error("pointTable: au moins 2 nœuds requis");
+  }
+  // P sous le 1er nœud → extrapole sur le 1er segment.
+  if (p <= nodes[0].p) {
+    const a = nodes[0];
+    const b = nodes[1];
+    const t = (p - a.p) / (b.p - a.p); // b.p − a.p ≠ 0 (P strictement croissant)
+    return a.r + t * (b.r - a.r);
+  }
+  // P au-dessus du dernier nœud → extrapole sur le dernier segment.
+  const last = nodes[nodes.length - 1];
+  if (p >= last.p) {
+    const a = nodes[nodes.length - 2];
+    const t = (p - a.p) / (last.p - a.p);
+    return a.r + t * (last.r - a.r);
+  }
+  // Segment encadrant.
+  for (let i = 0; i < nodes.length - 1; i++) {
+    const a = nodes[i];
+    const b = nodes[i + 1];
+    if (p >= a.p && p <= b.p) {
+      const t = (p - a.p) / (b.p - a.p);
+      return a.r + t * (b.r - a.r);
+    }
+  }
+  // Inatteignable (P borné par les cas ci-dessus), mais TS exige un retour.
+  return last.r;
 }

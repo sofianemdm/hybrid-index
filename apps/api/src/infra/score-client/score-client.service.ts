@@ -41,6 +41,10 @@ export class ScoreClient {
     return this.post("/v1/score/estimate", req, internalScore.ComputeEstimateResponse);
   }
 
+  predictResult(req: internalScore.PredictResultRequest): Promise<internalScore.PredictResultResponse> {
+    return this.post("/v1/score/predict", req, internalScore.PredictResultResponse);
+  }
+
   getMovements(): Promise<internalScore.MovementSummary[]> {
     return this.get("/v1/score/movements", internalScore.MovementCatalog);
   }
