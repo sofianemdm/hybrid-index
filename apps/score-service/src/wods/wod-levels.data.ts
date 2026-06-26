@@ -32,12 +32,18 @@ export const WOD_LEVELS: Record<string, { male: WodLevels; female: WodLevels }> 
   burpees_7min: { male: { champion: 125, intermediate: 70, occasional: 40 }, female: { champion: 110, intermediate: 60, occasional: 35 } },
   ergo_skill: { male: { champion: 360, intermediate: 600, occasional: 900 }, female: { champion: 420, intermediate: 690, occasional: 1020 } },
   // Épreuves « Autre » jouables (sport-science, 22 juin). champion = proReference (record/élite),
-  // intermédiaire = médiane amateur, occasionnel ≈ amateur plus lent (≈ P30 du classement, soit un
-  // temps PLUS élevé que la médiane — monotonie time : champion < intermédiaire < occasionnel).
-  hyrox_solo: { male: { champion: 3119, intermediate: 5400, occasional: 6030 }, female: { champion: 3265, intermediate: 6000, occasional: 6700 } },
-  isabel: { male: { champion: 55, intermediate: 150, occasional: 179 }, female: { champion: 70, intermediate: 190, occasional: 227 } },
-  murph: { male: { champion: 2000, intermediate: 3300, occasional: 3860 }, female: { champion: 2400, intermediate: 3600, occasional: 4212 } },
-  track_10000m: { male: { champion: 1571, intermediate: 3300, occasional: 3742 }, female: { champion: 1734, intermediate: 3600, occasional: 4082 } },
-  half_marathon: { male: { champion: 3440, intermediate: 7200, occasional: 8080 }, female: { champion: 3772, intermediate: 8100, occasional: 9090 } },
-  marathon: { male: { champion: 7235, intermediate: 16200, occasional: 18181 }, female: { champion: 7796, intermediate: 17400, occasional: 19527 } },
+  // intermédiaire = médiane amateur, occasionnel = P10 « débutant qui termine » (temps PLUS élevé
+  // que la médiane — monotonie time : champion < intermédiaire < occasionnel). NB : recalé de P30
+  // vers P10 (26 juin) car un débutant finit nettement plus lentement que le P30 du classement.
+  hyrox_solo: { male: { champion: 3119, intermediate: 5400, occasional: 7050 }, female: { champion: 3265, intermediate: 6000, occasional: 7850 } },
+  isabel: { male: { champion: 55, intermediate: 150, occasional: 232 }, female: { champion: 70, intermediate: 190, occasional: 294 } },
+  murph: { male: { champion: 2000, intermediate: 3300, occasional: 4850 }, female: { champion: 2400, intermediate: 3600, occasional: 5300 } },
+  track_10000m: { male: { champion: 1571, intermediate: 3300, occasional: 4500 }, female: { champion: 1734, intermediate: 3600, occasional: 4900 } },
+  // Semi. champion = WR réel. intermédiaire = médiane finisher (1h57 H / 2h10 F). occasionnel =
+  // P10 débutant (2h30 H / 2h50 F), recalé : l'ancien 2h14/2h31 (P30) était trop rapide.
+  half_marathon: { male: { champion: 3440, intermediate: 7000, occasional: 9000 }, female: { champion: 3772, intermediate: 7800, occasional: 10200 } },
+  // Marathon. champion = WR réel (Kiptum 2:00:35 / Chepngetich 2:09:56). intermédiaire = médiane
+  // finisher (4h20 H / 4h40 F). occasionnel = P10 « débutant qui termine » (5h35 H / 6h00 F),
+  // recalé : l'ancien 5h03/5h25 (P30) était trop optimiste pour un débutant marathon.
+  marathon: { male: { champion: 7235, intermediate: 15600, occasional: 20100 }, female: { champion: 7796, intermediate: 16800, occasional: 21600 } },
 };

@@ -554,8 +554,10 @@ export const WODS: ReadonlyArray<WodDefinition> = [
     },
   },
   {
-    // Semi-marathon. WR H 57:20 (Kiplimo), F 1:02:52 (Gidey). Médiane amateur ≈ 2h H / 2h15 F.
-    // proReference = WR. sigmaLn 0.22 (course longue ; WR super-élite donc loin de la médiane).
+    // Semi-marathon. WR H 57:20 (Kiplimo), F 1:02:52 (Gidey). proReference = WR.
+    // Médiane FINISHER grand public ≈ 1h57 H / 2h10 F ; sigmaLn 0.20 → P10 (débutant) ≈
+    // 2h35 H / 2h52 F. σ alignée sur le marathon pour une queue lente réaliste.
+    // Sources : RunRepeat « Half-Marathon Statistics » (percentiles de finish par sexe).
     id: "half_marathon",
     name: "Semi-marathon",
     scoreType: "time",
@@ -563,13 +565,16 @@ export const WODS: ReadonlyArray<WodDefinition> = [
     isBenchmark: false,
     targetAttributes: [{ attribute: "engine", estimated: false }],
     bySex: {
-      male: { model: lognormalFromMedian(7200, 0.22), hardMin: 3300, hardMax: 14400, proReference: 3440 },
-      female: { model: lognormalFromMedian(8100, 0.22), hardMin: 3650, hardMax: 16200, proReference: 3772 },
+      male: { model: lognormalFromMedian(7000, 0.2), hardMin: 3300, hardMax: 14400, proReference: 3440 },
+      female: { model: lognormalFromMedian(7800, 0.2), hardMin: 3650, hardMax: 16200, proReference: 3772 },
     },
   },
   {
-    // Marathon. WR H 2:00:35 (Kiptum), F 2:09:56 (Chepngetich). Médiane amateur ≈ 4h30 H / 4h50 F.
-    // proReference = WR. sigmaLn 0.22 (course longue ; WR super-élite).
+    // Marathon. WR H 2:00:35 (Kiptum), F 2:09:56 (Chepngetich). proReference = WR.
+    // Médiane FINISHER grand public ≈ 4h20 H / 4h40 F ; sigmaLn 0.20 → P10 (débutant qui
+    // termine, souvent près de la barrière horaire) ≈ 5h35 H / 6h00 F. La σ 0.22 d'avant
+    // resserrait trop la queue lente (le « débutant » tombait à ~5h00, irréaliste).
+    // Sources : RunRepeat « Marathon Statistics » + Marastats/IAAF (percentiles de finish).
     id: "marathon",
     name: "Marathon",
     scoreType: "time",
@@ -577,8 +582,8 @@ export const WODS: ReadonlyArray<WodDefinition> = [
     isBenchmark: false,
     targetAttributes: [{ attribute: "engine", estimated: false }],
     bySex: {
-      male: { model: lognormalFromMedian(16200, 0.22), hardMin: 7000, hardMax: 36000, proReference: 7235 },
-      female: { model: lognormalFromMedian(17400, 0.22), hardMin: 7600, hardMax: 39600, proReference: 7796 },
+      male: { model: lognormalFromMedian(15600, 0.2), hardMin: 7000, hardMax: 36000, proReference: 7235 },
+      female: { model: lognormalFromMedian(16800, 0.2), hardMin: 7600, hardMax: 39600, proReference: 7796 },
     },
   },
 ];
