@@ -89,7 +89,8 @@ class HiAvatar extends StatelessWidget {
     }
 
     // Avatar DiceBear (image générée) : remplace l'avatar dessiné, avec cadre de rang.
-    if (config.diceSeed != null && config.diceSeed!.isNotEmpty) {
+    if ((config.diceSeed != null && config.diceSeed!.isNotEmpty) ||
+        (config.diceOptions != null && config.diceOptions!.isNotEmpty)) {
       return SizedBox(
         width: size,
         height: size,
@@ -103,7 +104,9 @@ class HiAvatar extends StatelessWidget {
           ),
           child: ClipOval(
             child: Image.network(
-              diceBearUrl(style: config.diceStyle ?? kDiceBearDefaultStyle, seed: config.diceSeed!, size: (size * 2).round()),
+              (config.diceOptions != null && config.diceOptions!.isNotEmpty)
+                  ? avataaarsUrl(options: config.diceOptions!, seed: config.diceSeed ?? 'athlete', size: (size * 2).round())
+                  : diceBearUrl(style: config.diceStyle ?? kDiceBearDefaultStyle, seed: config.diceSeed ?? 'athlete', size: (size * 2).round()),
               width: size,
               height: size,
               fit: BoxFit.cover,

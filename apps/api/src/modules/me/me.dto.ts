@@ -28,5 +28,6 @@ export const UpdateAvatarRequest = z.object({
   /** Avatar DiceBear : style + seed (rendu via image). null = pas d'avatar DiceBear. */
   diceStyle: z.string().max(40).nullable().optional(),
   diceSeed: z.string().max(80).nullable().optional(),
+  diceOptions: z.record(z.string()).nullable().optional(),
 });
 export type UpdateAvatarRequest = z.infer<typeof UpdateAvatarRequest>;

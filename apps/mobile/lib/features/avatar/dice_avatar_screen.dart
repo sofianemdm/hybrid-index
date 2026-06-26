@@ -13,8 +13,8 @@ import '../../theme/tokens.dart';
 import '../../widgets/celebration.dart';
 import '../../widgets/hi_avatar.dart';
 
-/// Création d'avatar premium (DiceBear) — Phase 1 : style + variations + « Surprends-moi ».
-/// Rendu via Image.network (zéro dépendance). Sauvegarde le style + le seed sur le compte.
+/// Éditeur d'avatar premium (DiceBear avataaars) — création 100 % personnalisée en ~30 s :
+/// peau, coupe, couleur, barbe, lunettes, yeux. Aperçu live, « Surprends-moi », sauvegarde compte.
 class DiceAvatarScreen extends ConsumerStatefulWidget {
   const DiceAvatarScreen({super.key});
 
@@ -22,31 +22,30 @@ class DiceAvatarScreen extends ConsumerStatefulWidget {
   ConsumerState<DiceAvatarScreen> createState() => _DiceAvatarScreenState();
 }
 
+// Hex 'rrggbb' → Color, SANS décalage de bits (web-safe) : on parse chaque composante (0-255).
+Color _hexColor(String hex) => Color.fromARGB(
+      255,
+      int.parse(hex.substring(0, 2), radix: 16),
+      int.parse(hex.substring(2, 4), radix: 16),
+      int.parse(hex.substring(4, 6), radix: 16),
+    );
+
 class _DiceAvatarScreenState extends ConsumerState<DiceAvatarScreen> {
   final _rng = Random();
   AvatarConfig _base = const AvatarConfig(skinTone: 2, hairStyle: 1, hairColor: 1);
-  String _style = kDiceBearDefaultStyle;
+  late Map<String, String> _options;
   late String _seed;
-  late List<String> _variations;
+  int _cat = 0; // catégorie active
   bool _loading = true;
   bool _saving = false;
 
   @override
   void initState() {
     super.initState();
-    _seed = _newSeed();
-    _variations = List.generate(8, (_) => _newSeed());
-    _variations[0] = _seed;
+    _options = Map<String, String>.from(kAvataaarsDefaults);
+    _seed = _rng.nextInt(1000000000).toRadixString(36);
     _load();
   }
-
-  // Borne SANS décalage de bits : `1 << 32` peut valoir 0 sur le web (dart2js) → nextInt(0) plante.
-  String _newSeed() => _rng.nextInt(1000000000).toRadixString(36);
-
-  void _shuffle() => setState(() {
-        _variations = List.generate(8, (_) => _newSeed());
-        _variations[0] = _seed; // garde l'avatar courant en tête
-      });
 
   Future<void> _load() async {
     try {
@@ -54,11 +53,10 @@ class _DiceAvatarScreenState extends ConsumerState<DiceAvatarScreen> {
       if (!mounted) return;
       setState(() {
         _base = a;
-        if (a.diceSeed != null && a.diceSeed!.isNotEmpty) {
-          _seed = a.diceSeed!;
-          _style = a.diceStyle ?? kDiceBearDefaultStyle;
-          _variations[0] = _seed;
+        if (a.diceOptions != null && a.diceOptions!.isNotEmpty) {
+          _options = {...kAvataaarsDefaults, ...a.diceOptions!};
         }
+        if (a.diceSeed != null && a.diceSeed!.isNotEmpty) _seed = a.diceSeed!;
         _loading = false;
       });
     } catch (_) {
@@ -66,10 +64,25 @@ class _DiceAvatarScreenState extends ConsumerState<DiceAvatarScreen> {
     }
   }
 
+  void _surprise() {
+    HiHaptics.tap();
+    setState(() {
+      for (final c in kAvataaarsCategories) {
+        _options[c.key] = c.options[_rng.nextInt(c.options.length)].value;
+      }
+    });
+  }
+
+  void _pick(String key, String value) {
+    HiHaptics.tap();
+    setState(() => _options[key] = value);
+  }
+
   Future<void> _save() async {
     setState(() => _saving = true);
     try {
-      await ref.read(apiClientProvider).updateAvatar(_base.copyWith(diceStyle: _style, diceSeed: _seed));
+      final cfg = _base.copyWith(diceStyle: kAvataaarsStyle, diceSeed: _seed, diceOptions: _options);
+      await ref.read(apiClientProvider).updateAvatar(cfg);
       ref.invalidate(avatarProvider);
       if (!mounted) return;
       HiHaptics.celebrate();
@@ -92,99 +105,75 @@ class _DiceAvatarScreenState extends ConsumerState<DiceAvatarScreen> {
   @override
   Widget build(BuildContext context) {
     final rank = ref.watch(myProfileProvider).value?.index.rank ?? 'rookie';
-    final preview = _base.copyWith(diceStyle: _style, diceSeed: _seed);
+    final preview = _base.copyWith(diceStyle: kAvataaarsStyle, diceSeed: _seed, diceOptions: _options);
+    final cat = kAvataaarsCategories[_cat];
     return Scaffold(
-      appBar: AppBar(title: const Text('Forge ton athlète'), backgroundColor: Colors.transparent, elevation: 0),
+      appBar: AppBar(
+        title: const Text('Forge ton athlète'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        actions: [
+          TextButton.icon(
+            onPressed: _surprise,
+            icon: const Icon(Icons.casino_rounded, size: 18),
+            label: const Text('Surprends-moi'),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: _loading
             ? Center(child: CircularProgressIndicator(color: HiColors.brandPrimary))
-            : ListView(
-                padding: const EdgeInsets.all(HiSpace.lg),
+            : Column(
                 children: [
-                  Center(
-                    // L'avatar « pop » (scale + fondu) à chaque changement de style/visage → dopamine.
-                    child: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 280),
-                      transitionBuilder: (child, anim) => ScaleTransition(
-                        scale: Tween<double>(begin: 0.85, end: 1.0)
-                            .animate(CurvedAnimation(parent: anim, curve: Curves.easeOutBack)),
-                        child: FadeTransition(opacity: anim, child: child),
-                      ),
-                      child: HiAvatar(
-                        key: ValueKey('$_style-$_seed'),
-                        config: preview,
-                        rank: rank,
-                        size: 160,
-                      ),
+                  const SizedBox(height: HiSpace.md),
+                  // Aperçu live (pop à chaque changement).
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 220),
+                    transitionBuilder: (child, anim) => ScaleTransition(
+                      scale: Tween<double>(begin: 0.9, end: 1.0)
+                          .animate(CurvedAnimation(parent: anim, curve: Curves.easeOutBack)),
+                      child: FadeTransition(opacity: anim, child: child),
+                    ),
+                    child: HiAvatar(
+                      key: ValueKey(_options.values.join('-')),
+                      config: preview,
+                      rank: rank,
+                      size: 150,
                     ),
                   ),
-                  const SizedBox(height: HiSpace.sm),
-                  Center(
-                    child: Text('C\'est lui qui grimpera le classement.',
-                        style: HiType.caption.copyWith(color: HiColors.textSecondary)),
-                  ),
                   const SizedBox(height: HiSpace.lg),
-                  Text('STYLE',
-                      style: HiType.caption
-                          .copyWith(color: HiColors.textTertiary, fontWeight: FontWeight.w800, letterSpacing: 1.2)),
-                  const SizedBox(height: HiSpace.sm),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: kDiceBearStyles.map((st) {
-                      final active = st.id == _style;
-                      return GestureDetector(
-                        onTap: () {
-                          HiHaptics.tap();
-                          setState(() => _style = st.id);
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                          decoration: BoxDecoration(
-                            gradient: active ? HiColors.brandGradient : null,
-                            color: active ? null : HiColors.bgElevated2,
-                            borderRadius: BorderRadius.circular(HiRadius.pill),
-                          ),
-                          child: Text(st.label,
-                              style: TextStyle(
-                                  color: active ? HiColors.textOnBrand : HiColors.textSecondary,
-                                  fontWeight: FontWeight.w700)),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(height: HiSpace.lg),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('CHOISIS TON VISAGE',
-                          style: HiType.caption.copyWith(
-                              color: HiColors.textTertiary, fontWeight: FontWeight.w800, letterSpacing: 1.2)),
-                      TextButton.icon(
-                        onPressed: () {
-                          HiHaptics.tap();
-                          _shuffle();
-                        },
-                        icon: const Icon(Icons.casino_rounded, size: 18),
-                        label: const Text('Surprends-moi'),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: HiSpace.sm),
-                  Wrap(spacing: 12, runSpacing: 12, children: _variations.map(_thumb).toList()),
-                  const SizedBox(height: HiSpace.xl),
+                  // Onglets de catégorie.
                   SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: HiColors.brandPrimary,
-                        foregroundColor: HiColors.textOnBrand,
-                        minimumSize: const Size.fromHeight(50),
+                    height: 38,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: HiSpace.lg),
+                      itemCount: kAvataaarsCategories.length,
+                      separatorBuilder: (_, __) => const SizedBox(width: 8),
+                      itemBuilder: (_, i) => _catChip(i),
+                    ),
+                  ),
+                  const SizedBox(height: HiSpace.md),
+                  // Options de la catégorie active.
+                  Expanded(
+                    child: cat.isColor ? _colorGrid(cat) : _thumbGrid(cat),
+                  ),
+                  // Valider.
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(HiSpace.lg, HiSpace.sm, HiSpace.lg, HiSpace.md),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: HiColors.brandPrimary,
+                          foregroundColor: HiColors.textOnBrand,
+                          minimumSize: const Size.fromHeight(50),
+                        ),
+                        onPressed: _saving ? null : _save,
+                        child: _saving
+                            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                            : const Text('Valider mon athlète'),
                       ),
-                      onPressed: _saving ? null : _save,
-                      child: _saving
-                          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                          : const Text('Valider mon athlète'),
                     ),
                   ),
                 ],
@@ -193,35 +182,88 @@ class _DiceAvatarScreenState extends ConsumerState<DiceAvatarScreen> {
     );
   }
 
-  Widget _thumb(String seed) {
-    final selected = seed == _seed;
+  Widget _catChip(int i) {
+    final active = i == _cat;
     return GestureDetector(
       onTap: () {
         HiHaptics.tap();
-        setState(() => _seed = seed);
+        setState(() => _cat = i);
       },
       child: Container(
-        width: 64,
-        height: 64,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        alignment: Alignment.center,
         decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: HiColors.bgElevated2,
-          border: Border.all(
-            color: selected ? HiColors.brandPrimary : HiColors.strokeSubtle,
-            width: selected ? 3 : 1,
-          ),
+          gradient: active ? HiColors.brandGradient : null,
+          color: active ? null : HiColors.bgElevated2,
+          borderRadius: BorderRadius.circular(HiRadius.pill),
         ),
-        child: ClipOval(
-          child: Image.network(
-            diceBearUrl(style: _style, seed: seed, size: 128),
-            fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => const SizedBox(),
-            loadingBuilder: (ctx, child, p) => p == null
-                ? child
-                : const Center(child: SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))),
-          ),
-        ),
+        child: Text(kAvataaarsCategories[i].label,
+            style: TextStyle(
+                color: active ? HiColors.textOnBrand : HiColors.textSecondary, fontWeight: FontWeight.w700)),
       ),
+    );
+  }
+
+  // Pastilles de couleur (peau, couleur de cheveux).
+  Widget _colorGrid(DiceCategory cat) {
+    return GridView.count(
+      crossAxisCount: 6,
+      padding: const EdgeInsets.symmetric(horizontal: HiSpace.lg),
+      mainAxisSpacing: 14,
+      crossAxisSpacing: 14,
+      children: cat.options.map((o) {
+        final selected = _options[cat.key] == o.value;
+        return GestureDetector(
+          onTap: () => _pick(cat.key, o.value),
+          child: Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: _hexColor(o.value),
+              border: Border.all(
+                color: selected ? HiColors.brandPrimary : HiColors.strokeSubtle,
+                width: selected ? 3 : 1,
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  // Vignettes d'avatar (coupe, barbe, lunettes, yeux) : on voit l'effet sur SON avatar.
+  Widget _thumbGrid(DiceCategory cat) {
+    return GridView.count(
+      crossAxisCount: 4,
+      padding: const EdgeInsets.symmetric(horizontal: HiSpace.lg),
+      mainAxisSpacing: 12,
+      crossAxisSpacing: 12,
+      children: cat.options.map((o) {
+        final selected = _options[cat.key] == o.value;
+        final opts = {..._options, cat.key: o.value};
+        return GestureDetector(
+          onTap: () => _pick(cat.key, o.value),
+          child: Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: HiColors.bgElevated2,
+              border: Border.all(
+                color: selected ? HiColors.brandPrimary : HiColors.strokeSubtle,
+                width: selected ? 3 : 1,
+              ),
+            ),
+            child: ClipOval(
+              child: Image.network(
+                avataaarsUrl(options: opts, seed: _seed, size: 120),
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => const SizedBox(),
+                loadingBuilder: (ctx, child, p) => p == null
+                    ? child
+                    : const Center(child: SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))),
+              ),
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 }

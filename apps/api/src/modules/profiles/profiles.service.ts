@@ -62,6 +62,7 @@ export class ProfilesService {
             photoData: avatar.photoData,
             diceStyle: avatar.diceStyle,
             diceSeed: avatar.diceSeed,
+            diceOptions: avatar.diceOptions ? (JSON.parse(avatar.diceOptions) as Record<string, string>) : null,
           }
         : null,
       activeCosmetics: cosmeticsFor(new Set(badges.map((b) => b.badgeId))),

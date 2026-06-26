@@ -497,6 +497,7 @@ model Avatar {
   photoData         String?  @map("photo_data") // image de profil (data URL base64, optionnelle)
   diceStyle         String?  @map("dice_style") // avatar DiceBear : style (ex. "adventurer")
   diceSeed          String?  @map("dice_seed") // avatar DiceBear : seed (détermine le visage)
+  diceOptions       String?  @map("dice_options") // options DiceBear (JSON : peau, coupe, barbe…)
   equippedCosmetics Json     @map("equipped_cosmetics")
   unlockedCosmetics Json     @map("unlocked_cosmetics")
   updatedAt         DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)

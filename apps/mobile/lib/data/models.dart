@@ -759,6 +759,7 @@ class AvatarConfig {
   final String? photoData;
   final String? diceStyle; // DiceBear : style (null = avatar dessiné)
   final String? diceSeed; // DiceBear : seed
+  final Map<String, String>? diceOptions; // DiceBear : options (peau, coupe, barbe…)
   const AvatarConfig({
     required this.skinTone,
     required this.hairStyle,
@@ -769,6 +770,7 @@ class AvatarConfig {
     this.photoData,
     this.diceStyle,
     this.diceSeed,
+    this.diceOptions,
   });
 
   factory AvatarConfig.fromJson(Map<String, dynamic> j) => AvatarConfig(
@@ -781,6 +783,7 @@ class AvatarConfig {
         photoData: j['photoData'] as String?,
         diceStyle: j['diceStyle'] as String?,
         diceSeed: j['diceSeed'] as String?,
+        diceOptions: (j['diceOptions'] as Map?)?.map((k, v) => MapEntry(k.toString(), v.toString())),
       );
 
   AvatarConfig copyWith({
@@ -795,6 +798,7 @@ class AvatarConfig {
     bool clearPhoto = false,
     String? diceStyle,
     String? diceSeed,
+    Map<String, String>? diceOptions,
   }) =>
       AvatarConfig(
         skinTone: skinTone ?? this.skinTone,
@@ -806,6 +810,7 @@ class AvatarConfig {
         photoData: clearPhoto ? null : (photoData ?? this.photoData),
         diceStyle: diceStyle ?? this.diceStyle,
         diceSeed: diceSeed ?? this.diceSeed,
+        diceOptions: diceOptions ?? this.diceOptions,
       );
 
   Map<String, dynamic> toJson() => {
@@ -818,6 +823,7 @@ class AvatarConfig {
         'photoData': photoData,
         'diceStyle': diceStyle,
         'diceSeed': diceSeed,
+        'diceOptions': diceOptions,
       };
 }
 
