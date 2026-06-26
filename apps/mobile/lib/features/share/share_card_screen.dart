@@ -720,8 +720,10 @@ class _CardState extends State<_Card> with TickerProviderStateMixin {
     } else {
       noteColor = HiColors.warn;
     }
-    final start = 0.45 + (_order[key] ?? 0) * 0.06;
-    final localT = widget.exporting ? 1.0 : Curves.easeOutExpo.transform(((_reveal.value - start) / 0.35).clamp(0.0, 1.0));
+    // Cascade : chaque attribut démarre décalé ; fenêtre calée pour atteindre 100 % AVANT la fin du
+    // reveal (sinon les derniers attributs restaient figés à ~99 % de leur score).
+    final start = 0.35 + (_order[key] ?? 0) * 0.05;
+    final localT = widget.exporting ? 1.0 : Curves.easeOutExpo.transform(((_reveal.value - start) / 0.30).clamp(0.0, 1.0));
     final shownScore = (score * localT).round();
     final fill = (score / 100).clamp(0.0, 1.0) * localT;
     return Padding(
@@ -762,6 +764,7 @@ class _CardState extends State<_Card> with TickerProviderStateMixin {
                   FractionallySizedBox(
                     alignment: Alignment.centerLeft,
                     widthFactor: unlocked ? fill : 0.0,
+                    heightFactor: 1.0, // sans ça, le DecoratedBox enfant s'effondrait à 0px de haut → remplissage invisible
                     child: DecoratedBox(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(HiRadius.pill),
