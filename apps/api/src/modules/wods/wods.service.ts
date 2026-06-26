@@ -25,7 +25,17 @@ export const OTHER_WOD_IDS = ["hyrox_solo", "isabel", "murph", "track_10000m", "
 /** WODs présents en base (FK des résultats) mais MASQUÉS du catalogue/des séances. `run_free_distance`
  *  reste le mécanisme interne de la course d'onboarding (distance libre + Riegel), pas une séance.
  *  `max_air_squats` (« une série ») : retiré des séances (le 2 min `max_air_squats_2min` reste). */
-export const HIDDEN_WOD_IDS = ["run_free_distance", "max_air_squats"];
+// Inclut les 5 WODs « Ligue du mois » (cf. LEAGUE_WOD_IDS) : ils ne s'affichent QUE comme « WOD de la
+// semaine » via la Ligue, jamais dans le catalogue Séances ni le plan de complétion de l'Index.
+export const HIDDEN_WOD_IDS = [
+  "run_free_distance",
+  "max_air_squats",
+  "league_sprint_ladder",
+  "league_engine_12",
+  "league_grind_squats",
+  "league_power_emom",
+  "league_hybrid_chipper",
+];
 
 /** Attributs qu'un WOD ne donne qu'en ESTIMÉ (proxy poids du corps, ou séance d'estimation
  *  globale) : ils ne « comptent » donc PAS pour préciser cette qualité dans le plan de complétion

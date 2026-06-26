@@ -15,6 +15,7 @@ const WODS: Array<{
   scoreType: ScoreType;
   requiresEquipment: boolean;
   targetAttributes: AttributeKey[];
+  isBenchmark?: boolean; // défaut true ; false = WOD « Ligue uniquement » (hors Index)
 }> = [
   { id: "hyrox_sprint", name: "Sprint HYROX", scoreType: "time", requiresEquipment: true, targetAttributes: ["engine", "power", "hybrid", "muscular_endurance"] },
   { id: "fran", name: "Fran", scoreType: "time", requiresEquipment: true, targetAttributes: ["muscular_endurance", "power"] },
@@ -44,6 +45,12 @@ const WODS: Array<{
   { id: "track_10000m", name: "10 000 m (piste)", scoreType: "time", requiresEquipment: false, targetAttributes: ["engine"] },
   { id: "half_marathon", name: "Semi-marathon", scoreType: "time", requiresEquipment: false, targetAttributes: ["engine"] },
   { id: "marathon", name: "Marathon", scoreType: "time", requiresEquipment: false, targetAttributes: ["engine"] },
+  // WODs « Ligue du mois » (sans matériel, 1 qualité/semaine) — isBenchmark:false → JAMAIS dans l'Index.
+  { id: "league_sprint_ladder", name: "La Flèche", scoreType: "time", requiresEquipment: false, targetAttributes: ["speed", "engine"], isBenchmark: false },
+  { id: "league_engine_12", name: "Le Moteur", scoreType: "reps", requiresEquipment: false, targetAttributes: ["engine", "muscular_endurance", "hybrid"], isBenchmark: false },
+  { id: "league_grind_squats", name: "Le Pilier", scoreType: "reps", requiresEquipment: false, targetAttributes: ["muscular_endurance", "strength"], isBenchmark: false },
+  { id: "league_power_emom", name: "L'Explosion", scoreType: "reps", requiresEquipment: false, targetAttributes: ["power", "muscular_endurance"], isBenchmark: false },
+  { id: "league_hybrid_chipper", name: "Le Chaos", scoreType: "time", requiresEquipment: false, targetAttributes: ["hybrid", "engine", "muscular_endurance"], isBenchmark: false },
 ];
 
 const ATTRS: AttributeKey[] = ["engine", "speed", "strength", "power", "muscular_endurance", "hybrid"];
@@ -132,7 +139,7 @@ async function main(): Promise<void> {
       create: {
         id: w.id,
         name: w.name,
-        isBenchmark: true,
+        isBenchmark: w.isBenchmark ?? true,
         type,
         requiresEquipment: w.requiresEquipment,
         targetAttributes: w.targetAttributes,
@@ -141,6 +148,7 @@ async function main(): Promise<void> {
       },
       update: {
         name: w.name,
+        isBenchmark: w.isBenchmark ?? true,
         scoreType: w.scoreType,
         requiresEquipment: w.requiresEquipment,
         targetAttributes: w.targetAttributes as AttributeKey[],

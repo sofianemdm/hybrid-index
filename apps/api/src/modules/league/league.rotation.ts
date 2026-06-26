@@ -11,6 +11,21 @@ import { weekStart } from "../engagement/iso-week";
  * Pur et testé — aucune dépendance.
  */
 
+/**
+ * WODs imposés en Ligue, dans l'ORDRE des semaines du mois (1 qualité par semaine, pour « donner sa
+ * chance à tout le monde ») : Vitesse → Endurance → Force-endurance → Puissance → Hybride.
+ * Ce sont des WODs DÉDIÉS Ligue (isBenchmark:false), distincts des 15 benchmarks de l'Index.
+ * Spec sport-science : docs/wods-ligue-mensuelle.md. Si un mois compte 6 semaines ISO, la 6e
+ * reprend le 1er (wrap via `i % length`).
+ */
+export const LEAGUE_WOD_IDS = [
+  "league_sprint_ladder", // S1 Vitesse
+  "league_engine_12", // S2 Endurance (moteur)
+  "league_grind_squats", // S3 Force-endurance
+  "league_power_emom", // S4 Puissance
+  "league_hybrid_chipper", // S5 Hybride
+] as const;
+
 /** "2026-07" → index de mois monotone (année*12 + mois), pour ordonner/décaler la rotation. */
 export function monthIndexFromKey(monthKey: string): number {
   const [y, m] = monthKey.split("-").map((n) => parseInt(n, 10));

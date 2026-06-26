@@ -2,12 +2,8 @@ import { Injectable, Logger, type OnApplicationBootstrap } from "@nestjs/common"
 import { Cron } from "@nestjs/schedule";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { isoWeekKey } from "../engagement/iso-week";
-import { addDaysUTC, isoWeeksOfMonth, monthBounds, monthKeyOf, pickMonthlyWods } from "./league.rotation";
+import { addDaysUTC, isoWeeksOfMonth, LEAGUE_WOD_IDS, monthBounds, monthKeyOf } from "./league.rotation";
 import { totalsBestPerWeek, rankTotals } from "./league.aggregate";
-
-// WODs SANS matériel exclus du pool imposé (trop longs / non répétables chaque semaine sans risque) —
-// cf. spec sport-science. Ils restent jouables pour l'Index, mais ne sont jamais imposés en Ligue.
-const LEAGUE_EXCLUDED_WODS = ["marathon", "half_marathon", "track_10000m", "run_free_distance", "max_air_squats", "murph"];
 
 /**
  * Cycle de vie d'une saison de Ligue (mensuelle). Au lancement : 2 ligues H/F, 1 WOD sans matériel
@@ -59,15 +55,16 @@ export class LeagueLifecycleService implements OnApplicationBootstrap {
     const existing = await this.prisma.leagueSeason.findUnique({ where: { monthKey } });
     if (existing) return { id: existing.id, monthKey };
 
-    const pool = await this.bodyweightWodPool();
-    if (pool.length === 0) {
-      // Garde-fou : WODs non seedés ⇒ on ne crée pas une saison cassée (cf. seed obligatoire en prod).
-      throw new Error("Aucun WOD sans matériel en base — seed manquant ?");
+    // WODs Ligue DÉDIÉS, dans l'ordre des semaines (Vitesse→Endurance→Force→Puissance→Hybride).
+    const wodIds = [...LEAGUE_WOD_IDS];
+    const present = await this.prisma.wod.findMany({ where: { id: { in: wodIds } }, select: { id: true } });
+    if (present.length < wodIds.length) {
+      // Garde-fou : WODs Ligue non seedés ⇒ on ne crée pas une saison cassée (FK wod au reveal).
+      throw new Error("WODs Ligue non seedés — lance le seed avant d'ouvrir une saison.");
     }
     const { opensAt, closesAt } = monthBounds(monthKey);
     // Une semaine imposée par SEMAINE ISO du mois (4 à 6) → aucun jour du mois sans WOD imposé.
     const weekStarts = isoWeeksOfMonth(monthKey);
-    const wodIds = pickMonthlyWods(pool, monthKey, weekStarts.length);
 
     const season = await this.prisma.leagueSeason.create({
       data: {
@@ -141,14 +138,5 @@ export class LeagueLifecycleService implements OnApplicationBootstrap {
       }),
     ]);
     this.logger.log(`Saison de Ligue close (${monthKey}) — ${standings.length} athlètes classés.`);
-  }
-
-  private async bodyweightWodPool(): Promise<string[]> {
-    const wods = await this.prisma.wod.findMany({
-      where: { requiresEquipment: false, isCustom: false, id: { notIn: LEAGUE_EXCLUDED_WODS } },
-      select: { id: true },
-      orderBy: { id: "asc" },
-    });
-    return wods.map((w) => w.id);
   }
 }

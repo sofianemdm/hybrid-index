@@ -586,6 +586,92 @@ export const WODS: ReadonlyArray<WodDefinition> = [
       female: { model: lognormalFromMedian(16800, 0.2), hardMin: 7600, hardMax: 39600, proReference: 7796 },
     },
   },
+
+  // ---------------- 5 WODs « LIGUE DU MOIS » (sans matériel, 8–15 min, 1 qualité/semaine) ----------------
+  // Dédiés à la Ligue (isBenchmark:false → JAMAIS dans l'Index). Barèmes estimation `low`, à
+  // recalibrer N≥200/sexe après le 1er mois. Spec : docs/wods-ligue-mensuelle.md (sport-science).
+  {
+    // Semaine 1 — VITESSE. Intervalles de course en échelle (100→400→100 m), score = temps couru.
+    id: "league_sprint_ladder",
+    name: "La Flèche",
+    scoreType: "time",
+    requiresEquipment: false,
+    isBenchmark: false,
+    targetAttributes: [
+      { attribute: "speed", estimated: false },
+      { attribute: "engine", estimated: false },
+    ],
+    bySex: {
+      male: { model: lognormalFromMedian(420, 0.2), hardMin: 270, hardMax: 900, proReference: 290 },
+      female: { model: lognormalFromMedian(480, 0.2), hardMin: 310, hardMax: 1020, proReference: 335 },
+    },
+  },
+  {
+    // Semaine 2 — ENDURANCE (moteur aérobie). AMRAP 12 min, score = TOURS complétés (décimal).
+    id: "league_engine_12",
+    name: "Le Moteur",
+    scoreType: "reps",
+    requiresEquipment: false,
+    isBenchmark: false,
+    targetAttributes: [
+      { attribute: "engine", estimated: false },
+      { attribute: "muscular_endurance", estimated: false },
+      { attribute: "hybrid", estimated: false },
+    ],
+    bySex: {
+      male: { model: normal(6.0, 2.0), hardMin: 2.0, hardMax: 12.0, proReference: 9.5 },
+      female: { model: normal(5.5, 1.9), hardMin: 1.5, hardMax: 11.0, proReference: 8.5 },
+    },
+  },
+  {
+    // Semaine 3 — FORCE-ENDURANCE (bas du corps). AMRAP 10 min, score = reps totales.
+    id: "league_grind_squats",
+    name: "Le Pilier",
+    scoreType: "reps",
+    requiresEquipment: false,
+    isBenchmark: false,
+    targetAttributes: [
+      { attribute: "muscular_endurance", estimated: false },
+      { attribute: "strength", estimated: true },
+    ],
+    bySex: {
+      male: { model: normal(170, 52), hardMin: 60, hardMax: 360, proReference: 285 },
+      female: { model: normal(155, 48), hardMin: 50, hardMax: 340, proReference: 265 },
+    },
+  },
+  {
+    // Semaine 4 — PUISSANCE. EMOM 10 min (squat jumps / burpee broad jumps), score = reps validées.
+    id: "league_power_emom",
+    name: "L'Explosion",
+    scoreType: "reps",
+    requiresEquipment: false,
+    isBenchmark: false,
+    targetAttributes: [
+      { attribute: "power", estimated: false },
+      { attribute: "muscular_endurance", estimated: false },
+    ],
+    bySex: {
+      male: { model: normal(78, 16), hardMin: 20, hardMax: 100, proReference: 100 },
+      female: { model: normal(70, 16), hardMin: 18, hardMax: 96, proReference: 96 },
+    },
+  },
+  {
+    // Semaine 5 — HYBRIDE (chipper for time, cap 15 min). Le profil complet/équilibré brille.
+    id: "league_hybrid_chipper",
+    name: "Le Chaos",
+    scoreType: "time",
+    requiresEquipment: false,
+    isBenchmark: false,
+    targetAttributes: [
+      { attribute: "hybrid", estimated: false },
+      { attribute: "engine", estimated: false },
+      { attribute: "muscular_endurance", estimated: false },
+    ],
+    bySex: {
+      male: { model: lognormalFromMedian(660, 0.18), hardMin: 360, hardMax: 900, proReference: 400 },
+      female: { model: lognormalFromMedian(720, 0.18), hardMin: 420, hardMax: 900, proReference: 460 },
+    },
+  },
 ];
 
 export const WODS_BY_ID: ReadonlyMap<string, WodDefinition> = new Map(WODS.map((w) => [w.id, w]));

@@ -455,4 +455,87 @@ export const WOD_PRESCRIPTIONS: Record<string, WodPrescription> = {
     weights: [],
     scoringNote: SCORE_TIME,
   },
+
+  // ───────────────── WODs « LIGUE DU MOIS » (sans matériel, 1 qualité/semaine) ─────────────────
+  league_sprint_ladder: {
+    scalable: false,
+    summary:
+      "Semaine VITESSE. Une échelle de sprints : tu montes puis tu redescends. Pars vite mais garde " +
+      "de la fraîcheur pour le 400 m. Les marches de récup sont imposées (elles ne comptent pas dans ton temps).",
+    format: "Pour le temps (course uniquement) — time cap 12 min",
+    timeCapSec: 720,
+    blocks: [
+      { reps: "100 m", movement: "Sprint", detail: "puis 30 s de récup" },
+      { reps: "200 m", movement: "Sprint", detail: "puis 45 s de récup" },
+      { reps: "300 m", movement: "Sprint", detail: "puis 60 s de récup" },
+      { reps: "400 m", movement: "Sprint", detail: "puis 60 s de récup" },
+      { reps: "300 m", movement: "Sprint", detail: "puis 45 s de récup" },
+      { reps: "200 m", movement: "Sprint", detail: "puis 30 s de récup" },
+      { reps: "100 m", movement: "Sprint" },
+    ],
+    weights: [],
+    scoringNote: "Tu enregistres le TEMPS DE COURSE cumulé (1 600 m), récup non comprise.",
+  },
+  league_engine_12: {
+    scalable: false,
+    summary:
+      "Semaine ENDURANCE. AMRAP 12 min : un triplet léger à enchaîner sans t'arrêter. Trouve une " +
+      "cadence que tu peux tenir 12 minutes. L'athlète au gros moteur aérobie prend l'avantage.",
+    format: "AMRAP 12 min",
+    timeCapSec: 720,
+    blocks: [
+      { reps: "200 m", movement: "Course" },
+      { reps: "15", movement: "Air squats" },
+      { reps: "10", movement: "Burpees" },
+    ],
+    weights: [],
+    scoringNote: "Tu enregistres ton nombre de TOURS complétés (décimal accepté, ex. 6,5).",
+  },
+  league_grind_squats: {
+    scalable: false,
+    summary:
+      "Semaine FORCE-ENDURANCE. AMRAP 10 min ciblé bas du corps : jambes qui brûlent, gainage. " +
+      "Le pistol peut être assisté (appui) si besoin. Profil « cuisses solides » récompensé.",
+    format: "AMRAP 10 min",
+    timeCapSec: 600,
+    blocks: [
+      { reps: "20", movement: "Fentes marchées", detail: "10 par jambe" },
+      { reps: "15", movement: "Air squats" },
+      { reps: "10", movement: "Pistol squats", detail: "5 par jambe — assisté autorisé" },
+    ],
+    weights: [],
+    scoringNote: "Tu enregistres ton nombre total de répétitions.",
+  },
+  league_power_emom: {
+    scalable: false,
+    summary:
+      "Semaine PUISSANCE. EMOM 10 min : un bloc explosif au top de chaque minute, le reste = repos. " +
+      "On récompense la puissance FRAÎCHE répétée. L'athlète détente/explosivité brille.",
+    format: "EMOM 10 min",
+    timeCapSec: 600,
+    blocks: [
+      { reps: "12", movement: "Squat jumps", detail: "minutes impaires (1,3,5,7,9)" },
+      { reps: "8", movement: "Burpee broad jumps", detail: "minutes paires (2,4,6,8,10)" },
+    ],
+    weights: [],
+    scoringNote: "Tu enregistres le nombre total de répétitions VALIDÉES (max 100).",
+  },
+  league_hybrid_chipper: {
+    scalable: false,
+    summary:
+      "Semaine HYBRIDE — la finale du mois. Un chipper complet : course, gym, gainage, explosif, " +
+      "une seule fois dans l'ordre. Le profil ÉQUILIBRÉ, bon partout sans trou, l'emporte.",
+    format: "Pour le temps (chipper) — time cap 15 min",
+    timeCapSec: 900,
+    blocks: [
+      { reps: "400 m", movement: "Course" },
+      { reps: "40", movement: "Air squats" },
+      { reps: "30", movement: "Sit-ups" },
+      { reps: "20", movement: "Burpees" },
+      { reps: "10", movement: "Wall walks" },
+      { reps: "400 m", movement: "Course" },
+    ],
+    weights: [],
+    scoringNote: SCORE_TIME,
+  },
 };
