@@ -3,6 +3,7 @@ import type { Sex } from "@prisma/client";
 import { ratingFromInternal } from "@hybrid-index/scoring-core";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { RedisService } from "../../infra/redis/redis.service";
+import { avatarMapByUserId, type AvatarView } from "../../common/avatar.serializer";
 
 /** Valeur interne stockée (déjà ajustée par couverture) → OVR /100 affiché. Le tri (Redis/PG) se
  *  fait sur cette même valeur ajustée → classement et OVR cohérents. */
@@ -15,6 +16,7 @@ export interface LeaderboardEntry {
   value: number;
   rank: string;
   isMe: boolean;
+  avatar: AvatarView | null; // mini-vignette (mobile) ; null si l'athlète n'a pas d'avatar
 }
 
 export interface LeaderboardResponse {
@@ -56,7 +58,8 @@ export class LeaderboardService {
       rows = [...rows].sort((a, b) => b.value - a.value || (a.userId < b.userId ? -1 : a.userId > b.userId ? 1 : 0));
     }
 
-    const names = await this.namesFor(rows.map((r) => r.userId));
+    const userIds = rows.map((r) => r.userId);
+    const [names, avatars] = await Promise.all([this.namesFor(userIds), this.avatarsFor(userIds)]);
     const entries: LeaderboardEntry[] = rows.map((r, i) => ({
       position: i + 1,
       userId: r.userId,
@@ -64,6 +67,7 @@ export class LeaderboardService {
       value: ovr(r.value),
       rank: names.get(r.userId)?.rank ?? "rookie",
       isMe: r.userId === meUserId,
+      avatar: avatars.get(r.userId) ?? null, // absent de la map = pas d'avatar → repli mobile
     }));
 
     let total: number;
@@ -172,5 +176,13 @@ export class LeaderboardService {
       select: { userId: true, displayName: true, rank: true },
     });
     return new Map(profiles.map((p) => [p.userId, { displayName: p.displayName, rank: p.rank }]));
+  }
+
+  /** Avatars des athlètes affichés, en UNE requête batch (pas de N+1). Map userId -> vignette ;
+   *  les athlètes sans avatar sont simplement absents → l'entrée porte `avatar: null`. */
+  private async avatarsFor(userIds: string[]): Promise<Map<string, AvatarView>> {
+    if (userIds.length === 0) return new Map();
+    const avatars = await this.prisma.avatar.findMany({ where: { userId: { in: userIds } } });
+    return avatarMapByUserId(avatars);
   }
 }

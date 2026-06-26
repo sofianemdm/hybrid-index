@@ -3,6 +3,7 @@ import { PrismaService } from "../../infra/prisma/prisma.service";
 import { ProfileScoringService } from "../profile/profile-scoring.service";
 import { LeaderboardService } from "../leaderboard/leaderboard.service";
 import { cosmeticsFor } from "../engagement/badges.data";
+import { serializeAvatar } from "../../common/avatar.serializer";
 
 /** Profil public d'un athlète (tout est public — décision verrouillée). */
 @Injectable()
@@ -51,20 +52,7 @@ export class ProfilesService {
       isFollowing,
       isMe: viewerId === userId,
       // Avatar évolutif visible sur le profil public (IC-03) + cosmétiques débloqués (G-03).
-      avatar: avatar
-        ? {
-            skinTone: avatar.skinTone,
-            hairStyle: avatar.hairStyle,
-            hairColor: avatar.hairColor,
-            beardStyle: avatar.beardStyle,
-            accessory: avatar.accessory,
-            background: avatar.background,
-            photoData: avatar.photoData,
-            diceStyle: avatar.diceStyle,
-            diceSeed: avatar.diceSeed,
-            diceOptions: avatar.diceOptions ? (JSON.parse(avatar.diceOptions) as Record<string, string>) : null,
-          }
-        : null,
+      avatar: serializeAvatar(avatar),
       activeCosmetics: cosmeticsFor(new Set(badges.map((b) => b.badgeId))),
     };
   }

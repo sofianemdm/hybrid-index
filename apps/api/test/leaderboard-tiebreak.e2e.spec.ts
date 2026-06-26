@@ -59,6 +59,25 @@ describe("api — classement tie-break déterministe (e2e réel)", () => {
       ids.push(user.id);
       await redis.zadd("leaderboard:male", value, user.id).catch(() => undefined);
     }
+
+    // ids[1] possède un avatar (DiceBear + options) ; ids[2] n'en a PAS → on vérifie que la ligne de
+    // classement porte la vignette quand elle existe, et `null` sinon (repli mobile).
+    await prisma.avatar.create({
+      data: {
+        userId: ids[1],
+        skinTone: 3,
+        hairStyle: 2,
+        hairColor: 4,
+        beardStyle: 1,
+        accessory: 0,
+        background: 5,
+        diceStyle: "adventurer",
+        diceSeed: "lb-seed",
+        diceOptions: JSON.stringify({ skinColor: "f2d3b1" }),
+        equippedCosmetics: {},
+        unlockedCosmetics: {},
+      },
+    });
   });
 
   afterAll(async () => {
@@ -92,5 +111,30 @@ describe("api — classement tie-break déterministe (e2e réel)", () => {
       expect(board.me).not.toBeNull();
       expect(board.me!.position).toBe(myEntry!.position);
     }
+  });
+
+  it("chaque entrée porte `avatar` : vignette si l'athlète en a une, null sinon", async () => {
+    const board = await lb.leaderboard("male", 100);
+    const withAvatar = board.entries.find((e) => e.userId === ids[1]);
+    const withoutAvatar = board.entries.find((e) => e.userId === ids[2]);
+
+    // ids[1] a un avatar → même forme JSON que le profil public (diceStyle/diceSeed/diceOptions…).
+    expect(withAvatar!.avatar).toEqual({
+      skinTone: 3,
+      hairStyle: 2,
+      hairColor: 4,
+      beardStyle: 1,
+      accessory: 0,
+      background: 5,
+      photoData: null,
+      diceStyle: "adventurer",
+      diceSeed: "lb-seed",
+      diceOptions: { skinColor: "f2d3b1" },
+    });
+
+    // ids[2] n'a pas d'avatar → null (le mobile gère le repli).
+    expect(withoutAvatar!.avatar).toBeNull();
+    // Le champ est TOUJOURS présent sur chaque entrée (jamais undefined).
+    for (const e of board.entries) expect(e).toHaveProperty("avatar");
   });
 });

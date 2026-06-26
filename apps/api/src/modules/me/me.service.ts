@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { ProfileScoringService } from "../profile/profile-scoring.service";
 import type { UpdateAvatarRequest, UpdateMeRequest } from "./me.dto";
+import { serializeAvatar } from "../../common/avatar.serializer";
 
 const DEFAULT_AVATAR = {
   skinTone: 2,
@@ -56,19 +57,9 @@ export class MeService {
 
   async getAvatar(userId: string): Promise<unknown> {
     const avatar = await this.prisma.avatar.findUnique({ where: { userId } });
-    if (!avatar) return DEFAULT_AVATAR;
-    return {
-      skinTone: avatar.skinTone,
-      hairStyle: avatar.hairStyle,
-      hairColor: avatar.hairColor,
-      beardStyle: avatar.beardStyle,
-      accessory: avatar.accessory,
-      background: avatar.background,
-      photoData: avatar.photoData,
-      diceStyle: avatar.diceStyle,
-      diceSeed: avatar.diceSeed,
-      diceOptions: avatar.diceOptions ? (JSON.parse(avatar.diceOptions) as Record<string, string>) : null,
-    };
+    // `GET /v1/me/avatar` renvoie un avatar par défaut (jamais null) pour préremplir l'éditeur ;
+    // les listes publiques, elles, exposent `null` via serializeAvatar (repli côté mobile).
+    return serializeAvatar(avatar) ?? DEFAULT_AVATAR;
   }
 
   async updateAvatar(userId: string, req: UpdateAvatarRequest): Promise<unknown> {

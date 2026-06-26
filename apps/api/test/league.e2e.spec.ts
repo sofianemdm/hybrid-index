@@ -77,6 +77,24 @@ describe("api — mode Ligue (e2e réel)", () => {
         closesAt: new Date(now.getTime() + 6 * 86_400_000),
       },
     });
+
+    // Avatar de l'athlète de test → la ligne de classement Ligue doit exposer la même vignette.
+    await prisma.avatar.create({
+      data: {
+        userId,
+        skinTone: 2,
+        hairStyle: 1,
+        hairColor: 3,
+        beardStyle: null,
+        accessory: 0,
+        background: 4,
+        diceStyle: "bottts",
+        diceSeed: "league-seed",
+        diceOptions: JSON.stringify({ baseColor: "00897b" }),
+        equippedCosmetics: {},
+        unlockedCosmetics: {},
+      },
+    });
   });
 
   afterAll(async () => {
@@ -127,9 +145,24 @@ describe("api — mode Ligue (e2e réel)", () => {
       .get("/v1/league/standings?sex=male")
       .set("authorization", `Bearer ${token}`)
       .expect(200);
-    const me = (standings.body.entries as Array<{ isMe: boolean; points: number }>).find((e) => e.isMe);
+    const me = (standings.body.entries as Array<{ isMe: boolean; points: number; avatar: unknown }>).find((e) => e.isMe);
     expect(me).toBeTruthy();
     expect(me!.points).toBe(row!.points);
+    // La ligne de classement porte l'avatar (même forme JSON que le profil public) → mini-vignette mobile.
+    expect(me!.avatar).toEqual({
+      skinTone: 2,
+      hairStyle: 1,
+      hairColor: 3,
+      beardStyle: null,
+      accessory: 0,
+      background: 4,
+      photoData: null,
+      diceStyle: "bottts",
+      diceSeed: "league-seed",
+      diceOptions: { baseColor: "00897b" },
+    });
+    // Chaque entrée expose le champ `avatar` (présent même si null pour les athlètes sans avatar).
+    for (const e of standings.body.entries as Array<Record<string, unknown>>) expect(e).toHaveProperty("avatar");
 
     const meView = await request(api.getHttpServer())
       .get("/v1/league/me")

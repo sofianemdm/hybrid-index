@@ -3,6 +3,7 @@ import { PrismaService } from "../../infra/prisma/prisma.service";
 import { isoWeekKey } from "../engagement/iso-week";
 import { totalsBestPerWeek, rankTotals } from "./league.aggregate";
 import type { LeagueSeasonView, LeagueWeekView, LeagueStandingsView, LeagueMeView } from "./league.dto";
+import { avatarMapByUserId } from "../../common/avatar.serializer";
 
 const DEFAULT_TOP = 50;
 
@@ -74,11 +75,16 @@ export class LeagueService {
 
     const topIds = ranked.slice(0, DEFAULT_TOP).map((t) => t.userId);
     const viewerNeedsName = viewerUserId && !topIds.includes(viewerUserId) ? [viewerUserId] : [];
-    const names = await this.prisma.profile.findMany({
-      where: { userId: { in: [...topIds, ...viewerNeedsName] } },
-      select: { userId: true, displayName: true },
-    });
+    // Noms + avatars des athlètes affichés en parallèle, chacun en UNE requête batch (pas de N+1).
+    const [names, avatars] = await Promise.all([
+      this.prisma.profile.findMany({
+        where: { userId: { in: [...topIds, ...viewerNeedsName] } },
+        select: { userId: true, displayName: true },
+      }),
+      this.prisma.avatar.findMany({ where: { userId: { in: topIds } } }),
+    ]);
     const nameOf = new Map(names.map((n) => [n.userId, n.displayName]));
+    const avatarOf = avatarMapByUserId(avatars);
 
     const entries = ranked.slice(0, DEFAULT_TOP).map((t, i) => ({
       position: i + 1,
@@ -86,6 +92,7 @@ export class LeagueService {
       displayName: nameOf.get(t.userId) ?? "Athlète",
       points: t.total,
       isMe: t.userId === viewerUserId,
+      avatar: avatarOf.get(t.userId) ?? null, // absent de la map = pas d'avatar → repli mobile
     }));
 
     let me: { position: number; points: number } | null = null;
