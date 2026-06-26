@@ -9,7 +9,6 @@ import 'wod_detail_screen.dart';
 import 'other_workouts_screen.dart';
 import '../history/history_screen.dart';
 import '../coach/sessions_by_attribute_screen.dart';
-import '../../widgets/glossary_text.dart';
 
 /// Onglet WOD : catalogue des WODs (15 références + communautaires à venir).
 class WodTab extends ConsumerStatefulWidget {
@@ -21,13 +20,15 @@ class WodTab extends ConsumerStatefulWidget {
 
 class _WodTabState extends ConsumerState<WodTab> {
   late Future<List<WodCatalogEntry>> _future;
-  late Future<CoachSession> _weekly;
+  // « La séance de la semaine » = le WOD imposé de la Ligue du mois (une seule séance de la semaine
+  // partout dans l'app). Null si aucune saison/semaine active.
+  late Future<LeagueSeason?> _weekly;
 
   @override
   void initState() {
     super.initState();
     _future = ref.read(apiClientProvider).wodsCatalog();
-    _weekly = ref.read(apiClientProvider).weeklySession();
+    _weekly = ref.read(apiClientProvider).leagueSeason();
   }
 
   @override
@@ -37,7 +38,7 @@ class _WodTabState extends ConsumerState<WodTab> {
       child: RefreshIndicator(
         onRefresh: () async => setState(() {
           _future = ref.read(apiClientProvider).wodsCatalog();
-          _weekly = ref.read(apiClientProvider).weeklySession();
+          _weekly = ref.read(apiClientProvider).leagueSeason();
         }),
         child: FutureBuilder<List<WodCatalogEntry>>(
           future: _future,
@@ -66,10 +67,8 @@ class _WodTabState extends ConsumerState<WodTab> {
                 const SizedBox(height: HiSpace.md),
                 _historyButton(context),
                 const SizedBox(height: HiSpace.lg),
-                // Séance de la semaine (Le Forgeron) + accès aux séances par axe (les 6 attributs).
-                _section(t.sessionsWeeklyTitle),
-                _weeklyCard(),
-                const SizedBox(height: HiSpace.lg),
+                // Séance de la semaine = le WOD imposé de la Ligue du mois (unifié) + séances par axe.
+                _weeklySection(),
                 _section(t.sessionsByFocus),
                 _attributeGrid(context),
                 const SizedBox(height: HiSpace.lg),
@@ -136,51 +135,97 @@ class _WodTabState extends ConsumerState<WodTab> {
             style: TextStyle(color: HiColors.textTertiary, fontSize: 12, letterSpacing: 1.5, fontWeight: FontWeight.w700)),
       );
 
-  /// Carte « séance de la semaine » (Le Forgeron). Masquée en cas d'erreur (non bloquant).
-  Widget _weeklyCard() {
-    return FutureBuilder<CoachSession>(
+  /// « La séance de la semaine » = le WOD imposé de la Ligue du mois (MÊME séance que l'onglet Ligue).
+  /// Masquée s'il n'y a pas de saison/semaine active (ou en cas d'erreur réseau, non bloquant).
+  Widget _weeklySection() {
+    return FutureBuilder<LeagueSeason?>(
       future: _weekly,
       builder: (context, snap) {
         if (snap.hasError) return const SizedBox.shrink();
-        final s = snap.data;
-        if (s == null) {
-          return const SizedBox(height: 84, child: Center(child: CircularProgressIndicator()));
+        if (snap.connectionState == ConnectionState.waiting) {
+          return const Padding(
+            padding: EdgeInsets.only(bottom: HiSpace.lg),
+            child: SizedBox(height: 84, child: Center(child: CircularProgressIndicator())),
+          );
         }
-        return Container(
-          padding: const EdgeInsets.all(HiSpace.md),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(colors: [
-              HiColors.brandPrimary.withValues(alpha: 0.14),
-              HiColors.brandSecondary.withValues(alpha: 0.10),
-            ]),
-            borderRadius: BorderRadius.circular(HiRadius.lg),
-            border: Border.all(color: HiColors.brandPrimary.withValues(alpha: 0.4)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+        final week = snap.data?.currentWeek;
+        if (week == null) return const SizedBox.shrink(); // pas de WOD imposé cette semaine
+        final t = AppLocalizations.of(context);
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _section(t.sessionsWeeklyTitle),
+            Container(
+              padding: const EdgeInsets.all(HiSpace.md),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(colors: [
+                  HiColors.brandPrimary.withValues(alpha: 0.14),
+                  HiColors.brandSecondary.withValues(alpha: 0.10),
+                ]),
+                borderRadius: BorderRadius.circular(HiRadius.lg),
+                border: Border.all(color: HiColors.brandPrimary.withValues(alpha: 0.4)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.local_fire_department_rounded, color: HiColors.brandPrimary),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(s.name,
-                        style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w800, fontSize: 16)),
+                  Row(
+                    children: [
+                      Icon(Icons.local_fire_department_rounded, color: HiColors.brandPrimary),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(week.wodName,
+                            style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w800, fontSize: 16)),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                            color: HiColors.brandSecondary.withValues(alpha: 0.18),
+                            borderRadius: BorderRadius.circular(HiRadius.pill)),
+                        child: Text('LIGUE',
+                            style: TextStyle(
+                                color: HiColors.brandSecondaryText,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.8)),
+                      ),
+                    ],
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                        color: HiColors.brandPrimary.withValues(alpha: 0.18),
-                        borderRadius: BorderRadius.circular(HiRadius.pill)),
-                    child: Text('${s.durationMin} min',
-                        style: TextStyle(color: HiColors.brandPrimary, fontSize: 11, fontWeight: FontWeight.w700)),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Le WOD imposé de la Ligue du mois. Fais-le pour marquer des points au classement — '
+                    'et le même effort nourrit aussi ton Index.',
+                    style: TextStyle(color: HiColors.textSecondary, fontSize: 13, height: 1.4),
+                  ),
+                  const SizedBox(height: HiSpace.md),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: HiColors.brandSecondary,
+                        foregroundColor: HiColors.textOnBrand,
+                        minimumSize: const Size.fromHeight(46),
+                      ),
+                      icon: const Icon(Icons.play_arrow_rounded),
+                      label: const Text('Faire ce WOD'),
+                      onPressed: () async {
+                        await Navigator.of(context).push(
+                          MaterialPageRoute(
+                              builder: (_) => WodDetailScreen(wodId: week.wodId, wodName: week.wodName)),
+                        );
+                        if (mounted) {
+                          setState(() {
+                            _future = ref.read(apiClientProvider).wodsCatalog();
+                            _weekly = ref.read(apiClientProvider).leagueSeason();
+                          });
+                        }
+                      },
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
-              GlossaryText(s.description, style: TextStyle(color: HiColors.textSecondary, fontSize: 13, height: 1.4)),
-            ],
-          ),
+            ),
+            const SizedBox(height: HiSpace.lg),
+          ],
         );
       },
     );
