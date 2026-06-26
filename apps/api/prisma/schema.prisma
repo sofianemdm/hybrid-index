@@ -211,6 +211,21 @@ model PushToken {
   @@schema("app")
 }
 
+// Signalement de bug envoyé par l'app (bouton « Signaler un bug », bêta). Stocké pour consultation
+// par le dev. `userId` = FK LOGIQUE vers User (pas de relation Prisma : aucun besoin côté User, et
+// on garde la trace même si le compte est supprimé). `context` = écran/plateforme/version (libre).
+model Feedback {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  message   String   @db.VarChar(2000)
+  context   String?  @db.VarChar(200)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([createdAt])
+  @@map("feedback")
+  @@schema("app")
+}
+
 // Classement de progression hebdomadaire (B1) — ledger durable des points d'effort (EP).
 model ProgressEvent {
   id           String   @id @default(uuid()) @db.Uuid

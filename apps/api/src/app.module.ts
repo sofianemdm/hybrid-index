@@ -24,6 +24,7 @@ import { PostsModule } from "./modules/posts/posts.module";
 import { MessagingModule } from "./modules/messaging/messaging.module";
 import { ChallengeModule } from "./modules/challenge/challenge.module";
 import { LeagueModule } from "./modules/league/league.module";
+import { FeedbackModule } from "./modules/feedback/feedback.module";
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { LeagueModule } from "./modules/league/league.module";
     EngagementModule,
     EndgameModule,
     WodsModule,
+    FeedbackModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_GUARD, useClass: RateLimitGuard }],
