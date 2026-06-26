@@ -128,27 +128,13 @@ class _HomeShellState extends ConsumerState<HomeShell> {
         // 4 onglets (Progression sortie de la barre → accessible via la carte Index de l'Accueil).
         children: const [HomeScreen(), WodTab(), CommunityTab(), LeaderboardScreen()],
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: Container(
-        decoration: BoxDecoration(shape: BoxShape.circle, boxShadow: HiShadow.glowBrand(0.4)),
-        child: FloatingActionButton(
-          backgroundColor: HiColors.brandPrimary,
-          foregroundColor: HiColors.textOnBrand,
-          elevation: 0,
-          shape: const CircleBorder(),
-          tooltip: t.homeAddSessionTitle,
-          onPressed: () {
-            HiHaptics.tap();
-            _openLog();
-          },
-          child: const Icon(Icons.add_rounded, size: 28),
-        ),
-      ),
       bottomNavigationBar: _notchedNav(t),
     );
   }
 
-  /// Barre de navigation à encoche (4 onglets + action centrale dockée) — pattern AAA (Strava/IG).
+  /// Barre de navigation (4 onglets + bouton « + » central). Le bouton est dessiné DANS la barre,
+  /// centré par `Center` sur toute la largeur (= centre exact de l'écran) — plus de FAB ni d'encoche
+  /// dont le placement dépendait de la géométrie du Scaffold. Centrage garanti, indépendant des items.
   Widget _notchedNav(AppLocalizations t) {
     final tabs = <(IconData, IconData, String, int)>[
       (Icons.bolt_outlined, Icons.bolt_rounded, t.navHome, 0),
@@ -160,30 +146,64 @@ class _HomeShellState extends ConsumerState<HomeShell> {
       top: false,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(HiSpace.md, 0, HiSpace.md, HiSpace.sm),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(HiRadius.pill),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-            child: BottomAppBar(
-              color: HiColors.bgElevated2.withValues(alpha: 0.86),
-              elevation: 0,
-              height: 64,
-              padding: EdgeInsets.zero,
-              shape: const CircularNotchedRectangle(),
-              notchMargin: 8,
-              child: Row(
-                children: [
-                  Expanded(child: _navItem(tabs[0])),
-                  Expanded(child: _navItem(tabs[1])),
-                  // Largeur = diamètre du FAB (56) + 2×notchMargin (8) = 72 → l'encoche s'aligne
-                  // pile au centre. 4 items Expanded égaux + cet espace centré ⇒ le FAB (centerDocked,
-                  // centré sur l'écran) tombe exactement au milieu, indépendamment du texte des items.
-                  const SizedBox(width: 72),
-                  Expanded(child: _navItem(tabs[2])),
-                  Expanded(child: _navItem(tabs[3])),
-                ],
+        child: SizedBox(
+          height: 72,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              // La barre : 4 onglets égaux + un espace central pour le bouton.
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(HiRadius.pill),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+                    child: Container(
+                      height: 60,
+                      color: HiColors.bgElevated2.withValues(alpha: 0.86),
+                      child: Row(
+                        children: [
+                          Expanded(child: _navItem(tabs[0])),
+                          Expanded(child: _navItem(tabs[1])),
+                          const SizedBox(width: 64), // emplacement du bouton central
+                          Expanded(child: _navItem(tabs[2])),
+                          Expanded(child: _navItem(tabs[3])),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               ),
-            ),
+              // Bouton « + » central : `Center` sur toute la largeur ⇒ exactement au milieu de l'écran,
+              // légèrement surélevé au-dessus de la barre.
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () {
+                      HiHaptics.tap();
+                      _openLog();
+                    },
+                    child: Container(
+                      width: 56,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: HiColors.brandPrimary,
+                        boxShadow: HiShadow.glowBrand(0.4),
+                        border: Border.all(color: HiColors.bgBase, width: 3),
+                      ),
+                      child: Icon(Icons.add_rounded, color: HiColors.textOnBrand, size: 28),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
