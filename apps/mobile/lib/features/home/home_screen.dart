@@ -106,6 +106,8 @@ class HomeScreen extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: HiSpace.md),
+            _betaBanner(context),
+            const SizedBox(height: HiSpace.md),
             profileAsync.when(
               loading: () => const HomeSkeleton(),
               error: (e, _) => _errorBox('$e'),
@@ -304,6 +306,79 @@ class HomeScreen extends ConsumerWidget {
         borderRadius: BorderRadius.circular(HiRadius.md),
       ),
       child: Text(message, style: TextStyle(color: HiColors.error)),
+    );
+  }
+
+  /// Bandeau bêta compact : tap → feuille d'info (prévient des bugs et invite à les signaler).
+  Widget _betaBanner(BuildContext context) {
+    final t = AppLocalizations.of(context);
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(HiRadius.md),
+        onTap: () => _showBetaInfo(context),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: HiSpace.md, vertical: 10),
+          decoration: BoxDecoration(
+            color: HiColors.warn.withValues(alpha: 0.10),
+            borderRadius: BorderRadius.circular(HiRadius.md),
+            border: Border.all(color: HiColors.warn.withValues(alpha: 0.35)),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.science_outlined, size: 18, color: HiColors.warn),
+              const SizedBox(width: HiSpace.sm),
+              Expanded(
+                child: Text(t.homeBetaBanner,
+                    style: HiType.caption.copyWith(color: HiColors.textSecondary, fontWeight: FontWeight.w600)),
+              ),
+              Icon(Icons.chevron_right_rounded, size: 18, color: HiColors.textTertiary),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showBetaInfo(BuildContext context) {
+    final t = AppLocalizations.of(context);
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: HiColors.bgElevated,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(HiRadius.xxl))),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(HiSpace.lg, HiSpace.lg, HiSpace.lg, HiSpace.xl),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.science_rounded, color: HiColors.warn),
+                  const SizedBox(width: HiSpace.sm),
+                  Expanded(child: Text(t.homeBetaTitle, style: HiType.titleM.copyWith(color: HiColors.textPrimary))),
+                ],
+              ),
+              const SizedBox(height: HiSpace.sm),
+              Text(t.homeBetaBody, style: HiType.body.copyWith(color: HiColors.textSecondary, height: 1.45)),
+              const SizedBox(height: HiSpace.lg),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: HiColors.brandPrimary,
+                    foregroundColor: HiColors.textOnBrand,
+                    minimumSize: const Size.fromHeight(46),
+                  ),
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  child: Text(t.commonGotIt),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

@@ -65,6 +65,20 @@ class AppLocalizationsFr extends AppLocalizations {
   String get commonRetry => 'Réessayer';
 
   @override
+  String get commonGotIt => 'Compris';
+
+  @override
+  String get homeBetaBanner =>
+      'Version bêta — un bug ? Touche pour en savoir plus';
+
+  @override
+  String get homeBetaTitle => 'Application en version bêta';
+
+  @override
+  String get homeBetaBody =>
+      'Elle évolue vite : il peut encore y avoir des bugs, des incohérences ou des données imparfaites. Signale-nous tout ce qui cloche pour qu\'on le corrige au plus vite — chaque retour compte. 🙏';
+
+  @override
   String get settingsLanguage => 'Langue';
 
   @override

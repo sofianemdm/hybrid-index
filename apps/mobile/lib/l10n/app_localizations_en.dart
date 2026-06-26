@@ -64,6 +64,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonRetry => 'Retry';
 
   @override
+  String get commonGotIt => 'Got it';
+
+  @override
+  String get homeBetaBanner => 'Beta version — found a bug? Tap to learn more';
+
+  @override
+  String get homeBetaTitle => 'App in beta';
+
+  @override
+  String get homeBetaBody =>
+      'It\'s evolving fast: you may still hit bugs, inconsistencies or imperfect data. Tell us anything that looks off so we can fix it quickly — every report helps. 🙏';
+
+  @override
   String get settingsLanguage => 'Language';
 
   @override

@@ -200,6 +200,30 @@ abstract class AppLocalizations {
   /// **'Retry'**
   String get commonRetry;
 
+  /// No description provided for @commonGotIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Got it'**
+  String get commonGotIt;
+
+  /// No description provided for @homeBetaBanner.
+  ///
+  /// In en, this message translates to:
+  /// **'Beta version — found a bug? Tap to learn more'**
+  String get homeBetaBanner;
+
+  /// No description provided for @homeBetaTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'App in beta'**
+  String get homeBetaTitle;
+
+  /// No description provided for @homeBetaBody.
+  ///
+  /// In en, this message translates to:
+  /// **'It\'s evolving fast: you may still hit bugs, inconsistencies or imperfect data. Tell us anything that looks off so we can fix it quickly — every report helps. 🙏'**
+  String get homeBetaBody;
+
   /// No description provided for @settingsLanguage.
   ///
   /// In en, this message translates to:
