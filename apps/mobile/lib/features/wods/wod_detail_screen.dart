@@ -307,8 +307,10 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 64,
+            width: 88, // assez large pour « 42-30-18 » ; softWrap:false ⇒ jamais coupé en « 1 / 8 »
             child: Text(b.reps,
+                softWrap: false,
+                overflow: TextOverflow.clip,
                 style: HiType.body.copyWith(color: HiColors.brandPrimary, fontSize: 14, fontWeight: FontWeight.w800)),
           ),
           Expanded(
