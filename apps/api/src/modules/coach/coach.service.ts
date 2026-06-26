@@ -2,12 +2,31 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 import { ATTRIBUTE_KEYS, type internalScore } from "@hybrid-index/contracts";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { ScoreClient } from "../../infra/score-client/score-client.service";
-import { SESSIONS, type Session } from "./sessions.data";
+import { SESSIONS, sessionsForAttribute, weeklySession, type Session } from "./sessions.data";
+import type { AttributeKey } from "@hybrid-index/contracts";
 
 export interface CoachResponse {
   targetAttribute: string;
   projection: internalScore.ComputeProjectionResponse;
   sessions: Session[];
+}
+
+/** Une séance de la bibliothèque annotée de son poids pour l'attribut demandé. */
+export interface LibrarySession {
+  id: string;
+  name: string;
+  primaryAttribute: AttributeKey;
+  secondaryAttributes: AttributeKey[];
+  requiresEquipment: boolean;
+  durationMin: number;
+  intensity: Session["intensity"];
+  description: string;
+  weight: number;
+}
+
+export interface LibraryResponse {
+  attribute: string;
+  sessions: LibrarySession[];
 }
 
 /**
@@ -52,5 +71,38 @@ export class CoachService {
     ).slice(0, 8);
 
     return { targetAttribute: target, projection, sessions };
+  }
+
+  /**
+   * Bibliothèque de séances qui touchent `attribute`, triée par poids (cf. seances-attributs-spec).
+   * Filtre matériel selon la préférence du profil (`equipmentPref === "none"` ⇒ sans matériel).
+   */
+  async library(userId: string, attribute: AttributeKey): Promise<LibraryResponse> {
+    const profile = await this.prisma.profile.findUnique({ where: { userId } });
+    if (!profile) throw new NotFoundException({ code: "NOT_FOUND", message: "Profil introuvable." });
+
+    const noGear = profile.equipmentPref === "none";
+    const sessions = sessionsForAttribute(attribute, noGear).map((s) => ({
+      id: s.id,
+      name: s.name,
+      primaryAttribute: s.primaryAttribute,
+      secondaryAttributes: s.secondaryAttributes,
+      requiresEquipment: s.requiresEquipment,
+      durationMin: s.durationMin,
+      intensity: s.intensity,
+      description: s.description,
+      weight: s.weight,
+    }));
+
+    return { attribute, sessions };
+  }
+
+  /** La « séance de la semaine » (signature `weekly-forgeron`). */
+  weekly(): { session: Session } {
+    const session = weeklySession();
+    if (!session) {
+      throw new NotFoundException({ code: "NOT_FOUND", message: "Séance de la semaine introuvable." });
+    }
+    return { session };
   }
 }

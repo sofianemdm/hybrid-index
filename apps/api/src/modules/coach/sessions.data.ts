@@ -1,4 +1,4 @@
-import type { AttributeKey } from "@hybrid-index/contracts";
+import { ATTRIBUTE_KEYS, type AttributeKey } from "@hybrid-index/contracts";
 
 /**
  * Bibliothèque de séances ciblées (source sport-science, 20 juin). 54 séances ciblées (9 par
@@ -84,3 +84,78 @@ export const SESSIONS: Session[] = [
   { id: "hybrid-chipper-bodyweight", name: "Chipper poids du corps", primaryAttribute: "hybrid", secondaryAttributes: ["muscular_endurance", "engine"], requiresEquipment: false, durationMin: 24, intensity: "high", description: "Pour temps : 50 air squats, 40 mountain climbers, 30 pompes, 20 burpees, 10 tuck jumps. Chipper sans matériel. Découpe en petites séries." },
   { id: "hybrid-tabata-fullbody", name: "Tabata full-body 4 blocs", primaryAttribute: "hybrid", secondaryAttributes: ["engine", "power", "muscular_endurance"], requiresEquipment: false, durationMin: 20, intensity: "high", description: "4 blocs Tabata (8×20/10) : burpees, jumping lunges, mountain climbers, squat jumps, 1 min entre blocs. Cardio-résistance intense. Volume constant." },
 ];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Poids par attribut (barème reproductible, cf. docs/seances-attributs-spec.md §3)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Barème de dérivation des poids depuis les tags (spec §3). */
+const ATTRIBUTE_FLOOR = 0.1; // plancher : aucun attribut n'est jamais à zéro
+const PRIMARY_WEIGHT = 1.0;
+const SECONDARY_WEIGHTS = [0.6, 0.45, 0.35] as const; // [0]→0.60, [1]→0.45, [2]→0.35 (au-delà : ignoré)
+
+/** Seuil d'affichage : on ne liste que primaire + secondaires (≥ 0.35), le plancher 0.10 reste exclu. */
+export const ATTRIBUTE_LIST_THRESHOLD = SECONDARY_WEIGHTS[SECONDARY_WEIGHTS.length - 1]; // 0.35
+
+/**
+ * Poids calibrés à la main pour la séance signature (spec §3, exception au barème automatique).
+ * `weekly-forgeron` n'utilise PAS la dérivation depuis ses tags.
+ */
+const FORGERON_WEIGHTS: Record<AttributeKey, number> = {
+  hybrid: 1.0,
+  engine: 0.9,
+  muscular_endurance: 0.8,
+  power: 0.4,
+  speed: 0.3,
+  strength: 0.15,
+};
+
+/**
+ * Poids de chaque attribut (les 6 clés) pour une séance, dérivés de ses tags (spec §3) :
+ * primaire = 1.00 ; secondaires = 0.60 / 0.45 / 0.35 (dans l'ordre, au-delà ignoré) ;
+ * tout autre attribut = 0.10 (plancher). EXCEPTION `weekly-forgeron` : poids calibrés main.
+ */
+export function attributeWeights(session: Session): Record<AttributeKey, number> {
+  if (session.id === "weekly-forgeron") {
+    return { ...FORGERON_WEIGHTS };
+  }
+  const weights = {} as Record<AttributeKey, number>;
+  for (const key of ATTRIBUTE_KEYS) {
+    weights[key] = ATTRIBUTE_FLOOR;
+  }
+  weights[session.primaryAttribute] = PRIMARY_WEIGHT;
+  session.secondaryAttributes.slice(0, SECONDARY_WEIGHTS.length).forEach((attr, i) => {
+    weights[attr] = SECONDARY_WEIGHTS[i];
+  });
+  return weights;
+}
+
+/** Ordre d'intensité pour le départage (high > medium > low). */
+const INTENSITY_RANK: Record<Session["intensity"], number> = { high: 3, medium: 2, low: 1 };
+
+/**
+ * Séances qui touchent `attribute` (poids ≥ 0.35 : primaire + secondaires ; le plancher 0.10 est
+ * exclu de la liste, cf. spec §2 variante recommandée), chacune annotée de son `weight` pour cet
+ * attribut. Si `noGear`, exclut les séances nécessitant du matériel. Tri déterministe (spec §2.3) :
+ * weight desc → intensité desc (high>medium>low) → durationMin asc → name alpha.
+ */
+export function sessionsForAttribute(
+  attribute: AttributeKey,
+  noGear: boolean,
+): Array<Session & { weight: number }> {
+  return SESSIONS.map((s) => ({ ...s, weight: attributeWeights(s)[attribute] }))
+    .filter((s) => s.weight >= ATTRIBUTE_LIST_THRESHOLD)
+    .filter((s) => !noGear || !s.requiresEquipment)
+    .sort(
+      (a, b) =>
+        b.weight - a.weight ||
+        INTENSITY_RANK[b.intensity] - INTENSITY_RANK[a.intensity] ||
+        a.durationMin - b.durationMin ||
+        a.name.localeCompare(b.name),
+    );
+}
+
+/** Séance signature « de la semaine » (cf. seance-de-la-semaine.md). Peut être undefined. */
+export function weeklySession(): Session | undefined {
+  return SESSIONS.find((s) => s.id === "weekly-forgeron");
+}
