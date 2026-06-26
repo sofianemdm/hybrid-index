@@ -33,8 +33,11 @@ export const WOD_REFERENCES: Record<string, WodReference[]> = {
     { tier: "elite", sex: "female", athlete: null, result: 80, note: "~1:20 (haut niveau)", source: "estimation élite" },
   ],
   row_2k: [
-    { tier: "record", sex: "male", athlete: "Record du monde (poids lourd)", result: 336, note: "5:36 · Concept2", source: "Concept2" },
-    { tier: "record", sex: "female", athlete: "Record du monde", result: 381, note: "6:21 · Concept2", source: "Concept2" },
+    // Concept2 = MARQUE du rameur / logbook officiel (la source), PAS un athlète. On n'attribue pas
+    // le record à une personne nommée faute de certitude sur le détenteur actuel (cf. sport-science,
+    // règle « pas de chiffre/nom inventé »). Formulation neutre : « record du monde indoor ».
+    { tier: "record", sex: "male", athlete: null, result: 336, note: "~5:36 · record du monde indoor (catégorie lourde)", source: "Concept2 (logbook officiel)" },
+    { tier: "record", sex: "female", athlete: null, result: 381, note: "~6:21 · record du monde indoor", source: "Concept2 (logbook officiel)" },
   ],
   run_5k: [
     { tier: "record", sex: "male", athlete: "Joshua Cheptegei", result: 755, note: "12:35 · record du monde (piste)", source: "World Athletics" },

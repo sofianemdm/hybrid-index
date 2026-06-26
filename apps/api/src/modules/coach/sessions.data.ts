@@ -1,8 +1,10 @@
 import type { AttributeKey } from "@hybrid-index/contracts";
 
 /**
- * Bibliothèque de séances ciblées (source sport-science, 20 juin). 54 séances, 9 par attribut
- * en primaire, équilibrées avec/sans matériel (l'app doit fonctionner 100 % sans matériel).
+ * Bibliothèque de séances ciblées (source sport-science, 20 juin). 54 séances ciblées (9 par
+ * attribut en primaire) équilibrées avec/sans matériel (l'app doit fonctionner 100 % sans matériel),
+ * + 1 séance SIGNATURE hebdomadaire « Le Forgeron » (sport-science, 26 juin) destinée à devenir
+ * « la séance de la semaine » (intensive, 100 % sans matériel, ~15 min). Soit 55 séances.
  */
 export interface Session {
   id: string;
@@ -16,6 +18,11 @@ export interface Session {
 }
 
 export const SESSIONS: Session[] = [
+  // ───── SÉANCE DE LA SEMAINE (signature, sans matériel, ~15 min) ─────
+  // « Le Forgeron » : remplace l'ancien Profil Express comme séance hebdo mise en avant. Hybride
+  // intensive 100 % poids du corps. Primaire = hybrid ; touche aussi engine / endurance musc. /
+  // power / vitesse. NON scalable (aucune charge). Se note `time` (chrono), via le moteur d'estimation.
+  { id: "weekly-forgeron", name: "Le Forgeron", primaryAttribute: "hybrid", secondaryAttributes: ["engine", "muscular_endurance", "power"], requiresEquipment: false, durationMin: 15, intensity: "high", description: "LA séance de la semaine, 100 % sans matériel, pour le temps (cap 15 min). 3 TOURS à enchaîner : 200 m course (ou 40 jumping jacks sur place), 15 burpees, 25 air squats, 20 mountain climbers (10/jambe), 15 sit-ups. Découpe en petites séries, garde une cadence régulière sur les burpees, ne pars pas trop vite. Score = temps total (ou reps si tu atteins le cap). Tout le corps, moteur à fond." },
   // ENGINE
   { id: "engine-zone2-run-40", name: "Sortie Zone 2 — 40 min", primaryAttribute: "engine", secondaryAttributes: ["speed"], requiresEquipment: false, durationMin: 40, intensity: "low", description: "Course continue à allure facile (tu peux parler), 40 min sans arrêt. Fréquence cardiaque basse et stable. Construit le moteur aérobie de base." },
   { id: "engine-run-5x800", name: "Intervalles 5×800 m", primaryAttribute: "engine", secondaryAttributes: ["speed"], requiresEquipment: false, durationMin: 35, intensity: "high", description: "Après échauffement, 5×800 m à allure 5 km, 2 min de marche/trot entre chaque. Développe seuil et VMA. Reste régulier sur les temps." },

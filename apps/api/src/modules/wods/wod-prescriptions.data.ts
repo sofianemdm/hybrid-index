@@ -25,6 +25,7 @@ export const WOD_PRESCRIPTIONS: Record<string, WodPrescription> = {
   //    Structure cardio HYROX type : course + machine ergo + wall balls, en triplet.
   // ─────────────────────────────────────────────────────────────────────────
   hyrox_sprint: {
+    scalable: true, // wall ball : charge adaptable (Rx/Allégé)
     summary:
       "Séance cardio façon HYROX : 3 TOURS de (500 m course + 500 m rameur + 20 wall balls), enchaînés " +
       "sans repos. Au total : 1500 m course + 1500 m rameur + 60 wall balls. Teste ton moteur sous fatigue.",
@@ -54,6 +55,7 @@ export const WOD_PRESCRIPTIONS: Record<string, WodPrescription> = {
   // 2. Fran (benchmark) — 21-15-9 Thrusters + Tractions, Thruster 40/30 kg.
   // ─────────────────────────────────────────────────────────────────────────
   fran: {
+    scalable: true, // thruster chargé : Rx/Allégé
     summary:
       "Le benchmark CrossFit le plus connu : un couplet thrusters / tractions en 21-15-9. " +
       "Court, intense et brûlant. Référence universelle de puissance et d'endurance musculaire.",
@@ -81,6 +83,7 @@ export const WOD_PRESCRIPTIONS: Record<string, WodPrescription> = {
   // 3. Grace (benchmark) — 30 Épaulés-jetés, 60/40 kg.
   // ─────────────────────────────────────────────────────────────────────────
   grace: {
+    scalable: true, // épaulé-jeté chargé : Rx/Allégé
     summary:
       "30 épaulés-jetés pour le temps. Test de puissance et de filière lactique : aller vite " +
       "sur une charge modérée sans casser le rythme.",
@@ -105,6 +108,7 @@ export const WOD_PRESCRIPTIONS: Record<string, WodPrescription> = {
   // 4. Jackie (benchmark) — 1000 m Rameur, 50 Thrusters barre à vide (20/15), 30 Tractions.
   // ─────────────────────────────────────────────────────────────────────────
   jackie: {
+    scalable: true, // thruster chargé : Rx/Allégé
     summary:
       "Enchaînement rameur, thrusters à la barre olympique vide et tractions. Mélange complet : " +
       "moteur cardio puis endurance musculaire jambes et tirage.",
@@ -147,6 +151,7 @@ export const WOD_PRESCRIPTIONS: Record<string, WodPrescription> = {
   // 6. Helen (benchmark) — 3 tours : 400 m course, 21 Swings KB 24/16, 12 Tractions.
   // ─────────────────────────────────────────────────────────────────────────
   helen: {
+    scalable: true, // kettlebell swing chargé : Rx/Allégé
     summary:
       "3 tours de course, swings kettlebell et tractions. Triplet équilibré entre cardio, hanches " +
       "et tirage — un classique du conditionnement hybride.",
@@ -175,6 +180,7 @@ export const WOD_PRESCRIPTIONS: Record<string, WodPrescription> = {
   // 7. Karen (benchmark) — 150 Wall balls, 9/6 kg, cible 3 m / 2,70 m.
   // ─────────────────────────────────────────────────────────────────────────
   karen: {
+    scalable: true, // wall ball chargé : Rx/Allégé
     summary:
       "150 wall balls pour le temps. Test mental et physique : un seul mouvement, jambes et épaules " +
       "qui brûlent, à tenir sans s'arrêter.",
@@ -200,6 +206,7 @@ export const WOD_PRESCRIPTIONS: Record<string, WodPrescription> = {
   //    scoreType reps : nombre de tours/reps.
   // ─────────────────────────────────────────────────────────────────────────
   cindy: {
+    scalable: false, // AMRAP 100 % poids de corps : rien à scaler → pas de Rx/Allégé
     summary:
       "AMRAP 20 minutes au poids du corps : tractions, pompes, air squats. Test d'endurance " +
       "musculaire et de moteur — combien de tours peux-tu enchaîner ?",
@@ -220,6 +227,7 @@ export const WOD_PRESCRIPTIONS: Record<string, WodPrescription> = {
   //    Poids du corps uniquement. Triplet engine / endurance musculaire / hybride.
   // ─────────────────────────────────────────────────────────────────────────
   profil_express: {
+    scalable: false, // séance d'entrée 100 % poids de corps : rien à scaler → retirer le toggle Rx/Allégé
     summary:
       "Ta séance d'ENTRÉE, 100 % sans matériel : elle touche les 6 qualités d'un coup et te donne " +
       "un HYBRID INDEX ESTIMÉ en une séance. Cours fort, enchaîne sans traîner. Refais ensuite des " +
@@ -238,6 +246,7 @@ export const WOD_PRESCRIPTIONS: Record<string, WodPrescription> = {
   },
 
   benchmark_zero: {
+    scalable: false, // 100 % poids de corps (burpees/pompes/squats) : rien à scaler → pas de Rx/Allégé
     summary:
       "La séance test 100 % sans matériel : burpees, pompes et air squats en dégressif, sans rien " +
       "d'autre que ton corps. Conçue pour mesurer ton hybride où que tu sois.",
@@ -294,6 +303,7 @@ export const WOD_PRESCRIPTIONS: Record<string, WodPrescription> = {
   // 12. Max pompes strictes (sans matériel) — une série.
   // ─────────────────────────────────────────────────────────────────────────
   max_pushups: {
+    scalable: false, // poids de corps NON adaptable : aucune charge à alléger → pas de Rx/Allégé
     summary:
       "Maximum de pompes strictes en une seule série, sans repos au sol. Test d'endurance musculaire " +
       "du haut du corps (proxy de force).",
@@ -307,6 +317,7 @@ export const WOD_PRESCRIPTIONS: Record<string, WodPrescription> = {
   // 13. Max air squats en 2 min (sans matériel).
   // ─────────────────────────────────────────────────────────────────────────
   max_air_squats_2min: {
+    scalable: false, // poids de corps NON adaptable : aucune charge à alléger → pas de Rx/Allégé
     summary:
       "Maximum d'air squats en 2 minutes. Test de puissance et d'endurance musculaire des jambes " +
       "sur effort court et intense.",
@@ -321,6 +332,7 @@ export const WOD_PRESCRIPTIONS: Record<string, WodPrescription> = {
   // 14. Test burpees 7 min (sans matériel).
   // ─────────────────────────────────────────────────────────────────────────
   burpees_7min: {
+    scalable: false, // poids de corps NON adaptable : aucune charge à alléger → pas de Rx/Allégé
     summary:
       "Maximum de burpees SUR PLACE en 7 minutes (pas de déplacement). Test de moteur tout-corps et " +
       "de mental : tenir une cadence régulière sans exploser.",
@@ -370,6 +382,7 @@ export const WOD_PRESCRIPTIONS: Record<string, WodPrescription> = {
   // 17. Max air squats (une série, sans matériel).
   // ─────────────────────────────────────────────────────────────────────────
   max_air_squats: {
+    scalable: false, // poids de corps NON adaptable : aucune charge à alléger → pas de Rx/Allégé
     summary:
       "Maximum d'air squats en une seule série non-stop, sans repos. Test d'endurance musculaire " +
       "des jambes et de résistance mentale.",
@@ -400,6 +413,7 @@ export const WOD_PRESCRIPTIONS: Record<string, WodPrescription> = {
     scoringNote: SCORE_TIME,
   },
   isabel: {
+    scalable: true, // snatch chargé : Rx/Allégé
     summary: "Benchmark CrossFit : 30 arrachés (snatch) le plus vite possible. Puissance et technique d'haltérophilie sous fatigue.",
     format: "30 répétitions, pour le temps",
     blocks: [{ reps: "30", movement: "Arrachés (snatch)" }],
@@ -407,6 +421,7 @@ export const WOD_PRESCRIPTIONS: Record<string, WodPrescription> = {
     scoringNote: SCORE_TIME,
   },
   murph: {
+    scalable: true, // gilet lesté : Rx (avec) / Allégé (sans gilet)
     summary: "Hero WOD : course, puis tractions/pompes/squats (fractionnés librement), puis course — classiquement avec gilet lesté.",
     format: "Pour le temps (gilet conseillé)",
     blocks: [

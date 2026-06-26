@@ -1,4 +1,5 @@
 import { WOD_PRESCRIPTIONS } from "../src/modules/wods/wod-prescriptions.data";
+import { isScalable } from "../src/modules/wods/wod-prescription.types";
 
 /** Les séances de référence seedées doivent TOUTES avoir un énoncé concret (mouvements + score). */
 const REFERENCE_WOD_IDS = [
@@ -41,6 +42,29 @@ describe("WOD_PRESCRIPTIONS — énoncés concrets des séances", () => {
         expect(b.movement.length).toBeGreaterThan(0);
       });
       expect(p.scoringNote.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("Rx/Allégé (scalable) : seuls les WODs à charge adaptable, jamais les courses/poids de corps", () => {
+    // Règle data-driven : scalable ssi le WOD porte au moins une charge adaptable.
+    // Les WODs au POIDS DE CORPS NON adaptable (max pompes, max air squats, burpees, Cindy,
+    // Benchmark Zéro, Profil Express) et les COURSES n'ont rien à scaler → pas de toggle Rx/Allégé.
+    const SCALABLE = new Set(["hyrox_sprint", "fran", "grace", "jackie", "helen", "karen", "isabel", "murph"]);
+    const NON_SCALABLE = [
+      "max_pushups", "max_air_squats_2min", "max_air_squats", "burpees_7min", "cindy",
+      "benchmark_zero", "profil_express", "run_5k", "run_3k", "run_1k", "run_free_distance",
+    ];
+    for (const id of SCALABLE) {
+      expect(isScalable(WOD_PRESCRIPTIONS[id])).toBe(true);
+      expect(WOD_PRESCRIPTIONS[id].weights.length).toBeGreaterThan(0);
+    }
+    for (const id of NON_SCALABLE) {
+      expect(isScalable(WOD_PRESCRIPTIONS[id])).toBe(false);
+      expect(WOD_PRESCRIPTIONS[id].weights).toHaveLength(0);
+    }
+    // Invariant global : scalable ⇔ présence d'au moins une charge (aucune exception).
+    for (const p of Object.values(WOD_PRESCRIPTIONS)) {
+      expect(isScalable(p)).toBe(p.weights.length > 0);
     }
   });
 
