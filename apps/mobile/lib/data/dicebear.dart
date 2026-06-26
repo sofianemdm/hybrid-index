@@ -1,5 +1,5 @@
-/// DiceBear — avatars premium générés, rendus via `Image.network` (zéro dépendance, build-safe).
-/// Doc : https://www.dicebear.com — format `https://api.dicebear.com/{v}/{style}/png?...`.
+// DiceBear — avatars premium générés, rendus via `Image.network` (zéro dépendance, build-safe).
+// Doc : https://www.dicebear.com — format `https://api.dicebear.com/{v}/{style}/png?...`.
 
 const String kDiceBearVersion = '9.x';
 const String kDiceBearDefaultStyle = 'adventurer';
