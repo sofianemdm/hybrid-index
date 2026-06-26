@@ -582,7 +582,7 @@ export const WODS: ReadonlyArray<WodDefinition> = [
     isBenchmark: false,
     targetAttributes: [{ attribute: "engine", estimated: false }],
     bySex: {
-      male: { model: lognormalFromMedian(15600, 0.2), hardMin: 7000, hardMax: 36000, proReference: 7235 },
+      male: { model: lognormalFromMedian(15600, 0.2), hardMin: 7000, hardMax: 36000, proReference: 7170 },
       female: { model: lognormalFromMedian(16800, 0.2), hardMin: 7600, hardMax: 39600, proReference: 7796 },
     },
   },
