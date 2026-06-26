@@ -9,7 +9,7 @@ import '../../data/session.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/hi_button.dart';
-import '../avatar/avatar_customizer.dart';
+import '../avatar/dice_avatar_screen.dart';
 import '../reveal/reveal_screen.dart';
 
 /// Wizard d'onboarding : l'utilisateur saisit LUI-MÊME sa distance de course + son temps
@@ -167,41 +167,71 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         ],
       ),
       body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(HiSpace.lg),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 480),
+        child: _step == 0 ? _avatarLayout() : _effortsLayout(),
+      ),
+    );
+  }
+
+  // Étape 0 — création de l'avatar (éditeur DiceBear plein écran : il a besoin de hauteur bornée).
+  Widget _avatarLayout() {
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 480),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(HiSpace.lg, HiSpace.lg, HiSpace.lg, 0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: _step == 0 ? _avatarStep() : _effortsStep(),
+                children: [
+                  Text(AppLocalizations.of(context).onbAvatarTitle,
+                      style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: HiColors.textPrimary)),
+                  const SizedBox(height: 6),
+                  Text(AppLocalizations.of(context).onbAvatarSubtitle,
+                      style: TextStyle(color: HiColors.textSecondary)),
+                ],
               ),
             ),
-          ),
+            Expanded(
+              child: DiceAvatarEditor(
+                sex: ref.read(sessionProvider).sex ?? 'male',
+                initial: _avatar,
+                onChanged: (c) => _avatar = c,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(HiSpace.lg, 0, HiSpace.lg, HiSpace.lg),
+              child: HiButton(
+                  label: AppLocalizations.of(context).commonContinue,
+                  // En arrivant à l'étape efforts, on calcule tout de suite l'aperçu d'Index (pompes ON
+                  // par défaut → un chiffre s'affiche immédiatement, le « waouh » anticipé qui motive).
+                  onPressed: () {
+                    setState(() => _step = 1);
+                    _refreshPreview();
+                  }),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  List<Widget> _avatarStep() => [
-        Text(AppLocalizations.of(context).onbAvatarTitle,
-            style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: HiColors.textPrimary)),
-        const SizedBox(height: 6),
-        Text(AppLocalizations.of(context).onbAvatarSubtitle,
-            style: TextStyle(color: HiColors.textSecondary)),
-        const SizedBox(height: HiSpace.lg),
-        AvatarCustomizer(config: _avatar, onChanged: (c) => setState(() => _avatar = c)),
-        const SizedBox(height: HiSpace.xl),
-        HiButton(
-            label: AppLocalizations.of(context).commonContinue,
-            // En arrivant à l'étape efforts, on calcule tout de suite l'aperçu d'Index (pompes ON par
-            // défaut → un chiffre s'affiche immédiatement, le « waouh » anticipé qui motive, UX-02).
-            onPressed: () {
-              setState(() => _step = 1);
-              _refreshPreview();
-            }),
-        const SizedBox(height: HiSpace.lg),
-      ];
+  // Étape 1 — efforts (scroll classique).
+  Widget _effortsLayout() {
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(HiSpace.lg),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 480),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: _effortsStep(),
+          ),
+        ),
+      ),
+    );
+  }
 
   List<Widget> _effortsStep() => [
         Text(AppLocalizations.of(context).onbRevealTitle,

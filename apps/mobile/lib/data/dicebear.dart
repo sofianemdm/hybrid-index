@@ -58,6 +58,14 @@ const DiceCategory _beard = DiceCategory(key: 'facialHair', label: 'Barbe', isCo
   DiceOption('moustacheFancy', 'Moustache'),
 ]);
 
+/// Couleurs de barbe (param DiceBear `facialHairColor`) — affichées DANS l'onglet « Barbe ».
+const List<DiceOption> kBeardColors = [
+  DiceOption('2c1b18', 'Noir'),
+  DiceOption('4a312c', 'Marron'),
+  DiceOption('c93305', 'Roux'),
+  DiceOption('b58143', 'Blond'),
+];
+
 const DiceCategory _glasses = DiceCategory(key: 'accessories', label: 'Lunettes', isColor: false, options: [
   DiceOption('none', 'Aucune'),
   DiceOption('round', 'Rondes'),
@@ -142,6 +150,7 @@ Map<String, String> avataaarsDefaultsFor(String sex) {
     'top': female ? 'longButNotTooLong' : 'shortFlat',
     'hairColor': '2c1b18',
     'facialHair': 'none', // femme : forcé à aucune (catégorie masquée) ; homme : modifiable
+    'facialHairColor': '2c1b18', // couleur de barbe par défaut (noir)
     'accessories': 'none',
     'eyes': 'default',
     'mouth': 'smile',
