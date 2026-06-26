@@ -13,7 +13,7 @@ import '../../data/web_download.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/hi_button.dart';
-import '../avatar/avatar_editor_screen.dart';
+import '../avatar/dice_avatar_screen.dart';
 
 /// Paramètres : modifier pseudo / objectif / matériel. Un changement d'objectif
 /// recalcule l'Index (pondération par objectif) côté serveur.
@@ -210,7 +210,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         icon: const Icon(Icons.face),
                         label: Text(t.settingsCustomizeAvatar),
                         onPressed: () => Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => const AvatarEditorScreen()),
+                          MaterialPageRoute(builder: (_) => const DiceAvatarScreen()),
                         ),
                       ),
                       const SizedBox(height: HiSpace.xl),
