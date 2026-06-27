@@ -137,7 +137,7 @@ class _ShareCardScreenState extends ConsumerState<ShareCardScreen> {
           data: MediaQuery.of(context).copyWith(textScaler: TextScaler.noScaling),
           child: RepaintBoundary(
             key: _cardKey,
-            child: _Card(
+            child: PlayerCard(
               profile: profile,
               name: name,
               sex: ref.watch(sessionProvider).sex,
@@ -204,7 +204,8 @@ const Map<String, String> _archetypeLabel = {
   'hybrid': 'TOUT-TERRAIN',
 };
 
-class _Card extends StatefulWidget {
+/// Carte joueur (FIFA-style) — réutilisable : écran de partage ET aperçu sur l'accueil.
+class PlayerCard extends StatefulWidget {
   final Profile profile;
   final String name;
   final String? sex;
@@ -213,7 +214,8 @@ class _Card extends StatefulWidget {
 
   /// Pendant l'export PNG : on fige (OVR plein, sans reflet animé) pour une capture propre.
   final bool exporting;
-  const _Card({
+  const PlayerCard({
+    super.key,
     required this.profile,
     required this.name,
     this.sex,
@@ -223,10 +225,10 @@ class _Card extends StatefulWidget {
   });
 
   @override
-  State<_Card> createState() => _CardState();
+  State<PlayerCard> createState() => _PlayerCardState();
 }
 
-class _CardState extends State<_Card> with TickerProviderStateMixin {
+class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
   static const _ink = Color(0xFFF2F5FA);
   static const _inkSoft = Color(0xFFA7B0C0);
 

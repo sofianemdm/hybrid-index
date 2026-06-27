@@ -12,13 +12,11 @@ import '../../widgets/hi_avatar.dart';
 import '../../widgets/hi_button.dart';
 import '../../widgets/hi_card.dart';
 import '../../widgets/hi_skeleton.dart';
-import '../../widgets/index_ring.dart';
 import '../../widgets/radar_view.dart';
 import '../../widgets/radar_insight.dart';
 import '../../widgets/social_proof_card.dart';
 import '../../widgets/streak_chip.dart';
 import '../../widgets/bug_report.dart';
-import 'grade_block.dart';
 import 'rival_card.dart';
 import 'weekly_recap_card.dart';
 import '../avatar/dice_avatar_screen.dart';
@@ -144,8 +142,19 @@ class HomeScreen extends ConsumerWidget {
             ),
           ),
           child: Column(children: [
-            Center(child: IndexRing(value: p.index.value, percentile: p.index.percentile)),
-            Transform.translate(offset: const Offset(0, -10), child: GradeBlock(profile: p)),
+            // ESSAI : carte joueur à la place du rond Index (réversible si ça ne plaît pas).
+            Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 340),
+                child: PlayerCard(
+                  profile: p,
+                  name: ref.watch(sessionProvider).user?.displayName ?? '',
+                  sex: ref.watch(sessionProvider).sex,
+                  avatar: ref.watch(avatarProvider).value,
+                  badges: ref.watch(cardBadgesProvider).value ?? const [],
+                ),
+              ),
+            ),
           ]),
         ),
         // Projection motivante (« à ce rythme, X+ dans N sem ») — seulement si tendance positive.
