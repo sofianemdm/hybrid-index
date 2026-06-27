@@ -175,9 +175,8 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
           const SizedBox(height: HiSpace.sm),
           Text(
             'Chaque mois, une nouvelle saison. Tu es classé AUTOMATIQUEMENT parmi les athlètes de ton '
-            'sexe — aucune inscription. Fais le WOD imposé de la semaine : tu marques des points selon '
-            'ta performance, et le même effort compte aussi pour ton Index. Les points de Ligue '
-            'repartent à zéro chaque mois ; ton Index, lui, ne bouge jamais.',
+            'sexe. Fais la séance imposée de la semaine : tu marques des points selon ta performance. '
+            'Les points de Ligue repartent à zéro chaque mois.',
             style: HiType.body.copyWith(color: HiColors.textSecondary),
           ),
         ],
@@ -197,7 +196,7 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('WOD DE LA SEMAINE',
+          Text('SÉANCE DE LA SEMAINE',
               style: HiType.caption.copyWith(color: HiColors.textTertiary, fontWeight: FontWeight.w800, letterSpacing: 1.2)),
           const SizedBox(height: 6),
           Text(week.wodName, style: HiType.titleL.copyWith(color: HiColors.textPrimary)),
@@ -207,7 +206,7 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
               Icon(Icons.bolt_rounded, color: HiColors.brandPrimary, size: 16),
               const SizedBox(width: 6),
               Expanded(
-                child: Text('Une seule séance, double bénéfice : elle compte aussi pour ton Index.',
+                child: Text('La séance imposée de la semaine — donne tout pour grimper au classement.',
                     style: HiType.caption.copyWith(color: HiColors.textSecondary)),
               ),
             ],
@@ -222,7 +221,7 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
                 minimumSize: const Size.fromHeight(48),
               ),
               icon: const Icon(Icons.play_arrow_rounded),
-              label: const Text('Faire ce WOD'),
+              label: const Text('Faire cette séance'),
               onPressed: () => _doWeekWod(week),
             ),
           ),
@@ -299,7 +298,7 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
             children: [
               Text('$pts pts', style: HiType.numericM.copyWith(color: HiColors.textPrimary, fontSize: 20)),
               const SizedBox(height: 2),
-              Text(pos == null ? 'Fais le WOD pour entrer au classement' : 'ce mois-ci',
+              Text(pos == null ? 'Fais la séance pour entrer au classement' : 'ce mois-ci',
                   style: HiType.caption.copyWith(color: HiColors.textSecondary)),
             ],
           ),
@@ -344,10 +343,24 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
                 showRing: false),
             const SizedBox(width: 10),
             Expanded(
-              child: Text(
-                e.isMe ? '${e.displayName} (moi)' : e.displayName,
-                overflow: TextOverflow.ellipsis,
-                style: (e.isMe ? HiType.bodyStrong : HiType.body).copyWith(color: HiColors.textPrimary),
+              child: Row(
+                children: [
+                  Flexible(
+                    child: Text(
+                      e.isMe ? '${e.displayName} (moi)' : e.displayName,
+                      overflow: TextOverflow.ellipsis,
+                      style: (e.isMe ? HiType.bodyStrong : HiType.body).copyWith(color: HiColors.textPrimary),
+                    ),
+                  ),
+                  if (e.clubName != null) ...[
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(e.clubName!,
+                          overflow: TextOverflow.ellipsis,
+                          style: HiType.caption.copyWith(color: HiColors.textTertiary)),
+                    ),
+                  ],
+                ],
               ),
             ),
             Text('${e.points} pts', style: HiType.numericM.copyWith(color: HiColors.textPrimary)),

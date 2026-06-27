@@ -501,6 +501,7 @@ class LeaderboardEntry {
   final String rank;
   final bool isMe;
   final AvatarConfig? avatar;
+  final String? clubName; // club affiché à droite du nom ; null si sans club
   const LeaderboardEntry({
     required this.position,
     required this.userId,
@@ -509,6 +510,7 @@ class LeaderboardEntry {
     required this.rank,
     required this.isMe,
     this.avatar,
+    this.clubName,
   });
 
   factory LeaderboardEntry.fromJson(Map<String, dynamic> j) => LeaderboardEntry(
@@ -519,6 +521,7 @@ class LeaderboardEntry {
         rank: j['rank'] as String? ?? 'rookie',
         isMe: j['isMe'] as bool? ?? false,
         avatar: j['avatar'] == null ? null : AvatarConfig.fromJson(j['avatar'] as Map<String, dynamic>),
+        clubName: j['clubName'] as String?,
       );
 }
 
@@ -644,6 +647,7 @@ class PublicProfile {
   final bool isConfirmed;
   final AvatarConfig? avatar; // avatar évolutif visible sur le profil public (IC-03)
   final List<String> activeCosmetics; // cosmétiques débloqués (auras/couronne)
+  final List<String> clubs; // clubs de l'athlète (noms) ; vide si aucun
   const PublicProfile({
     required this.userId,
     required this.displayName,
@@ -658,6 +662,7 @@ class PublicProfile {
     this.isConfirmed = false,
     this.avatar,
     this.activeCosmetics = const [],
+    this.clubs = const [],
   });
 
   factory PublicProfile.fromJson(Map<String, dynamic> j) => PublicProfile(
@@ -676,6 +681,7 @@ class PublicProfile {
         isConfirmed: j['isConfirmed'] as bool? ?? false,
         avatar: j['avatar'] == null ? null : AvatarConfig.fromJson(j['avatar'] as Map<String, dynamic>),
         activeCosmetics: ((j['activeCosmetics'] as List?) ?? const []).map((e) => e as String).toList(),
+        clubs: ((j['clubs'] as List?) ?? const []).map((e) => e as String).toList(),
       );
 }
 
@@ -1563,6 +1569,7 @@ class LeagueStandingEntry {
   final int points;
   final bool isMe;
   final AvatarConfig? avatar;
+  final String? clubName; // club affiché à droite du nom ; null si sans club
   const LeagueStandingEntry({
     required this.position,
     required this.userId,
@@ -1570,6 +1577,7 @@ class LeagueStandingEntry {
     required this.points,
     required this.isMe,
     this.avatar,
+    this.clubName,
   });
 
   factory LeagueStandingEntry.fromJson(Map<String, dynamic> j) => LeagueStandingEntry(
@@ -1579,6 +1587,7 @@ class LeagueStandingEntry {
         points: (j['points'] as num).toInt(),
         isMe: j['isMe'] as bool? ?? false,
         avatar: j['avatar'] == null ? null : AvatarConfig.fromJson(j['avatar'] as Map<String, dynamic>),
+        clubName: j['clubName'] as String?,
       );
 }
 

@@ -34,6 +34,7 @@ export interface LeagueStandingRow {
   points: number;
   isMe: boolean;
   avatar: AvatarView | null; // mini-vignette (mobile) ; null si l'athlète n'a pas d'avatar
+  clubName: string | null; // club « principal » affiché à droite du nom ; null si sans club
 }
 
 export interface LeagueStandingsView {

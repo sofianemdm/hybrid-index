@@ -32,12 +32,19 @@ export class ProfilesService {
       isFollowing = !!f;
     }
 
-    const [resultCount, followCount, badges, avatar] = await Promise.all([
+    const [resultCount, followCount, badges, avatar, clubMembers] = await Promise.all([
       this.prisma.wodResult.count({ where: { userId } }),
       this.prisma.follow.count({ where: { followeeId: userId } }), // followers (suivi PAR)
       this.prisma.userBadge.findMany({ where: { userId }, select: { badgeId: true } }),
       this.prisma.avatar.findUnique({ where: { userId } }),
+      this.prisma.clubMember.findMany({
+        where: { userId },
+        select: { club: { select: { name: true, status: true } } },
+        orderBy: { joinedAt: "asc" },
+      }),
     ]);
+    // Clubs visibles de l'athlète (affichés sur son profil public). Vide s'il n'est dans aucun club.
+    const clubs = clubMembers.filter((m) => m.club.status === "visible").map((m) => m.club.name);
 
     return {
       userId,
@@ -54,6 +61,7 @@ export class ProfilesService {
       // Avatar évolutif visible sur le profil public (IC-03) + cosmétiques débloqués (G-03).
       avatar: serializeAvatar(avatar),
       activeCosmetics: cosmeticsFor(new Set(badges.map((b) => b.badgeId))),
+      clubs, // noms des clubs de l'athlète (peut être vide)
     };
   }
 }

@@ -265,6 +265,23 @@ class PublicProfileScreen extends ConsumerWidget {
                     const SizedBox(height: 4),
                     Text('${HiLabels.goal(p.goal)} · ${p.position != null ? (p.isMe ? t.publicProfileLeaguePositionMine(p.position!) : t.publicProfileLeaguePosition(p.position!)) : '—'}',
                         style: HiType.body.copyWith(color: HiColors.textSecondary)),
+                    // Clubs de l'athlète : visibles sur le profil public.
+                    if (p.clubs.isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.groups_rounded, size: 16, color: HiColors.textTertiary),
+                          const SizedBox(width: 6),
+                          Flexible(
+                            child: Text(p.clubs.join(' · '),
+                                textAlign: TextAlign.center,
+                                overflow: TextOverflow.ellipsis,
+                                style: HiType.body.copyWith(color: HiColors.textSecondary)),
+                          ),
+                        ],
+                      ),
+                    ],
                     const SizedBox(height: HiSpace.lg),
                     if (p.index != null)
                       IndexRing(value: p.index!.value, percentile: p.index!.percentile, size: 200)

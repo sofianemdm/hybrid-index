@@ -128,11 +128,18 @@ export class ClubsService {
       .sort((a, b) => b.index - a.index)
       .map((r, i) => ({ ...r, position: i + 1 }));
     const isMember = me ? members.some((m) => m.userId === me) : false;
+    // `memberCount` dénormalisé peut DÉRIVER (ex. un membre dont le compte a été supprimé : sa ligne
+    // ClubMember part en cascade mais le compteur n'est pas décrémenté). Le roster est la SOURCE DE
+    // VÉRITÉ → on renvoie sa taille, et on auto-répare le compteur stocké s'il diverge (fix « 3 vs 2 »).
+    const actualCount = members.length;
+    if (club.memberCount !== actualCount) {
+      await this.prisma.club.update({ where: { id: clubId }, data: { memberCount: actualCount } }).catch(() => undefined);
+    }
     return {
       id: club.id,
       name: club.name,
       description: club.description,
-      memberCount: club.memberCount,
+      memberCount: actualCount,
       isMember,
       isOwner: me === club.ownerId,
       roster,
@@ -143,6 +150,14 @@ export class ClubsService {
     const member = await this.prisma.clubMember.findUnique({ where: { clubId_userId: { clubId, userId: me } } });
     if (!member) throw new ForbiddenException({ code: "FORBIDDEN", message: "Rejoins le club pour inviter." });
     if (inviteeId === me) throw new BadRequestException({ code: "VALIDATION_ERROR", message: "Tu es déjà membre." });
+    // On ne peut pas inviter quelqu'un qui est DÉJÀ membre du club.
+    const alreadyMember = await this.prisma.clubMember.findUnique({
+      where: { clubId_userId: { clubId, userId: inviteeId } },
+      select: { userId: true },
+    });
+    if (alreadyMember) {
+      throw new BadRequestException({ code: "ALREADY_MEMBER", message: "Cette personne est déjà membre du club." });
+    }
     await this.prisma.clubInvite.upsert({
       where: { clubId_inviteeId: { clubId, inviteeId } },
       create: { clubId, inviterId: me, inviteeId, status: "pending" },

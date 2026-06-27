@@ -232,10 +232,24 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                 size: 26),
             const SizedBox(width: 10),
             Expanded(
-              child: Text(
-                e.isMe ? AppLocalizations.of(context).leaderboardYou(e.displayName) : e.displayName,
-                overflow: TextOverflow.ellipsis,
-                style: (e.isMe ? HiType.bodyStrong : HiType.body).copyWith(color: HiColors.textPrimary),
+              child: Row(
+                children: [
+                  Flexible(
+                    child: Text(
+                      e.isMe ? AppLocalizations.of(context).leaderboardYou(e.displayName) : e.displayName,
+                      overflow: TextOverflow.ellipsis,
+                      style: (e.isMe ? HiType.bodyStrong : HiType.body).copyWith(color: HiColors.textPrimary),
+                    ),
+                  ),
+                  if (e.clubName != null) ...[
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(e.clubName!,
+                          overflow: TextOverflow.ellipsis,
+                          style: HiType.caption.copyWith(color: HiColors.textTertiary)),
+                    ),
+                  ],
+                ],
               ),
             ),
             RankBadge(rank: e.rank, ovr: e.value, fontSize: 11),

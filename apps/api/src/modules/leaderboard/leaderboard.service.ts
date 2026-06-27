@@ -4,6 +4,7 @@ import { ratingFromInternal } from "@hybrid-index/scoring-core";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { RedisService } from "../../infra/redis/redis.service";
 import { avatarMapByUserId, type AvatarView } from "../../common/avatar.serializer";
+import { primaryClubNameByUserId } from "../../common/club-lookup";
 
 /** Valeur interne stockée (déjà ajustée par couverture) → OVR /100 affiché. Le tri (Redis/PG) se
  *  fait sur cette même valeur ajustée → classement et OVR cohérents. */
@@ -17,6 +18,7 @@ export interface LeaderboardEntry {
   rank: string;
   isMe: boolean;
   avatar: AvatarView | null; // mini-vignette (mobile) ; null si l'athlète n'a pas d'avatar
+  clubName: string | null; // club « principal » affiché à droite du nom ; null si sans club
 }
 
 export interface LeaderboardResponse {
@@ -59,7 +61,11 @@ export class LeaderboardService {
     }
 
     const userIds = rows.map((r) => r.userId);
-    const [names, avatars] = await Promise.all([this.namesFor(userIds), this.avatarsFor(userIds)]);
+    const [names, avatars, clubs] = await Promise.all([
+      this.namesFor(userIds),
+      this.avatarsFor(userIds),
+      this.clubsFor(userIds),
+    ]);
     const entries: LeaderboardEntry[] = rows.map((r, i) => ({
       position: i + 1,
       userId: r.userId,
@@ -68,6 +74,7 @@ export class LeaderboardService {
       rank: names.get(r.userId)?.rank ?? "rookie",
       isMe: r.userId === meUserId,
       avatar: avatars.get(r.userId) ?? null, // absent de la map = pas d'avatar → repli mobile
+      clubName: clubs.get(r.userId) ?? null,
     }));
 
     let total: number;
@@ -184,5 +191,17 @@ export class LeaderboardService {
     if (userIds.length === 0) return new Map();
     const avatars = await this.prisma.avatar.findMany({ where: { userId: { in: userIds } } });
     return avatarMapByUserId(avatars);
+  }
+
+  /** Club « principal » (1er rejoint, visible) des athlètes affichés, en UNE requête batch. Map
+   *  userId -> nom de club ; les athlètes sans club sont absents → l'entrée porte `clubName: null`. */
+  private async clubsFor(userIds: string[]): Promise<Map<string, string>> {
+    if (userIds.length === 0) return new Map();
+    const rows = await this.prisma.clubMember.findMany({
+      where: { userId: { in: userIds } },
+      select: { userId: true, club: { select: { name: true, status: true } } },
+      orderBy: { joinedAt: "asc" },
+    });
+    return primaryClubNameByUserId(rows);
   }
 }
