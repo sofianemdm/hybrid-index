@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app.dart';
+import '../../data/api_client.dart';
 import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../l10n/app_localizations.dart';
@@ -9,8 +10,8 @@ import '../../theme/tokens.dart';
 import '../messaging/conversations_screen.dart';
 import 'notification_settings_screen.dart';
 
-/// Centre de notifications in-app : déclencheurs d'engagement évalués sur l'état courant.
-/// (L'envoi push FCM est prévu pour la version mobile native.)
+/// Centre de notifications in-app : invitations de club en attente + déclencheurs d'engagement
+/// évalués sur l'état courant + nouveaux messages. (L'envoi push FCM est prévu pour le mobile natif.)
 class NotificationsScreen extends ConsumerStatefulWidget {
   const NotificationsScreen({super.key});
 
@@ -20,11 +21,49 @@ class NotificationsScreen extends ConsumerStatefulWidget {
 
 class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   late Future<List<FeedItem>> _future;
+  List<ClubInvite> _invites = [];
+  bool _busy = false;
 
   @override
   void initState() {
     super.initState();
     _future = ref.read(apiClientProvider).notificationsFeed();
+    _loadInvites();
+  }
+
+  Future<void> _loadInvites() async {
+    try {
+      final inv = await ref.read(apiClientProvider).myClubInvites();
+      if (mounted) setState(() => _invites = inv);
+    } catch (_) {/* réseau : on garde l'état courant */}
+  }
+
+  Future<void> _acceptInvite(ClubInvite inv) async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    try {
+      await ref.read(apiClientProvider).joinClub(inv.clubId);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Tu as rejoint ${inv.clubName} !')));
+      ref.invalidate(inboxBadgeProvider);
+      await _loadInvites();
+    } on ApiException catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _declineInvite(ClubInvite inv) async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    try {
+      await ref.read(apiClientProvider).declineClubInvite(inv.inviteId);
+      ref.invalidate(inboxBadgeProvider);
+      await _loadInvites();
+    } catch (_) {/* best-effort */} finally {
+      if (mounted) setState(() => _busy = false);
+    }
   }
 
   @override
@@ -55,9 +94,17 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
             if (snap.hasError) {
               return Center(child: Text('${snap.error}', style: HiType.body.copyWith(color: HiColors.error)));
             }
-            final items = snap.data!;
+            final items = snap.data ?? [];
             final unread = ref.watch(unreadMessagesProvider).value ?? 0;
-            if (items.isEmpty && unread == 0) {
+
+            // Ordre : invitations de club (action requise) → nouveaux messages → engagement.
+            final widgets = <Widget>[
+              for (final inv in _invites) _inviteCard(inv),
+              if (unread > 0) _messagesCard(context, unread),
+              for (final item in items) _tile(item),
+            ];
+
+            if (widgets.isEmpty) {
               return Center(
                 child: Padding(
                   padding: const EdgeInsets.all(HiSpace.lg),
@@ -66,15 +113,11 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                 ),
               );
             }
-            final hasMsg = unread > 0;
             return ListView.separated(
               padding: const EdgeInsets.all(HiSpace.lg),
-              itemCount: items.length + (hasMsg ? 1 : 0),
+              itemCount: widgets.length,
               separatorBuilder: (_, __) => const SizedBox(height: HiSpace.sm),
-              itemBuilder: (_, i) {
-                if (hasMsg && i == 0) return _messagesCard(context, unread);
-                return _tile(items[i - (hasMsg ? 1 : 0)]);
-              },
+              itemBuilder: (_, i) => widgets[i],
             );
           },
         ),
@@ -82,7 +125,61 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     );
   }
 
-  /// Carte « nouveaux messages » en tête des notifications → ouvre les conversations.
+  /// Invitation à un club en attente → rejoindre / refuser directement depuis les notifications.
+  Widget _inviteCard(ClubInvite inv) {
+    return Container(
+      padding: const EdgeInsets.all(HiSpace.md),
+      decoration: BoxDecoration(
+        color: HiColors.brandSecondary.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(HiRadius.md),
+        border: Border.all(color: HiColors.brandSecondary.withValues(alpha: 0.5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.groups_rounded, color: HiColors.brandSecondaryText, size: 22),
+              const SizedBox(width: HiSpace.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Invitation à un club', style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
+                    const SizedBox(height: 2),
+                    Text('${inv.clubName} · ${inv.memberCount} membre${inv.memberCount > 1 ? 's' : ''}',
+                        style: HiType.caption.copyWith(color: HiColors.textSecondary)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: HiSpace.sm),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: HiColors.brandSecondary,
+                    foregroundColor: HiColors.textOnBrand,
+                  ),
+                  onPressed: _busy ? null : () => _acceptInvite(inv),
+                  child: const Text('Rejoindre'),
+                ),
+              ),
+              const SizedBox(width: HiSpace.sm),
+              OutlinedButton(
+                onPressed: _busy ? null : () => _declineInvite(inv),
+                child: const Text('Refuser'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Carte « nouveaux messages » → ouvre les conversations.
   Widget _messagesCard(BuildContext context, int unread) {
     final t = AppLocalizations.of(context);
     return InkWell(
@@ -91,6 +188,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         await Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ConversationsScreen()));
         if (!mounted) return;
         ref.invalidate(unreadMessagesProvider);
+        ref.invalidate(inboxBadgeProvider);
         setState(() {});
       },
       child: Container(

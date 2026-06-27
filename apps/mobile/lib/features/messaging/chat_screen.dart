@@ -41,7 +41,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     _load();
     // Polling léger : tant que le fil est ouvert, on récupère les nouveaux messages reçus (BUG-027).
     // Pas de websocket pour l'instant ; 6 s est un bon compromis réactivité/charge.
-    _poll = Timer.periodic(const Duration(seconds: 6), (_) => _pollMessages());
+    _poll = Timer.periodic(const Duration(seconds: 3), (_) => _pollMessages()); // livraison quasi-instantanée
   }
 
   @override

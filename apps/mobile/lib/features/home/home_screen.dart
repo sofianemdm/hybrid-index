@@ -83,8 +83,9 @@ class HomeScreen extends ConsumerWidget {
                     ),
                 const SizedBox(width: HiSpace.xs),
                 Badge.count(
-                  count: ref.watch(unreadMessagesProvider).value ?? 0,
-                  isLabelVisible: (ref.watch(unreadMessagesProvider).value ?? 0) > 0,
+                  // Boîte de réception : messages non lus + invitations de club (auto-rafraîchie).
+                  count: ref.watch(inboxBadgeProvider).value ?? 0,
+                  isLabelVisible: (ref.watch(inboxBadgeProvider).value ?? 0) > 0,
                   backgroundColor: HiColors.error,
                   child: IconButton(
                     tooltip: t.homeNotifications,
@@ -94,6 +95,7 @@ class HomeScreen extends ConsumerWidget {
                         MaterialPageRoute(builder: (_) => const NotificationsScreen()),
                       );
                       ref.invalidate(unreadMessagesProvider); // maj pastille au retour
+                      ref.invalidate(inboxBadgeProvider);
                     },
                   ),
                 ),

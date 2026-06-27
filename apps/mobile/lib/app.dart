@@ -82,6 +82,31 @@ final unreadMessagesProvider = FutureProvider<int>((ref) async {
   }
 });
 
+/// Pastille « boîte de réception » de la CLOCHE = messages non lus + invitations de club en attente.
+/// AUTO-RAFRAÎCHIE toutes les 8 s tant que la cloche est visible → l'utilisateur voit arriver un
+/// message ou une invitation SANS rien rafraîchir (livraison quasi-instantanée, sans push FCM).
+final inboxBadgeProvider = StreamProvider.autoDispose<int>((ref) async* {
+  final session = ref.watch(sessionProvider);
+  if (session.status != AuthStatus.loggedIn) {
+    yield 0;
+    return;
+  }
+  final api = ref.read(apiClientProvider);
+  while (true) {
+    var count = 0;
+    try {
+      final convos = await api.conversations();
+      count += convos.fold<int>(0, (sum, c) => sum + c.unread);
+    } catch (_) {/* réseau : on garde le reste */}
+    try {
+      final invites = await api.myClubInvites();
+      count += invites.length;
+    } catch (_) {/* réseau */}
+    yield count;
+    await Future.delayed(const Duration(seconds: 8));
+  }
+});
+
 /// Point d'entrée logique : décide quel écran montrer selon l'état d'auth + onboarding.
 class AuthGate extends ConsumerWidget {
   const AuthGate({super.key});
