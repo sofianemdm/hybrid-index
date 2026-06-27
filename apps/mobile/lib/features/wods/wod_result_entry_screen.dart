@@ -11,9 +11,9 @@ import '../../data/ui_state.dart';
 import '../../data/review_prompt.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
-import '../../widgets/attribute_gains.dart';
 import '../../widgets/celebration.dart';
 import 'wod_format.dart';
+import 'result_feedback.dart';
 import '../../widgets/hi_button.dart';
 import '../share/share_card_screen.dart';
 
@@ -101,6 +101,16 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
     }
     setState(() => _loading = true);
     try {
+      // Prédiction AVANT d'enregistrer : on compare la perf au niveau d'AVANT ce résultat (sinon le
+      // log mettrait à jour le niveau et fausserait la comparaison). Best-effort ; null = pas d'estim.
+      num? predictedBefore;
+      String predScoreType = widget.scoreType;
+      try {
+        final pred = await ref.read(apiClientProvider).wodPrediction(widget.wodId);
+        predictedBefore = pred?.predictedRaw;
+        predScoreType = pred?.scoreType ?? widget.scoreType;
+      } catch (_) {/* prédiction indispo → message neutre */}
+
       final payload = <String, dynamic>{
         'rawResult': raw,
         'rxCompliant': _rx,
@@ -132,32 +142,16 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
               }
             },
           );
-        } else if (hasGains) {
-          // Progression d'un ou plusieurs axes → célébration MOYENNE.
-          await Celebration.show(
-            context,
-            value: '${profile.index.value}',
-            title: AppLocalizations.of(context).wreProgressTitle,
-            subtitle: _gainsLine(profile.gains),
-            intensity: CelebrationIntensity.medium,
-          );
         } else {
-          // Aucun gain (no-drop) → retour léger + détail discret.
-          await showDialog<void>(
-            context: context,
-            builder: (_) => AlertDialog(
-              backgroundColor: HiColors.bgElevated,
-              title: Text(AppLocalizations.of(context).wreProgressTitle, style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
-              content: Column(mainAxisSize: MainAxisSize.min, children: [
-                Text('ATHLETE INDEX', style: HiType.overline.copyWith(color: HiColors.textSecondary)),
-                const SizedBox(height: 8),
-                Text('${profile.index.value}', style: HiType.displayL.copyWith(color: HiColors.brandPrimary)),
-                const SizedBox(height: 12),
-                AttributeGains(gains: profile.gains, weakest: profile.weakest),
-              ]),
-              actions: [TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(AppLocalizations.of(context).commonContinue))],
-            ),
-          );
+          // Message MOTIVANT : compare la perf au temps/score PRÉDIT pour l'utilisateur (5 paliers,
+          // ton scientifique/encourageant). Plein écran si on bat/atteint la cible ; dialogue calme si
+          // en dessous (jamais de fanfare sur une contre-perf) ; encouragement neutre si pas de prédiction.
+          await ResultFeedback.from(
+            actual: raw,
+            predicted: predictedBefore,
+            scoreType: predScoreType,
+            wodName: widget.wodName,
+          ).show(context);
         }
         // Moment de réussite (PR / montée de bande) → demande d'avis natif (OS-plafonné, no-op web).
         if (hasGains || profile.bandCelebration != null) {
