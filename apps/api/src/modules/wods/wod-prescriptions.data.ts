@@ -479,29 +479,30 @@ export const WOD_PRESCRIPTIONS: Record<string, WodPrescription> = {
   league_engine_12: {
     scalable: false,
     summary:
-      "Semaine ENDURANCE. AMRAP 12 min : un triplet léger à enchaîner sans t'arrêter. Trouve une " +
+      "Semaine ENDURANCE. AMRAP 12 min : un gros tour (~3 min) à enchaîner sans t'arrêter. Trouve une " +
       "cadence que tu peux tenir 12 minutes. L'athlète au gros moteur aérobie prend l'avantage.",
     format: "AMRAP 12 min",
     timeCapSec: 720,
     blocks: [
-      { reps: "200 m", movement: "Course" },
-      { reps: "15", movement: "Air squats" },
-      { reps: "10", movement: "Burpees" },
+      { reps: "400 m", movement: "Course" },
+      { reps: "20", movement: "Air squats" },
+      { reps: "15", movement: "Burpees" },
     ],
     weights: [],
-    scoringNote: "Tu enregistres ton nombre de TOURS complétés (décimal accepté, ex. 6,5).",
+    scoringNote: "Tu enregistres ton TOTAL : 1 par mètre couru + 1 par répétition (un tour complet = 435).",
   },
   league_grind_squats: {
     scalable: false,
     summary:
-      "Semaine FORCE-ENDURANCE. AMRAP 10 min ciblé bas du corps : jambes qui brûlent, gainage. " +
-      "Le pistol peut être assisté (appui) si besoin. Profil « cuisses solides » récompensé.",
-    format: "AMRAP 10 min",
-    timeCapSec: 600,
+      "Semaine FORCE-ENDURANCE. AMRAP 12 min ciblé bas du corps : un gros tour (~3 min), jambes qui " +
+      "brûlent et gainage. Le pistol peut être assisté (appui) si besoin. Profil « cuisses solides » récompensé.",
+    format: "AMRAP 12 min",
+    timeCapSec: 720,
     blocks: [
-      { reps: "20", movement: "Fentes marchées", detail: "10 par jambe" },
-      { reps: "15", movement: "Air squats" },
-      { reps: "10", movement: "Pistol squats", detail: "5 par jambe — assisté autorisé" },
+      { reps: "40", movement: "Fentes marchées", detail: "20 par jambe" },
+      { reps: "30", movement: "Air squats" },
+      { reps: "20", movement: "Sit-ups" },
+      { reps: "16", movement: "Pistol squats", detail: "8 par jambe — assisté autorisé" },
     ],
     weights: [],
     scoringNote: "Tu enregistres ton nombre total de répétitions.",
@@ -509,13 +510,13 @@ export const WOD_PRESCRIPTIONS: Record<string, WodPrescription> = {
   league_power_amrap: {
     scalable: false,
     summary:
-      "Semaine PUISSANCE. AMRAP 10 min : un couplet 100 % sauts explosifs (squat jumps + burpee broad " +
-      "jumps), le plus de tours possible. La détente et les hanches puissantes font la différence.",
-    format: "AMRAP 10 min",
-    timeCapSec: 600,
+      "Semaine PUISSANCE. AMRAP 12 min : un gros tour (~3 min) 100 % sauts explosifs (squat jumps + " +
+      "burpee broad jumps), le plus de reps possible. La détente et les hanches puissantes font la différence.",
+    format: "AMRAP 12 min",
+    timeCapSec: 720,
     blocks: [
-      { reps: "15", movement: "Squat jumps" },
-      { reps: "10", movement: "Burpee broad jumps" },
+      { reps: "30", movement: "Squat jumps" },
+      { reps: "25", movement: "Burpee broad jumps" },
     ],
     weights: [],
     scoringNote: SCORE_REPS,

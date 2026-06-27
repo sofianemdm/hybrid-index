@@ -607,7 +607,8 @@ export const WODS: ReadonlyArray<WodDefinition> = [
     },
   },
   {
-    // Semaine 2 — ENDURANCE (moteur aérobie). AMRAP 12 min, score = TOURS complétés (décimal).
+    // Semaine 2 — ENDURANCE (moteur aérobie). AMRAP 12 min, tour ≥3 min (400m+20 squats+15 burpees =
+    // 435 unités/tour). Score = UNITÉS totales (1 par mètre couru + 1 par rép).
     id: "league_engine_12",
     name: "Le Moteur",
     scoreType: "reps",
@@ -619,12 +620,13 @@ export const WODS: ReadonlyArray<WodDefinition> = [
       { attribute: "hybrid", estimated: false },
     ],
     bySex: {
-      male: { model: normal(6.0, 2.0), hardMin: 2.0, hardMax: 12.0, proReference: 9.5 },
-      female: { model: normal(5.5, 1.9), hardMin: 1.5, hardMax: 11.0, proReference: 8.5 },
+      male: { model: normal(1740, 470), hardMin: 600, hardMax: 3200, proReference: 2750 },
+      female: { model: normal(1220, 360), hardMin: 450, hardMax: 2400, proReference: 1900 },
     },
   },
   {
-    // Semaine 3 — FORCE-ENDURANCE (bas du corps). AMRAP 10 min, score = reps totales.
+    // Semaine 3 — FORCE-ENDURANCE (bas du corps). AMRAP 12 min, tour ≥3 min (40 fentes + 30 squats +
+    // 20 sit-ups + 16 pistols = 106 reps/tour). Score = reps totales.
     id: "league_grind_squats",
     name: "Le Pilier",
     scoreType: "reps",
@@ -635,13 +637,13 @@ export const WODS: ReadonlyArray<WodDefinition> = [
       { attribute: "strength", estimated: true },
     ],
     bySex: {
-      male: { model: normal(170, 52), hardMin: 60, hardMax: 360, proReference: 285 },
-      female: { model: normal(155, 48), hardMin: 50, hardMax: 340, proReference: 265 },
+      male: { model: normal(400, 115), hardMin: 90, hardMax: 760, proReference: 560 },
+      female: { model: normal(290, 90), hardMin: 70, hardMax: 560, proReference: 400 },
     },
   },
   {
-    // Semaine 4 — PUISSANCE. AMRAP 10 min (15 squat jumps + 10 burpee broad jumps), score = reps totales.
-    // Remplace l'ancien EMOM : JAMAIS d'EMOM dans les séances de la semaine (décision produit).
+    // Semaine 4 — PUISSANCE. AMRAP 12 min, tour ≥3 min (30 squat jumps + 25 burpee broad jumps =
+    // 55 reps/tour, 100 % explosif). Score = reps totales. Jamais d'EMOM (décision produit).
     id: "league_power_amrap",
     name: "La Détente",
     scoreType: "reps",
@@ -652,8 +654,8 @@ export const WODS: ReadonlyArray<WodDefinition> = [
       { attribute: "muscular_endurance", estimated: false },
     ],
     bySex: {
-      male: { model: normal(112, 34), hardMin: 30, hardMax: 280, proReference: 200 },
-      female: { model: normal(100, 31), hardMin: 25, hardMax: 250, proReference: 180 },
+      male: { model: normal(215, 68), hardMin: 50, hardMax: 480, proReference: 380 },
+      female: { model: normal(127, 42), hardMin: 30, hardMax: 300, proReference: 210 },
     },
   },
   {
