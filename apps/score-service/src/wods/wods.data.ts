@@ -607,8 +607,9 @@ export const WODS: ReadonlyArray<WodDefinition> = [
     },
   },
   {
-    // Semaine 2 — ENDURANCE (moteur aérobie). AMRAP 12 min, tour ≥3 min (400m+20 squats+15 burpees =
-    // 435 unités/tour). Score = UNITÉS totales (1 par mètre couru + 1 par rép).
+    // Semaine 2 — ENDURANCE (moteur aérobie). AMRAP 12 min, tour ≥3 min (400m course + 20 air squats
+    // + 15 burpees = 35 reps/tour). Score = REPS totales (air squats + burpees) ; la course est imposée
+    // mais NE COMPTE PAS dans le score (choix produit : saisie simple). Intermédiaire ~4 tours = 140 reps.
     id: "league_engine_12",
     name: "Le Moteur",
     scoreType: "reps",
@@ -620,8 +621,8 @@ export const WODS: ReadonlyArray<WodDefinition> = [
       { attribute: "hybrid", estimated: false },
     ],
     bySex: {
-      male: { model: normal(1740, 470), hardMin: 600, hardMax: 3200, proReference: 2750 },
-      female: { model: normal(1220, 360), hardMin: 450, hardMax: 2400, proReference: 1900 },
+      male: { model: normal(140, 42), hardMin: 40, hardMax: 320, proReference: 210 },
+      female: { model: normal(100, 32), hardMin: 30, hardMax: 250, proReference: 130 },
     },
   },
   {

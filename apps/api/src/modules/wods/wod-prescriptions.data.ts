@@ -489,7 +489,7 @@ export const WOD_PRESCRIPTIONS: Record<string, WodPrescription> = {
       { reps: "15", movement: "Burpees" },
     ],
     weights: [],
-    scoringNote: "Tu enregistres ton TOTAL : 1 par mètre couru + 1 par répétition (un tour complet = 435).",
+    scoringNote: "Tu enregistres ton total de répétitions (air squats + burpees). La course est imposée mais ne compte pas dans le score.",
   },
   league_grind_squats: {
     scalable: false,

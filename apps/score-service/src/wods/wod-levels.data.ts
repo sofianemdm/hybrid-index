@@ -36,7 +36,7 @@ export const WOD_LEVELS: Record<string, { male: WodLevels; female: WodLevels }> 
   burpees_7min: { male: { champion: 125, intermediate: 70, occasional: 40 }, female: { champion: 110, intermediate: 60, occasional: 35 } },
   // WODs « Ligue du mois » (5). time → champion < inter < occ ; reps/tours → champion > inter > occ.
   league_sprint_ladder: { male: { champion: 290, intermediate: 420, occasional: 600 }, female: { champion: 335, intermediate: 480, occasional: 690 } }, // s
-  league_engine_12: { male: { champion: 2600, intermediate: 1740, occasional: 1130 }, female: { champion: 1560, intermediate: 1220, occasional: 910 } }, // unités (m+reps)
+  league_engine_12: { male: { champion: 210, intermediate: 140, occasional: 90 }, female: { champion: 130, intermediate: 100, occasional: 70 } }, // reps (course non comptée)
   league_grind_squats: { male: { champion: 520, intermediate: 400, occasional: 250 }, female: { champion: 330, intermediate: 290, occasional: 175 } }, // reps
   league_power_amrap: { male: { champion: 360, intermediate: 215, occasional: 130 }, female: { champion: 195, intermediate: 127, occasional: 80 } }, // reps
   league_hybrid_chipper: { male: { champion: 400, intermediate: 660, occasional: 870 }, female: { champion: 460, intermediate: 720, occasional: 900 } }, // s
