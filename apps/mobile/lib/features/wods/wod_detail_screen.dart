@@ -120,7 +120,7 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
                   _clubScopeToggle(),
                 ],
                 const SizedBox(height: HiSpace.sm),
-                _leaderboardSection(d.scoreType),
+                _leaderboardSection(d.scoreType, d.prescription?.weights.isNotEmpty ?? false),
                 const SizedBox(height: HiSpace.lg),
                 _predictionCard(),
                 HiButton(label: t.wodDetailDoThisWorkout, onPressed: () => _doWod(d.scoreType)),
@@ -532,27 +532,30 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
     );
   }
 
-  Widget _leaderboardSection(String scoreType) {
+  Widget _leaderboardSection(String scoreType, bool scalable) {
     final t = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Sélecteur Rx / Scaled (classements séparés, UX-07) — recharge le classement à la bascule.
-        Padding(
-          padding: const EdgeInsets.only(bottom: HiSpace.sm),
-          child: SegmentedButton<String>(
-            segments: [
-              ButtonSegment(value: 'rx', label: Text(t.wodDetailVariantRx)),
-              ButtonSegment(value: 'scaled', label: Text(t.wodDetailVariantScaled)),
-            ],
-            selected: {_variant},
-            showSelectedIcon: false,
-            onSelectionChanged: (s) => setState(() {
-              _variant = s.first;
-              _loadLeaderboard();
-            }),
+        // Sélecteur Rx / Allégé : UNIQUEMENT pour les séances à charge adaptable (classements séparés,
+        // UX-07). Une séance au poids du corps / course (ex. burpees, Cindy) n'a rien à scaler → un seul
+        // classement, pas de sélecteur.
+        if (scalable)
+          Padding(
+            padding: const EdgeInsets.only(bottom: HiSpace.sm),
+            child: SegmentedButton<String>(
+              segments: [
+                ButtonSegment(value: 'rx', label: Text(t.wodDetailVariantRx)),
+                ButtonSegment(value: 'scaled', label: Text(t.wodDetailVariantScaled)),
+              ],
+              selected: {_variant},
+              showSelectedIcon: false,
+              onSelectionChanged: (s) => setState(() {
+                _variant = s.first;
+                _loadLeaderboard();
+              }),
+            ),
           ),
-        ),
         FutureBuilder<WodLeaderboard>(
           future: _leaderboard,
           builder: (context, snap) {
