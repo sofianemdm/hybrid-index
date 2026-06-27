@@ -6,7 +6,7 @@ const LEAGUE_WOD_IDS = [
   "league_sprint_ladder",
   "league_engine_12",
   "league_grind_squats",
-  "league_power_emom",
+  "league_power_amrap",
   "league_hybrid_chipper",
 ];
 

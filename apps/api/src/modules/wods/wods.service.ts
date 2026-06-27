@@ -33,7 +33,7 @@ export const HIDDEN_WOD_IDS = [
   "league_sprint_ladder",
   "league_engine_12",
   "league_grind_squats",
-  "league_power_emom",
+  "league_power_amrap",
   "league_hybrid_chipper",
 ];
 
@@ -451,11 +451,24 @@ export class WodsService {
    * non prédictible côté score-service : custom/free-run) — le mobile affiche alors un état neutre.
    */
   async prediction(id: string, userId: string): Promise<internalScore.PredictResultResponse> {
-    const wod = await this.prisma.wod.findUnique({ where: { id }, select: { id: true } });
+    const wod = await this.prisma.wod.findUnique({ where: { id }, select: { id: true, scoreType: true } });
     if (!wod) throw new NotFoundException({ code: "NOT_FOUND", message: "WOD introuvable." });
 
     const profile = await this.prisma.profile.findUnique({ where: { userId }, select: { sex: true } });
     if (!profile) throw new NotFoundException({ code: "NOT_FOUND", message: "Profil introuvable." });
+
+    // Pas d'estimation « pour toi » tant que l'Index n'est pas COMPLET : prédire depuis des attributs
+    // estimés/incomplets ne serait pas crédible. Même définition de « complet » que reveal_screen.dart :
+    // ni provisoire, ni estimé, radar 6/6. Tant que ce n'est pas le cas → predictedRaw null (le mobile
+    // masque la carte). L'utilisateur doit d'abord se construire un Index complet (~quelques séances).
+    const idx = await this.prisma.hybridIndex.findUnique({
+      where: { userId },
+      select: { isProvisional: true, isEstimated: true, radarCoverage: true },
+    });
+    const indexComplete = idx != null && !idx.isProvisional && !idx.isEstimated && idx.radarCoverage >= 6;
+    if (!indexComplete) {
+      return { predictedRaw: null, scoreType: wod.scoreType as internalScore.PredictResultResponse["scoreType"] };
+    }
 
     const scores = await this.prisma.attributeScore.findMany({
       where: { userId },

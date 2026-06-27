@@ -11,6 +11,9 @@ intégralement** les WODs benchmark actuellement imposés en Ligue
 On ne réutilise **aucun** WOD existant pour la Ligue.
 
 Contraintes respectées (cahier des charges produit) :
+- **JAMAIS d'EMOM** dans les WODs imposés de la Ligue (contrainte produit permanente, humain,
+  27 juin 2026). Formats autorisés : **AMRAP** ou **for time (RFT / chipper)** uniquement.
+  → l'ancienne semaine 4 EMOM (`league_power_emom`) est remplacée par `league_power_amrap` (AMRAP 10 min).
 - 100 % **sans matériel** (poids du corps + course en option) → `requiresEquipment: false`.
 - Durée cible **8–15 min** chacun (time cap inclus).
 - **5 semaines = 5 qualités différentes** : Vitesse, Endurance (moteur), Force-endurance,
@@ -39,7 +42,7 @@ Repères de calibration empruntés à l'existant (pour rester dans les ordres de
 | 1 | `league_sprint_ladder` | La Flèche | **Vitesse** | Intervalles course | `time` | bas = mieux | ~9–12 min |
 | 2 | `league_engine_12` | Le Moteur | **Endurance (aérobie)** | AMRAP 12 min | `reps` | haut = mieux | 12 min |
 | 3 | `league_grind_squats` | Le Pilier | **Force-endurance** (bas du corps) | AMRAP 10 min | `reps` | haut = mieux | 10 min |
-| 4 | `league_power_emom` | L'Explosion | **Puissance** | EMOM 10 min | `reps` | haut = mieux | 10 min |
+| 4 | `league_power_amrap` | La Détente | **Puissance** | AMRAP 10 min | `reps` | haut = mieux | 10 min |
 | 5 | `league_hybrid_chipper` | Le Chaos | **Hybride / mixte** | RFT (chipper) | `time` | bas = mieux | ~10–15 min |
 
 Logique d'attribution : on alterne **time/reps** et **haut/bas du corps** d'une
@@ -187,52 +190,75 @@ l'épreuve la plus longue/complète (hybride) en semaine 5, comme « finale » d
 
 ---
 
-### Semaine 4 — `league_power_emom` « L'Explosion » (PUISSANCE)
+### Semaine 4 — `league_power_amrap` « La Détente » (PUISSANCE)
 
-- **Qualité** : puissance / explosivité répétée (force-vitesse). L'athlète explosif
-  (sauts, détente) brille. Format EMOM = on récompense la capacité à produire de la
-  puissance **fraîche** chaque minute, pas l'endurance pure.
-- **Structure** : **EMOM 10 min** (10 minutes, à chaque top minute un bloc explosif ;
-  le temps restant dans la minute = repos). Score = **total de reps réussies** (les reps
-  ratées hors-minute ne comptent pas). Alterne saut et burpee explosif.
-- **Contenu EXACT** :
-  - Minutes impaires (1,3,5,7,9) : **12 squat jumps** (saut vertical genou-poitrine ; voir §7)
-  - Minutes paires (2,4,6,8,10) : **8 burpee broad jumps** (`burpee_broad_jump`)
-  - → **Score = total des reps validées sur 10 min** (max théorique = 5×12 + 5×8 = 100).
-- **Mouvements** : `burpee_broad_jump` (mappé : power 0.3). **`squat_jump` n'est PAS mappé**
-  → voir §7 (à ajouter). Fallback si on ne veut pas l'ajouter : remplacer par `box_jump`
-  (mappé, power 0.55) — mais `box_jump` requiert une box → casse la contrainte « sans
-  matériel ». Donc **`squat_jump` est requis** ; à défaut utiliser `burpee` sur les deux
-  blocs (dégrade la pureté « puissance »). Recommandation : **ajouter `squat_jump`**.
-- **scoreType** : `reps` — **haut = mieux**.
+> **REMPLACE `league_power_emom` — PLUS D'EMOM.** Contrainte produit permanente (humain,
+> 27 juin 2026) : les WODs imposés de la Ligue du mois sont **exclusivement AMRAP ou
+> for time (RFT/chipper)**. Aucun EMOM. La semaine 4 reste la semaine **PUISSANCE** (le
+> profil explosif/détente doit y briller), mais via un **AMRAP 10 min** au lieu de l'EMOM.
+> **Nouvel id : `league_power_amrap`** — remplacer `league_power_emom` PARTOUT (wods.data.ts,
+> wod-levels.data.ts, wod-prescriptions.data.ts, rotation Ligue, seed, tests).
+
+- **Qualité** : puissance / explosivité répétée (force-vitesse, détente verticale + horizontale).
+  L'athlète explosif (sauts, détente, hanches puissantes) brille. En AMRAP, on récompense
+  la **densité de reps explosives** : produire de la puissance saut après saut, le plus de
+  tours possible, sans se cramer. Le couplet est **dominé par les sauts** (pas de mouvement
+  de cardio pur ni de charge) → la qualité dominante reste sans ambiguïté la PUISSANCE.
+- **Structure** : **AMRAP 10 min** d'un couplet 100 % saut/explosivité, répété en boucle.
+  Score = **nombre total de répétitions validées** (sauts comptés un à un ; pas de plafond
+  artificiel — un athlète explosif peut accumuler beaucoup de tours, c'est voulu : la
+  détente se voit dans le compteur). Pas de course, pas de charge, pas d'EMOM.
+- **Contenu EXACT (1 tour = 25 reps)** :
+  - **15 squat jumps** (`squat_jump`, saut vertical départ squat, genoux montés ; mappé : power 0.55)
+  - **10 burpee broad jumps** (`burpee_broad_jump`, burpee + saut horizontal vers l'avant ; mappé : power 0.3)
+  - → **AMRAP 10 min, score = reps totales validées** (tours partiels comptés à la rep près).
+- **Mouvements** : `squat_jump` (mappé : power 0.55, muscular_endurance 0.25, engine 0.2),
+  `burpee_broad_jump` (mappé : power 0.3). **Les deux sont déjà dans `movements.data.ts`** —
+  aucun mouvement manquant, aucun ajout requis (cf. §7, mis à jour). 100 % sans matériel.
+- **scoreType** : `reps` (AMRAP) — **haut = mieux** (`dir = +1`).
 - **targetAttributes** (primaire **power**) :
   ```
   [ { attribute: "power", estimated: false },
     { attribute: "muscular_endurance", estimated: false } ]
   ```
-- **Barème de référence** (reps validées sur 10 min, max 100) :
+- **Barème de référence** (reps totales validées en 10 min ; 1 tour = 25 reps) :
 
   | | champion | intermediate | occasional |
   |--|--|--|--|
-  | Homme | 100 | 78 | 55 |
-  | Femme | 96 | 70 | 48 |
+  | Homme | 200 | 112 | 65 |
+  | Femme | 180 | 100 | 56 |
 
-  Justification : un athlète explosif moyen tient les 12 squat jumps mais lâche 2–4 reps
-  sur les burpee broad jumps en fin de WOD → ~78. L'élite finit tout (plafond 100). Le
-  débutant rate ~4–5 reps/minute en fin → ~55. Plafond dur = 100 (saturation assumée :
-  les meilleurs se départagent alors sur les autres semaines — voulu pour « donner sa
-  chance à tout le monde »).
-- **Distribution recommandée** : `normal(mu = intermediate, sigma)`, **tronquée à hardMax=100**.
-  H σ = 16 → P90 ≈ 78+20 = 98, P10 ≈ 58. Le clamp `hardMax` gère la saturation à 100.
+  Justification (débits `movements.data.ts` + dégradation fatigue) :
+  - Intermédiaire H : 15 squat jumps @ ~0,55 rep/s ≈ 27 s, 10 burpee broad jumps @ ~0,18 rep/s
+    ≈ 56 s, + transitions ≈ 10–12 s → **~95 s/tour à froid**, mais les burpee broad jumps
+    s'effondrent en fin de WOD (très coûteux) → cadence moyenne réelle ≈ 130 s/tour →
+    **~4,5 tours ≈ 112 reps** en 10 min. Cohérent avec `max_air_squats_2min` (50 squats/2 min)
+    et la densité `burpees_7min`, en plus explosif/plus lent par rep.
+  - Champion H (détente élite, hanches qui claquent, broad jumps enchaînés sans temps mort) :
+    cadence ~85–90 s/tour tenue → **~8 tours ≈ 200 reps**.
+  - Occasionnel H : casse beaucoup sur les broad jumps (repos longs), ~2,5 tours → **~65 reps**.
+  - Femmes : même structure, débits saut légèrement inférieurs (cf. `r(...)` female) →
+    champion 180 / inter 100 / occ 56.
+- **Distribution recommandée** : `normal(mu = intermediate, sigma)` **en reps** (pas de
+  saturation : l'AMRAP est ouvert vers le haut, donc plus de plafond artificiel à 100 comme
+  l'ancien EMOM). σ calée pour que P10/P90 collent aux paliers occasionnel/champion :
+  - H σ = 34 → P90 ≈ 112 + 1,2816·34 ≈ **156**, P99 ≈ 112 + 2,326·34 ≈ **191** (≈ champion 200).
+    P10 ≈ 112 − 1,2816·34 ≈ **68** (≈ occasionnel 65). OK.
+  - F σ = 31 → P90 ≈ 100 + 40 ≈ **140**, P99 ≈ **172** (≈ champion 180), P10 ≈ **60** (≈ occ 56). OK.
   ```
-  male:   { model: normal(78, 16), hardMin: 20, hardMax: 100, proReference: 100 }
-  female: { model: normal(70, 16), hardMin: 18, hardMax: 96,  proReference: 96 }
+  male:   { model: normal(112, 34), hardMin: 30, hardMax: 280, proReference: 200 }
+  female: { model: normal(100, 31), hardMin: 25, hardMax: 250, proReference: 180 }
   ```
-  > **Note** : `proReference` = 100 (= max) assumé pour l'homme — un pro sature ce format.
-  > C'est un format « accessible au sommet » par design ; la discrimination se fait sur le
-  > milieu de tableau (là où vit la Ligue). Si on veut éviter toute saturation, monter à
-  > 14 squat jumps / 9 broad jumps (max 115) — variante notée mais non retenue (plus dure
-  > à tenir proprement = risque technique en fatigue).
+  > **Pas de saturation** : contrairement à l'ancien EMOM (plafond dur 100), l'AMRAP est
+  > ouvert vers le haut. `hardMax` (280 H / 250 F) est un garde-fou anti-aberration de saisie
+  > (≈ 11–12 tours, au-delà du record réaliste sur ce couplet), pas un plafond de design.
+  > `proReference` = palier champion (élite explosif réel estimé), pas un record absolu —
+  > confiance *low*, à recalibrer sur la communauté (N≥200/sexe) comme les 4 autres WODs Ligue.
+  > **Variante non retenue** : ratio 12 squat jumps / 8 broad jumps (tour de 20 reps, plus
+  > « propre » techniquement en fatigue) — écarté car le tour de 25 reps donne un compteur
+  > plus granulaire et un meilleur étalement des percentiles. Si l'ingénierie observe trop de
+  > casse technique sur les broad jumps en fin de WOD, basculer sur 12/8 et diviser le barème
+  > par 1,25 (200→160, 112→90, 65→52 H ; 180→144, 100→80, 56→45 F).
 
 ---
 
@@ -312,8 +338,8 @@ league_engine_12:     { male: { champion: 9.5, intermediate: 6.0, occasional: 4.
                         female: { champion: 8.5, intermediate: 5.5, occasional: 3.5 } }   // en TOURS
 league_grind_squats:  { male: { champion: 285, intermediate: 170, occasional: 110 },
                         female: { champion: 265, intermediate: 155, occasional: 95 } }     // en REPS
-league_power_emom:    { male: { champion: 100, intermediate: 78,  occasional: 55 },
-                        female: { champion: 96,  intermediate: 70,  occasional: 48 } }     // en REPS
+league_power_amrap:   { male: { champion: 200, intermediate: 112, occasional: 65 },
+                        female: { champion: 180, intermediate: 100, occasional: 56 } }     // en REPS (AMRAP 10 min) — remplace league_power_emom
 league_hybrid_chipper:{ male: { champion: 400, intermediate: 660, occasional: 870 },
                         female: { champion: 460, intermediate: 720, occasional: 900 } }    // en s
 ```
@@ -350,18 +376,15 @@ Raisons :
 
 ## 7. Champs DB / mouvements à AJOUTER (à faire par l'ingénierie — listé explicitement)
 
-**Mouvement manquant dans `movements.data.ts`** (1 seul) :
-- **`squat_jump`** « Squat jump / saut vertical » — `category: "gymnastics"`, `unit: "rep"`,
-  `requiresEquipment: false`, `loadFactor: 0.85`. Attributs proposés (cohérents avec
-  `box_jump`/`burpee_broad_jump`) :
-  `[{ power: 0.55 }, { muscular_endurance: 0.25 }, { engine: 0.2 }]`. `fatigueExponent: 1.22`,
-  `maxSet: 20`. Débits `rate` suggérés (rep/s), à recalibrer :
-  `r(0.85, 0.78, 0.55, 0.48, 0.38, 0.32)`.
-  → **Nécessaire pour la semaine 4** (`league_power_emom`). Sans lui, fallback dégradé
-  (cf. §3 sem. 4) qui affaiblit la pureté « puissance ». **Recommandation : l'ajouter.**
+**Aucun mouvement manquant.** `squat_jump` a depuis été ajouté à `movements.data.ts`
+(`power 0.55`, `muscular_endurance 0.25`, `engine 0.2` ; `loadFactor 0.85`, `fatigueExponent 1.22`,
+`maxSet 20`, `rate r(0.85, 0.78, 0.55, 0.48, 0.38, 0.32)`). Tous les mouvements utilisés par les
+5 WODs Ligue sont donc **déjà mappés** : `run`, `sprint`, `air_squat`, `burpee`, `squat_jump`,
+`burpee_broad_jump`, `lunge`, `pistol_squat`, `sit_up`, `wall_walk`.
 
-Tous les autres mouvements utilisés sont **déjà mappés** : `run`, `sprint`, `air_squat`,
-`burpee`, `burpee_broad_jump`, `lunge`, `pistol_squat`, `sit_up`, `wall_walk`.
+> La semaine 4 (`league_power_amrap`, AMRAP 10 min) n'a **plus aucune dépendance bloquante** :
+> elle utilise `squat_jump` + `burpee_broad_jump`, tous deux mappés. Le fallback `box_jump`
+> (qui cassait la contrainte « sans matériel ») n'a plus lieu d'être.
 
 **Champs / réglages côté seed & Ligue à prévoir** :
 - `isBenchmark: false` (et `isLeagueOnly: true` si on introduit le flag) sur les 5 WODs.
@@ -369,7 +392,7 @@ Tous les autres mouvements utilisés sont **déjà mappés** : `run`, `sprint`, 
   `isLeagueOnly` (option (b) §2 — recommandée). Les 5 anciens **restent** des benchmarks
   Index (ne pas les supprimer), ils cessent juste d'être **imposés en Ligue**.
 - Saisie : `league_engine_12` se saisit en **tours décimaux** (sinon prévoir conversion
-  reps→tours avant scoring). `league_power_emom` et `league_grind_squats` se saisissent en
+  reps→tours avant scoring). `league_power_amrap` et `league_grind_squats` se saisissent en
   **reps totales**. Les deux `time` se saisissent en **secondes**, avec conversion time-cap
   (sem. 5) avant `percentile()`.
 

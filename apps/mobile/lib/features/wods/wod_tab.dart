@@ -192,8 +192,7 @@ class _WodTabState extends ConsumerState<WodTab> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Le WOD imposé de la Ligue du mois. Fais-le pour marquer des points au classement — '
-                    'et le même effort nourrit aussi ton Index.',
+                    'La séance imposée de la Ligue du mois. Fais-la pour marquer des points au classement.',
                     style: TextStyle(color: HiColors.textSecondary, fontSize: 13, height: 1.4),
                   ),
                   const SizedBox(height: HiSpace.md),
@@ -206,7 +205,7 @@ class _WodTabState extends ConsumerState<WodTab> {
                         minimumSize: const Size.fromHeight(46),
                       ),
                       icon: const Icon(Icons.play_arrow_rounded),
-                      label: const Text('Faire ce WOD'),
+                      label: const Text('Faire cette séance'),
                       onPressed: () async {
                         await Navigator.of(context).push(
                           MaterialPageRoute(

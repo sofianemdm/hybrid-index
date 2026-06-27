@@ -506,19 +506,19 @@ export const WOD_PRESCRIPTIONS: Record<string, WodPrescription> = {
     weights: [],
     scoringNote: "Tu enregistres ton nombre total de répétitions.",
   },
-  league_power_emom: {
+  league_power_amrap: {
     scalable: false,
     summary:
-      "Semaine PUISSANCE. EMOM 10 min : un bloc explosif au top de chaque minute, le reste = repos. " +
-      "On récompense la puissance FRAÎCHE répétée. L'athlète détente/explosivité brille.",
-    format: "EMOM 10 min",
+      "Semaine PUISSANCE. AMRAP 10 min : un couplet 100 % sauts explosifs (squat jumps + burpee broad " +
+      "jumps), le plus de tours possible. La détente et les hanches puissantes font la différence.",
+    format: "AMRAP 10 min",
     timeCapSec: 600,
     blocks: [
-      { reps: "12", movement: "Squat jumps", detail: "minutes impaires (1,3,5,7,9)" },
-      { reps: "8", movement: "Burpee broad jumps", detail: "minutes paires (2,4,6,8,10)" },
+      { reps: "15", movement: "Squat jumps" },
+      { reps: "10", movement: "Burpee broad jumps" },
     ],
     weights: [],
-    scoringNote: "Tu enregistres le nombre total de répétitions VALIDÉES (max 100).",
+    scoringNote: SCORE_REPS,
   },
   league_hybrid_chipper: {
     scalable: false,

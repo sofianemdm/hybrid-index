@@ -69,9 +69,29 @@ describe("api — prédiction de résultat sur un WOD (e2e réel)", () => {
       update: { score, unlocked },
     });
 
-  it("attribut cible DÉBLOQUÉ → predictedRaw number (temps) sur run_5k", async () => {
-    // run_5k cible `engine`. On débloque engine à un bon niveau (/1000).
+  /** Pose/maj l'Index de l'utilisateur. La prédiction n'est servie QUE si l'Index est COMPLET
+   *  (pas provisoire, pas estimé, radar 6/6) — sinon predictedRaw null (gate « pas d'estimation
+   *  tant que l'Index n'est pas complet »). */
+  const setIndex = (opts: { isProvisional: boolean; isEstimated: boolean; radarCoverage: number }) =>
+    prisma.hybridIndex.upsert({
+      where: { userId },
+      create: {
+        userId,
+        value: 600,
+        percentile: 0.5,
+        isProvisional: opts.isProvisional,
+        isEstimated: opts.isEstimated,
+        radarCoverage: opts.radarCoverage,
+        confidenceLevel: "high",
+        scoringVersionId: SCORING_VERSION_UUID,
+      },
+      update: { isProvisional: opts.isProvisional, isEstimated: opts.isEstimated, radarCoverage: opts.radarCoverage },
+    });
+
+  it("Index COMPLET + attribut cible DÉBLOQUÉ → predictedRaw number (temps) sur run_5k", async () => {
+    // run_5k cible `engine`. On débloque engine à un bon niveau (/1000) ET un Index complet.
     await setAttr("engine", 650, true);
+    await setIndex({ isProvisional: false, isEstimated: false, radarCoverage: 6 });
 
     const res = await request(api.getHttpServer())
       .get("/v1/wods/run_5k/prediction")
@@ -86,9 +106,24 @@ describe("api — prédiction de résultat sur un WOD (e2e réel)", () => {
     expect(res.body.predictedRaw).toBeLessThanOrEqual(3600);
   });
 
-  it("aucun attribut cible débloqué → predictedRaw null", async () => {
-    // engine VERROUILLÉ → run_5k n'a aucun attribut cible débloqué.
+  it("Index complet mais aucun attribut cible débloqué → predictedRaw null", async () => {
+    // engine VERROUILLÉ → run_5k n'a aucun attribut cible débloqué (Index complet conservé).
+    await setIndex({ isProvisional: false, isEstimated: false, radarCoverage: 6 });
     await setAttr("engine", 650, false);
+
+    const res = await request(api.getHttpServer())
+      .get("/v1/wods/run_5k/prediction")
+      .set("authorization", `Bearer ${token}`)
+      .expect(200);
+
+    expect(res.body.predictedRaw).toBeNull();
+    expect(res.body.scoreType).toBe("time");
+  });
+
+  it("Index INCOMPLET (provisoire) → predictedRaw null MÊME si l'attribut cible est débloqué", async () => {
+    // L'attribut est débloqué à bon niveau, mais l'Index n'est pas encore complet → pas d'estimation.
+    await setAttr("engine", 650, true);
+    await setIndex({ isProvisional: true, isEstimated: false, radarCoverage: 6 });
 
     const res = await request(api.getHttpServer())
       .get("/v1/wods/run_5k/prediction")

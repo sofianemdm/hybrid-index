@@ -350,7 +350,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get otherWorkoutsIntro =>
-      'De grandes épreuves réelles (HYROX, WODs de compétition, courses). Ouvre-en une pour voir les détails et les records — et enregistre ton temps.';
+      'De grandes épreuves réelles (HYROX, séances de compétition, courses). Ouvre-en une pour voir les détails et les records — et enregistre ton temps.';
 
   @override
   String get otherWorkoutsNoEquipment => 'Sans matériel';

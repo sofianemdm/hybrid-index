@@ -67,7 +67,7 @@ class _PrWallScreenState extends ConsumerState<PrWallScreen> {
               final prs = snap.data ?? const <PrItem>[];
               if (prs.isEmpty) {
                 return _centered(
-                  'Aucun record pour l\'instant.\nLogue un WOD : ton premier record t\'attend !',
+                  'Aucun record pour l\'instant.\nLogue une séance : ton premier record t\'attend !',
                   null,
                 );
               }

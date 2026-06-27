@@ -49,7 +49,7 @@ const WODS: Array<{
   { id: "league_sprint_ladder", name: "La Flèche", scoreType: "time", requiresEquipment: false, targetAttributes: ["speed", "engine"], isBenchmark: false },
   { id: "league_engine_12", name: "Le Moteur", scoreType: "reps", requiresEquipment: false, targetAttributes: ["engine", "muscular_endurance", "hybrid"], isBenchmark: false },
   { id: "league_grind_squats", name: "Le Pilier", scoreType: "reps", requiresEquipment: false, targetAttributes: ["muscular_endurance", "strength"], isBenchmark: false },
-  { id: "league_power_emom", name: "L'Explosion", scoreType: "reps", requiresEquipment: false, targetAttributes: ["power", "muscular_endurance"], isBenchmark: false },
+  { id: "league_power_amrap", name: "La Détente", scoreType: "reps", requiresEquipment: false, targetAttributes: ["power", "muscular_endurance"], isBenchmark: false },
   { id: "league_hybrid_chipper", name: "Le Chaos", scoreType: "time", requiresEquipment: false, targetAttributes: ["hybrid", "engine", "muscular_endurance"], isBenchmark: false },
 ];
 

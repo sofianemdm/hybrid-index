@@ -640,9 +640,10 @@ export const WODS: ReadonlyArray<WodDefinition> = [
     },
   },
   {
-    // Semaine 4 — PUISSANCE. EMOM 10 min (squat jumps / burpee broad jumps), score = reps validées.
-    id: "league_power_emom",
-    name: "L'Explosion",
+    // Semaine 4 — PUISSANCE. AMRAP 10 min (15 squat jumps + 10 burpee broad jumps), score = reps totales.
+    // Remplace l'ancien EMOM : JAMAIS d'EMOM dans les séances de la semaine (décision produit).
+    id: "league_power_amrap",
+    name: "La Détente",
     scoreType: "reps",
     requiresEquipment: false,
     isBenchmark: false,
@@ -651,8 +652,8 @@ export const WODS: ReadonlyArray<WodDefinition> = [
       { attribute: "muscular_endurance", estimated: false },
     ],
     bySex: {
-      male: { model: normal(78, 16), hardMin: 20, hardMax: 100, proReference: 100 },
-      female: { model: normal(70, 16), hardMin: 18, hardMax: 96, proReference: 96 },
+      male: { model: normal(112, 34), hardMin: 30, hardMax: 280, proReference: 200 },
+      female: { model: normal(100, 31), hardMin: 25, hardMax: 250, proReference: 180 },
     },
   },
   {

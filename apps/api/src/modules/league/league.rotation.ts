@@ -22,7 +22,7 @@ export const LEAGUE_WOD_IDS = [
   "league_sprint_ladder", // S1 Vitesse
   "league_engine_12", // S2 Endurance (moteur)
   "league_grind_squats", // S3 Force-endurance
-  "league_power_emom", // S4 Puissance
+  "league_power_amrap", // S4 Puissance (AMRAP — jamais d'EMOM)
   "league_hybrid_chipper", // S5 Hybride
 ] as const;
 
