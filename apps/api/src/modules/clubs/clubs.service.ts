@@ -71,18 +71,33 @@ export class ClubsService {
   async leave(me: string, clubId: string): Promise<{ left: true }> {
     const m = await this.prisma.clubMember.findUnique({ where: { clubId_userId: { clubId, userId: me } } });
     if (!m) return { left: true };
-    const count = await this.prisma.clubMember.count({ where: { clubId } });
-    if (m.role === "owner" && count > 1) {
-      throw new ForbiddenException({ code: "FORBIDDEN", message: "Transfère ou supprime le club avant de le quitter (tu en es le créateur)." });
-    }
-    if (count <= 1) {
+    // Membres triés par ancienneté (pour désigner un successeur si le créateur part).
+    const members = await this.prisma.clubMember.findMany({
+      where: { clubId },
+      select: { userId: true, joinedAt: true },
+      orderBy: { joinedAt: "asc" },
+    });
+    if (members.length <= 1) {
       await this.prisma.club.delete({ where: { id: clubId } }); // dernier membre → le club disparaît
-    } else {
-      await this.prisma.$transaction([
-        this.prisma.clubMember.delete({ where: { clubId_userId: { clubId, userId: me } } }),
-        this.prisma.club.update({ where: { id: clubId }, data: { memberCount: { decrement: 1 } } }),
-      ]);
+      return { left: true };
     }
+    const ops = [];
+    if (m.role === "owner") {
+      // Le CRÉATEUR peut quitter : la propriété est transférée au membre le plus ancien restant.
+      const successor = members.find((x) => x.userId !== me)!;
+      ops.push(
+        this.prisma.club.update({ where: { id: clubId }, data: { ownerId: successor.userId } }),
+        this.prisma.clubMember.update({
+          where: { clubId_userId: { clubId, userId: successor.userId } },
+          data: { role: "owner" },
+        }),
+      );
+    }
+    ops.push(
+      this.prisma.clubMember.delete({ where: { clubId_userId: { clubId, userId: me } } }),
+      this.prisma.club.update({ where: { id: clubId }, data: { memberCount: { decrement: 1 } } }),
+    );
+    await this.prisma.$transaction(ops);
     return { left: true };
   }
 
