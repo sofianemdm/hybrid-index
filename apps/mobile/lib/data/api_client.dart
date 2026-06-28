@@ -207,6 +207,9 @@ class ApiClient {
     return j['conversationId'] as String;
   }
 
+  /// Bloque un utilisateur (garde-fou de la messagerie publique). Idempotent côté serveur.
+  Future<void> blockUser(String userId) async => _send('POST', '/v1/users/$userId/block', {});
+
   // --- Coach / profils publics ---
   Future<CoachResult> coach({String? attribute}) async {
     final q = attribute == null ? '' : '?attribute=$attribute';

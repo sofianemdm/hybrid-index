@@ -703,10 +703,84 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get conversationsEmpty =>
-      'Aucune conversation. Écris à un athlète que tu suis (et qui te suit) ou à un membre de ton club.';
+      'Aucune conversation pour l\'instant. Ouvre le profil d\'un athlète et écris-lui : tout le monde est joignable.';
 
   @override
   String get conversationsYouPrefix => 'Toi : ';
+
+  @override
+  String get chatToday => 'Aujourd\'hui';
+
+  @override
+  String get chatYesterday => 'Hier';
+
+  @override
+  String get chatStatusSending => 'Envoi…';
+
+  @override
+  String get chatStatusFailed => 'Échec — appuie pour réessayer';
+
+  @override
+  String get chatStatusSent => 'Envoyé';
+
+  @override
+  String get chatStatusRead => 'Lu';
+
+  @override
+  String get chatViewProfile => 'Voir le profil';
+
+  @override
+  String get chatBlock => 'Bloquer';
+
+  @override
+  String chatBlockConfirmTitle(String name) {
+    return 'Bloquer $name ?';
+  }
+
+  @override
+  String get chatBlockConfirmBody =>
+      'Vous ne pourrez plus vous écrire. Tu pourras le débloquer plus tard.';
+
+  @override
+  String get chatBlockCancel => 'Annuler';
+
+  @override
+  String get chatBlockConfirm => 'Bloquer';
+
+  @override
+  String chatBlocked(String name) {
+    return '$name a été bloqué.';
+  }
+
+  @override
+  String get dmReasonAge =>
+      'Les messages privés ne sont possibles qu\'entre comptes de la même tranche d\'âge.';
+
+  @override
+  String get dmReasonBlocked => 'Échange impossible avec cet utilisateur.';
+
+  @override
+  String get dmReasonUnavailable => 'Ce compte n\'est plus disponible.';
+
+  @override
+  String get messagingErrorRateLimited =>
+      'Tu envoies trop de messages. Réessaie dans un instant.';
+
+  @override
+  String get messagingErrorNotAllowed => 'Message impossible avec cet utilisateur.';
+
+  @override
+  String get messagingErrorNotFound => 'Conversation introuvable.';
+
+  @override
+  String get messagingErrorTooLong => 'Message trop long (2000 caractères max).';
+
+  @override
+  String get messagingErrorNetwork =>
+      'Connexion impossible. Vérifie ta connexion et réessaie.';
+
+  @override
+  String get messagingErrorGeneric => 'Une erreur est survenue. Réessaie.';
 
   @override
   String get notificationsTitle => 'Notifications';

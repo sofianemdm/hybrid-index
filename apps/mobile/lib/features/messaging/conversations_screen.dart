@@ -5,6 +5,7 @@ import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
+import '../../widgets/hi_avatar.dart';
 import '../../widgets/hi_empty_state.dart';
 import '../../widgets/rank_badge.dart';
 import '../community/explore_screen.dart';
@@ -55,7 +56,10 @@ class _ConversationsScreenState extends ConsumerState<ConversationsScreen> {
               }
               if (snap.hasError) {
                 return ListView(children: [
-                  Padding(padding: const EdgeInsets.all(HiSpace.lg), child: Text('${snap.error}', style: HiType.body.copyWith(color: HiColors.error))),
+                  Padding(
+                    padding: const EdgeInsets.all(HiSpace.lg),
+                    child: Text(messagingErrorMessage(t, snap.error!), style: HiType.body.copyWith(color: HiColors.error)),
+                  ),
                 ]);
               }
               final items = snap.data!;
@@ -90,6 +94,16 @@ class _ConversationsScreenState extends ConsumerState<ConversationsScreen> {
     return Card(
       color: HiColors.bgElevated,
       child: ListTile(
+        leading: c.otherAvatar != null
+            ? HiAvatar(config: c.otherAvatar!, rank: c.otherRank, size: 40)
+            : CircleAvatar(
+                radius: 20,
+                backgroundColor: HiColors.bgBase,
+                child: Text(
+                  c.otherName.isNotEmpty ? c.otherName.characters.first.toUpperCase() : '?',
+                  style: HiType.titleM.copyWith(color: HiColors.textPrimary),
+                ),
+              ),
         title: Row(children: [
           Flexible(
             child: Text(c.otherName,

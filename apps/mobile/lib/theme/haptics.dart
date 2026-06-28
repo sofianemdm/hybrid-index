@@ -16,4 +16,7 @@ class HiHaptics {
 
   /// Célébration : franchissement de palier, PR, montée au classement.
   static void celebrate() => HapticFeedback.heavyImpact();
+
+  /// Échec d'une action (ex. envoi de message rejeté) — signal sec et distinct.
+  static void error() => HapticFeedback.heavyImpact();
 }

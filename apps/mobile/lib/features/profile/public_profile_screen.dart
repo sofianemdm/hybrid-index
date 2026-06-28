@@ -103,10 +103,18 @@ class _DmButtonState extends ConsumerState<_DmButton> {
         final e = snap.data!;
         if (!e.allowed) {
           // On informe discrètement pourquoi le DM n'est pas possible (sauf cas "soi-même").
+          // App 100 % publique : les seuls motifs honnêtes sont l'âge, le blocage, ou un compte
+          // indisponible — jamais une restriction de « lien social ».
           if (e.reason == 'self') return const SizedBox.shrink();
+          final t = AppLocalizations.of(context);
+          final reason = e.reason == 'age'
+              ? t.dmReasonAge
+              : e.reason == 'blocked'
+                  ? t.dmReasonBlocked
+                  : t.dmReasonUnavailable;
           return SizedBox(
             width: 200,
-            child: Text(e.message,
+            child: Text(reason,
                 textAlign: TextAlign.center, style: HiType.caption.copyWith(color: HiColors.textTertiary)),
           );
         }

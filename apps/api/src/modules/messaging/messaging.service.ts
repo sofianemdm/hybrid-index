@@ -4,6 +4,7 @@ import { ratingFromInternal } from "@hybrid-index/scoring-core";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { ModerationService } from "../moderation/moderation.service";
 import { PushService } from "../engagement/push.service";
+import { serializeAvatar } from "../../common/avatar.serializer";
 
 /** OVR /100 d'un Index interne /1000 (grade affiché), ou null. */
 const ovr = (internal: number | null | undefined): number | null =>
@@ -54,11 +55,13 @@ export class MessagingService {
   private async assertCanDm(me: string, other: string): Promise<void> {
     const elig = await this.eligibility(me, other);
     if (elig.allowed) return;
+    // App 100 % publique : aucune restriction de « lien social ». Le seul motif `not_connected`
+    // restant signifie que le compte cible n'existe plus / n'est plus actif — copie honnête.
     const messages: Record<NonNullable<DmEligibility["reason"]>, string> = {
       self: "On ne s'écrit pas à soi-même.",
       blocked: "Échange impossible avec cet utilisateur.",
       age: "Les messages privés ne sont possibles qu'entre comptes de la même tranche d'âge.",
-      not_connected: "Tu dois vous suivre mutuellement ou partager un club pour échanger en privé.",
+      not_connected: "Ce compte n'est plus disponible.",
     };
     throw new ForbiddenException({ code: "DM_NOT_ALLOWED", message: messages[elig.reason ?? "not_connected"] });
   }
@@ -86,7 +89,15 @@ export class MessagingService {
     void this.notifyRecipient(me, toUserId);
     return {
       conversationId: conv.id,
-      message: { id: msg.id, senderId: me, body: msg.body, createdAt: msg.createdAt.toISOString(), isMine: true },
+      message: {
+        id: msg.id,
+        senderId: me,
+        body: msg.body,
+        createdAt: msg.createdAt.toISOString(),
+        sentAt: msg.createdAt.toISOString(),
+        readAt: null,
+        isMine: true,
+      },
     };
   }
 
@@ -107,8 +118,8 @@ export class MessagingService {
       orderBy: { lastMessageAt: "desc" },
       take: 50,
       include: {
-        userA: { include: { profile: { select: { displayName: true, rank: true } }, hybridIndex: { select: { value: true } } } },
-        userB: { include: { profile: { select: { displayName: true, rank: true } }, hybridIndex: { select: { value: true } } } },
+        userA: { include: { profile: { select: { displayName: true, rank: true } }, hybridIndex: { select: { value: true } }, avatar: true } },
+        userB: { include: { profile: { select: { displayName: true, rank: true } }, hybridIndex: { select: { value: true } }, avatar: true } },
         // Aperçu : ignorer les messages masqués par modération.
         messages: { where: { status: "visible" }, orderBy: { createdAt: "desc" }, take: 1 },
       },
@@ -131,6 +142,7 @@ export class MessagingService {
           displayName: other.profile?.displayName ?? "—",
           rank: other.profile?.rank ?? "rookie",
           index: ovr(other.hybridIndex?.value),
+          avatar: serializeAvatar(other.avatar),
         },
         lastMessage: last ? { body: last.body, createdAt: last.createdAt.toISOString(), isMine: last.senderId === me } : null,
         unread: unreadByConv.get(c.id) ?? 0,
@@ -155,7 +167,7 @@ export class MessagingService {
       }),
       this.prisma.user.findUnique({
         where: { id: otherId },
-        include: { profile: { select: { displayName: true, rank: true } } },
+        include: { profile: { select: { displayName: true, rank: true } }, avatar: true },
       }),
     ]);
     await this.prisma.message.updateMany({
@@ -168,12 +180,17 @@ export class MessagingService {
         userId: otherId,
         displayName: other?.profile?.displayName ?? "—",
         rank: other?.profile?.rank ?? "rookie",
+        avatar: serializeAvatar(other?.avatar),
       },
       messages: rows.map((m) => ({
         id: m.id,
         senderId: m.senderId,
         body: m.body,
+        // `createdAt` = horodatage d'envoi ; `sentAt` est un alias explicite pour le client.
         createdAt: m.createdAt.toISOString(),
+        sentAt: m.createdAt.toISOString(),
+        // Accusé de lecture : non null dès que le destinataire a ouvert la conversation.
+        readAt: m.readAt ? m.readAt.toISOString() : null,
         isMine: m.senderId === me,
       })),
     };

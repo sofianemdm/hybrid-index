@@ -222,6 +222,10 @@ class DmEligibility {
   factory DmEligibility.fromJson(Map<String, dynamic> j) =>
       DmEligibility(allowed: j['allowed'] as bool? ?? false, reason: j['reason'] as String?);
 
+  /// Repli non localisé. La copie affichée à l'utilisateur passe par `AppLocalizations`
+  /// (cf. `dmEligibilityReason`) — ce getter ne sert que de garde-fou.
+  /// App 100 % publique : aucune restriction de « lien social » ; seuls l'âge et le blocage
+  /// peuvent empêcher un DM.
   String get message {
     switch (reason) {
       case 'age':
@@ -229,12 +233,16 @@ class DmEligibility {
       case 'blocked':
         return 'Échange impossible avec cet utilisateur.';
       case 'not_connected':
-        return 'Suivez-vous mutuellement ou partagez un club pour discuter.';
+        return 'Ce compte n\'est plus disponible.';
       default:
         return 'Message privé indisponible.';
     }
   }
 }
+
+/// État d'envoi d'un message (côté client uniquement). `sent` = confirmé par le serveur ;
+/// `pending` = envoi optimiste en cours ; `failed` = l'API a rejeté → réessayable au tap.
+enum DmSendStatus { sent, pending, failed }
 
 class DmMessage {
   final String id;
@@ -242,20 +250,40 @@ class DmMessage {
   final String body;
   final String createdAt;
   final bool isMine;
+  /// Accusé de lecture (ISO) du destinataire, ou null si pas encore lu.
+  final String? readAt;
+  /// État d'envoi local (par défaut `sent` pour tout message venant du serveur).
+  final DmSendStatus status;
   const DmMessage({
     required this.id,
     required this.senderId,
     required this.body,
     required this.createdAt,
     required this.isMine,
+    this.readAt,
+    this.status = DmSendStatus.sent,
   });
+
+  bool get isRead => readAt != null && readAt!.isNotEmpty;
+
+  DmMessage copyWith({String? id, String? readAt, DmSendStatus? status}) => DmMessage(
+        id: id ?? this.id,
+        senderId: senderId,
+        body: body,
+        createdAt: createdAt,
+        isMine: isMine,
+        readAt: readAt ?? this.readAt,
+        status: status ?? this.status,
+      );
 
   factory DmMessage.fromJson(Map<String, dynamic> j) => DmMessage(
         id: j['id'] as String,
         senderId: j['senderId'] as String? ?? '',
         body: j['body'] as String? ?? '',
-        createdAt: j['createdAt'] as String? ?? '',
+        // Le serveur expose `createdAt` (= `sentAt`, alias) pour l'horodatage d'envoi.
+        createdAt: (j['createdAt'] ?? j['sentAt']) as String? ?? '',
         isMine: j['isMine'] as bool? ?? false,
+        readAt: j['readAt'] as String?,
       );
 }
 
@@ -265,6 +293,7 @@ class ConversationSummary {
   final String otherName;
   final String otherRank;
   final int? otherIndex; // OVR /100 de l'interlocuteur (grade affiché)
+  final AvatarConfig? otherAvatar; // mini-vignette de l'interlocuteur (peut être null)
   final String? lastBody;
   final bool lastIsMine;
   final int unread;
@@ -274,6 +303,7 @@ class ConversationSummary {
     required this.otherName,
     required this.otherRank,
     this.otherIndex,
+    this.otherAvatar,
     this.lastBody,
     required this.lastIsMine,
     required this.unread,
@@ -288,6 +318,7 @@ class ConversationSummary {
       otherName: other['displayName'] as String? ?? '—',
       otherRank: other['rank'] as String? ?? 'rookie',
       otherIndex: (other['index'] as num?)?.toInt(),
+      otherAvatar: other['avatar'] == null ? null : AvatarConfig.fromJson((other['avatar'] as Map).cast<String, dynamic>()),
       lastBody: last?['body'] as String?,
       lastIsMine: last?['isMine'] as bool? ?? false,
       unread: (j['unread'] as num?)?.toInt() ?? 0,
@@ -300,12 +331,14 @@ class Conversation {
   final String otherUserId;
   final String otherName;
   final String otherRank;
+  final AvatarConfig? otherAvatar; // avatar de l'interlocuteur (en-tête du chat)
   final List<DmMessage> messages;
   const Conversation({
     required this.id,
     required this.otherUserId,
     required this.otherName,
     required this.otherRank,
+    this.otherAvatar,
     required this.messages,
   });
 
@@ -316,6 +349,7 @@ class Conversation {
       otherUserId: other['userId'] as String? ?? '',
       otherName: other['displayName'] as String? ?? '—',
       otherRank: other['rank'] as String? ?? 'rookie',
+      otherAvatar: other['avatar'] == null ? null : AvatarConfig.fromJson((other['avatar'] as Map).cast<String, dynamic>()),
       messages: ((j['messages'] as List?) ?? []).map((e) => DmMessage.fromJson(e as Map<String, dynamic>)).toList(),
     );
   }

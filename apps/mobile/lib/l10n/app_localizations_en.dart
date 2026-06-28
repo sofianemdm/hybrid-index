@@ -699,10 +699,84 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get conversationsEmpty =>
-      'No conversation yet. Message an athlete you follow (and who follows you) or a member of your club.';
+      'No conversation yet. Open an athlete\'s profile and say hi — everyone is reachable.';
 
   @override
   String get conversationsYouPrefix => 'You: ';
+
+  @override
+  String get chatToday => 'Today';
+
+  @override
+  String get chatYesterday => 'Yesterday';
+
+  @override
+  String get chatStatusSending => 'Sending…';
+
+  @override
+  String get chatStatusFailed => 'Failed — tap to retry';
+
+  @override
+  String get chatStatusSent => 'Sent';
+
+  @override
+  String get chatStatusRead => 'Read';
+
+  @override
+  String get chatViewProfile => 'View profile';
+
+  @override
+  String get chatBlock => 'Block';
+
+  @override
+  String chatBlockConfirmTitle(String name) {
+    return 'Block $name?';
+  }
+
+  @override
+  String get chatBlockConfirmBody =>
+      'You won\'t be able to message each other anymore. You can unblock them later.';
+
+  @override
+  String get chatBlockCancel => 'Cancel';
+
+  @override
+  String get chatBlockConfirm => 'Block';
+
+  @override
+  String chatBlocked(String name) {
+    return '$name has been blocked.';
+  }
+
+  @override
+  String get dmReasonAge =>
+      'Private messages are only possible between accounts in the same age range.';
+
+  @override
+  String get dmReasonBlocked => 'Can\'t message this user.';
+
+  @override
+  String get dmReasonUnavailable => 'This account is no longer available.';
+
+  @override
+  String get messagingErrorRateLimited =>
+      'You\'re sending too many messages. Try again in a moment.';
+
+  @override
+  String get messagingErrorNotAllowed => 'Can\'t message this user.';
+
+  @override
+  String get messagingErrorNotFound => 'Conversation not found.';
+
+  @override
+  String get messagingErrorTooLong => 'Message too long (2000 characters max).';
+
+  @override
+  String get messagingErrorNetwork =>
+      'Can\'t connect. Check your connection and try again.';
+
+  @override
+  String get messagingErrorGeneric => 'Something went wrong. Please try again.';
 
   @override
   String get notificationsTitle => 'Notifications';

@@ -1361,7 +1361,7 @@ abstract class AppLocalizations {
   /// No description provided for @conversationsEmpty.
   ///
   /// In en, this message translates to:
-  /// **'No conversation yet. Message an athlete you follow (and who follows you) or a member of your club.'**
+  /// **'No conversation yet. Open an athlete\'s profile and say hi — everyone is reachable.'**
   String get conversationsEmpty;
 
   /// No description provided for @conversationsYouPrefix.
@@ -1369,6 +1369,138 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You: '**
   String get conversationsYouPrefix;
+
+  /// No description provided for @chatToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get chatToday;
+
+  /// No description provided for @chatYesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get chatYesterday;
+
+  /// No description provided for @chatStatusSending.
+  ///
+  /// In en, this message translates to:
+  /// **'Sending…'**
+  String get chatStatusSending;
+
+  /// No description provided for @chatStatusFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed — tap to retry'**
+  String get chatStatusFailed;
+
+  /// No description provided for @chatStatusSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent'**
+  String get chatStatusSent;
+
+  /// No description provided for @chatStatusRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Read'**
+  String get chatStatusRead;
+
+  /// No description provided for @chatViewProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'View profile'**
+  String get chatViewProfile;
+
+  /// No description provided for @chatBlock.
+  ///
+  /// In en, this message translates to:
+  /// **'Block'**
+  String get chatBlock;
+
+  /// No description provided for @chatBlockConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Block {name}?'**
+  String chatBlockConfirmTitle(String name);
+
+  /// No description provided for @chatBlockConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You won\'t be able to message each other anymore. You can unblock them later.'**
+  String get chatBlockConfirmBody;
+
+  /// No description provided for @chatBlockCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get chatBlockCancel;
+
+  /// No description provided for @chatBlockConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Block'**
+  String get chatBlockConfirm;
+
+  /// No description provided for @chatBlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} has been blocked.'**
+  String chatBlocked(String name);
+
+  /// No description provided for @dmReasonAge.
+  ///
+  /// In en, this message translates to:
+  /// **'Private messages are only possible between accounts in the same age range.'**
+  String get dmReasonAge;
+
+  /// No description provided for @dmReasonBlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Can\'t message this user.'**
+  String get dmReasonBlocked;
+
+  /// No description provided for @dmReasonUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This account is no longer available.'**
+  String get dmReasonUnavailable;
+
+  /// No description provided for @messagingErrorRateLimited.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re sending too many messages. Try again in a moment.'**
+  String get messagingErrorRateLimited;
+
+  /// No description provided for @messagingErrorNotAllowed.
+  ///
+  /// In en, this message translates to:
+  /// **'Can\'t message this user.'**
+  String get messagingErrorNotAllowed;
+
+  /// No description provided for @messagingErrorNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Conversation not found.'**
+  String get messagingErrorNotFound;
+
+  /// No description provided for @messagingErrorTooLong.
+  ///
+  /// In en, this message translates to:
+  /// **'Message too long (2000 characters max).'**
+  String get messagingErrorTooLong;
+
+  /// No description provided for @messagingErrorNetwork.
+  ///
+  /// In en, this message translates to:
+  /// **'Can\'t connect. Check your connection and try again.'**
+  String get messagingErrorNetwork;
+
+  /// No description provided for @messagingErrorGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong. Please try again.'**
+  String get messagingErrorGeneric;
 
   /// No description provided for @notificationsTitle.
   ///
