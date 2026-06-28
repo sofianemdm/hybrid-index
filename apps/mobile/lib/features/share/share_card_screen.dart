@@ -194,15 +194,24 @@ const Map<String, _Skin> _skins = {
   'elite': _Skin(Color(0xFFB98CFF), Color(0xFF160F26), Color(0xFF0A0714), [Color(0xFFB98CFF), Color(0xFF6FB3FF), Color(0xFF5FE0C8), Color(0xFFB98CFF)], legendary: true),
 };
 
-/// Archétype FR (MAJ) selon l'attribut dominant (cf. docs/design-carte-v2.md §E).
-const Map<String, String> _archetypeLabel = {
-  'engine': 'MOTEUR',
-  'strength': 'LA FORCE',
-  'power': 'EXPLOSIF',
-  'speed': 'VÉLOCITÉ',
-  'muscular_endurance': 'INFATIGABLE',
-  'hybrid': 'TOUT-TERRAIN',
-};
+/// Archétype localisé (MAJ) selon l'attribut dominant (cf. docs/design-carte-v2.md §E).
+String _archetypeLabelFor(AppLocalizations loc, String key) {
+  switch (key) {
+    case 'engine':
+      return loc.archetypeEngine;
+    case 'strength':
+      return loc.archetypeStrength;
+    case 'power':
+      return loc.archetypePower;
+    case 'speed':
+      return loc.archetypeSpeed;
+    case 'muscular_endurance':
+      return loc.archetypeMuscularEndurance;
+    case 'hybrid':
+    default:
+      return loc.archetypeAllRound;
+  }
+}
 
 /// Carte joueur (FIFA-style) — réutilisable : écran de partage ET aperçu sur l'accueil.
 class PlayerCard extends StatefulWidget {
@@ -307,7 +316,7 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
 
     final dom = _dominantKey();
     final balanced = _isBalanced();
-    final archLabel = (dom == null || balanced) ? 'ATHLÈTE HYBRIDE' : (_archetypeLabel[dom] ?? 'TOUT-TERRAIN');
+    final archLabel = (dom == null || balanced) ? loc.archetypeHybrid : _archetypeLabelFor(loc, dom);
     final archColor = (dom == null || balanced) ? HiColors.attrHybrid : HiColors.attribute(dom);
     final highlightKey = balanced ? null : dom; // dominant mis en avant seulement si tranché
 

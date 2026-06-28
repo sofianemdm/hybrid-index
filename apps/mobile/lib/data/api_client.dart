@@ -441,11 +441,19 @@ class ApiClient {
     return j['id'] as String;
   }
 
-  /// Logue un résultat sur un WOD (officiel ou custom) → renvoie le profil recalculé.
-  Future<Profile?> logWodResult(String wodId, Map<String, dynamic> payload) async {
+  /// Logue un résultat sur un WOD (officiel ou custom) → renvoie le profil recalculé ET les badges
+  /// nouvellement débloqués par ce log (pour la célébration dopamine côté app).
+  Future<WodLogResult> logWodResult(String wodId, Map<String, dynamic> payload) async {
     final j = await _send('POST', '/v1/wods/$wodId/results', payload) as Map<String, dynamic>;
     final p = j['profile'];
-    return p == null ? null : Profile.fromJson(p as Map<String, dynamic>);
+    final badges = ((j['unlockedBadges'] as List?) ?? const [])
+        .whereType<Map<String, dynamic>>()
+        .map((e) => BadgeModel.fromJson({...e, 'unlocked': true}))
+        .toList();
+    return WodLogResult(
+      profile: p == null ? null : Profile.fromJson(p as Map<String, dynamic>),
+      unlockedBadges: badges,
+    );
   }
 
   // --- Avatar ---

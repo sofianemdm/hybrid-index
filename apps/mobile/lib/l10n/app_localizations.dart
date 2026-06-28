@@ -200,6 +200,12 @@ abstract class AppLocalizations {
   /// **'Retry'**
   String get commonRetry;
 
+  /// No description provided for @commonGenericError.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong. Please try again.'**
+  String get commonGenericError;
+
   /// No description provided for @commonGotIt.
   ///
   /// In en, this message translates to:
@@ -391,6 +397,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Share my achievement'**
   String get wreShareFeat;
+
+  /// No description provided for @wreBadgeUnlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Badge unlocked: {name}'**
+  String wreBadgeUnlocked(String name);
+
+  /// No description provided for @wreBadgesUnlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} new badges unlocked!'**
+  String wreBadgesUnlocked(int count);
+
+  /// No description provided for @wreSeeMyBadges.
+  ///
+  /// In en, this message translates to:
+  /// **'See my badges'**
+  String get wreSeeMyBadges;
 
   /// No description provided for @wreProgressTitle.
   ///
@@ -1057,6 +1081,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add movements to see the estimate.'**
   String get wodBuilderEstimateEmpty;
+
+  /// No description provided for @wodBuilderEstimateError.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimate unavailable.'**
+  String get wodBuilderEstimateError;
 
   /// No description provided for @wodBuilderEstimate.
   ///
@@ -2090,6 +2120,12 @@ abstract class AppLocalizations {
   /// **'Hi, {name}'**
   String homeGreeting(String name);
 
+  /// No description provided for @homeGreetingNoName.
+  ///
+  /// In en, this message translates to:
+  /// **'Hi 👋'**
+  String get homeGreetingNoName;
+
   /// No description provided for @homeNotifications.
   ///
   /// In en, this message translates to:
@@ -2689,6 +2725,432 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{ep} pts'**
   String progressBoardPts(Object ep);
+
+  /// No description provided for @archetypeHybrid.
+  ///
+  /// In en, this message translates to:
+  /// **'HYBRID ATHLETE'**
+  String get archetypeHybrid;
+
+  /// No description provided for @archetypeAllRound.
+  ///
+  /// In en, this message translates to:
+  /// **'ALL-ROUND'**
+  String get archetypeAllRound;
+
+  /// No description provided for @archetypeEngine.
+  ///
+  /// In en, this message translates to:
+  /// **'ENGINE'**
+  String get archetypeEngine;
+
+  /// No description provided for @archetypeStrength.
+  ///
+  /// In en, this message translates to:
+  /// **'STRENGTH'**
+  String get archetypeStrength;
+
+  /// No description provided for @archetypePower.
+  ///
+  /// In en, this message translates to:
+  /// **'EXPLOSIVE'**
+  String get archetypePower;
+
+  /// No description provided for @archetypeSpeed.
+  ///
+  /// In en, this message translates to:
+  /// **'SPEED'**
+  String get archetypeSpeed;
+
+  /// No description provided for @archetypeMuscularEndurance.
+  ///
+  /// In en, this message translates to:
+  /// **'RELENTLESS'**
+  String get archetypeMuscularEndurance;
+
+  /// No description provided for @rfFarBetterTitle1.
+  ///
+  /// In en, this message translates to:
+  /// **'Outstanding performance'**
+  String get rfFarBetterTitle1;
+
+  /// No description provided for @rfFarBetterBody1.
+  ///
+  /// In en, this message translates to:
+  /// **'You beat your prediction by {gain}. This isn\'t luck: it\'s your work paying off. Note what you did well today.'**
+  String rfFarBetterBody1(String gain);
+
+  /// No description provided for @rfFarBetterTitle2.
+  ///
+  /// In en, this message translates to:
+  /// **'You blew past the ceiling'**
+  String get rfFarBetterTitle2;
+
+  /// No description provided for @rfFarBetterBody2.
+  ///
+  /// In en, this message translates to:
+  /// **'{gain} above what we expected from you. Your real level just pulled ahead of the model. Keep doing exactly this.'**
+  String rfFarBetterBody2(String gain);
+
+  /// No description provided for @rfFarBetterTitle3.
+  ///
+  /// In en, this message translates to:
+  /// **'Well above target'**
+  String get rfFarBetterTitle3;
+
+  /// No description provided for @rfFarBetterBody3.
+  ///
+  /// In en, this message translates to:
+  /// **'Prediction smashed by {gain}. A session like this is concrete proof that your preparation pays off.'**
+  String rfFarBetterBody3(String gain);
+
+  /// No description provided for @rfBetterTitle1.
+  ///
+  /// In en, this message translates to:
+  /// **'Above target'**
+  String get rfBetterTitle1;
+
+  /// No description provided for @rfBetterBody1.
+  ///
+  /// In en, this message translates to:
+  /// **'{gain} better than your prediction. You\'re progressing in the right direction, and it shows.'**
+  String rfBetterBody1(String gain);
+
+  /// No description provided for @rfBetterTitle2.
+  ///
+  /// In en, this message translates to:
+  /// **'Solid. You\'re taking the lead'**
+  String get rfBetterTitle2;
+
+  /// No description provided for @rfBetterBody2.
+  ///
+  /// In en, this message translates to:
+  /// **'You beat what was expected by {gain}. Keep this pace — that\'s exactly how you climb.'**
+  String rfBetterBody2(String gain);
+
+  /// No description provided for @rfBetterTitle3.
+  ///
+  /// In en, this message translates to:
+  /// **'Better than expected'**
+  String get rfBetterTitle3;
+
+  /// No description provided for @rfBetterBody3.
+  ///
+  /// In en, this message translates to:
+  /// **'+{gain} over the prediction. Small gap, real progress: build on it next session.'**
+  String rfBetterBody3(String gain);
+
+  /// No description provided for @rfOnTargetTitle1.
+  ///
+  /// In en, this message translates to:
+  /// **'Right on target'**
+  String get rfOnTargetTitle1;
+
+  /// No description provided for @rfOnTargetBody1.
+  ///
+  /// In en, this message translates to:
+  /// **'You hit exactly the {metric} predicted for you. Reaching your target is already a win: your level and your performance are aligned.'**
+  String rfOnTargetBody1(String metric);
+
+  /// No description provided for @rfOnTargetTitle2.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal reached'**
+  String get rfOnTargetTitle2;
+
+  /// No description provided for @rfOnTargetBody2.
+  ///
+  /// In en, this message translates to:
+  /// **'You matched the prediction to the letter. That\'s controlled consistency — the foundation of all real progress.'**
+  String get rfOnTargetBody2;
+
+  /// No description provided for @rfOnTargetTitle3.
+  ///
+  /// In en, this message translates to:
+  /// **'Bullseye'**
+  String get rfOnTargetTitle3;
+
+  /// No description provided for @rfOnTargetBody3.
+  ///
+  /// In en, this message translates to:
+  /// **'You delivered the performance expected for your level. Solid and reliable: now aim one notch higher.'**
+  String get rfOnTargetBody3;
+
+  /// No description provided for @rfBelowTitle1.
+  ///
+  /// In en, this message translates to:
+  /// **'Session in the books'**
+  String get rfBelowTitle1;
+
+  /// No description provided for @rfBelowBody1.
+  ///
+  /// In en, this message translates to:
+  /// **'A bit below your target today, but you finished it — and that\'s what counts. We know you can do better: the next one will be stronger.'**
+  String get rfBelowBody1;
+
+  /// No description provided for @rfBelowTitle2.
+  ///
+  /// In en, this message translates to:
+  /// **'Well done, it\'s logged'**
+  String get rfBelowTitle2;
+
+  /// No description provided for @rfBelowBody2.
+  ///
+  /// In en, this message translates to:
+  /// **'Not your best day on {wodName}, but every rep counts toward your progress. You\'ve got the room to climb back above.'**
+  String rfBelowBody2(String wodName);
+
+  /// No description provided for @rfBelowTitle3.
+  ///
+  /// In en, this message translates to:
+  /// **'You did the work'**
+  String get rfBelowTitle3;
+
+  /// No description provided for @rfBelowBody3.
+  ///
+  /// In en, this message translates to:
+  /// **'Result a little under your prediction, but what matters is that you showed up. We\'re sure you can do better next time.'**
+  String get rfBelowBody3;
+
+  /// No description provided for @rfWayBelowTitle1.
+  ///
+  /// In en, this message translates to:
+  /// **'Bad day, it happens'**
+  String get rfWayBelowTitle1;
+
+  /// No description provided for @rfWayBelowBody1.
+  ///
+  /// In en, this message translates to:
+  /// **'Far from your usual level today — and that\'s okay. The body has its off days. Rest up, and come back to retry {wodName} fresh: you\'re worth far more than this.'**
+  String rfWayBelowBody1(String wodName);
+
+  /// No description provided for @rfWayBelowTitle2.
+  ///
+  /// In en, this message translates to:
+  /// **'It wasn\'t your day'**
+  String get rfWayBelowTitle2;
+
+  /// No description provided for @rfWayBelowBody2.
+  ///
+  /// In en, this message translates to:
+  /// **'This performance doesn\'t reflect what you\'re capable of. Fatigue, sleep, a busy day: it all counts. Come back to {wodName} when you\'re at your best.'**
+  String rfWayBelowBody2(String wodName);
+
+  /// No description provided for @rfWayBelowTitle3.
+  ///
+  /// In en, this message translates to:
+  /// **'Let\'s file this session away'**
+  String get rfWayBelowTitle3;
+
+  /// No description provided for @rfWayBelowBody3.
+  ///
+  /// In en, this message translates to:
+  /// **'Just an off day. Finishing it anyway already takes mental strength. Recover well and retry {wodName} rested — you\'ll do far better.'**
+  String rfWayBelowBody3(String wodName);
+
+  /// No description provided for @rfNoPredictionTitle1.
+  ///
+  /// In en, this message translates to:
+  /// **'Result saved'**
+  String get rfNoPredictionTitle1;
+
+  /// No description provided for @rfNoPredictionBody1.
+  ///
+  /// In en, this message translates to:
+  /// **'Nice session, it\'s in the books. A few more workouts and we\'ll be able to tell you exactly where you stand — and predict your next times.'**
+  String get rfNoPredictionBody1;
+
+  /// No description provided for @rfNoPredictionTitle2.
+  ///
+  /// In en, this message translates to:
+  /// **'Logged, keep going'**
+  String get rfNoPredictionTitle2;
+
+  /// No description provided for @rfNoPredictionBody2.
+  ///
+  /// In en, this message translates to:
+  /// **'Every saved result brings your full Index closer. Soon, we\'ll give you a personalized target to beat on every session.'**
+  String get rfNoPredictionBody2;
+
+  /// No description provided for @rfMetricTime.
+  ///
+  /// In en, this message translates to:
+  /// **'time'**
+  String get rfMetricTime;
+
+  /// No description provided for @rfMetricScore.
+  ///
+  /// In en, this message translates to:
+  /// **'score'**
+  String get rfMetricScore;
+
+  /// No description provided for @commonOk.
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get commonOk;
+
+  /// No description provided for @leagueScreenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'League of the month'**
+  String get leagueScreenTitle;
+
+  /// No description provided for @leagueUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'League unavailable right now.'**
+  String get leagueUnavailable;
+
+  /// No description provided for @leagueRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get leagueRetry;
+
+  /// No description provided for @leagueNoSeason.
+  ///
+  /// In en, this message translates to:
+  /// **'No League season in progress.\nCheck back soon: a new season starts every month.'**
+  String get leagueNoSeason;
+
+  /// No description provided for @leagueHeaderMen.
+  ///
+  /// In en, this message translates to:
+  /// **'MEN\'S LEAGUE'**
+  String get leagueHeaderMen;
+
+  /// No description provided for @leagueHeaderWomen.
+  ///
+  /// In en, this message translates to:
+  /// **'WOMEN\'S LEAGUE'**
+  String get leagueHeaderWomen;
+
+  /// No description provided for @leagueLastDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Last day of the season'**
+  String get leagueLastDay;
+
+  /// No description provided for @leagueEndsIn.
+  ///
+  /// In en, this message translates to:
+  /// **'{days, plural, one{Ends in {days} day} other{Ends in {days} days}}'**
+  String leagueEndsIn(int days);
+
+  /// No description provided for @leaguePointsReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Points reset to zero every month.'**
+  String get leaguePointsReset;
+
+  /// No description provided for @leagueExplainerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What is the League of the month?'**
+  String get leagueExplainerTitle;
+
+  /// No description provided for @leagueExplainerBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Every month, a new season. You\'re ranked AUTOMATICALLY among athletes of your sex. Do the imposed workout of the week: you score points based on your performance. League points reset to zero every month.'**
+  String get leagueExplainerBody;
+
+  /// No description provided for @leagueWeekWod.
+  ///
+  /// In en, this message translates to:
+  /// **'WORKOUT OF THE WEEK'**
+  String get leagueWeekWod;
+
+  /// No description provided for @leagueWeekWodHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The imposed workout of the week — give it everything to climb the ranking.'**
+  String get leagueWeekWodHint;
+
+  /// No description provided for @leagueDoThisWod.
+  ///
+  /// In en, this message translates to:
+  /// **'Do this workout'**
+  String get leagueDoThisWod;
+
+  /// No description provided for @leagueStandingsUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Ranking unavailable.'**
+  String get leagueStandingsUnavailable;
+
+  /// No description provided for @leagueStandingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ranking of the month'**
+  String get leagueStandingsTitle;
+
+  /// No description provided for @leagueStandingsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Nobody has scored yet this month. Be the first!'**
+  String get leagueStandingsEmpty;
+
+  /// No description provided for @leagueMyPosition.
+  ///
+  /// In en, this message translates to:
+  /// **'MY POSITION'**
+  String get leagueMyPosition;
+
+  /// No description provided for @leaguePts.
+  ///
+  /// In en, this message translates to:
+  /// **'{points} pts'**
+  String leaguePts(int points);
+
+  /// No description provided for @leagueDoWodToEnter.
+  ///
+  /// In en, this message translates to:
+  /// **'Do the workout to enter the ranking'**
+  String get leagueDoWodToEnter;
+
+  /// No description provided for @leagueThisMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'this month'**
+  String get leagueThisMonth;
+
+  /// No description provided for @leagueRowYou.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} (me)'**
+  String leagueRowYou(String name);
+
+  /// No description provided for @notificationsJoinedClub.
+  ///
+  /// In en, this message translates to:
+  /// **'You joined {clubName}!'**
+  String notificationsJoinedClub(String clubName);
+
+  /// No description provided for @notificationsClubInviteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Club invitation'**
+  String get notificationsClubInviteTitle;
+
+  /// No description provided for @notificationsClubInviteMembers.
+  ///
+  /// In en, this message translates to:
+  /// **'{clubName} · {count, plural, one{{count} member} other{{count} members}}'**
+  String notificationsClubInviteMembers(String clubName, int count);
+
+  /// No description provided for @notificationsJoin.
+  ///
+  /// In en, this message translates to:
+  /// **'Join'**
+  String get notificationsJoin;
+
+  /// No description provided for @notificationsDecline.
+  ///
+  /// In en, this message translates to:
+  /// **'Decline'**
+  String get notificationsDecline;
 }
 
 class _AppLocalizationsDelegate

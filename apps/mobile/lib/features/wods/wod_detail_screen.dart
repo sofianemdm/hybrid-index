@@ -52,10 +52,17 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
     );
   }
 
-  Future<void> _doWod(String scoreType) async {
+  Future<void> _doWod(String scoreType, {required bool scalable}) async {
     final changed = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
-        builder: (_) => WodResultEntryScreen(wodId: widget.wodId, wodName: widget.wodName, scoreType: scoreType),
+        builder: (_) => WodResultEntryScreen(
+          wodId: widget.wodId,
+          wodName: widget.wodName,
+          scoreType: scoreType,
+          // Source UNIQUE de la scalabilité Rx/Allégé = la prescription du back (poids non vide).
+          // Plus de liste codée en dur côté entrée de résultat.
+          scalable: scalable,
+        ),
       ),
     );
     if (changed == true && mounted) {
@@ -123,7 +130,10 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
                 _leaderboardSection(d.scoreType, d.prescription?.weights.isNotEmpty ?? false),
                 const SizedBox(height: HiSpace.lg),
                 _predictionCard(),
-                HiButton(label: t.wodDetailDoThisWorkout, onPressed: () => _doWod(d.scoreType)),
+                HiButton(
+                  label: t.wodDetailDoThisWorkout,
+                  onPressed: () => _doWod(d.scoreType, scalable: d.prescription?.weights.isNotEmpty ?? false),
+                ),
               ],
             );
           },

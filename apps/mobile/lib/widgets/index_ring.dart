@@ -23,7 +23,23 @@ class IndexRing extends StatefulWidget {
 
 class _IndexRingState extends State<IndexRing> with SingleTickerProviderStateMixin {
   late final AnimationController _glow =
-      AnimationController(vsync: this, duration: const Duration(milliseconds: 2600))..repeat(reverse: true);
+      AnimationController(vsync: this, duration: const Duration(milliseconds: 2600));
+  bool _glowStarted = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Reduce-motion : on fige le halo (pas de respiration) ; sinon il pulse en boucle.
+    final reduceMotion = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+    if (reduceMotion) {
+      if (_glowStarted) _glow.stop();
+      _glow.value = 0.5; // halo statique, intensité médiane
+      _glowStarted = false;
+    } else if (!_glowStarted) {
+      _glow.repeat(reverse: true);
+      _glowStarted = true;
+    }
+  }
 
   @override
   void dispose() {
@@ -33,10 +49,12 @@ class _IndexRingState extends State<IndexRing> with SingleTickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
+    final reduceMotion = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
     final top = (100 - widget.percentile * 100).clamp(1, 100).round();
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: widget.value.toDouble()),
-      duration: widget.duration,
+      // Reduce-motion : pas de count-up, l'Index s'affiche directement.
+      duration: reduceMotion ? Duration.zero : widget.duration,
       curve: HiMotion.countUp,
       builder: (context, animated, _) {
         return AnimatedBuilder(

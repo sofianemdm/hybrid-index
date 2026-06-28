@@ -93,7 +93,13 @@ class _ChallengeScreenState extends ConsumerState<ChallengeScreen> {
 
   Future<void> _doChallenge(WeeklyChallenge c) async {
     final changed = await Navigator.of(context).push<bool>(MaterialPageRoute(
-      builder: (_) => WodResultEntryScreen(wodId: c.wodId, wodName: c.wodName, scoreType: c.scoreType),
+      builder: (_) => WodResultEntryScreen(
+        wodId: c.wodId,
+        wodName: c.wodName,
+        scoreType: c.scoreType,
+        // Échelle Rx/Allégé dérivée de la prescription du back (poids non vide) — source unique.
+        scalable: c.prescription?.weights.isNotEmpty ?? false,
+      ),
     ));
     if (changed == true && mounted) setState(_loadBoard);
   }

@@ -11,7 +11,7 @@ import type { EstimateWodRequest } from "./wod-estimate.dto";
 import type { CreateWodRequest, LogWodResultRequest } from "./create-wod.dto";
 import { ratingFromInternal } from "@hybrid-index/scoring-core";
 import { WOD_PRESCRIPTIONS } from "./wod-prescriptions.data";
-import type { WodPrescription } from "./wod-prescription.types";
+import { isScalable, type WodPrescription } from "./wod-prescription.types";
 import { WOD_REFERENCES } from "./wod-references.data";
 
 /** Sous-score interne /1000 → note d'affichage /100 (null si absent). */
@@ -190,8 +190,10 @@ export class WodsService {
       _max: { subScore: true },
     });
     const isPr = !isAnomaly && subScore !== null && best._max.subScore === subScore;
-    if (!existing) {
-      await this.feedEvents.emit(userId, isPr ? "pr" : "wod_logged", {
+    // Anti-spam feed : on ne poste QUE les PR (nouveau record). Un simple log ne génère
+    // plus aucun événement « wod_logged » (aligné sur results.service). Pas de post sur rejeu.
+    if (!existing && isPr) {
+      await this.feedEvents.emit(userId, "pr", {
         wodId,
         wodName: wod.name,
         subScore,
@@ -423,6 +425,10 @@ export class WodsService {
       }
     }
 
+    // Énoncé concret : barème de référence, ou reconstruit pour un WOD communautaire.
+    const prescription: WodPrescription | null =
+      WOD_PRESCRIPTIONS[wod.id] ?? (wod.isCustom ? await this.buildCustomPrescription(wod).catch(() => null) : null);
+
     return {
       id: wod.id,
       name: wod.name,
@@ -438,7 +444,10 @@ export class WodsService {
       myHistory, // mes prestations passées sur cette séance (récent → ancien)
       // Énoncé concret de la séance (mouvements + poids) : barème de référence, ou reconstruit
       // depuis les mouvements enregistrés pour un WOD communautaire (« comment faire la séance »).
-      prescription: WOD_PRESCRIPTIONS[wod.id] ?? (wod.isCustom ? await this.buildCustomPrescription(wod).catch(() => null) : null),
+      prescription,
+      // Source unique de vérité pour le toggle Rx/Allégé côté mobile : un WOD n'est
+      // « scalable » que s'il porte au moins une charge adaptable (isScalable de la prescription).
+      scalable: prescription ? isScalable(prescription) : false,
       // Cibles « Référence Pro » (données publiques) à viser sur cette séance.
       references: WOD_REFERENCES[wod.id] ?? [],
     };

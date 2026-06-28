@@ -18,11 +18,16 @@ export interface WeeklyRecap {
   weekValidated: boolean;
 }
 
+/** Cible de navigation in-app d'une tuile (deep-link logique, résolu par l'app). */
+export type FeedRoute = "league" | "leaderboard";
+
 export interface FeedItem {
   key: string;
   title: string;
   body: string;
   priority: "high" | "medium" | "low";
+  /** Zone à ouvrir au tap (chevron côté app). Absent = tuile non cliquable. */
+  route?: FeedRoute;
 }
 
 const DEFAULT_PREFS = {
@@ -128,6 +133,7 @@ export class EngagementService {
           title: `Le rang ${next.rank} est proche`,
           body: `Encore ${pts} points. Un bon WOD et tu y es.`,
           priority: "medium",
+          route: "league",
         });
       }
     }
@@ -147,6 +153,7 @@ export class EngagementService {
           title: passedBy === 1 ? "Un athlète t'a dépassé" : `${passedBy} athlètes t'ont dépassé`,
           body: "Reprends ta place au classement 💪",
           priority: "medium",
+          route: "league",
         });
         // Auto-acquittement : on aligne le snapshot sur la position courante pour ne pas
         // re-notifier les MÊMES dépassements à chaque ouverture (anti-spam, cf. revue M1).
@@ -193,6 +200,7 @@ export class EngagementService {
               title: overtaken.length === 1 ? "Un athlète a battu ton temps" : `Battu sur ${overtaken.length} WODs`,
               body: "Va défendre tes scores 🔥",
               priority: "medium",
+              route: "leaderboard",
             });
           }
         }

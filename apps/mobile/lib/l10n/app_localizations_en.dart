@@ -64,6 +64,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonRetry => 'Retry';
 
   @override
+  String get commonGenericError => 'Something went wrong. Please try again.';
+
+  @override
   String get commonGotIt => 'Got it';
 
   @override
@@ -163,6 +166,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get wreShareFeat => 'Share my achievement';
+
+  @override
+  String wreBadgeUnlocked(String name) {
+    return 'Badge unlocked: $name';
+  }
+
+  @override
+  String wreBadgesUnlocked(int count) {
+    return '$count new badges unlocked!';
+  }
+
+  @override
+  String get wreSeeMyBadges => 'See my badges';
 
   @override
   String get wreProgressTitle => 'You\'re progressing 💪';
@@ -520,6 +536,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get wodBuilderEstimateEmpty => 'Add movements to see the estimate.';
+
+  @override
+  String get wodBuilderEstimateError => 'Estimate unavailable.';
 
   @override
   String get wodBuilderEstimate => 'Estimate';
@@ -1128,6 +1147,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get homeGreetingNoName => 'Hi 👋';
+
+  @override
   String get homeNotifications => 'Notifications';
 
   @override
@@ -1501,4 +1523,271 @@ class AppLocalizationsEn extends AppLocalizations {
   String progressBoardPts(Object ep) {
     return '$ep pts';
   }
+
+  @override
+  String get archetypeHybrid => 'HYBRID ATHLETE';
+
+  @override
+  String get archetypeAllRound => 'ALL-ROUND';
+
+  @override
+  String get archetypeEngine => 'ENGINE';
+
+  @override
+  String get archetypeStrength => 'STRENGTH';
+
+  @override
+  String get archetypePower => 'EXPLOSIVE';
+
+  @override
+  String get archetypeSpeed => 'SPEED';
+
+  @override
+  String get archetypeMuscularEndurance => 'RELENTLESS';
+
+  @override
+  String get rfFarBetterTitle1 => 'Outstanding performance';
+
+  @override
+  String rfFarBetterBody1(String gain) {
+    return 'You beat your prediction by $gain. This isn\'t luck: it\'s your work paying off. Note what you did well today.';
+  }
+
+  @override
+  String get rfFarBetterTitle2 => 'You blew past the ceiling';
+
+  @override
+  String rfFarBetterBody2(String gain) {
+    return '$gain above what we expected from you. Your real level just pulled ahead of the model. Keep doing exactly this.';
+  }
+
+  @override
+  String get rfFarBetterTitle3 => 'Well above target';
+
+  @override
+  String rfFarBetterBody3(String gain) {
+    return 'Prediction smashed by $gain. A session like this is concrete proof that your preparation pays off.';
+  }
+
+  @override
+  String get rfBetterTitle1 => 'Above target';
+
+  @override
+  String rfBetterBody1(String gain) {
+    return '$gain better than your prediction. You\'re progressing in the right direction, and it shows.';
+  }
+
+  @override
+  String get rfBetterTitle2 => 'Solid. You\'re taking the lead';
+
+  @override
+  String rfBetterBody2(String gain) {
+    return 'You beat what was expected by $gain. Keep this pace — that\'s exactly how you climb.';
+  }
+
+  @override
+  String get rfBetterTitle3 => 'Better than expected';
+
+  @override
+  String rfBetterBody3(String gain) {
+    return '+$gain over the prediction. Small gap, real progress: build on it next session.';
+  }
+
+  @override
+  String get rfOnTargetTitle1 => 'Right on target';
+
+  @override
+  String rfOnTargetBody1(String metric) {
+    return 'You hit exactly the $metric predicted for you. Reaching your target is already a win: your level and your performance are aligned.';
+  }
+
+  @override
+  String get rfOnTargetTitle2 => 'Goal reached';
+
+  @override
+  String get rfOnTargetBody2 =>
+      'You matched the prediction to the letter. That\'s controlled consistency — the foundation of all real progress.';
+
+  @override
+  String get rfOnTargetTitle3 => 'Bullseye';
+
+  @override
+  String get rfOnTargetBody3 =>
+      'You delivered the performance expected for your level. Solid and reliable: now aim one notch higher.';
+
+  @override
+  String get rfBelowTitle1 => 'Session in the books';
+
+  @override
+  String get rfBelowBody1 =>
+      'A bit below your target today, but you finished it — and that\'s what counts. We know you can do better: the next one will be stronger.';
+
+  @override
+  String get rfBelowTitle2 => 'Well done, it\'s logged';
+
+  @override
+  String rfBelowBody2(String wodName) {
+    return 'Not your best day on $wodName, but every rep counts toward your progress. You\'ve got the room to climb back above.';
+  }
+
+  @override
+  String get rfBelowTitle3 => 'You did the work';
+
+  @override
+  String get rfBelowBody3 =>
+      'Result a little under your prediction, but what matters is that you showed up. We\'re sure you can do better next time.';
+
+  @override
+  String get rfWayBelowTitle1 => 'Bad day, it happens';
+
+  @override
+  String rfWayBelowBody1(String wodName) {
+    return 'Far from your usual level today — and that\'s okay. The body has its off days. Rest up, and come back to retry $wodName fresh: you\'re worth far more than this.';
+  }
+
+  @override
+  String get rfWayBelowTitle2 => 'It wasn\'t your day';
+
+  @override
+  String rfWayBelowBody2(String wodName) {
+    return 'This performance doesn\'t reflect what you\'re capable of. Fatigue, sleep, a busy day: it all counts. Come back to $wodName when you\'re at your best.';
+  }
+
+  @override
+  String get rfWayBelowTitle3 => 'Let\'s file this session away';
+
+  @override
+  String rfWayBelowBody3(String wodName) {
+    return 'Just an off day. Finishing it anyway already takes mental strength. Recover well and retry $wodName rested — you\'ll do far better.';
+  }
+
+  @override
+  String get rfNoPredictionTitle1 => 'Result saved';
+
+  @override
+  String get rfNoPredictionBody1 =>
+      'Nice session, it\'s in the books. A few more workouts and we\'ll be able to tell you exactly where you stand — and predict your next times.';
+
+  @override
+  String get rfNoPredictionTitle2 => 'Logged, keep going';
+
+  @override
+  String get rfNoPredictionBody2 =>
+      'Every saved result brings your full Index closer. Soon, we\'ll give you a personalized target to beat on every session.';
+
+  @override
+  String get rfMetricTime => 'time';
+
+  @override
+  String get rfMetricScore => 'score';
+
+  @override
+  String get commonOk => 'OK';
+
+  @override
+  String get leagueScreenTitle => 'League of the month';
+
+  @override
+  String get leagueUnavailable => 'League unavailable right now.';
+
+  @override
+  String get leagueRetry => 'Retry';
+
+  @override
+  String get leagueNoSeason =>
+      'No League season in progress.\nCheck back soon: a new season starts every month.';
+
+  @override
+  String get leagueHeaderMen => 'MEN\'S LEAGUE';
+
+  @override
+  String get leagueHeaderWomen => 'WOMEN\'S LEAGUE';
+
+  @override
+  String get leagueLastDay => 'Last day of the season';
+
+  @override
+  String leagueEndsIn(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'Ends in $days days',
+      one: 'Ends in $days day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get leaguePointsReset => 'Points reset to zero every month.';
+
+  @override
+  String get leagueExplainerTitle => 'What is the League of the month?';
+
+  @override
+  String get leagueExplainerBody =>
+      'Every month, a new season. You\'re ranked AUTOMATICALLY among athletes of your sex. Do the imposed workout of the week: you score points based on your performance. League points reset to zero every month.';
+
+  @override
+  String get leagueWeekWod => 'WORKOUT OF THE WEEK';
+
+  @override
+  String get leagueWeekWodHint =>
+      'The imposed workout of the week — give it everything to climb the ranking.';
+
+  @override
+  String get leagueDoThisWod => 'Do this workout';
+
+  @override
+  String get leagueStandingsUnavailable => 'Ranking unavailable.';
+
+  @override
+  String get leagueStandingsTitle => 'Ranking of the month';
+
+  @override
+  String get leagueStandingsEmpty =>
+      'Nobody has scored yet this month. Be the first!';
+
+  @override
+  String get leagueMyPosition => 'MY POSITION';
+
+  @override
+  String leaguePts(int points) {
+    return '$points pts';
+  }
+
+  @override
+  String get leagueDoWodToEnter => 'Do the workout to enter the ranking';
+
+  @override
+  String get leagueThisMonth => 'this month';
+
+  @override
+  String leagueRowYou(String name) {
+    return '$name (me)';
+  }
+
+  @override
+  String notificationsJoinedClub(String clubName) {
+    return 'You joined $clubName!';
+  }
+
+  @override
+  String get notificationsClubInviteTitle => 'Club invitation';
+
+  @override
+  String notificationsClubInviteMembers(String clubName, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count members',
+      one: '$count member',
+    );
+    return '$clubName · $_temp0';
+  }
+
+  @override
+  String get notificationsJoin => 'Join';
+
+  @override
+  String get notificationsDecline => 'Decline';
 }

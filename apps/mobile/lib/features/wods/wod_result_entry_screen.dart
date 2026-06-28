@@ -16,13 +16,24 @@ import 'wod_format.dart';
 import 'result_feedback.dart';
 import '../../widgets/hi_button.dart';
 import '../share/share_card_screen.dart';
+import '../progression/progression_screen.dart';
 
 /// Saisie d'un résultat sur une séance (officiel ou custom) — note via le moteur si custom.
 class WodResultEntryScreen extends ConsumerStatefulWidget {
   final String wodId;
   final String wodName;
   final String scoreType;
-  const WodResultEntryScreen({super.key, required this.wodId, required this.wodName, required this.scoreType});
+
+  /// La séance a-t-elle une échelle Rx/Allégé ? UNIQUE source = la prescription du back (poids
+  /// non vide), passée par l'appelant (fiche WOD). Défaut false (custom / poids du corps / cardio).
+  final bool scalable;
+  const WodResultEntryScreen({
+    super.key,
+    required this.wodId,
+    required this.wodName,
+    required this.scoreType,
+    this.scalable = false,
+  });
 
   @override
   ConsumerState<WodResultEntryScreen> createState() => _WodResultEntryScreenState();
@@ -45,12 +56,9 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
   // Pro = "prescrit" (rxCompliant true) et Open = "adapté" (false), classements séparés.
   bool get _isHyrox => widget.wodId == 'hyrox_solo';
   // L'échelle Rx/Scaled n'a de sens que pour les WODs à CHARGE (barre/haltère/KB/wall ball).
-  // Les épreuves cardio (course, rameur) et au poids du corps (pompes, squats, burpees, Cindy,
-  // Benchmark Zéro, Machine & Mur…) n'ont rien à « scaler » → on masque l'échelle.
-  static const _scaleWods = {
-    'fran', 'grace', 'jackie', 'karen', 'helen', 'hyrox_sprint', 'isabel', 'murph',
-  };
-  bool get _hasScale => _scaleWods.contains(widget.wodId);
+  // Source UNIQUE : la prescription du back (poids non vide) exposée via `widget.scalable`.
+  // Plus de liste codée en dur ici — la fiche WOD et l'entrée de résultat partagent la même vérité.
+  bool get _hasScale => widget.scalable;
 
   @override
   void initState() {
@@ -117,7 +125,8 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
         'idempotencyKey': _idempotencyKey,
         if (distanceMeters != null) 'distanceMeters': distanceMeters,
       };
-      final profile = await ref.read(apiClientProvider).logWodResult(widget.wodId, payload);
+      final logRes = await ref.read(apiClientProvider).logWodResult(widget.wodId, payload);
+      final profile = logRes.profile;
       Analytics.capture('wod_logged', {'wodId': widget.wodId, 'index': profile?.index.value});
       ref.invalidate(myProfileProvider);
       ref.invalidate(completionPlanProvider); // un attribut vient peut-être d'être débloqué
@@ -147,6 +156,7 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
           // ton scientifique/encourageant). Plein écran si on bat/atteint la cible ; dialogue calme si
           // en dessous (jamais de fanfare sur une contre-perf) ; encouragement neutre si pas de prédiction.
           await ResultFeedback.from(
+            loc: t,
             actual: raw,
             predicted: predictedBefore,
             scoreType: predScoreType,
@@ -156,6 +166,11 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
         // Moment de réussite (PR / montée de bande) → demande d'avis natif (OS-plafonné, no-op web).
         if (hasGains || profile.bandCelebration != null) {
           maybeAskForReview();
+        }
+        // Célébration de badge : ENCHAÎNE après le message de résultat (et après une éventuelle montée
+        // de bande). On ne double pas une « forte » : Celebration.show rétrograde déjà la 2e en moyenne.
+        if (mounted) {
+          await _celebrateBadges(logRes.unlockedBadges);
         }
       }
       // Après l'enregistrement : on bascule sur l'accueil (onglet 0) et on dépile jusqu'à la racine.
@@ -189,6 +204,56 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
     final m = RegExp(r'pop_top_(\d+)').firstMatch(to);
     if (m == null) return null;
     return '🚀 Tu entres dans le top ${m.group(1)}% des plus en forme !';
+  }
+
+  /// Intensité de la célébration selon la rareté du badge le plus rare débloqué.
+  CelebrationIntensity _intensityForRarity(String rarity) {
+    switch (rarity) {
+      case 'legendary':
+      case 'epic':
+        return CelebrationIntensity.strong;
+      case 'rare':
+        return CelebrationIntensity.medium;
+      default:
+        return CelebrationIntensity.light;
+    }
+  }
+
+  static const _rarityRank = {'common': 0, 'rare': 1, 'epic': 2, 'legendary': 3};
+
+  /// Célèbre les badges débloqués par ce log : une seule fenêtre, calibrée sur le badge le plus
+  /// rare, avec un CTA « Voir mes badges » qui ouvre la Progression. No-op si aucun badge.
+  Future<void> _celebrateBadges(List<BadgeModel> badges) async {
+    if (badges.isEmpty || !mounted) return;
+    final t = AppLocalizations.of(context);
+    // Le badge le plus rare porte la célébration (les autres sont cités en sous-titre).
+    final best = badges.reduce(
+      (a, b) => (_rarityRank[b.rarity] ?? 0) > (_rarityRank[a.rarity] ?? 0) ? b : a,
+    );
+    final others = badges.where((x) => x.id != best.id).toList();
+    final subtitle = others.isEmpty
+        ? best.description
+        : '${best.description}\n+${others.length} autre${others.length > 1 ? 's' : ''} badge${others.length > 1 ? 's' : ''}';
+    await Celebration.show(
+      context,
+      icon: Icons.military_tech_rounded,
+      title: badges.length > 1 ? t.wreBadgesUnlocked(badges.length) : t.wreBadgeUnlocked(best.name),
+      subtitle: subtitle,
+      accent: HiColors.accentVictory,
+      intensity: _intensityForRarity(best.rarity),
+      actionLabel: t.wreSeeMyBadges,
+      onAction: () {
+        if (!mounted) return;
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => Scaffold(
+              appBar: AppBar(title: Text(t.navProgress), backgroundColor: Colors.transparent, elevation: 0),
+              body: const ProgressionScreen(),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   void _toast(String m) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m)));

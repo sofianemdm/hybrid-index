@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,6 +10,7 @@ import '../../data/session.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/hi_button.dart';
+import '../../widgets/error_retry.dart';
 import 'wod_detail_screen.dart';
 import 'wod_format.dart';
 
@@ -43,10 +46,17 @@ class _Block {
   final MovementSummary movement;
   int amount;
   double? loadKg;
-  // Controller PERSISTANT (1 par bloc) : créé hors build → le curseur ne saute plus à chaque frappe
-  // (avant : un nouveau controller à chaque rebuild remettait la sélection à 0, BUG-004).
+  // Controllers PERSISTANTS (1 par bloc) : créés hors build → le curseur ne saute plus à chaque
+  // frappe et la valeur reste affichée (avant : un nouveau controller à chaque rebuild remettait la
+  // sélection à 0 et perdait la charge saisie, BUG-004). `loadController` réaffiche la charge kg.
   final TextEditingController controller;
-  _Block(this.movement, this.amount, this.loadKg) : controller = TextEditingController(text: '$amount');
+  final TextEditingController loadController;
+  _Block(this.movement, this.amount, this.loadKg)
+      : controller = TextEditingController(text: '$amount'),
+        loadController = TextEditingController(text: loadKg == null ? '' : _fmtKg(loadKg));
+
+  /// Affiche une charge kg sans « .0 » superflu (18.0 → « 18 », 17.5 → « 17.5 »).
+  static String _fmtKg(double v) => v == v.roundToDouble() ? v.toStringAsFixed(0) : '$v';
 }
 
 /// Constructeur de séance : format + mouvements + aperçu live de l'estimation, puis publication.
@@ -66,7 +76,12 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
   List<MovementSummary> _catalog = [];
   EstimateResult? _estimate;
   bool _estimating = false;
+  bool _estimateError = false; // dernier appel d'estimation a échoué (réseau/serveur)
   bool _saving = false;
+  // Debounce : on n'envoie pas un POST par frappe. Le jeton `_estimateSeq` ignore les réponses
+  // périmées (course de requêtes) → seule la dernière demande met à jour l'UI.
+  Timer? _debounce;
+  int _estimateSeq = 0;
 
   @override
   void initState() {
@@ -82,7 +97,9 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
     _rounds.dispose();
     for (final b in _blocks) {
       b.controller.dispose();
+      b.loadController.dispose();
     }
+    _debounce?.cancel();
     super.dispose();
   }
 
@@ -131,19 +148,47 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
     };
   }
 
-  Future<void> _refreshEstimate() async {
+  /// Point d'entrée appelé à chaque modif (frappe, chip, ajout/suppression). DEBOUNCE ~400ms :
+  /// on n'envoie la requête qu'après une courte pause de saisie → 1 POST au lieu d'un par frappe.
+  void _refreshEstimate() {
+    _debounce?.cancel();
     if (_blocks.isEmpty) {
-      setState(() => _estimate = null);
+      _estimateSeq++; // invalide toute réponse en vol
+      setState(() {
+        _estimate = null;
+        _estimating = false;
+        _estimateError = false;
+      });
       return;
     }
-    setState(() => _estimating = true);
+    // Feedback immédiat : on montre l'état « calcul » sans attendre la fin du debounce.
+    if (!_estimating) setState(() => _estimating = true);
+    _debounce = Timer(const Duration(milliseconds: 400), _runEstimate);
+  }
+
+  Future<void> _runEstimate() async {
+    final seq = ++_estimateSeq; // jeton de CETTE requête
+    if (mounted && (!_estimating || _estimateError)) {
+      setState(() {
+        _estimating = true;
+        _estimateError = false;
+      });
+    }
     try {
       final e = await ref.read(apiClientProvider).estimateWod(_payload());
-      if (mounted) setState(() => _estimate = e);
+      if (!mounted || seq != _estimateSeq) return; // réponse périmée → on l'ignore
+      setState(() {
+        _estimate = e;
+        _estimateError = false;
+        _estimating = false;
+      });
     } catch (_) {
-      if (mounted) setState(() => _estimate = null);
-    } finally {
-      if (mounted) setState(() => _estimating = false);
+      if (!mounted || seq != _estimateSeq) return;
+      // Erreur réseau : on NE détruit PAS une estimation déjà valide, on signale juste l'échec.
+      setState(() {
+        _estimateError = true;
+        _estimating = false;
+      });
     }
   }
 
@@ -346,14 +391,19 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
             if (isLoaded) ...[
               const SizedBox(width: 6),
               SizedBox(
-                width: 56,
+                width: 64,
                 child: TextField(
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  controller: b.loadController,
+                  // Charge décimale : on accepte virgule ET point (clavier FR/EN), un seul séparateur.
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+                  ],
                   textAlign: TextAlign.center,
-                  decoration: const InputDecoration(hintText: 'kg'),
+                  decoration: const InputDecoration(hintText: 'kg', isDense: true),
                   onChanged: (v) {
-                    b.loadKg = double.tryParse(v);
+                    // Normalise la virgule en point pour le parse (12,5 → 12.5).
+                    b.loadKg = double.tryParse(v.replaceAll(',', '.'));
                     _refreshEstimate();
                   },
                 ),
@@ -362,7 +412,11 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
             IconButton(
               icon: Icon(Icons.close_rounded, color: HiColors.textTertiary, size: 20),
               onPressed: () {
-                setState(() => _blocks.removeAt(i).controller.dispose());
+                setState(() {
+                  final removed = _blocks.removeAt(i);
+                  removed.controller.dispose();
+                  removed.loadController.dispose();
+                });
                 _refreshEstimate();
               },
             ),
@@ -402,7 +456,16 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
 
   Widget _estimateCard() {
     final t = AppLocalizations.of(context);
-    if (_estimating) {
+    // Erreur réseau SANS estimation valide en mémoire → encart d'erreur compact + « Réessayer »
+    // (on ne montre l'erreur pleine que si on n'a rien d'autre à afficher).
+    if (_estimateError && _estimate == null) {
+      return ErrorRetry(
+        compact: true,
+        message: t.wodBuilderEstimateError,
+        onRetry: _runEstimate,
+      );
+    }
+    if (_estimating && _estimate == null) {
       return Center(child: Padding(padding: const EdgeInsets.all(16), child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: HiColors.brandPrimary))));
     }
     if (_estimate == null) {
@@ -425,12 +488,30 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
           Row(children: [
             Text(t.wodBuilderEstimate, style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
             const Spacer(),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(color: HiColors.warn.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(HiRadius.pill)),
-              child: Text(t.wodBuilderEstimated, style: HiType.caption.copyWith(color: HiColors.warn, fontWeight: FontWeight.w600)),
-            ),
+            if (_estimating)
+              SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: HiColors.brandPrimary))
+            else
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(color: HiColors.warn.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(HiRadius.pill)),
+                child: Text(t.wodBuilderEstimated, style: HiType.caption.copyWith(color: HiColors.warn, fontWeight: FontWeight.w600)),
+              ),
           ]),
+          // Estimation valide mais le dernier rafraîchissement a échoué → on garde l'ancienne
+          // valeur (pas d'écrasement) et on propose un re-essai discret.
+          if (_estimateError) ...[
+            const SizedBox(height: 6),
+            Row(children: [
+              Icon(Icons.cloud_off_rounded, size: 14, color: HiColors.error),
+              const SizedBox(width: 6),
+              Expanded(child: Text(t.wodBuilderEstimateError, style: HiType.caption.copyWith(color: HiColors.error))),
+              TextButton(
+                onPressed: _runEstimate,
+                style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8), minimumSize: const Size(0, 32)),
+                child: Text(t.commonRetry, style: HiType.caption.copyWith(color: HiColors.brandPrimary, fontWeight: FontWeight.w600)),
+              ),
+            ]),
+          ],
           const SizedBox(height: HiSpace.sm),
           if (champ != null) Text(t.wodBuilderEstimateChampion(formatWodResult(champ, _scoreType)), style: HiType.body.copyWith(color: HiColors.textSecondary)),
           if (inter != null) Text(t.wodBuilderEstimateIntermediate(formatWodResult(inter, _scoreType)), style: HiType.body.copyWith(color: HiColors.textSecondary)),

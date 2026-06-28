@@ -42,7 +42,7 @@ export interface LeagueStandingsView {
   sex: string;
   total: number;
   entries: LeagueStandingRow[];
-  me: { position: number; points: number } | null;
+  me: { position: number; points: number; clubName: string | null } | null;
 }
 
 export interface LeagueMeView {
@@ -51,4 +51,5 @@ export interface LeagueMeView {
   points: number;
   position: number | null;
   weeksPlayed: number;
+  clubName: string | null; // club « principal » du viewer, affiché sur sa carte « ma position »
 }

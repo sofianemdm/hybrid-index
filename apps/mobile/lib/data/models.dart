@@ -738,6 +738,14 @@ class WeeklyRecap {
   bool get hasContent => sessions > 0 || deltaIndex > 0;
 }
 
+/// Réponse du log d'un WOD officiel : profil recalculé + badges débloqués par CE log
+/// (pour enchaîner une célébration après le message de résultat). Voir ApiClient.logWodResult.
+class WodLogResult {
+  final Profile? profile;
+  final List<BadgeModel> unlockedBadges;
+  const WodLogResult({required this.profile, required this.unlockedBadges});
+}
+
 class BadgeModel {
   final String id;
   final String category;
@@ -872,13 +880,23 @@ class FeedItem {
   final String title;
   final String body;
   final String priority;
-  const FeedItem({required this.key, required this.title, required this.body, required this.priority});
+
+  /// Zone à ouvrir au tap ('league' / 'leaderboard'), résolue côté app. Null = tuile non cliquable.
+  final String? route;
+  const FeedItem({
+    required this.key,
+    required this.title,
+    required this.body,
+    required this.priority,
+    this.route,
+  });
 
   factory FeedItem.fromJson(Map<String, dynamic> j) => FeedItem(
         key: j['key'] as String,
         title: j['title'] as String,
         body: j['body'] as String,
         priority: j['priority'] as String? ?? 'medium',
+        route: j['route'] as String?,
       );
 }
 

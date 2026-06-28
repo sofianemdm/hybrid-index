@@ -17,6 +17,7 @@ import '../../widgets/radar_insight.dart';
 import '../../widgets/social_proof_card.dart';
 import '../../widgets/streak_chip.dart';
 import '../../widgets/bug_report.dart';
+import '../../widgets/error_retry.dart';
 import 'rival_card.dart';
 import 'weekly_recap_card.dart';
 import '../avatar/dice_avatar_screen.dart';
@@ -69,10 +70,14 @@ class HomeScreen extends ConsumerWidget {
                 ),
                 const SizedBox(width: HiSpace.sm),
                 Expanded(
-                  child: Text(
-                    t.homeGreeting(session.user?.displayName ?? ''),
-                    style: HiType.titleL.copyWith(color: HiColors.textPrimary),
-                  ),
+                  child: Builder(builder: (_) {
+                    // Sans nom : on évite « Salut, » avec une virgule orpheline → salutation générique.
+                    final name = session.user?.displayName.trim() ?? '';
+                    return Text(
+                      name.isEmpty ? t.homeGreetingNoName : t.homeGreeting(name),
+                      style: HiType.titleL.copyWith(color: HiColors.textPrimary),
+                    );
+                  }),
                 ),
                 // Flamme de série hebdomadaire (discrète, non bloquante).
                 ref.watch(streakProvider).maybeWhen(
@@ -111,8 +116,22 @@ class HomeScreen extends ConsumerWidget {
             const SizedBox(height: HiSpace.md),
             profileAsync.when(
               loading: () => const HomeSkeleton(),
-              error: (e, _) => _errorBox('$e'),
-              data: (p) => p == null ? _errorBox(t.homeProfileUnavailable) : _content(context, ref, p),
+              // Jamais d'exception brute à l'écran : ErrorRetry (message localisé + « Réessayer »).
+              error: (e, _) => ErrorRetry(
+                onRetry: () async {
+                  ref.invalidate(myProfileProvider);
+                  await ref.read(myProfileProvider.future);
+                },
+              ),
+              data: (p) => p == null
+                  ? ErrorRetry(
+                      message: t.homeProfileUnavailable,
+                      onRetry: () async {
+                        ref.invalidate(myProfileProvider);
+                        await ref.read(myProfileProvider.future);
+                      },
+                    )
+                  : _content(context, ref, p),
             ),
           ],
         ),
@@ -143,9 +162,14 @@ class HomeScreen extends ConsumerWidget {
           ),
           child: Column(children: [
             // ESSAI : carte joueur à la place du rond Index (réversible si ça ne plaît pas).
+            // La PlayerCard a une largeur FIXE (360px). Dans un slot étroit (~312px sur 360dp,
+            // moins sur 320dp) elle se faisait rogner → FittedBox(scaleDown) la réduit pour
+            // qu'elle tienne TOUJOURS dans la largeur dispo, sans jamais l'agrandir au-delà de
+            // sa taille native. Aligné en haut pour éviter tout saut vertical.
             Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 340),
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.topCenter,
                 child: PlayerCard(
                   profile: p,
                   name: ref.watch(sessionProvider).user?.displayName ?? '',
@@ -307,17 +331,6 @@ class HomeScreen extends ConsumerWidget {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _errorBox(String message) {
-    return Container(
-      padding: const EdgeInsets.all(HiSpace.md),
-      decoration: BoxDecoration(
-        color: HiColors.error.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(HiRadius.md),
-      ),
-      child: Text(message, style: TextStyle(color: HiColors.error)),
     );
   }
 

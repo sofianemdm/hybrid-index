@@ -18,8 +18,21 @@ class RadarView extends StatefulWidget {
 }
 
 class _RadarViewState extends State<RadarView> with SingleTickerProviderStateMixin {
-  late final AnimationController _c =
-      AnimationController(vsync: this, duration: HiMotion.celebrate)..forward();
+  late final AnimationController _c = AnimationController(vsync: this, duration: HiMotion.celebrate);
+  bool _started = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_started) return;
+    _started = true;
+    // Reduce-motion : on dessine le radar complet d'emblée (pas d'animation de grossissement).
+    if (MediaQuery.maybeDisableAnimationsOf(context) ?? false) {
+      _c.value = 1.0;
+    } else {
+      _c.forward();
+    }
+  }
 
   @override
   void dispose() {

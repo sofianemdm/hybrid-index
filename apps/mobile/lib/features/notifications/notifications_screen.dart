@@ -5,6 +5,7 @@ import '../../app.dart';
 import '../../data/api_client.dart';
 import '../../data/models.dart';
 import '../../data/session.dart';
+import '../../data/ui_state.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import '../messaging/conversations_screen.dart';
@@ -225,7 +226,10 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     final color = item.priority == 'high'
         ? HiColors.brandPrimary
         : (item.priority == 'low' ? HiColors.textTertiary : HiColors.brandSecondary);
-    return Container(
+    // Tuile actionnable : si une route est fournie par l'API (ex. dépassement au classement → Ligue),
+    // on rend la carte cliquable avec un chevron ; sinon elle reste informative.
+    final hasRoute = _tabForRoute(item.route) != null;
+    final card = Container(
       padding: const EdgeInsets.all(HiSpace.md),
       decoration: BoxDecoration(
         color: HiColors.bgElevated,
@@ -247,8 +251,39 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
               ],
             ),
           ),
+          if (hasRoute) ...[
+            const SizedBox(width: HiSpace.sm),
+            Icon(Icons.chevron_right_rounded, color: HiColors.textTertiary),
+          ],
         ],
       ),
     );
+    if (!hasRoute) return card;
+    return InkWell(
+      borderRadius: BorderRadius.circular(HiRadius.md),
+      onTap: () => _openRoute(item.route!),
+      child: card,
+    );
+  }
+
+  /// Mappe la route logique de l'API vers l'onglet correspondant du HomeShell.
+  /// 'league' et 'leaderboard' partagent l'onglet Classement/Ligue (index 3).
+  int? _tabForRoute(String? route) {
+    switch (route) {
+      case 'league':
+      case 'leaderboard':
+        return 3;
+      default:
+        return null;
+    }
+  }
+
+  /// Ouvre la zone ciblée : bascule l'onglet du HomeShell puis dépile jusqu'à l'accueil
+  /// (NotificationsScreen est une route poussée → on revient au shell avec le bon onglet actif).
+  void _openRoute(String route) {
+    final tab = _tabForRoute(route);
+    if (tab == null) return;
+    ref.read(homeTabProvider.notifier).state = tab;
+    Navigator.of(context).popUntil((r) => r.isFirst);
   }
 }

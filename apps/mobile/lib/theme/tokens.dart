@@ -61,7 +61,8 @@ const kHiDark = HiPalette(
   accentVictory: Color(0xFFC6FF4A),
   textPrimary: Color(0xFFF2F5FA),
   textSecondary: Color(0xFFA7B0C0),
-  textTertiary: Color(0xFF6B7488),
+  // Éclairci de 0xFF6B7488 (4.2:1) → AA sur bgBase (5.3:1) sans changer la teinte gris-bleu.
+  textTertiary: Color(0xFF7E8597),
   textOnBrand: Color(0xFF04121A),
   success: Color(0xFF34E29B),
   error: Color(0xFFFF5470),
@@ -88,15 +89,18 @@ const kHiLight = HiPalette(
   strokeSubtle: Color(0x14000000),
   strokeStrong: Color(0x24000000),
   strokeBrand: Color(0x730A7CA0),
-  brandPrimary: Color(0xFF0789AE),
+  // Assombri de 0xFF0789AE (3.6:1 sur bgBase) → AA pour le texte (4.5:1) ; cyan conservé.
+  brandPrimary: Color(0xFF056A85),
   brandPrimaryBright: Color(0xFF14A6CE),
   brandPrimaryDeep: Color(0xFF06536C),
   brandSecondary: Color(0xFF6B43E0),
   brandSecondaryText: Color(0xFF5A33D6),
-  accentVictory: Color(0xFF5F9B00),
+  // Assombri de 0xFF5F9B00 (3.4:1) → AA pour le texte (4.5:1) ; lime/vert conservé.
+  accentVictory: Color(0xFF4A7A00),
   textPrimary: Color(0xFF11161F),
   textSecondary: Color(0xFF46506A),
-  textTertiary: Color(0xFF6E778C),
+  // Assombri de 0xFF6E778C (4.0:1 sur bgBase) → AA (5.8:1).
+  textTertiary: Color(0xFF565D70),
   textOnBrand: Color(0xFFFFFFFF),
   success: Color(0xFF0E9E66),
   error: Color(0xFFD32F4A),
@@ -327,6 +331,13 @@ class HiSpace {
   static const xl = 32.0;
   static const xxl = 48.0;
   static const xxxl = 64.0;
+}
+
+/// Cibles tactiles : taille minimale d'une zone cliquable pour l'accessibilité
+/// (Material : 48dp, HIG : 44pt — on prend 48 pour couvrir les deux).
+class HiTap {
+  HiTap._();
+  static const double minTarget = 48.0;
 }
 
 class HiRadius {

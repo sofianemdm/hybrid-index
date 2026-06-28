@@ -83,8 +83,9 @@ export class LeagueService {
         select: { userId: true, displayName: true },
       }),
       this.prisma.avatar.findMany({ where: { userId: { in: topIds } } }),
+      // Inclure le VIEWER (même hors top-50) pour que son club apparaisse sur sa carte « ma position ».
       this.prisma.clubMember.findMany({
-        where: { userId: { in: topIds } },
+        where: { userId: { in: [...topIds, ...viewerNeedsName] } },
         select: { userId: true, club: { select: { name: true, status: true } } },
         orderBy: { joinedAt: "asc" },
       }),
@@ -103,22 +104,31 @@ export class LeagueService {
       clubName: clubOf.get(t.userId) ?? null,
     }));
 
-    let me: { position: number; points: number } | null = null;
+    let me: { position: number; points: number; clubName: string | null } | null = null;
     if (viewerUserId) {
       const idx = ranked.findIndex((t) => t.userId === viewerUserId);
-      if (idx >= 0) me = { position: idx + 1, points: ranked[idx].total };
+      if (idx >= 0)
+        me = { position: idx + 1, points: ranked[idx].total, clubName: clubOf.get(viewerUserId) ?? null };
     }
     return { monthKey: season.monthKey, sex, total: ranked.length, entries, me };
   }
 
   async me(userId: string): Promise<LeagueMeView> {
     const season = await this.activeSeason();
-    if (!season) return { enrolled: false, monthKey: null, points: 0, position: null, weeksPlayed: 0 };
+    if (!season) return { enrolled: false, monthKey: null, points: 0, position: null, weeksPlayed: 0, clubName: null };
+    // Club « principal » du viewer : affiché sur sa carte « ma position » (même hors top-50).
+    const clubMembers = await this.prisma.clubMember.findMany({
+      where: { userId },
+      select: { userId: true, club: { select: { name: true, status: true } } },
+      orderBy: { joinedAt: "asc" },
+    });
+    const clubName = primaryClubNameByUserId(clubMembers).get(userId) ?? null;
     const entry = await this.prisma.leagueEntry.findUnique({
       where: { seasonId_userId: { seasonId: season.id, userId } },
       select: { sex: true },
     });
-    if (!entry) return { enrolled: false, monthKey: season.monthKey, points: 0, position: null, weeksPlayed: 0 };
+    if (!entry)
+      return { enrolled: false, monthKey: season.monthKey, points: 0, position: null, weeksPlayed: 0, clubName };
 
     const rows = await this.prisma.leaguePoints.findMany({
       where: { seasonId: season.id, sex: entry.sex, review: "ok" },
@@ -133,6 +143,7 @@ export class LeagueService {
       points: mine?.total ?? 0,
       position: idx >= 0 ? idx + 1 : null,
       weeksPlayed: mine?.weeksPlayed ?? 0,
+      clubName,
     };
   }
 }

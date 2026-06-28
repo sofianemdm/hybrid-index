@@ -90,10 +90,27 @@ class _CelebrationView extends StatefulWidget {
 
 class _CelebrationViewState extends State<_CelebrationView> with TickerProviderStateMixin {
   late final AnimationController _confetti =
-      AnimationController(vsync: this, duration: const Duration(milliseconds: 2200))..forward();
+      AnimationController(vsync: this, duration: const Duration(milliseconds: 2200));
   late final AnimationController _pop =
-      AnimationController(vsync: this, duration: HiMotion.celebrate)..forward();
-  late final List<_Particle> _particles = _buildParticles(widget.strong ? 80 : 44);
+      AnimationController(vsync: this, duration: HiMotion.celebrate);
+  late List<_Particle> _particles = const [];
+  bool _started = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_started) return;
+    _started = true;
+    // Reduce-motion : pas de confettis ni d'effet « pop » — la carte s'affiche directement.
+    final reduceMotion = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+    if (reduceMotion) {
+      _pop.value = 1.0;
+    } else {
+      _particles = _buildParticles(widget.strong ? 80 : 44);
+      _confetti.forward();
+      _pop.forward();
+    }
+  }
 
   @override
   void initState() {
