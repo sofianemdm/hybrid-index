@@ -332,10 +332,16 @@ class ApiClient {
     return j.map((e) => FeedActivity.fromJson(e as Map<String, dynamic>)).toList();
   }
 
-  /// Réaction sur un item de feed : route vers l'endpoint event ou post selon [isPost].
-  Future<void> react(String id, String emoji, {bool isPost = false}) async => isPost
-      ? _send('POST', '/v1/posts/$id/reactions', {'emoji': emoji})
-      : _send('POST', '/v1/reactions', {'feedEventId': id, 'emoji': emoji});
+  /// Fil « Découvrir » : top de la ligue (même sexe) à suivre (repli explicite).
+  Future<List<FeedActivity>> discover() async {
+    final j = await _send('GET', '/v1/social/discover') as List<dynamic>;
+    return j.map((e) => FeedActivity.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  /// Applaudir (kudos unifié 👏). Route vers l'endpoint event ou post selon [isPost].
+  Future<void> react(String id, {bool isPost = false}) async => isPost
+      ? _send('POST', '/v1/posts/$id/reactions', {})
+      : _send('POST', '/v1/reactions', {'feedEventId': id});
 
   Future<void> unreact(String id, {bool isPost = false}) async =>
       isPost ? _send('DELETE', '/v1/posts/$id/reactions') : _send('DELETE', '/v1/reactions/$id');

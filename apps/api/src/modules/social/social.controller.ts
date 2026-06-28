@@ -5,7 +5,8 @@ import { CurrentUser } from "../auth/current-user.decorator";
 import { JwtAuthGuard, type AuthenticatedUser } from "../auth/jwt-auth.guard";
 import { SocialService } from "./social.service";
 
-const ReactionRequest = z.object({ feedEventId: z.string().uuid(), emoji: z.string() });
+// L'emoji est optionnel et ignoré : le kudos est toujours 👏 (compat anciens clients).
+const ReactionRequest = z.object({ feedEventId: z.string().uuid(), emoji: z.string().optional() });
 
 @Controller("v1")
 @UseGuards(JwtAuthGuard)
@@ -37,6 +38,12 @@ export class SocialController {
     return this.social.feed(user.userId);
   }
 
+  /** Fil « Découvrir » : top de la ligue (même sexe) à suivre — repli quand on ne suit personne. */
+  @Get("social/discover")
+  discover(@CurrentUser() user: AuthenticatedUser): Promise<unknown[]> {
+    return this.social.discover(user.userId);
+  }
+
   /** Recherche d'athlètes (filtres sexe / rang / nom). */
   @Get("explore")
   explore(
@@ -52,7 +59,7 @@ export class SocialController {
     @CurrentUser() user: AuthenticatedUser,
     @Body(new ZodValidationPipe(ReactionRequest)) body: z.infer<typeof ReactionRequest>,
   ): Promise<unknown> {
-    return this.social.react(user.userId, body.feedEventId, body.emoji);
+    return this.social.react(user.userId, body.feedEventId);
   }
 
   @Delete("reactions/:feedEventId")

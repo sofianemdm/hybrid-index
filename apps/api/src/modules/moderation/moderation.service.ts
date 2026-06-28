@@ -5,6 +5,9 @@ import { PrismaService } from "../../infra/prisma/prisma.service";
 /** Liste minimale de termes interdits pour la modération de noms (clubs, etc.). À enrichir. */
 const BANNED_WORDS = ["fuck", "shit", "salope", "connard", "nigger", "pute", "bitch", "nazi"];
 
+/** Seuil d'auto-masquage : un post signalé par ce nombre de rapporteurs DISTINCTS passe en `hidden`. */
+const AUTOHIDE_REPORTS = 3;
+
 /** Sécurité transverse (Phase C) : blocage entre utilisateurs + signalement générique + filtre de noms. */
 @Injectable()
 export class ModerationService {
@@ -57,7 +60,27 @@ export class ModerationService {
       create: { reporterId, targetType: body.targetType, targetId: body.targetId, reason: body.reason, note: body.note },
       update: { reason: body.reason, note: body.note },
     });
+    // Auto-masquage des posts : compte les rapporteurs DISTINCTS (l'upsert garantit l'unicité par
+    // rapporteur via @@unique). Au seuil atteint, le post passe en `hidden` et quitte tous les feeds.
+    if (body.targetType === "post") await this.maybeAutoHidePost(body.targetId);
     return { reported: true };
+  }
+
+  /** Recompte les signalements distincts d'un post et le masque (status=hidden) si le seuil est atteint. */
+  private async maybeAutoHidePost(postId: string): Promise<void> {
+    const count = await this.prisma.report.count({ where: { targetType: "post", targetId: postId } });
+    await this.prisma.post
+      .update({ where: { id: postId }, data: { reportCount: count, ...(count >= AUTOHIDE_REPORTS ? { status: "hidden" } : {}) } })
+      .catch(() => undefined); // post supprimé entre-temps : best-effort, on ignore.
+  }
+
+  /** Ids des posts que `me` a signalés — masqués immédiatement de SON feed dès le signalement. */
+  async reportedPostIds(me: string): Promise<string[]> {
+    const rows = await this.prisma.report.findMany({
+      where: { reporterId: me, targetType: "post" },
+      select: { targetId: true },
+    });
+    return rows.map((r) => r.targetId);
   }
 
   /** Filtre lexical synchrone des noms (clubs/pseudos). */

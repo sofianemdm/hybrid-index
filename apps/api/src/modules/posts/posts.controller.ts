@@ -14,7 +14,6 @@ const CreatePost = z
   })
   .refine((d) => d.kind !== "perf_share" || !!d.wodResultId, { message: "wodResultId requis pour perf_share." });
 
-const ReactBody = z.object({ emoji: z.string() });
 const ReportBody = z.object({
   reason: z.enum(["spam", "harassment", "inappropriate", "cheating", "other"]),
   note: z.string().max(300).optional(),
@@ -41,13 +40,10 @@ export class PostsController {
     return this.posts.delete(user.userId, id);
   }
 
+  /** Applaudir (kudos unifié 👏). L'emoji éventuellement envoyé par d'anciens clients est ignoré. */
   @Post(":id/reactions")
-  react(
-    @CurrentUser() user: AuthenticatedUser,
-    @Param("id") id: string,
-    @Body(new ZodValidationPipe(ReactBody)) body: z.infer<typeof ReactBody>,
-  ): Promise<unknown> {
-    return this.posts.react(user.userId, id, body.emoji);
+  react(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string): Promise<unknown> {
+    return this.posts.react(user.userId, id);
   }
 
   @Delete(":id/reactions")

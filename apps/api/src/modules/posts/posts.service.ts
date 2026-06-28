@@ -2,12 +2,14 @@ import { BadRequestException, ConflictException, ForbiddenException, Injectable,
 import { ratingFromInternal } from "@hybrid-index/scoring-core";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { ModerationService } from "../moderation/moderation.service";
+import { serializeAvatar, type AvatarView } from "../../common/avatar.serializer";
 
 /** Sous-score interne /1000 → note d'affichage /100 (null si absent). */
 const ovrSub = (v: number | null | undefined): number | null =>
   v == null ? null : Math.round(ratingFromInternal(v));
 
-const ALLOWED_EMOJIS = new Set(["❤️", "💪", "🔥", "👏", "🚀"]);
+/** Kudos unifié façon Strava : un seul applaudissement par (item, utilisateur), toggle on/off. */
+const KUDOS = "👏";
 const MAX_BODY = 500;
 
 export interface CreatePostInput {
@@ -22,9 +24,14 @@ export interface FeedPostItem {
   source: "post";
   type: "post_text" | "post_perf";
   createdAt: string;
-  actor: { userId: string; displayName: string; rank: string; isMe: boolean };
+  actor: { userId: string; displayName: string; rank: string; index: number | null; isMe: boolean; avatar: AvatarView | null };
   payload: Record<string, unknown>;
+  /** Kudos unifié : nombre d'applaudissements + si j'ai applaudi. */
+  kudosCount: number;
+  iKudo: boolean;
+  /** @deprecated conservé pour compat ; toujours mappé sur le kudos 👏. */
   reactions: Record<string, number>;
+  /** @deprecated conservé pour compat. */
   myReactions: string[];
 }
 
@@ -77,7 +84,15 @@ export class PostsService {
         body: body && body.length > 0 ? body : null,
         wodResultId: wodResultId ?? null,
       },
-      include: { author: { include: { profile: { select: { displayName: true, rank: true } } } } },
+      include: {
+        author: {
+          include: {
+            profile: { select: { displayName: true, rank: true } },
+            hybridIndex: { select: { value: true } },
+            avatar: true,
+          },
+        },
+      },
     });
 
     return {
@@ -89,9 +104,13 @@ export class PostsService {
         userId: me,
         displayName: post.author.profile?.displayName ?? "—",
         rank: post.author.profile?.rank ?? "rookie",
+        index: ovrSub(post.author.hybridIndex?.value),
         isMe: true,
+        avatar: serializeAvatar(post.author.avatar),
       },
       payload: { body: post.body, ...payloadExtra },
+      kudosCount: 0,
+      iKudo: false,
       reactions: {},
       myReactions: [],
     };
@@ -105,42 +124,57 @@ export class PostsService {
     return { removed: true };
   }
 
-  async react(me: string, postId: string, emoji: string): Promise<{ emoji: string }> {
-    if (!ALLOWED_EMOJIS.has(emoji)) {
-      throw new BadRequestException({ code: "VALIDATION_ERROR", message: "Réaction non autorisée." });
-    }
+  /** Applaudir un post (kudos unifié). L'emoji est toujours normalisé sur 👏 : un seul kudos par (post, user). */
+  async react(me: string, postId: string): Promise<{ kudosCount: number; iKudo: true }> {
     const post = await this.prisma.post.findUnique({ where: { id: postId }, select: { authorId: true } });
     if (!post) throw new NotFoundException({ code: "NOT_FOUND", message: "Post introuvable." });
     if (post.authorId === me) throw new ConflictException({ code: "CONFLICT", message: "Pas d'auto-kudos." });
     await this.prisma.postReaction.upsert({
       where: { postId_fromUserId: { postId, fromUserId: me } },
-      create: { postId, fromUserId: me, emoji },
-      update: { emoji },
+      create: { postId, fromUserId: me, emoji: KUDOS },
+      update: { emoji: KUDOS },
     });
-    await this.syncCount(postId);
-    return { emoji };
+    const kudosCount = await this.syncCount(postId);
+    return { kudosCount, iKudo: true };
   }
 
-  async unreact(me: string, postId: string): Promise<{ removed: true }> {
+  async unreact(me: string, postId: string): Promise<{ kudosCount: number; iKudo: false }> {
     await this.prisma.postReaction.deleteMany({ where: { postId, fromUserId: me } });
-    await this.syncCount(postId);
-    return { removed: true };
+    const kudosCount = await this.syncCount(postId);
+    return { kudosCount, iKudo: false };
   }
 
-  private async syncCount(postId: string): Promise<void> {
+  private async syncCount(postId: string): Promise<number> {
     const count = await this.prisma.postReaction.count({ where: { postId } });
     await this.prisma.post.update({ where: { id: postId }, data: { reactionCount: count } }).catch(() => undefined);
+    return count;
   }
 
-  /** Posts (texte + perf) des `actorIds`, normalisés pour le feed unifié. Exclut les statuts non visibles. */
+  /**
+   * Posts (texte + perf) des `actorIds`, normalisés pour le feed unifié.
+   * Exclut les posts non visibles (status != visible → masqués par modération/auto-masquage)
+   * ET les posts que `me` a déjà signalés (ils disparaissent immédiatement de SON feed).
+   */
   async forFeed(actorIds: string[], me: string, take: number): Promise<FeedPostItem[]> {
     if (actorIds.length === 0) return [];
+    const reportedIds = await this.moderation.reportedPostIds(me);
     const posts = await this.prisma.post.findMany({
-      where: { authorId: { in: actorIds }, status: "visible", visibility: "public" },
+      where: {
+        authorId: { in: actorIds },
+        status: "visible",
+        visibility: "public",
+        ...(reportedIds.length ? { id: { notIn: reportedIds } } : {}),
+      },
       orderBy: { createdAt: "desc" },
       take,
       include: {
-        author: { include: { profile: { select: { displayName: true, rank: true } } } },
+        author: {
+          include: {
+            profile: { select: { displayName: true, rank: true } },
+            hybridIndex: { select: { value: true } },
+            avatar: true,
+          },
+        },
         reactions: { select: { emoji: true, fromUserId: true } },
       },
     });
@@ -156,12 +190,10 @@ export class PostsService {
     const byId = new Map(results.map((r) => [r.id, r]));
 
     return posts.map((p) => {
-      const counts: Record<string, number> = {};
-      const mine: string[] = [];
-      for (const r of p.reactions) {
-        counts[r.emoji] = (counts[r.emoji] ?? 0) + 1;
-        if (r.fromUserId === me) mine.push(r.emoji);
-      }
+      // Kudos unifié : chaque réaction (y compris d'anciens emojis multiples) compte pour 1 kudos.
+      const kudosCount = p.reactions.length;
+      const iKudo = p.reactions.some((r) => r.fromUserId === me);
+      const reactions: Record<string, number> = kudosCount > 0 ? { [KUDOS]: kudosCount } : {};
       const payload: Record<string, unknown> = { body: p.body };
       if (p.kind === "perf_share" && p.wodResultId) {
         const res = byId.get(p.wodResultId);
@@ -182,11 +214,15 @@ export class PostsService {
           userId: p.authorId,
           displayName: p.author.profile?.displayName ?? "—",
           rank: p.author.profile?.rank ?? "rookie",
+          index: ovrSub(p.author.hybridIndex?.value),
           isMe: p.authorId === me,
+          avatar: serializeAvatar(p.author.avatar),
         },
         payload,
-        reactions: counts,
-        myReactions: mine,
+        kudosCount,
+        iKudo,
+        reactions,
+        myReactions: iKudo ? [KUDOS] : [],
       };
     });
   }

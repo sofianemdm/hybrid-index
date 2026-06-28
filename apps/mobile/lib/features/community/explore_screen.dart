@@ -26,6 +26,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   String _q = '';
   Timer? _debounce;
   late Future<List<AthleteSummary>> _future;
+  // Suivi optimiste : userIds que l'on vient de suivre depuis cet écran.
+  final Set<String> _followed = {};
 
   @override
   void initState() {
@@ -47,6 +49,18 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     _q = v;
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 300), () => setState(_load));
+  }
+
+  Future<void> _follow(AthleteSummary a) async {
+    setState(() => _followed.add(a.userId)); // optimiste
+    try {
+      await ref.read(apiClientProvider).followUser(a.userId);
+    } catch (e) {
+      if (mounted) {
+        setState(() => _followed.remove(a.userId));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context).commonGenericError)));
+      }
+    }
   }
 
   @override
@@ -130,11 +144,38 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         onSelected: (_) => onTap(),
       );
 
-  Widget _row(AthleteSummary a) => ListTile(
-        contentPadding: EdgeInsets.zero,
-        title: Text(a.displayName, style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
-        subtitle: Text('${HiLabels.goal(a.goal)} · Index ${a.index ?? '—'}', style: HiType.caption.copyWith(color: HiColors.textTertiary)),
-        trailing: RankBadge(rank: a.rank, ovr: a.index, fontSize: 10),
-        onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => PublicProfileScreen(userId: a.userId))),
-      );
+  Widget _row(AthleteSummary a) {
+    final t = AppLocalizations.of(context);
+    final following = _followed.contains(a.userId);
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      title: Text(a.displayName, style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
+      subtitle: Text('${HiLabels.goal(a.goal)} · Index ${a.index ?? '—'}', style: HiType.caption.copyWith(color: HiColors.textTertiary)),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          RankBadge(rank: a.rank, ovr: a.index, fontSize: 10),
+          const SizedBox(width: 8),
+          following
+              ? Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: Text(t.communityFollowing,
+                      style: HiType.caption.copyWith(color: HiColors.textTertiary, fontWeight: FontWeight.w600)),
+                )
+              : FilledButton(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: HiColors.brandPrimary,
+                    foregroundColor: HiColors.textOnBrand,
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    minimumSize: const Size(0, 30),
+                    visualDensity: VisualDensity.compact,
+                  ),
+                  onPressed: () => _follow(a),
+                  child: Text(t.communityFollow),
+                ),
+        ],
+      ),
+      onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => PublicProfileScreen(userId: a.userId))),
+    );
+  }
 }

@@ -596,10 +596,50 @@ class AppLocalizationsEn extends AppLocalizations {
   String get communityPostReport => 'Report';
 
   @override
+  String get communityPostBlock => 'Block this athlete';
+
+  @override
+  String get communityUserBlocked => 'Athlete blocked.';
+
+  @override
   String get communityReportSent => 'Thanks, report sent.';
 
   @override
+  String get communityDiscoverTitle => 'Nobody to follow… yet';
+
+  @override
+  String get communityDiscoverSubtitle =>
+      'Here\'s the top of your league. Follow athletes to fill your feed.';
+
+  @override
+  String get communityFollow => 'Follow';
+
+  @override
+  String get communityFollowing => 'Following';
+
+  @override
+  String get communityKudosTooltip => 'Kudos';
+
+  @override
   String get communityWorkoutFallback => 'a workout';
+
+  @override
+  String get timeAgoNow => 'just now';
+
+  @override
+  String timeAgoMinutes(int n) {
+    return '$n min ago';
+  }
+
+  @override
+  String timeAgoHours(int n) {
+    return '$n h ago';
+  }
+
+  @override
+  String timeAgoDays(int n) {
+    return '$n d ago';
+  }
 
   @override
   String communityMsgPr(String wodName) {

@@ -1051,11 +1051,19 @@ class FeedActivity {
   final String actorName;
   final String actorRank;
   final int? actorIndex; // OVR /100 de l'acteur (grade affiché)
+  final AvatarConfig? actorAvatar; // mini-vignette de l'acteur (null = repli dessiné)
   final bool isMe;
+  final DateTime? createdAt; // horodatage de l'activité (→ « il y a 3 h »)
   final Map<String, dynamic> payload;
-  final Map<String, int> reactions;
-  final List<String> myReactions;
-  const FeedActivity({
+
+  /// Kudos unifié (façon Strava) : un seul applaudissement 👏 par item.
+  /// Mutables pour le toggle optimiste (sans refetch ni saut de scroll).
+  int kudos;
+  bool hasKudoed;
+
+  /// Carte « Découvrir » (athlète suggéré) → bouton « Suivre » direct.
+  final bool canFollow;
+  FeedActivity({
     required this.id,
     required this.type,
     required this.source,
@@ -1063,18 +1071,28 @@ class FeedActivity {
     required this.actorName,
     required this.actorRank,
     this.actorIndex,
+    this.actorAvatar,
     required this.isMe,
+    this.createdAt,
     required this.payload,
-    required this.reactions,
-    required this.myReactions,
-  });
+    required int kudosCount,
+    required bool iKudo,
+    this.canFollow = false,
+  })  : kudos = kudosCount,
+        hasKudoed = iKudo;
 
   bool get isPost => source == 'post';
+  bool get isDiscover => source == 'discover';
 
   factory FeedActivity.fromJson(Map<String, dynamic> j) {
     final actor = j['actor'] as Map<String, dynamic>;
-    final reactions = <String, int>{};
-    (j['reactions'] as Map?)?.forEach((k, v) => reactions[k.toString()] = (v as num).toInt());
+    // Repli kudos pour anciens payloads (reactions/myReactions) : on agrège tout en applaudissements.
+    int kudosCount = (j['kudosCount'] as num?)?.toInt() ?? 0;
+    if (j['kudosCount'] == null && j['reactions'] is Map) {
+      kudosCount = (j['reactions'] as Map).values.fold<int>(0, (s, v) => s + ((v as num?)?.toInt() ?? 0));
+    }
+    final iKudo = j['iKudo'] as bool? ?? ((j['myReactions'] as List?)?.isNotEmpty ?? false);
+    final created = j['createdAt'] as String?;
     return FeedActivity(
       id: j['id'] as String,
       type: j['type'] as String,
@@ -1083,10 +1101,13 @@ class FeedActivity {
       actorName: actor['displayName'] as String? ?? '—',
       actorRank: actor['rank'] as String? ?? 'rookie',
       actorIndex: (actor['index'] as num?)?.toInt(),
+      actorAvatar: actor['avatar'] == null ? null : AvatarConfig.fromJson((actor['avatar'] as Map).cast<String, dynamic>()),
       isMe: actor['isMe'] as bool? ?? false,
+      createdAt: created == null ? null : DateTime.tryParse(created),
       payload: (j['payload'] as Map?)?.cast<String, dynamic>() ?? {},
-      reactions: reactions,
-      myReactions: ((j['myReactions'] as List?) ?? []).map((e) => e.toString()).toList(),
+      kudosCount: kudosCount,
+      iKudo: iKudo,
+      canFollow: j['canFollow'] as bool? ?? false,
     );
   }
 }

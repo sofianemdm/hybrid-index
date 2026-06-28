@@ -1184,17 +1184,83 @@ abstract class AppLocalizations {
   /// **'Report'**
   String get communityPostReport;
 
+  /// No description provided for @communityPostBlock.
+  ///
+  /// In en, this message translates to:
+  /// **'Block this athlete'**
+  String get communityPostBlock;
+
+  /// No description provided for @communityUserBlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Athlete blocked.'**
+  String get communityUserBlocked;
+
   /// No description provided for @communityReportSent.
   ///
   /// In en, this message translates to:
   /// **'Thanks, report sent.'**
   String get communityReportSent;
 
+  /// No description provided for @communityDiscoverTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Nobody to follow… yet'**
+  String get communityDiscoverTitle;
+
+  /// No description provided for @communityDiscoverSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Here\'s the top of your league. Follow athletes to fill your feed.'**
+  String get communityDiscoverSubtitle;
+
+  /// No description provided for @communityFollow.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow'**
+  String get communityFollow;
+
+  /// No description provided for @communityFollowing.
+  ///
+  /// In en, this message translates to:
+  /// **'Following'**
+  String get communityFollowing;
+
+  /// No description provided for @communityKudosTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Kudos'**
+  String get communityKudosTooltip;
+
   /// No description provided for @communityWorkoutFallback.
   ///
   /// In en, this message translates to:
   /// **'a workout'**
   String get communityWorkoutFallback;
+
+  /// No description provided for @timeAgoNow.
+  ///
+  /// In en, this message translates to:
+  /// **'just now'**
+  String get timeAgoNow;
+
+  /// No description provided for @timeAgoMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} min ago'**
+  String timeAgoMinutes(int n);
+
+  /// No description provided for @timeAgoHours.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} h ago'**
+  String timeAgoHours(int n);
+
+  /// No description provided for @timeAgoDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} d ago'**
+  String timeAgoDays(int n);
 
   /// No description provided for @communityMsgPr.
   ///

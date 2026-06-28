@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app.dart';
+import '../../core/timeago.dart';
 import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/haptics.dart';
 import '../../theme/tokens.dart';
+import '../../widgets/hi_avatar.dart';
 import '../../widgets/hi_skeleton.dart';
 import '../../widgets/rank_badge.dart';
 import '../clubs/clubs_screen.dart';
@@ -17,7 +19,7 @@ import '../wods/wod_format.dart';
 import 'explore_screen.dart';
 import 'post_composer_screen.dart';
 
-/// Onglet Communauté : feed d'activité (PR, séances, montées de rang, badges) + kudos.
+/// Onglet Communauté : feed d'activité (PR, séances, montées de rang, badges) + kudos unifié 👏.
 class CommunityTab extends ConsumerStatefulWidget {
   const CommunityTab({super.key});
 
@@ -27,6 +29,8 @@ class CommunityTab extends ConsumerStatefulWidget {
 
 class _CommunityTabState extends ConsumerState<CommunityTab> {
   late Future<List<FeedActivity>> _future;
+  // Copie locale mutable du fil → retrait optimiste (blocage), toggle kudos et suivi en place.
+  List<FeedActivity> _items = [];
 
   @override
   void initState() {
@@ -35,28 +39,19 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
   }
 
   void _load() {
-    _future = ref.read(apiClientProvider).feed();
+    _future = ref.read(apiClientProvider).feed().then((list) {
+      _items = list;
+      return list;
+    });
   }
 
-  Future<void> _react(FeedActivity a, String emoji) async {
+  // --- Kudos unifié : un seul applaudissement par item, toggle optimiste sans refetch ni saut de scroll. ---
+  Future<void> _toggleKudos(FeedActivity a) async {
     HiHaptics.tap();
-    final had = a.myReactions.contains(emoji);
-    // Mise à jour OPTIMISTE en place (réactions/myReactions sont mutables) → kudos instantané, sans
-    // refetch ni flicker ni saut de scroll. On réconcilie avec le serveur ensuite ; on revient en
-    // arrière en cas d'échec (BUG-026).
-    void apply(bool add) {
-      if (add) {
-        a.myReactions.add(emoji);
-        a.reactions[emoji] = (a.reactions[emoji] ?? 0) + 1;
-      } else {
-        a.myReactions.remove(emoji);
-        final n = (a.reactions[emoji] ?? 1) - 1;
-        if (n <= 0) {
-          a.reactions.remove(emoji);
-        } else {
-          a.reactions[emoji] = n;
-        }
-      }
+    final had = a.hasKudoed;
+    void apply(bool on) {
+      a.hasKudoed = on;
+      a.kudos = (a.kudos + (on ? 1 : -1)).clamp(0, 1 << 30);
     }
 
     setState(() => apply(!had));
@@ -65,12 +60,12 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
       if (had) {
         await api.unreact(a.id, isPost: a.isPost);
       } else {
-        await api.react(a.id, emoji, isPost: a.isPost);
+        await api.react(a.id, isPost: a.isPost);
       }
     } catch (e) {
       if (mounted) {
         setState(() => apply(had)); // échec → on annule la modif optimiste
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context).commonGenericError)));
       }
     }
   }
@@ -82,25 +77,44 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
     if (created == true && mounted) setState(_load);
   }
 
-  Future<void> _postMenu(FeedActivity a) async {
+  /// Suivre l'athlète suggéré (carte « Découvrir ») → on le retire du repli (il alimentera le vrai fil).
+  Future<void> _follow(FeedActivity a) async {
+    HiHaptics.tap();
+    try {
+      await ref.read(apiClientProvider).followUser(a.actorUserId);
+      if (mounted) setState(() => _items.removeWhere((x) => x.actorUserId == a.actorUserId));
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context).commonGenericError)));
+    }
+  }
+
+  /// Menu d'une carte d'autrui (events ET posts) : Signaler, Bloquer, et Supprimer si c'est mon post.
+  Future<void> _cardMenu(FeedActivity a) async {
     final t = AppLocalizations.of(context);
     final action = await showModalBottomSheet<String>(
       context: context,
       backgroundColor: HiColors.bgElevated,
       builder: (_) => SafeArea(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
-          if (a.isMe)
+          if (a.isMe && a.isPost)
             ListTile(
               leading: Icon(Icons.delete_outline, color: HiColors.error),
               title: Text(t.communityPostDelete, style: TextStyle(color: HiColors.error)),
               onTap: () => Navigator.of(context).pop('delete'),
             )
-          else
+          else ...[
+            if (a.isPost)
+              ListTile(
+                leading: Icon(Icons.flag_outlined, color: HiColors.textSecondary),
+                title: Text(t.communityPostReport, style: TextStyle(color: HiColors.textPrimary)),
+                onTap: () => Navigator.of(context).pop('report'),
+              ),
             ListTile(
-              leading: Icon(Icons.flag_outlined, color: HiColors.textSecondary),
-              title: Text(t.communityPostReport, style: TextStyle(color: HiColors.textPrimary)),
-              onTap: () => Navigator.of(context).pop('report'),
+              leading: Icon(Icons.block, color: HiColors.error),
+              title: Text(t.communityPostBlock, style: TextStyle(color: HiColors.error)),
+              onTap: () => Navigator.of(context).pop('block'),
             ),
+          ],
         ]),
       ),
     );
@@ -109,15 +123,24 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
       final api = ref.read(apiClientProvider);
       if (action == 'delete') {
         await api.deletePost(a.id);
+        if (mounted) setState(() => _items.removeWhere((x) => x.id == a.id));
       } else if (action == 'report') {
         await api.reportPost(a.id, 'inappropriate');
+        // Le post signalé disparaît immédiatement de MON fil (auto-masquage côté back aussi).
         if (mounted) {
+          setState(() => _items.removeWhere((x) => x.id == a.id));
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t.communityReportSent)));
         }
+      } else if (action == 'block') {
+        await api.blockUser(a.actorUserId);
+        // On retire toutes les activités de l'auteur bloqué du fil.
+        if (mounted) {
+          setState(() => _items.removeWhere((x) => x.actorUserId == a.actorUserId));
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t.communityUserBlocked)));
+        }
       }
-      if (mounted) setState(_load);
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context).commonGenericError)));
     }
   }
 
@@ -146,7 +169,8 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
                 Padding(padding: const EdgeInsets.all(HiSpace.lg), child: Text('${snap.error}', style: TextStyle(color: HiColors.error))),
               ]);
             }
-            final items = snap.data!;
+            final items = _items;
+            final discoverMode = items.isNotEmpty && items.every((a) => a.isDiscover);
             if (items.isEmpty) {
               return ListView(children: [
                 Padding(
@@ -166,9 +190,9 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
                         label: Text(t.communityPublish),
                       ),
                       OutlinedButton.icon(
-                        onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ClubsScreen())),
-                        icon: const Icon(Icons.groups, size: 18),
-                        label: Text(t.communityExploreClubs),
+                        onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ExploreScreen())),
+                        icon: const Icon(Icons.search, size: 18),
+                        label: Text(t.communityTooltipSearch),
                       ),
                     ]),
                   ]),
@@ -214,7 +238,8 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
                   ),
                 ]),
                 const SizedBox(height: HiSpace.sm),
-                ...items.map(_card),
+                if (discoverMode) _discoverHeader(t),
+                ...items.map((a) => a.isDiscover ? _discoverCard(a) : _card(a)),
               ],
             );
           },
@@ -222,6 +247,17 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
       ),
     );
   }
+
+  /// Bandeau « Découvrir » affiché quand on ne suit personne (le fil est rempli par le top de la ligue).
+  Widget _discoverHeader(AppLocalizations t) => Padding(
+        padding: const EdgeInsets.only(bottom: HiSpace.md),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(t.communityDiscoverTitle,
+              style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 16)),
+          const SizedBox(height: 2),
+          Text(t.communityDiscoverSubtitle, style: TextStyle(color: HiColors.textTertiary, fontSize: 13)),
+        ]),
+      );
 
   String _message(FeedActivity a) {
     final t = AppLocalizations.of(context);
@@ -245,7 +281,15 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
     }
   }
 
+  /// Mini-avatar de l'acteur (repli neutre si aucun avatar).
+  Widget _avatar(FeedActivity a) => HiAvatar(
+        config: a.actorAvatar ?? const AvatarConfig(skinTone: 2, hairStyle: 1, hairColor: 1),
+        rank: a.actorRank,
+        size: 34,
+      );
+
   Widget _card(FeedActivity a) {
+    final t = AppLocalizations.of(context);
     return Container(
       margin: const EdgeInsets.only(bottom: HiSpace.sm),
       padding: const EdgeInsets.all(HiSpace.md),
@@ -259,6 +303,8 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
         children: [
           Row(
             children: [
+              _avatar(a),
+              const SizedBox(width: 10),
               Expanded(
                 child: GestureDetector(
                   onTap: a.isMe
@@ -266,22 +312,31 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
                       : () => Navigator.of(context).push(
                             MaterialPageRoute(builder: (_) => PublicProfileScreen(userId: a.actorUserId)),
                           ),
-                  child: Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Flexible(
-                        child: Text(a.actorName,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(a.actorName,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
+                          ),
+                          const SizedBox(width: 8),
+                          RankBadge(rank: a.actorRank, ovr: a.actorIndex, fontSize: 10),
+                        ],
                       ),
-                      const SizedBox(width: 8),
-                      RankBadge(rank: a.actorRank, ovr: a.actorIndex, fontSize: 10),
+                      if (a.createdAt != null)
+                        Text(timeAgo(t, a.createdAt!),
+                            style: TextStyle(color: HiColors.textTertiary, fontSize: 11)),
                     ],
                   ),
                 ),
               ),
-              if (a.isPost)
+              // Menu (Signaler / Bloquer) sur TOUTE carte d'autrui ; + Supprimer sur mes posts.
+              if (!a.isMe || a.isPost)
                 GestureDetector(
-                  onTap: () => _postMenu(a),
+                  onTap: () => _cardMenu(a),
                   child: Padding(
                     padding: const EdgeInsets.only(left: 4),
                     child: Icon(Icons.more_horiz, size: 18, color: HiColors.textTertiary),
@@ -289,7 +344,7 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
                 ),
             ],
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 6),
           Builder(builder: (context) {
             final target = _seanceTarget(a);
             final text = Text(_message(a),
@@ -308,14 +363,54 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
             _perfLine(a),
           ],
           const SizedBox(height: HiSpace.sm),
-          Row(
-            children: [
-              _kudos(a, '❤️'),
-              const SizedBox(width: 8),
-              _kudos(a, '💪'),
-              const SizedBox(width: 8),
-              _kudos(a, '🔥'),
-            ],
+          _kudos(a),
+        ],
+      ),
+    );
+  }
+
+  /// Carte « athlète à suivre » du repli Découvrir : avatar + nom + grade + bouton Suivre.
+  Widget _discoverCard(FeedActivity a) {
+    final t = AppLocalizations.of(context);
+    return Container(
+      margin: const EdgeInsets.only(bottom: HiSpace.sm),
+      padding: const EdgeInsets.all(HiSpace.md),
+      decoration: BoxDecoration(
+        color: HiColors.bgElevated,
+        borderRadius: BorderRadius.circular(HiRadius.md),
+        border: Border.all(color: HiColors.strokeSubtle),
+      ),
+      child: Row(
+        children: [
+          _avatar(a),
+          const SizedBox(width: 10),
+          Expanded(
+            child: GestureDetector(
+              onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => PublicProfileScreen(userId: a.actorUserId))),
+              child: Row(
+                children: [
+                  Flexible(
+                    child: Text(a.actorName,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
+                  ),
+                  const SizedBox(width: 8),
+                  RankBadge(rank: a.actorRank, ovr: a.actorIndex, fontSize: 10),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: HiColors.brandPrimary,
+              foregroundColor: HiColors.textOnBrand,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+              minimumSize: const Size(0, 32),
+            ),
+            onPressed: () => _follow(a),
+            child: Text(t.communityFollow),
           ),
         ],
       ),
@@ -359,20 +454,26 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
     );
   }
 
-  Widget _kudos(FeedActivity a, String emoji) {
-    final count = a.reactions[emoji] ?? 0;
-    final active = a.myReactions.contains(emoji);
+  /// Bouton kudos UNIQUE (👏) avec compteur — toggle façon Strava. Désactivé sur mes propres activités.
+  Widget _kudos(FeedActivity a) {
+    final t = AppLocalizations.of(context);
+    final active = a.hasKudoed;
+    final count = a.kudos;
     return GestureDetector(
-      onTap: a.isMe ? null : () => _react(a, emoji),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        decoration: BoxDecoration(
-          color: active ? HiColors.brandPrimary.withValues(alpha: 0.15) : HiColors.bgElevated2,
-          borderRadius: BorderRadius.circular(HiRadius.pill),
-          border: Border.all(color: active ? HiColors.brandPrimary.withValues(alpha: 0.5) : HiColors.strokeSubtle),
+      onTap: a.isMe ? null : () => _toggleKudos(a),
+      child: Tooltip(
+        message: t.communityKudosTooltip,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: active ? HiColors.brandPrimary.withValues(alpha: 0.15) : HiColors.bgElevated2,
+            borderRadius: BorderRadius.circular(HiRadius.pill),
+            border: Border.all(color: active ? HiColors.brandPrimary.withValues(alpha: 0.5) : HiColors.strokeSubtle),
+          ),
+          child: Text('👏 ${count > 0 ? count : ''}'.trim(),
+              style: TextStyle(
+                  color: active ? HiColors.brandPrimary : HiColors.textSecondary, fontWeight: FontWeight.w600)),
         ),
-        child: Text('$emoji ${count > 0 ? count : ''}'.trim(),
-            style: TextStyle(color: active ? HiColors.brandPrimary : HiColors.textSecondary, fontWeight: FontWeight.w600)),
       ),
     );
   }
