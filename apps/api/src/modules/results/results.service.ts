@@ -115,12 +115,16 @@ export class ResultsService {
     });
     const wodMeta = await this.prisma.wod.findUnique({ where: { id: req.wodId }, select: { name: true } });
     const isPr = scored.subScore === best._max.subScore;
-    await this.feedEvents.emit(userId, isPr ? "pr" : "wod_logged", {
-      wodId: req.wodId,
-      wodName: wodMeta?.name ?? req.wodId,
-      subScore: scored.subScore,
-      rawResult: req.rawResult,
-    });
+    // AAA anti-spam : on ne publie au feed Communauté QUE les PR (un vrai record), JAMAIS chaque
+    // séance loggée — sinon le feed est inondé. Le log simple reste comptabilisé (Index, série, badges).
+    if (isPr) {
+      await this.feedEvents.emit(userId, "pr", {
+        wodId: req.wodId,
+        wodName: wodMeta?.name ?? req.wodId,
+        subScore: scored.subScore,
+        rawResult: req.rawResult,
+      });
+    }
 
     // Engagement : met à jour la série et attribue les badges nouvellement mérités.
     // Best-effort : un échec ne doit pas faire échouer le log, mais on le LOGGE (pas de silence).

@@ -128,14 +128,27 @@ export class BadgesService {
       try {
         await this.prisma.userBadge.create({ data: { userId, badgeId: badge.id } });
         newly.push(badge); // poussé UNIQUEMENT si l'attribution a réussi (anti double-célébration).
-        if (badge.rarity !== "common" && !isFirstBatch) {
-          await this.feedEvents.emit(userId, "badge_unlocked", { badgeId: badge.id, name: badge.name, rarity: badge.rarity });
-        }
       } catch (e) {
         // P2002 = déjà attribué par une requête concurrente : on ignore sans le compter comme nouveau.
         if (!(e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002")) {
           this.logger.warn(`Attribution badge ${badge.id} échouée (${userId}) : ${e}`);
         }
+      }
+    }
+    // AAA anti-spam du feed Communauté : AU PLUS UN post par évaluation, et seulement pour un badge
+    // PRESTIGIEUX (epic / legendary). Une grappe de seuils (ex. Index 68→95 d'un coup) ⇒ UN SEUL post,
+    // le plus haut. Les badges common/rare se débloquent en silence (toujours visibles sur le profil).
+    if (!isFirstBatch && newly.length > 0) {
+      const RARITY: Record<string, number> = { common: 0, rare: 1, epic: 2, legendary: 3 };
+      const headline = newly
+        .filter((b) => RARITY[b.rarity] >= RARITY.epic)
+        .sort((a, b) => RARITY[b.rarity] - RARITY[a.rarity] || (b.seriesOrder ?? 0) - (a.seriesOrder ?? 0))[0];
+      if (headline) {
+        await this.feedEvents.emit(userId, "badge_unlocked", {
+          badgeId: headline.id,
+          name: headline.name,
+          rarity: headline.rarity,
+        });
       }
     }
     return newly;
