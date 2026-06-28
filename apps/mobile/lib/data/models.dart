@@ -1751,29 +1751,6 @@ class LeagueStandings {
   }
 }
 
-class LeagueMe {
-  final bool enrolled;
-  final String? monthKey;
-  final int points;
-  final int? position;
-  final int weeksPlayed;
-  const LeagueMe({
-    required this.enrolled,
-    this.monthKey,
-    required this.points,
-    this.position,
-    required this.weeksPlayed,
-  });
-
-  factory LeagueMe.fromJson(Map<String, dynamic> j) => LeagueMe(
-        enrolled: j['enrolled'] as bool? ?? false,
-        monthKey: j['monthKey'] as String?,
-        points: (j['points'] as num?)?.toInt() ?? 0,
-        position: (j['position'] as num?)?.toInt(),
-        weeksPlayed: (j['weeksPlayed'] as num?)?.toInt() ?? 0,
-      );
-}
-
 /// Une ligne du podium (top 3) d'une saison close — pour le « reveal » de fin de saison.
 class LeaguePodiumRow {
   final int finalRank; // 1 | 2 | 3

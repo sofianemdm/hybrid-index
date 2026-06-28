@@ -306,16 +306,9 @@ class ApiClient {
     return LeagueSeason.fromJson(Map<String, dynamic>.from(j));
   }
 
-  Future<void> leagueEnroll() async => _send('POST', '/v1/league/enroll', {});
-
   Future<LeagueStandings> leagueStandings(String sex) async {
     final j = await _send('GET', '/v1/league/standings?sex=$sex') as Map<String, dynamic>;
     return LeagueStandings.fromJson(j);
-  }
-
-  Future<LeagueMe> leagueMe() async {
-    final j = await _send('GET', '/v1/league/me') as Map<String, dynamic>;
-    return LeagueMe.fromJson(j);
   }
 
   /// Résultat de la dernière saison CLOSE (reveal de fin de saison) ; null si aucune saison close.

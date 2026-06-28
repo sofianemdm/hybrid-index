@@ -66,9 +66,10 @@ Pas un énième tracker. Pas un programme d'entraînement rigide. Pas une app qu
 | « 3 entraînements suffisent » | **~3 efforts → Index complet** |
 | Temps de course (onboarding) | **conseillé, non obligatoire** (skippable) |
 | Avatar | création en **30 s max** |
-| Supprimés (ne PAS réintroduire) | quêtes, saisons, score de fatigue, catégories de poids |
-| Ligues | **2 uniquement : Hommes + Femmes**, tous les athlètes, **classées par Hybrid Index** |
-| Classement box / amis | **après 200 utilisateurs** (hors MVP) |
+| Supprimés (ne PAS réintroduire) | quêtes, score de fatigue, catégories de poids |
+| Ligues | **2 uniquement : Hommes + Femmes** + **saison mensuelle à points** (les points se remettent à zéro chaque mois, **l'Athlete Index ne bouge jamais**) — _validé le 28/06/2026_ |
+| Saison mensuelle de Ligue | **ACTÉE** : ouverte à tous (auto-inscription), 5 WODs dédiés Ligue, classement par points du mois — _validé le 28/06/2026 ; le « pas de saisons » d'origine ne vaut plus que pour quêtes/score de fatigue_ |
+| Clubs (box / amis) | **ACTIFS dès maintenant** (le palier « après 200 utilisateurs » d'origine est levé) — _validé le 28/06/2026_ |
 | WODs de référence | **15** (8 avec matériel, 7 sans), avec **les temps de tous** |
 | Ciblage d'un axe | choisir un attribut → WODs spécifiques |
 | Confidentialité | **Tout est public** |
@@ -290,8 +291,11 @@ Chaque séance = `{attributs ciblés, niveau, durée, matériel, mouvements}`. *
 
 ## 11. Les ligues & le classement
 
-### 11.1 MVP : 2 ligues
-**Ligue Hommes** + **Ligue Femmes**, **tous les athlètes**, **classées par Hybrid Index**. Pas de poules, pas de saisons, pas de reset.
+### 11.1 MVP : 2 ligues + saison mensuelle (validé le 28/06/2026)
+**Ligue Hommes** + **Ligue Femmes**, **tous les athlètes**.
+- **Classement permanent par Athlete Index** (l'Index ne se remet JAMAIS à zéro).
+- **Saison mensuelle de Ligue (ACTÉE)** : par-dessus le classement Index, une saison à **points** ouverte à tous (auto-inscription), avec **5 WODs dédiés Ligue** et un **reset des points chaque mois**. Le reset ne concerne QUE les points de saison, jamais l'Index.
+- Pas de poules/sous-ligues, pas de promotion/relégation multi-divisions.
 
 ### 11.2 Anti-démotivation du débutant (sans sous-ligues)
 - Mettre en avant **percentile + progression** (« meilleur que 73 % », « +250 places ce mois-ci », « PR ! ») **plutôt que le rang brut**.
@@ -398,7 +402,7 @@ Chaque déblocage = animation + carte partageable. Les badges rares débloquent 
 - **Follow** : `followerId`, `followeeId`
 - **NotificationPrefs** : par type, on/off + quiet hours
 
-*(Plus de Quest, Season, pools/tiers de ligue.)*
+*(Plus de Quest, ni de pools/tiers multi-divisions. La **saison mensuelle de Ligue** est ACTÉE le 28/06/2026 : LeagueSeason/LeagueEntry/LeaguePoints sont la machinerie validée, points reset/mois, Index jamais.)*
 
 ---
 
