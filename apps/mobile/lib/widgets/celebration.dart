@@ -155,11 +155,14 @@ class _CelebrationViewState extends State<_CelebrationView> with TickerProviderS
       child: Stack(
         children: [
           Positioned.fill(
-            child: RepaintBoundary(
-              child: AnimatedBuilder(
-                animation: _confetti,
-                builder: (_, __) =>
-                    CustomPaint(painter: _ConfettiPainter(_particles, Curves.easeOut.transform(_confetti.value))),
+            // Confettis purement décoratifs → exclus du lecteur d'écran.
+            child: ExcludeSemantics(
+              child: RepaintBoundary(
+                child: AnimatedBuilder(
+                  animation: _confetti,
+                  builder: (_, __) =>
+                      CustomPaint(painter: _ConfettiPainter(_particles, Curves.easeOut.transform(_confetti.value))),
+                ),
               ),
             ),
           ),
@@ -183,8 +186,14 @@ class _CelebrationViewState extends State<_CelebrationView> with TickerProviderS
                     else
                       Icon(widget.icon ?? Icons.celebration_rounded, color: widget.accent, size: 56),
                     const SizedBox(height: HiSpace.md),
-                    Text(widget.title,
-                        textAlign: TextAlign.center, style: HiType.titleL.copyWith(color: HiColors.textPrimary)),
+                    // a11y : la célébration apparaît brutalement → liveRegion pour que le lecteur
+                    // d'écran annonce le titre (et le sous-titre) dès l'ouverture.
+                    Semantics(
+                      liveRegion: true,
+                      header: true,
+                      child: Text(widget.title,
+                          textAlign: TextAlign.center, style: HiType.titleL.copyWith(color: HiColors.textPrimary)),
+                    ),
                     if (widget.subtitle != null) ...[
                       const SizedBox(height: HiSpace.sm),
                       Text(widget.subtitle!,

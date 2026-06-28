@@ -8,6 +8,7 @@ import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import '../messaging/chat_screen.dart';
 import '../../theme/cosmetics.dart';
+import '../../widgets/error_retry.dart';
 import '../../widgets/hi_avatar.dart';
 import '../../widgets/index_ring.dart';
 import '../../widgets/radar_view.dart';
@@ -231,12 +232,7 @@ class PublicProfileScreen extends ConsumerWidget {
               return Center(child: CircularProgressIndicator(color: HiColors.brandPrimary));
             }
             if (snap.hasError) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(HiSpace.lg),
-                  child: Text('${snap.error}', textAlign: TextAlign.center, style: HiType.body.copyWith(color: HiColors.error)),
-                ),
-              );
+              return const ErrorRetry();
             }
             final p = snap.data!;
             return SingleChildScrollView(

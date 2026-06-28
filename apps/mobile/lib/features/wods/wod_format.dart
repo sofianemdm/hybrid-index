@@ -5,8 +5,9 @@ const Set<String> kRoundWods = {'cindy'};
 
 /// Formatage d'un résultat de séance selon son type de score (et l'unité « tours » par WOD).
 /// Les temps ≥ 1 h s'affichent en h:mm:ss (ex. marathon 4:30:00), sinon m:ss.
-String formatWodResult(num value, String scoreType, {String? wodId}) {
-  if (wodId != null && kRoundWods.contains(wodId)) return '${value.round()} tours';
+/// [roundsLabel] : libellé localisé pour l'unité « tours » (par défaut le FR « tours »).
+String formatWodResult(num value, String scoreType, {String? wodId, String roundsLabel = 'tours'}) {
+  if (wodId != null && kRoundWods.contains(wodId)) return '${value.round()} $roundsLabel';
   if (scoreType == 'time') return formatDuration(value.round());
   if (scoreType == 'load') return '${value.round()} kg';
   if (scoreType == 'distance') return '${value.round()} m';
@@ -15,8 +16,9 @@ String formatWodResult(num value, String scoreType, {String? wodId}) {
 
 /// Libellé d'unité d'un WOD pour la SAISIE / les en-têtes (« tours », « reps », « kg », « m »).
 /// Pour les WODs chronométrés, renvoie '' (le résultat est un temps m:ss, pas une unité comptée).
-String wodUnitLabel(String? wodId, String scoreType) {
-  if (wodId != null && kRoundWods.contains(wodId)) return 'tours';
+/// [roundsLabel] : libellé localisé pour l'unité « tours » (par défaut le FR « tours »).
+String wodUnitLabel(String? wodId, String scoreType, {String roundsLabel = 'tours'}) {
+  if (wodId != null && kRoundWods.contains(wodId)) return roundsLabel;
   switch (scoreType) {
     case 'time':
       return '';

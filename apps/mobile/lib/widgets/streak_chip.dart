@@ -20,28 +20,41 @@ class StreakChip extends StatelessWidget {
     const orange = HiColors.streakFlame;
     final active = streak.current > 0;
     final color = active ? orange : HiColors.textTertiary;
-    return Tooltip(
-      message: _detail(context),
-      child: GestureDetector(
-        onTap: () {
-          HiHaptics.tap();
-          _showSheet(context);
-        },
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.14),
-            borderRadius: BorderRadius.circular(HiRadius.pill),
-            border: Border.all(color: color.withValues(alpha: 0.4)),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(active ? Icons.local_fire_department_rounded : Icons.local_fire_department_outlined,
-                  color: color, size: 16),
-              const SizedBox(width: 4),
-              Text('${streak.current}', style: HiType.numericM.copyWith(color: color, fontSize: 15)),
-            ],
+    final t = AppLocalizations.of(context);
+    // a11y : bouton annoncé avec la valeur (« Série de N semaines ») ; cible tactile garantie ≥ 48dp.
+    return Semantics(
+      button: true,
+      label: t.streakSheetTitle,
+      value: '${streak.current}',
+      child: Tooltip(
+        message: _detail(context),
+        child: GestureDetector(
+          onTap: () {
+            HiHaptics.tap();
+            _showSheet(context);
+          },
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minWidth: HiTap.minTarget, minHeight: HiTap.minTarget),
+            child: Center(
+              widthFactor: 1,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.14),
+                  borderRadius: BorderRadius.circular(HiRadius.pill),
+                  border: Border.all(color: color.withValues(alpha: 0.4)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(active ? Icons.local_fire_department_rounded : Icons.local_fire_department_outlined,
+                        color: color, size: 16),
+                    const SizedBox(width: 4),
+                    Text('${streak.current}', style: HiType.numericM.copyWith(color: color, fontSize: 15)),
+                  ],
+                ),
+              ),
+            ),
           ),
         ),
       ),

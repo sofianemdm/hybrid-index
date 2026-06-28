@@ -7,105 +7,26 @@ import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import '../wods/wod_detail_screen.dart';
 
-/// Bloc accueil sous l'Index : chip de grade (« 70+ »), barre de progression vers le palier
-/// suivant, notice « Index estimé » + séances à faire tant que le radar n'est pas complet.
-class GradeBlock extends ConsumerWidget {
+/// Encart « Index estimé » affiché SOUS la PlayerCard tant que l'Index n'est pas complet.
+///
+/// La PlayerCard montre désormais l'OVR et le grade (ex-chip + barre de l'ancien GradeBlock,
+/// devenus redondants → retirés). Cet encart slim ne garde que ce que la carte NE dit PAS :
+/// (1) l'Index affiché est une ESTIMATION, (2) les séances minimales à faire pour le révéler.
+///
+/// Ne s'affiche QUE si l'Index est incomplet/estimé (radar < 6 OU isEstimated). L'appelant
+/// (home_screen) gère cette condition ; le widget la re-vérifie pour rester sûr isolément.
+class EstimationBlock extends ConsumerWidget {
   final Profile profile;
-  const GradeBlock({super.key, required this.profile});
+  const EstimationBlock({super.key, required this.profile});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final ovr = profile.index.value;
     final coverage = profile.index.radarCoverage;
     // Notice « estimé » si le radar est incomplet OU si l'Index est encore estimé (ex. après
     // Profil Express : 6/6 mais tout estimé → on incite à faire de vraies séances).
     final incomplete = coverage < 6 || profile.index.isEstimated;
-    final color = HiGrade.color(ovr);
-
-    return Column(
-      children: [
-        _gradeChip(ovr, color),
-        const SizedBox(height: HiSpace.md),
-        _progressBar(context, ovr, color),
-        const SizedBox(height: HiSpace.sm),
-        if (incomplete) _estimationNotice(context, ref, coverage) else _actionMessage(context, ovr),
-      ],
-    );
-  }
-
-  Widget _gradeChip(int ovr, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.16),
-        borderRadius: BorderRadius.circular(HiRadius.pill),
-        border: Border.all(color: color, width: 1.5),
-        boxShadow: ovr >= 100 ? [BoxShadow(color: color.withValues(alpha: 0.35), blurRadius: 16)] : null,
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (ovr >= 100) ...[
-            Icon(Icons.workspace_premium, color: color, size: 16),
-            const SizedBox(width: 4),
-          ],
-          Text(HiGrade.label(ovr),
-              style: TextStyle(color: color, fontSize: 15, fontWeight: FontWeight.w800, letterSpacing: 0.5)),
-        ],
-      ),
-    );
-  }
-
-  Widget _progressBar(BuildContext context, int ovr, Color color) {
-    final t = AppLocalizations.of(context);
-    if (ovr >= 100) {
-      return Text(t.gradeSummitReached,
-          style: TextStyle(color: color, fontSize: 13, fontWeight: FontWeight.w800));
-    }
-    // Objectif = le PROCHAIN POINT au-dessus de la note AFFICHÉE (ex. 79 → 80). On ancre sur `ovr`
-    // (= round(rating), le grand nombre montré) et NON sur floor(rating), sinon quand la décimale
-    // est ≥ .5 (ex. 78,6 → affiché 79) l'objectif tombait sur 79 → « viser 79 » alors qu'on EST à 79.
-    final r = (profile.index.rating ?? ovr.toDouble());
-    final cur = ovr;
-    final next = cur + 1;
-    final fill = (r - cur).clamp(0.0, 1.0); // 0 si on vient juste d'atteindre ce point (arrondi au sup)
-    final nextColor = HiGrade.color(next);
-    return Column(
-      children: [
-        Align(
-          alignment: Alignment.centerRight,
-          child: Text(t.gradeObjective(next),
-              style: TextStyle(color: nextColor, fontSize: 12, fontWeight: FontWeight.w800)),
-        ),
-        const SizedBox(height: 4),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(HiRadius.pill),
-          child: Stack(
-            children: [
-              Container(height: 10, color: HiColors.bgElevated2),
-              FractionallySizedBox(
-                widthFactor: fill.clamp(0.02, 1.0),
-                child: Container(
-                  height: 10,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(colors: [color, nextColor]),
-                    borderRadius: BorderRadius.circular(HiRadius.pill),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 4),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('$cur', style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w700)),
-            Text('$next', style: TextStyle(color: HiColors.textTertiary, fontSize: 11, fontWeight: FontWeight.w600)),
-          ],
-        ),
-      ],
-    );
+    if (!incomplete) return const SizedBox.shrink();
+    return _estimationNotice(context, ref, coverage);
   }
 
   /// Tant que les 6 attributs ne sont pas débloqués : on précise que l'Index est une ESTIMATION,
@@ -223,41 +144,6 @@ class GradeBlock extends ConsumerWidget {
           ),
         );
       }),
-    );
-  }
-
-  /// Index complet (6/6) : message d'action court vers le palier suivant.
-  Widget _actionMessage(BuildContext context, int ovr) {
-    final t = AppLocalizations.of(context);
-    final weak = profile.weakest;
-    // Objectif = le prochain POINT au-dessus de la note affichée (ovr+1), cohérent avec _progressBar.
-    final next = '${ovr + 1}';
-    if (weak == null) {
-      return Text(t.gradeClimbTo(next),
-          textAlign: TextAlign.center, style: TextStyle(color: HiColors.textSecondary, fontSize: 13));
-    }
-    final attrColor = HiColors.attribute(weak);
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(Icons.trending_up, color: attrColor, size: 14),
-        const SizedBox(width: 6),
-        Flexible(
-          child: RichText(
-            textAlign: TextAlign.center,
-            text: TextSpan(
-              style: TextStyle(color: HiColors.textSecondary, fontSize: 13),
-              children: [
-                TextSpan(text: t.gradeWorkPrefix),
-                TextSpan(text: HiLabels.attribute(weak), style: TextStyle(color: attrColor, fontWeight: FontWeight.w800)),
-                TextSpan(text: t.gradeWorkMiddle),
-                TextSpan(text: next, style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w800)),
-                TextSpan(text: t.gradeWorkSuffix),
-              ],
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

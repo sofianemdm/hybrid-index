@@ -49,6 +49,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sessionsWeeklyTitle => 'Session of the week';
 
   @override
+  String get sessionsLeagueBadge => 'LEAGUE';
+
+  @override
+  String get sessionsLeagueImposedBody =>
+      'This month\'s League required session. Do it to score points in the standings.';
+
+  @override
+  String get sessionsLeagueDoIt => 'Do this session';
+
+  @override
   String get sessionsCountsMost => 'Counts a lot';
 
   @override
@@ -195,6 +205,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String wreBandUp(int percent) {
+    return '🚀 You\'re entering the top $percent% of the fittest!';
+  }
+
+  @override
   String get wreUnitTime => 'time';
 
   @override
@@ -337,6 +352,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Pick a workout, see the records and where you stand.';
 
   @override
+  String get wodTabEmpty =>
+      'No reference workout available right now. Browse sessions by focus above, or pull to refresh.';
+
+  @override
   String get wodTabFlagshipSection => '⭐ Flagship workouts';
 
   @override
@@ -476,6 +495,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get wodDetailVariantScaled => 'Scaled';
+
+  @override
+  String get wodDetailVariantOpen => 'Open';
+
+  @override
+  String get wodFormatRounds => 'rounds';
 
   @override
   String get wodDetailYouShort => 'You';
@@ -1654,6 +1679,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String shareCardA11y(Object name, Object ovr, Object archetype) {
+    return '$name\'s card, Athlete Index $ovr, archetype $archetype';
+  }
+
+  @override
   String get shareCardAthlete => 'Athlete';
 
   @override
@@ -1986,13 +2016,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String leagueRevealRankOrdinal(int rank) {
-    String _temp0 = intl.Intl.pluralLogic(
-      rank,
-      locale: localeName,
-      other: '${rank}th',
-      one: '1st',
-    );
-    return '$_temp0';
+    // Ordinal anglais correct : 1st, 2nd, 3rd, 4th… avec l'exception 11th/12th/13th
+    // (et 111th, 112th, 113th…). Intl.pluralLogic gère le cardinal, pas l'ordinal —
+    // d'où le calcul explicite du suffixe ici.
+    final mod100 = rank % 100;
+    final mod10 = rank % 10;
+    final String suffix;
+    if (mod100 >= 11 && mod100 <= 13) {
+      suffix = 'th';
+    } else if (mod10 == 1) {
+      suffix = 'st';
+    } else if (mod10 == 2) {
+      suffix = 'nd';
+    } else if (mod10 == 3) {
+      suffix = 'rd';
+    } else {
+      suffix = 'th';
+    }
+    return '$rank$suffix';
   }
 
   @override

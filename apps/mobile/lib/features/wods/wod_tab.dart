@@ -5,6 +5,7 @@ import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
+import '../../widgets/error_retry.dart';
 import 'wod_detail_screen.dart';
 import 'other_workouts_screen.dart';
 import '../history/history_screen.dart';
@@ -47,15 +48,19 @@ class _WodTabState extends ConsumerState<WodTab> {
               return const Center(child: CircularProgressIndicator());
             }
             if (snap.hasError) {
-              return ListView(children: [
-                Padding(padding: const EdgeInsets.all(HiSpace.lg), child: Text('${snap.error}', style: TextStyle(color: HiColors.error))),
-              ]);
+              return ErrorRetry(onRetry: () => setState(() {
+                _future = ref.read(apiClientProvider).wodsCatalog();
+                _weekly = ref.read(apiClientProvider).leagueSeason();
+              }));
             }
             // « Autre » et séances communautaires (custom) sont rangées à part (écran « Autres épreuves »).
-            final all = snap.data!.where((w) => !w.isOther && !w.isCustom).toList();
+            final all = (snap.data ?? []).where((w) => !w.isOther && !w.isCustom).toList();
             final phares = all.where((w) => w.isFlagship).toList();
             final sansMateriel = all.where((w) => !w.requiresEquipment && !w.isFlagship).toList();
             final avecMateriel = all.where((w) => w.requiresEquipment && !w.isFlagship).toList();
+            // Catalogue vide (aucune séance de référence renvoyée) : un encart neutre plutôt que
+            // des sections vides silencieuses. Les axes/séance de la semaine restent affichés.
+            final catalogEmpty = phares.isEmpty && sansMateriel.isEmpty && avecMateriel.isEmpty;
             return ListView(
               padding: const EdgeInsets.fromLTRB(HiSpace.lg, HiSpace.lg, HiSpace.lg, 96),
               children: [
@@ -72,6 +77,25 @@ class _WodTabState extends ConsumerState<WodTab> {
                 _section(t.sessionsByFocus),
                 _attributeGrid(context),
                 const SizedBox(height: HiSpace.lg),
+                if (catalogEmpty)
+                  Container(
+                    padding: const EdgeInsets.all(HiSpace.lg),
+                    decoration: BoxDecoration(
+                      color: HiColors.bgElevated,
+                      borderRadius: BorderRadius.circular(HiRadius.md),
+                      border: Border.all(color: HiColors.strokeSubtle),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.fitness_center_rounded, color: HiColors.textTertiary),
+                        const SizedBox(width: HiSpace.md),
+                        Expanded(
+                          child: Text(t.wodTabEmpty,
+                              style: TextStyle(color: HiColors.textSecondary, height: 1.4)),
+                        ),
+                      ],
+                    ),
+                  ),
                 if (phares.isNotEmpty) ...[
                   _section(t.wodTabFlagshipSection),
                   Padding(
@@ -181,7 +205,7 @@ class _WodTabState extends ConsumerState<WodTab> {
                         decoration: BoxDecoration(
                             color: HiColors.brandSecondary.withValues(alpha: 0.18),
                             borderRadius: BorderRadius.circular(HiRadius.pill)),
-                        child: Text('LIGUE',
+                        child: Text(t.sessionsLeagueBadge,
                             style: TextStyle(
                                 color: HiColors.brandSecondaryText,
                                 fontSize: 11,
@@ -192,7 +216,7 @@ class _WodTabState extends ConsumerState<WodTab> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'La séance imposée de la Ligue du mois. Fais-la pour marquer des points au classement.',
+                    t.sessionsLeagueImposedBody,
                     style: TextStyle(color: HiColors.textSecondary, fontSize: 13, height: 1.4),
                   ),
                   const SizedBox(height: HiSpace.md),
@@ -205,7 +229,7 @@ class _WodTabState extends ConsumerState<WodTab> {
                         minimumSize: const Size.fromHeight(46),
                       ),
                       icon: const Icon(Icons.play_arrow_rounded),
-                      label: const Text('Faire cette séance'),
+                      label: Text(t.sessionsLeagueDoIt),
                       onPressed: () async {
                         await Navigator.of(context).push(
                           MaterialPageRoute(

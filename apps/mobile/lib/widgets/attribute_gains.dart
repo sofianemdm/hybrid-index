@@ -24,7 +24,13 @@ class AttributeGains extends StatelessWidget {
       children: gains.map((g) {
         final isWeak = g.attribute == weakest;
         final color = HiColors.attribute(g.attribute);
-        return Padding(
+        // a11y : une ligne = un message clair (« +X en Cardio, ton point faible »).
+        final semanticLabel = '+${g.delta} en ${HiLabels.attribute(g.attribute)}'
+            '${isWeak ? ', ton point faible' : ''}';
+        return Semantics(
+          label: semanticLabel,
+          child: ExcludeSemantics(
+            child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 3),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -51,6 +57,8 @@ class AttributeGains extends StatelessWidget {
                 ),
               ],
             ],
+          ),
+            ),
           ),
         );
       }).toList(),

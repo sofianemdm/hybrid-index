@@ -130,11 +130,14 @@ export class EngagementService {
       }
     }
 
-    // Prochain rang.
-    const next = RANK_BANDS.find((b) => b.min > idx.value);
+    // Prochain rang. RANK_BANDS vit sur l'échelle d'AFFICHAGE /100 ; `idx.value` est l'Index INTERNE
+    // /1000. On compare donc sur la MÊME échelle (/100) via ratingFromInternal, sinon `next.min - idx.value`
+    // est toujours < 0 (bande /100 − valeur /1000) → déclencheur quasi mort.
+    const ovr = ratingFromInternal(idx.value);
+    const next = RANK_BANDS.find((b) => b.min > ovr);
     if (next && enabled("next-rank-close")) {
-      const pts = next.min - idx.value;
-      if (pts <= 40) {
+      const pts = Math.ceil(next.min - ovr); // points /100 restants jusqu'au rang suivant
+      if (pts <= 5) {
         items.push({
           key: "next-rank-close",
           params: { rank: next.rank, points: pts },

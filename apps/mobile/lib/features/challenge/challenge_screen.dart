@@ -284,7 +284,7 @@ class _ChallengeScreenState extends ConsumerState<ChallengeScreen> {
                 ),
                 RankBadge(rank: e.rank, ovr: e.index, fontSize: 10),
                 const SizedBox(width: HiSpace.sm),
-                Text(formatWodResult(e.rawResult, scoreType, wodId: wodId),
+                Text(formatWodResult(e.rawResult, scoreType, wodId: wodId, roundsLabel: AppLocalizations.of(context).wodFormatRounds),
                     style: HiType.bodyStrong.copyWith(color: HiColors.textPrimary)),
               ]),
             );

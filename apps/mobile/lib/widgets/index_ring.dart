@@ -51,6 +51,16 @@ class _IndexRingState extends State<IndexRing> with SingleTickerProviderStateMix
   Widget build(BuildContext context) {
     final reduceMotion = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
     final top = (100 - widget.percentile * 100).clamp(1, 100).round();
+    // a11y : le lecteur d'écran lit la VALEUR finale (pas le count-up), le grade et le top %.
+    // ExcludeSemantics sur le visuel animé pour ne pas lire chiffre par chiffre l'animation.
+    return Semantics(
+      label: 'Athlete Index ${widget.value} sur 100, grade ${HiGrade.label(widget.value)}, top $top %',
+      container: true,
+      child: ExcludeSemantics(child: _buildRing(context, reduceMotion, top)),
+    );
+  }
+
+  Widget _buildRing(BuildContext context, bool reduceMotion, int top) {
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: widget.value.toDouble()),
       // Reduce-motion : pas de count-up, l'Index s'affiche directement.

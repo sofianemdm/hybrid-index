@@ -203,7 +203,7 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
     final to = celebration[1];
     final m = RegExp(r'pop_top_(\d+)').firstMatch(to);
     if (m == null) return null;
-    return '🚀 Tu entres dans le top ${m.group(1)}% des plus en forme !';
+    return AppLocalizations.of(context).wreBandUp(int.parse(m.group(1)!));
   }
 
   /// Intensité de la célébration selon la rareté du badge le plus rare débloqué.
@@ -280,7 +280,7 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
                 ],
                 Text(_isFreeRun
                     ? t.wreYourTime
-                    : t.wreYourResult(_isTime ? t.wreUnitTime : wodUnitLabel(widget.wodId, widget.scoreType)),
+                    : t.wreYourResult(_isTime ? t.wreUnitTime : wodUnitLabel(widget.wodId, widget.scoreType, roundsLabel: t.wodFormatRounds)),
                     style: HiType.body.copyWith(color: HiColors.textSecondary)),
                 const SizedBox(height: 8),
                 if (_isTime)
@@ -319,19 +319,29 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
 
   Widget _scaleChip(String label, bool rx) {
     final active = _rx == rx;
+    // a11y : chip d'option annoncée (bouton sélectionné/non) ; cible tactile ≥ 48dp.
     return Expanded(
-      child: GestureDetector(
-        onTap: () => setState(() => _rx = rx),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            gradient: active ? HiColors.brandGradient : null,
-            color: active ? null : HiColors.bgElevated2,
-            borderRadius: BorderRadius.circular(HiRadius.pill),
+      child: Semantics(
+        button: true,
+        selected: active,
+        label: label,
+        child: ExcludeSemantics(
+          child: GestureDetector(
+            onTap: () => setState(() => _rx = rx),
+            child: Container(
+              constraints: const BoxConstraints(minHeight: HiTap.minTarget),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                gradient: active ? HiColors.brandGradient : null,
+                color: active ? null : HiColors.bgElevated2,
+                borderRadius: BorderRadius.circular(HiRadius.pill),
+              ),
+              child: Text(label,
+                  style: HiType.body
+                      .copyWith(color: active ? HiColors.textOnBrand : HiColors.textSecondary, fontWeight: FontWeight.w600)),
+            ),
           ),
-          child: Text(label,
-              style: HiType.body.copyWith(color: active ? HiColors.textOnBrand : HiColors.textSecondary, fontWeight: FontWeight.w600)),
         ),
       ),
     );

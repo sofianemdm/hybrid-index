@@ -176,6 +176,24 @@ abstract class AppLocalizations {
   /// **'Session of the week'**
   String get sessionsWeeklyTitle;
 
+  /// No description provided for @sessionsLeagueBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'LEAGUE'**
+  String get sessionsLeagueBadge;
+
+  /// No description provided for @sessionsLeagueImposedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This month\'s League required session. Do it to score points in the standings.'**
+  String get sessionsLeagueImposedBody;
+
+  /// No description provided for @sessionsLeagueDoIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Do this session'**
+  String get sessionsLeagueDoIt;
+
   /// No description provided for @sessionsCountsMost.
   ///
   /// In en, this message translates to:
@@ -439,6 +457,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your result ({unit})'**
   String wreYourResult(String unit);
+
+  /// No description provided for @wreBandUp.
+  ///
+  /// In en, this message translates to:
+  /// **'🚀 You\'re entering the top {percent}% of the fittest!'**
+  String wreBandUp(int percent);
 
   /// No description provided for @wreUnitTime.
   ///
@@ -710,6 +734,12 @@ abstract class AppLocalizations {
   /// **'Pick a workout, see the records and where you stand.'**
   String get wodTabSubtitle;
 
+  /// No description provided for @wodTabEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No reference workout available right now. Browse sessions by focus above, or pull to refresh.'**
+  String get wodTabEmpty;
+
   /// No description provided for @wodTabFlagshipSection.
   ///
   /// In en, this message translates to:
@@ -967,6 +997,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Scaled'**
   String get wodDetailVariantScaled;
+
+  /// No description provided for @wodDetailVariantOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get wodDetailVariantOpen;
+
+  /// No description provided for @wodFormatRounds.
+  ///
+  /// In en, this message translates to:
+  /// **'rounds'**
+  String get wodFormatRounds;
 
   /// No description provided for @wodDetailYouShort.
   ///
@@ -2900,6 +2942,12 @@ abstract class AppLocalizations {
   /// **'★ TOP {pct} %'**
   String shareCardTopPct(Object pct);
 
+  /// No description provided for @shareCardA11y.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}\'s card, Athlete Index {ovr}, archetype {archetype}'**
+  String shareCardA11y(Object name, Object ovr, Object archetype);
+
   /// No description provided for @shareCardAthlete.
   ///
   /// In en, this message translates to:
@@ -3443,7 +3491,7 @@ abstract class AppLocalizations {
   /// No description provided for @leagueRevealRankOrdinal.
   ///
   /// In en, this message translates to:
-  /// **'{rank, plural, =1{1st} other{{rank}th}}'**
+  /// **'{rank, plural, =1{1st} =2{2nd} =3{3rd} =11{11th} =12{12th} =13{13th} =21{21st} =22{22nd} =23{23rd} other{{rank}th}}'**
   String leagueRevealRankOrdinal(int rank);
 
   /// No description provided for @leagueRevealNotRanked.

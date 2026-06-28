@@ -54,25 +54,40 @@ class _RadarViewState extends State<RadarView> with SingleTickerProviderStateMix
     cb(widget.radar[idx].attribute);
   }
 
+  /// Résumé lisible des 6 attributs pour le lecteur d'écran (le CustomPaint est décoratif).
+  String _radarSemanticLabel() {
+    final parts = widget.radar
+        .map((a) => '${HiLabels.attribute(a.attribute)} ${a.unlocked ? a.score : 'non évalué'}')
+        .join(', ');
+    return 'Radar des attributs : $parts';
+  }
+
   @override
   Widget build(BuildContext context) {
     final labelBase = Theme.of(context).textTheme.bodySmall;
     return Column(
       children: [
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final size = Size(constraints.maxWidth, 260);
-            return GestureDetector(
-              onTapUp: widget.onTapAttribute == null ? null : (d) => _onTapUp(d, size),
-              child: AnimatedBuilder(
-                animation: _c,
-                builder: (context, _) => CustomPaint(
-                  size: size,
-                  painter: _RadarPainter(widget.radar, Curves.easeOutCubic.transform(_c.value), labelBase),
+        Semantics(
+          label: _radarSemanticLabel(),
+          container: true,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final size = Size(constraints.maxWidth, 260);
+              return GestureDetector(
+                onTapUp: widget.onTapAttribute == null ? null : (d) => _onTapUp(d, size),
+                // CustomPaint purement décoratif : on ne le lit pas (le résumé est sur le Semantics parent).
+                child: ExcludeSemantics(
+                  child: AnimatedBuilder(
+                    animation: _c,
+                    builder: (context, _) => CustomPaint(
+                      size: size,
+                      painter: _RadarPainter(widget.radar, Curves.easeOutCubic.transform(_c.value), labelBase),
+                    ),
+                  ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
         const SizedBox(height: HiSpace.md),
         ...widget.radar.map(_attrRow),

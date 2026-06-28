@@ -7,6 +7,7 @@ import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
+import '../../widgets/error_retry.dart';
 import '../../widgets/rank_badge.dart';
 import '../profile/public_profile_screen.dart';
 
@@ -113,8 +114,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                   if (snap.connectionState == ConnectionState.waiting) {
                     return Center(child: CircularProgressIndicator(color: HiColors.brandPrimary));
                   }
-                  if (snap.hasError) return Center(child: Text('${snap.error}', style: HiType.body.copyWith(color: HiColors.error)));
-                  final items = snap.data!;
+                  if (snap.hasError) return ErrorRetry(onRetry: () => setState(_load));
+                  final items = snap.data ?? [];
                   if (items.isEmpty) {
                     return Center(child: Text(t.exploreEmpty, style: HiType.caption.copyWith(color: HiColors.textTertiary)));
                   }

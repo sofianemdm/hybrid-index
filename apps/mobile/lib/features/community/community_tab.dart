@@ -441,7 +441,7 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
               borderRadius: BorderRadius.circular(HiRadius.pill),
             ),
             child: Text(
-              '${formatWodResult(raw, scoreType, wodId: a.payload['wodId']?.toString())}'
+              '${formatWodResult(raw, scoreType, wodId: a.payload['wodId']?.toString(), roundsLabel: AppLocalizations.of(context).wodFormatRounds)}'
               '${a.payload['subScore'] is num ? '  ·  ${a.payload['subScore']}/100' : ''}',
               style: TextStyle(color: HiColors.brandPrimary, fontWeight: FontWeight.w800),
             ),
@@ -459,20 +459,37 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
     final t = AppLocalizations.of(context);
     final active = a.hasKudoed;
     final count = a.kudos;
-    return GestureDetector(
-      onTap: a.isMe ? null : () => _toggleKudos(a),
-      child: Tooltip(
-        message: t.communityKudosTooltip,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: active ? HiColors.brandPrimary.withValues(alpha: 0.15) : HiColors.bgElevated2,
-            borderRadius: BorderRadius.circular(HiRadius.pill),
-            border: Border.all(color: active ? HiColors.brandPrimary.withValues(alpha: 0.5) : HiColors.strokeSubtle),
+    // a11y : bouton « kudos » nommé, état coché, compteur lu ; cible tactile garantie ≥ 48dp.
+    return Semantics(
+      button: !a.isMe,
+      toggled: active,
+      enabled: !a.isMe,
+      label: t.communityKudosTooltip,
+      value: count > 0 ? '$count' : null,
+      child: ExcludeSemantics(
+        child: GestureDetector(
+          onTap: a.isMe ? null : () => _toggleKudos(a),
+          child: Tooltip(
+            message: t.communityKudosTooltip,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: HiTap.minTarget),
+              child: Center(
+                widthFactor: 1,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: active ? HiColors.brandPrimary.withValues(alpha: 0.15) : HiColors.bgElevated2,
+                    borderRadius: BorderRadius.circular(HiRadius.pill),
+                    border:
+                        Border.all(color: active ? HiColors.brandPrimary.withValues(alpha: 0.5) : HiColors.strokeSubtle),
+                  ),
+                  child: Text('👏 ${count > 0 ? count : ''}'.trim(),
+                      style: TextStyle(
+                          color: active ? HiColors.brandPrimary : HiColors.textSecondary, fontWeight: FontWeight.w600)),
+                ),
+              ),
+            ),
           ),
-          child: Text('👏 ${count > 0 ? count : ''}'.trim(),
-              style: TextStyle(
-                  color: active ? HiColors.brandPrimary : HiColors.textSecondary, fontWeight: FontWeight.w600)),
         ),
       ),
     );

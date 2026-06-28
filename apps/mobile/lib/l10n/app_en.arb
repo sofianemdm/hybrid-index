@@ -13,6 +13,9 @@
   "sessionsTitle": "Sessions",
   "sessionsByFocus": "Sessions by focus",
   "sessionsWeeklyTitle": "Session of the week",
+  "sessionsLeagueBadge": "LEAGUE",
+  "sessionsLeagueImposedBody": "This month's League required session. Do it to score points in the standings.",
+  "sessionsLeagueDoIt": "Do this session",
   "sessionsCountsMost": "Counts a lot",
   "sessionsAttributeHeader": "Workouts that count toward your {attribute} score",
   "@sessionsAttributeHeader": { "placeholders": { "attribute": { "type": "String" } } },
@@ -67,6 +70,8 @@
   "wreYourTime": "Your time",
   "wreYourResult": "Your result ({unit})",
   "@wreYourResult": { "placeholders": { "unit": { "type": "String" } } },
+  "wreBandUp": "🚀 You're entering the top {percent}% of the fittest!",
+  "@wreBandUp": { "placeholders": { "percent": { "type": "int" } } },
   "wreUnitTime": "time",
   "wreDistanceLabel": "Distance covered (meters)",
   "wreDistanceHint": "e.g. 5000",
@@ -112,6 +117,7 @@
   "deleteAccountBody": "This action is permanent: all your data will be erased.",
   "wodTabTitle": "Workouts",
   "wodTabSubtitle": "Pick a workout, see the records and where you stand.",
+  "wodTabEmpty": "No reference workout available right now. Browse sessions by focus above, or pull to refresh.",
   "wodTabFlagshipSection": "⭐ Flagship workouts",
   "wodTabFlagshipCaption": "The 4 big challenges everyone measures themselves against.",
   "wodTabNoEquipment": "No equipment",
@@ -176,6 +182,8 @@
   "wodDetailLeaderboardEmpty": "Be the first to post a result 💪",
   "wodDetailVariantRx": "Rx",
   "wodDetailVariantScaled": "Scaled",
+  "wodDetailVariantOpen": "Open",
+  "wodFormatRounds": "rounds",
   "wodDetailYouShort": "You",
   "wodDetailLeaderboardYou": "{name} (you)",
   "@wodDetailLeaderboardYou": {
@@ -897,6 +905,14 @@
     }
   },
   "shareCardAthlete": "Athlete",
+  "shareCardA11y": "{name}'s card, Athlete Index {ovr}, archetype {archetype}",
+  "@shareCardA11y": {
+    "placeholders": {
+      "name": { "type": "Object" },
+      "ovr": { "type": "Object" },
+      "archetype": { "type": "Object" }
+    }
+  },
   "leaderboardTitle": "League",
   "leaderboardWeeklyProgress": "Weekly progress (by effort)",
   "leaderboardMen": "Men",
@@ -1033,7 +1049,7 @@
   "leagueRevealPodium": "PODIUM",
   "leagueRevealYouFinished": "You finished {rank}",
   "@leagueRevealYouFinished": { "placeholders": { "rank": { "type": "String" } } },
-  "leagueRevealRankOrdinal": "{rank, plural, =1{1st} other{{rank}th}}",
+  "leagueRevealRankOrdinal": "{rank, plural, =1{1st} =2{2nd} =3{3rd} =11{11th} =12{12th} =13{13th} =21{21st} =22{22nd} =23{23rd} other{{rank}th}}",
   "@leagueRevealRankOrdinal": { "placeholders": { "rank": { "type": "int" } } },
   "leagueRevealNotRanked": "You weren't ranked this season.",
   "leagueRevealNewSeason": "A new season has begun — go for it!",

@@ -263,6 +263,7 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
 
   late final AnimationController _reveal;
   late final AnimationController _sheen;
+  bool _motionStarted = false;
 
   _Skin get _skin => _skins[widget.profile.index.rank] ?? _skins['rookie']!;
 
@@ -275,8 +276,25 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
     });
     final period = _sheenPeriod[widget.profile.index.rank] ?? 3600;
     _sheen = AnimationController(vsync: this, duration: Duration(milliseconds: period));
-    _sheen.repeat(); // sheen sur TOUS les rangs (intensité par l'alpha)
-    _reveal.forward();
+    // Démarrage des animations différé en didChangeDependencies : MediaQuery (reduce-motion)
+    // n'est pas disponible dans initState.
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_motionStarted) return;
+    _motionStarted = true;
+    // Reduce-motion (a11y) : carte STATIQUE — pas de reflet en boucle (_sheen) ni de reveal animé.
+    // On fige le reveal à 1.0 (OVR plein, barres pleines) ; le sheen reste à 0 (alpha appliqué mais
+    // immobile). En export PNG, on fige aussi (cf. widget.exporting).
+    final reduceMotion = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+    if (reduceMotion) {
+      _reveal.value = 1.0;
+    } else {
+      _sheen.repeat(); // sheen sur TOUS les rangs (intensité par l'alpha)
+      _reveal.forward();
+    }
   }
 
   @override
@@ -320,6 +338,20 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
     final archColor = (dom == null || balanced) ? HiColors.attrHybrid : HiColors.attribute(dom);
     final highlightKey = balanced ? null : dom; // dominant mis en avant seulement si tranché
 
+    // a11y : un résumé unique de la carte (le visuel animé est décoratif → ExcludeSemantics).
+    final cardName = widget.name.isEmpty ? loc.shareCardAthlete : widget.name;
+    final semanticsLabel = loc.shareCardA11y(cardName, idx.value, archLabel);
+
+    return Semantics(
+      label: semanticsLabel,
+      container: true,
+      child: ExcludeSemantics(child: _buildCard(skin, idx, isElite, topPct, byAttr, archLabel, archColor, highlightKey)),
+    );
+  }
+
+  Widget _buildCard(_Skin skin, IndexSummary idx, bool isElite, int topPct, Map<String, RadarAttribute> byAttr,
+      String archLabel, Color archColor, String? highlightKey) {
+    final loc = AppLocalizations.of(context);
     return AnimatedBuilder(
       animation: Listenable.merge([_reveal, _sheen]),
       builder: (context, _) {

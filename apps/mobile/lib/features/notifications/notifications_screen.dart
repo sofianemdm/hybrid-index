@@ -8,6 +8,7 @@ import '../../data/session.dart';
 import '../../data/ui_state.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
+import '../../widgets/error_retry.dart';
 import '../messaging/conversations_screen.dart';
 import 'notification_settings_screen.dart';
 
@@ -130,8 +131,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen>
                 return ListView(
                   physics: const AlwaysScrollableScrollPhysics(),
                   children: [
-                    const SizedBox(height: 120),
-                    Center(child: Text('${snap.error}', style: HiType.body.copyWith(color: HiColors.error))),
+                    const SizedBox(height: 80),
+                    ErrorRetry(onRetry: _refresh),
                   ],
                 );
               }

@@ -50,6 +50,16 @@ class AppLocalizationsFr extends AppLocalizations {
   String get sessionsWeeklyTitle => 'La séance de la semaine';
 
   @override
+  String get sessionsLeagueBadge => 'LIGUE';
+
+  @override
+  String get sessionsLeagueImposedBody =>
+      'La séance imposée de la Ligue du mois. Fais-la pour marquer des points au classement.';
+
+  @override
+  String get sessionsLeagueDoIt => 'Faire cette séance';
+
+  @override
   String get sessionsCountsMost => 'Compte fort';
 
   @override
@@ -197,6 +207,11 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
+  String wreBandUp(int percent) {
+    return '🚀 Tu entres dans le top $percent% des plus en forme !';
+  }
+
+  @override
   String get wreUnitTime => 'temps';
 
   @override
@@ -339,6 +354,10 @@ class AppLocalizationsFr extends AppLocalizations {
       'Choisis une séance, vois les records et où tu te situes.';
 
   @override
+  String get wodTabEmpty =>
+      'Aucune séance de référence disponible pour l\'instant. Explore les séances par axe ci-dessus, ou tire pour rafraîchir.';
+
+  @override
   String get wodTabFlagshipSection => '⭐ Séances phares';
 
   @override
@@ -479,6 +498,12 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get wodDetailVariantScaled => 'Allégé';
+
+  @override
+  String get wodDetailVariantOpen => 'Open';
+
+  @override
+  String get wodFormatRounds => 'tours';
 
   @override
   String get wodDetailYouShort => 'Toi';
@@ -1662,6 +1687,11 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String shareCardTopPct(Object pct) {
     return '★ TOP $pct %';
+  }
+
+  @override
+  String shareCardA11y(Object name, Object ovr, Object archetype) {
+    return 'Carte de $name, Athlete Index $ovr, archétype $archetype';
   }
 
   @override

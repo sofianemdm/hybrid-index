@@ -18,6 +18,7 @@ import '../../widgets/social_proof_card.dart';
 import '../../widgets/streak_chip.dart';
 import '../../widgets/bug_report.dart';
 import '../../widgets/error_retry.dart';
+import 'grade_block.dart';
 import 'rival_card.dart';
 import 'weekly_recap_card.dart';
 import '../avatar/dice_avatar_screen.dart';
@@ -170,17 +171,29 @@ class HomeScreen extends ConsumerWidget {
               child: FittedBox(
                 fit: BoxFit.scaleDown,
                 alignment: Alignment.topCenter,
-                child: PlayerCard(
-                  profile: p,
-                  name: ref.watch(sessionProvider).user?.displayName ?? '',
-                  sex: ref.watch(sessionProvider).sex,
-                  avatar: ref.watch(avatarProvider).value,
-                  badges: ref.watch(cardBadgesProvider).value ?? const [],
+                // RepaintBoundary : isole le repaint du sheen animé de la carte du reste de l'accueil
+                // (le reflet en boucle ne re-peint plus le ListView entier à chaque frame).
+                child: RepaintBoundary(
+                  child: PlayerCard(
+                    profile: p,
+                    name: ref.watch(sessionProvider).user?.displayName ?? '',
+                    sex: ref.watch(sessionProvider).sex,
+                    avatar: ref.watch(avatarProvider).value,
+                    badges: ref.watch(cardBadgesProvider).value ?? const [],
+                  ),
                 ),
               ),
             ),
           ]),
         ),
+        // Encart « Index estimé » + plan de complétion : la PlayerCard montre l'OVR/grade mais ne
+        // dit PLUS que l'Index est une estimation ni quelles séances faire pour le révéler. On le
+        // réintroduit SOUS la carte, uniquement tant que l'Index est incomplet/estimé (le widget
+        // se masque tout seul sinon → SizedBox.shrink).
+        if (p.index.radarCoverage < 6 || p.index.isEstimated) ...[
+          const SizedBox(height: HiSpace.md),
+          EstimationBlock(profile: p),
+        ],
         // Projection motivante (« à ce rythme, X+ dans N sem ») — seulement si tendance positive.
         ref.watch(indexHistoryProvider).maybeWhen(
               data: (h) {

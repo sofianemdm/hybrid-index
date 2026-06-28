@@ -14,6 +14,15 @@ class RankBadge extends StatelessWidget {
     final bool grade = ovr != null;
     final color = grade ? HiGrade.color(ovr!) : HiColors.rank(rank);
     final label = grade ? HiGrade.label(ovr!) : HiLabels.rank(rank).toUpperCase();
+    // a11y : énoncé explicite (« grade 70+ » / « rang Or ») plutôt que le texte brut « 70+ ».
+    final semanticLabel = grade ? 'Grade ${HiGrade.label(ovr!)}' : 'Rang ${HiLabels.rank(rank)}';
+    return Semantics(
+      label: semanticLabel,
+      child: ExcludeSemantics(child: _badge(color, label, grade)),
+    );
+  }
+
+  Widget _badge(Color color, String label, bool grade) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(

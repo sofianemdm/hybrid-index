@@ -6,6 +6,7 @@ import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
+import '../../widgets/error_retry.dart';
 import '../../widgets/hi_button.dart';
 import '../../widgets/rank_badge.dart';
 import 'wod_format.dart';
@@ -86,7 +87,13 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
             if (snap.connectionState == ConnectionState.waiting) {
               return Center(child: CircularProgressIndicator(color: HiColors.brandPrimary));
             }
-            if (snap.hasError) return Center(child: Text('${snap.error}', style: HiType.body.copyWith(color: HiColors.error)));
+            if (snap.hasError) {
+              return ErrorRetry(onRetry: () => setState(() {
+                _detail = ref.read(apiClientProvider).wodDetail(widget.wodId);
+                _prediction = ref.read(apiClientProvider).wodPrediction(widget.wodId);
+                _loadLeaderboard();
+              }));
+            }
             final d = snap.data!;
             final challenge = _challengeCard(d);
             return ListView(
@@ -203,7 +210,7 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(AppLocalizations.of(context).wodDetailYou, style: HiType.body.copyWith(color: HiColors.textSecondary)),
-                  Text(formatWodResult(d.myBestRaw!, d.scoreType, wodId: widget.wodId),
+                  Text(formatWodResult(d.myBestRaw!, d.scoreType, wodId: widget.wodId, roundsLabel: AppLocalizations.of(context).wodFormatRounds),
                       style: HiType.body.copyWith(color: HiColors.brandPrimary, fontWeight: FontWeight.w800)),
                   if (d.myBestSubScore != null)
                     Text('  ·  ${AppLocalizations.of(context).wodDetailPoints(d.myBestSubScore!)}', style: HiType.body.copyWith(color: HiColors.textTertiary)),
@@ -222,7 +229,7 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
       child: Row(
         children: [
           Expanded(child: Text(label, style: HiType.body.copyWith(color: color, fontWeight: FontWeight.w600))),
-          Text(formatWodResult(value, scoreType, wodId: widget.wodId),
+          Text(formatWodResult(value, scoreType, wodId: widget.wodId, roundsLabel: AppLocalizations.of(context).wodFormatRounds),
               style: HiType.body.copyWith(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
         ],
       ),
@@ -519,6 +526,7 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
   }
 
   Widget _histRow(WodHistoryEntry h, String scoreType) {
+    final t = AppLocalizations.of(context);
     final p = h.performedAt;
     final date = p.length >= 10 ? '${p.substring(8, 10)}/${p.substring(5, 7)}/${p.substring(2, 4)}' : '';
     return Padding(
@@ -527,16 +535,16 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
         children: [
           SizedBox(width: 70, child: Text(date, style: HiType.caption.copyWith(color: HiColors.textTertiary))),
           Expanded(
-            child: Text(formatWodResult(h.rawResult, scoreType, wodId: widget.wodId),
+            child: Text(formatWodResult(h.rawResult, scoreType, wodId: widget.wodId, roundsLabel: t.wodFormatRounds),
                 style: HiType.body.copyWith(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
           ),
           if (!h.rxCompliant)
             Padding(
               padding: const EdgeInsets.only(right: 8),
-              child: Text(widget.wodId == 'hyrox_solo' ? 'Open' : 'Scaled', style: HiType.caption.copyWith(color: HiColors.textTertiary)),
+              child: Text(widget.wodId == 'hyrox_solo' ? t.wodDetailVariantOpen : t.wodDetailVariantScaled, style: HiType.caption.copyWith(color: HiColors.textTertiary)),
             ),
           if (h.subScore != null)
-            Text(AppLocalizations.of(context).wodDetailPoints(h.subScore!), style: HiType.body.copyWith(color: HiColors.brandPrimary, fontWeight: FontWeight.w800)),
+            Text(t.wodDetailPoints(h.subScore!), style: HiType.body.copyWith(color: HiColors.brandPrimary, fontWeight: FontWeight.w800)),
         ],
       ),
     );
@@ -572,7 +580,9 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
             if (snap.connectionState == ConnectionState.waiting) {
               return Padding(padding: const EdgeInsets.all(24), child: Center(child: CircularProgressIndicator(color: HiColors.brandPrimary)));
             }
-            if (snap.hasError) return Text('${snap.error}', style: HiType.body.copyWith(color: HiColors.error));
+            if (snap.hasError) {
+              return ErrorRetry(compact: true, onRetry: () => setState(_loadLeaderboard));
+            }
             final lb = snap.data!;
             if (lb.entries.isEmpty) {
               return Text(t.wodDetailLeaderboardEmpty, style: HiType.body.copyWith(color: HiColors.textTertiary));
@@ -615,7 +625,7 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
             RankBadge(rank: rank, ovr: index, fontSize: 10),
             const SizedBox(width: HiSpace.sm),
           ],
-          Text(formatWodResult(rawResult, scoreType, wodId: widget.wodId),
+          Text(formatWodResult(rawResult, scoreType, wodId: widget.wodId, roundsLabel: t.wodFormatRounds),
               style: HiType.body.copyWith(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
         ],
       ),

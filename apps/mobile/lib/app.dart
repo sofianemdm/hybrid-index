@@ -7,6 +7,7 @@ import 'features/auth/auth_screen.dart';
 import 'features/home/home_shell.dart';
 import 'features/onboarding/onboarding_screen.dart';
 import 'theme/tokens.dart';
+import 'widgets/error_retry.dart';
 
 /// Profil de l'utilisateur connecté (Index + radar). `null` = onboarding non terminé.
 final myProfileProvider = FutureProvider<Profile?>((ref) async {
@@ -124,7 +125,7 @@ class AuthGate extends ConsumerWidget {
         final profile = ref.watch(myProfileProvider);
         return profile.when(
           loading: () => const _Splash(),
-          error: (e, _) => _ErrorScreen(message: '$e', onRetry: () => ref.invalidate(myProfileProvider)),
+          error: (e, _) => Scaffold(body: ErrorRetry(onRetry: () => ref.invalidate(myProfileProvider))),
           data: (p) => p == null ? const OnboardingScreen() : const HomeShell(),
         );
     }
@@ -145,32 +146,6 @@ class _Splash extends StatelessWidget {
             const SizedBox(height: 20),
             SizedBox(width: 28, height: 28, child: CircularProgressIndicator(color: HiColors.brandPrimary, strokeWidth: 2.5)),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ErrorScreen extends StatelessWidget {
-  final String message;
-  final VoidCallback onRetry;
-  const _ErrorScreen({required this.message, required this.onRetry});
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(HiSpace.lg),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.cloud_off, color: HiColors.error, size: 40),
-              const SizedBox(height: HiSpace.md),
-              Text(message, textAlign: TextAlign.center, style: TextStyle(color: HiColors.textSecondary)),
-              const SizedBox(height: HiSpace.lg),
-              OutlinedButton(onPressed: onRetry, child: const Text('Réessayer')),
-            ],
-          ),
         ),
       ),
     );

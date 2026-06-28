@@ -21,21 +21,27 @@ class _HiPressableState extends State<HiPressable> {
   @override
   Widget build(BuildContext context) {
     final enabled = widget.onTap != null;
-    return GestureDetector(
-      onTapDown: enabled ? (_) => setState(() => _down = true) : null,
-      onTapCancel: enabled ? () => setState(() => _down = false) : null,
-      onTapUp: enabled ? (_) => setState(() => _down = false) : null,
-      onTap: enabled
-          ? () {
-              if (widget.haptic) HiHaptics.tap();
-              widget.onTap!();
-            }
-          : null,
-      child: AnimatedScale(
-        scale: _down ? widget.pressedScale : 1.0,
-        duration: HiMotion.instant,
-        curve: Curves.easeOut,
-        child: widget.child,
+    // a11y : tout pressable (boutons HiButton/HiButtonSecondary/HiGhostButton, cartes cliquables)
+    // est annoncé comme bouton avec son état activé/désactivé par le lecteur d'écran.
+    return Semantics(
+      button: true,
+      enabled: enabled,
+      child: GestureDetector(
+        onTapDown: enabled ? (_) => setState(() => _down = true) : null,
+        onTapCancel: enabled ? () => setState(() => _down = false) : null,
+        onTapUp: enabled ? (_) => setState(() => _down = false) : null,
+        onTap: enabled
+            ? () {
+                if (widget.haptic) HiHaptics.tap();
+                widget.onTap!();
+              }
+            : null,
+        child: AnimatedScale(
+          scale: _down ? widget.pressedScale : 1.0,
+          duration: HiMotion.instant,
+          curve: Curves.easeOut,
+          child: widget.child,
+        ),
       ),
     );
   }
