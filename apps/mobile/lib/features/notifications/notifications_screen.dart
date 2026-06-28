@@ -45,7 +45,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     try {
       await ref.read(apiClientProvider).joinClub(inv.clubId);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Tu as rejoint ${inv.clubName} !')));
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context).notificationsJoinedClub(inv.clubName))));
       ref.invalidate(inboxBadgeProvider);
       await _loadInvites();
     } on ApiException catch (e) {
@@ -128,6 +129,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
 
   /// Invitation à un club en attente → rejoindre / refuser directement depuis les notifications.
   Widget _inviteCard(ClubInvite inv) {
+    final t = AppLocalizations.of(context);
     return Container(
       padding: const EdgeInsets.all(HiSpace.md),
       decoration: BoxDecoration(
@@ -146,9 +148,9 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Invitation à un club', style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
+                    Text(t.notificationsClubInviteTitle, style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
                     const SizedBox(height: 2),
-                    Text('${inv.clubName} · ${inv.memberCount} membre${inv.memberCount > 1 ? 's' : ''}',
+                    Text(t.notificationsClubInviteMembers(inv.clubName, inv.memberCount),
                         style: HiType.caption.copyWith(color: HiColors.textSecondary)),
                   ],
                 ),
@@ -165,13 +167,13 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                     foregroundColor: HiColors.textOnBrand,
                   ),
                   onPressed: _busy ? null : () => _acceptInvite(inv),
-                  child: const Text('Rejoindre'),
+                  child: Text(t.notificationsJoin),
                 ),
               ),
               const SizedBox(width: HiSpace.sm),
               OutlinedButton(
                 onPressed: _busy ? null : () => _declineInvite(inv),
-                child: const Text('Refuser'),
+                child: Text(t.notificationsDecline),
               ),
             ],
           ),

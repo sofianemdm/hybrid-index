@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models.dart';
 import '../../data/session.dart';
+import '../../l10n/app_localizations.dart';
 import '../../theme/haptics.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/hi_skeleton.dart';
@@ -55,9 +56,10 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Ligue du mois'),
+        title: Text(t.leagueScreenTitle),
         backgroundColor: Colors.transparent,
       ),
       body: SafeArea(
@@ -81,15 +83,15 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
               if (snap.hasError) {
                 return _centered(
                   icon: Icons.military_tech_rounded,
-                  text: 'Ligue indisponible pour le moment.',
-                  action: TextButton(onPressed: () => setState(_load), child: const Text('Réessayer')),
+                  text: t.leagueUnavailable,
+                  action: TextButton(onPressed: () => setState(_load), child: Text(t.leagueRetry)),
                 );
               }
               final season = snap.data;
               if (season == null) {
                 return _centered(
                   icon: Icons.hourglass_empty_rounded,
-                  text: 'Aucune saison de Ligue en cours.\nReviens bientôt : une nouvelle saison démarre chaque mois.',
+                  text: t.leagueNoSeason,
                 );
               }
               return ListView(
@@ -115,6 +117,7 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
 
   // En-tête : mois + compte à rebours + rappel de la remise à zéro mensuelle.
   Widget _seasonHeader(LeagueSeason season) {
+    final t = AppLocalizations.of(context);
     final daysLeft = season.closesAt.difference(DateTime.now()).inDays;
     final violet = HiColors.brandSecondary;
     return Container(
@@ -135,17 +138,17 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
             children: [
               Icon(Icons.military_tech_rounded, color: HiColors.brandSecondaryText, size: 22),
               const SizedBox(width: 8),
-              Text('LIGUE ${_sex == 'female' ? 'FEMME' : 'HOMME'}',
+              Text(_sex == 'female' ? t.leagueHeaderWomen : t.leagueHeaderMen,
                   style: HiType.caption.copyWith(color: HiColors.brandSecondaryText, fontWeight: FontWeight.w800, letterSpacing: 1.2)),
             ],
           ),
           const SizedBox(height: HiSpace.sm),
           Text(
-            daysLeft <= 0 ? 'Dernier jour de la saison' : 'Se termine dans $daysLeft jour${daysLeft > 1 ? 's' : ''}',
+            daysLeft <= 0 ? t.leagueLastDay : t.leagueEndsIn(daysLeft),
             style: HiType.titleL.copyWith(color: HiColors.textPrimary),
           ),
           const SizedBox(height: 4),
-          Text('Les points repartent à zéro chaque mois.',
+          Text(t.leaguePointsReset,
               style: HiType.caption.copyWith(color: HiColors.textSecondary)),
         ],
       ),
@@ -154,6 +157,7 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
 
   // « La Ligue du mois, c'est quoi ? » — explication claire en haut de page (ouverte à tous).
   Widget _explainerCard() {
+    final t = AppLocalizations.of(context);
     return Container(
       padding: const EdgeInsets.all(HiSpace.lg),
       decoration: BoxDecoration(
@@ -168,15 +172,13 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
             children: [
               Icon(Icons.info_outline_rounded, color: HiColors.brandSecondaryText, size: 18),
               const SizedBox(width: 8),
-              Text('La Ligue du mois, c\'est quoi ?',
+              Text(t.leagueExplainerTitle,
                   style: HiType.bodyStrong.copyWith(color: HiColors.textPrimary)),
             ],
           ),
           const SizedBox(height: HiSpace.sm),
           Text(
-            'Chaque mois, une nouvelle saison. Tu es classé AUTOMATIQUEMENT parmi les athlètes de ton '
-            'sexe. Fais la séance imposée de la semaine : tu marques des points selon ta performance. '
-            'Les points de Ligue repartent à zéro chaque mois.',
+            t.leagueExplainerBody,
             style: HiType.body.copyWith(color: HiColors.textSecondary),
           ),
         ],
@@ -186,6 +188,7 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
 
   // Carte du WOD imposé de la semaine + CTA (ouvert à tous : faire le WOD classe directement).
   Widget _wodCard(LeagueWeekInfo week) {
+    final t = AppLocalizations.of(context);
     return Container(
       padding: const EdgeInsets.all(HiSpace.lg),
       decoration: BoxDecoration(
@@ -196,7 +199,7 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('SÉANCE DE LA SEMAINE',
+          Text(t.leagueWeekWod,
               style: HiType.caption.copyWith(color: HiColors.textTertiary, fontWeight: FontWeight.w800, letterSpacing: 1.2)),
           const SizedBox(height: 6),
           Text(week.wodName, style: HiType.titleL.copyWith(color: HiColors.textPrimary)),
@@ -206,7 +209,7 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
               Icon(Icons.bolt_rounded, color: HiColors.brandPrimary, size: 16),
               const SizedBox(width: 6),
               Expanded(
-                child: Text('La séance imposée de la semaine — donne tout pour grimper au classement.',
+                child: Text(t.leagueWeekWodHint,
                     style: HiType.caption.copyWith(color: HiColors.textSecondary)),
               ),
             ],
@@ -221,7 +224,7 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
                 minimumSize: const Size.fromHeight(48),
               ),
               icon: const Icon(Icons.play_arrow_rounded),
-              label: const Text('Faire cette séance'),
+              label: Text(t.leagueDoThisWod),
               onPressed: () => _doWeekWod(week),
             ),
           ),
@@ -232,6 +235,7 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
 
   // Classement du mois — visible par TOUS, avec « Ma position » (vide tant qu'on n'a pas fait le WOD).
   Widget _standingsSection() {
+    final t = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -244,8 +248,8 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
             if (snap.hasError || snap.data == null) {
               return _centered(
                 icon: Icons.military_tech_rounded,
-                text: 'Classement indisponible.',
-                action: TextButton(onPressed: () => setState(_load), child: const Text('Réessayer')),
+                text: t.leagueStandingsUnavailable,
+                action: TextButton(onPressed: () => setState(_load), child: Text(t.leagueRetry)),
               );
             }
             final s = snap.data!;
@@ -254,12 +258,12 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
               children: [
                 _myCard(s),
                 const SizedBox(height: HiSpace.md),
-                Text('Classement du mois', style: HiType.bodyStrong.copyWith(color: HiColors.textPrimary)),
+                Text(t.leagueStandingsTitle, style: HiType.bodyStrong.copyWith(color: HiColors.textPrimary)),
                 const SizedBox(height: HiSpace.sm),
                 if (s.entries.isEmpty)
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: HiSpace.lg),
-                    child: Text('Personne n\'a encore marqué ce mois-ci. Sois le premier !',
+                    child: Text(t.leagueStandingsEmpty,
                         style: HiType.body.copyWith(color: HiColors.textTertiary)),
                   )
                 else
@@ -273,6 +277,7 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
   }
 
   Widget _myCard(LeagueStandings s) {
+    final t = AppLocalizations.of(context);
     final pos = s.myPosition;
     final pts = s.myPoints ?? 0;
     return Container(
@@ -287,7 +292,7 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('MA POSITION', style: HiType.caption.copyWith(color: HiColors.brandSecondaryText, fontWeight: FontWeight.w800)),
+              Text(t.leagueMyPosition, style: HiType.caption.copyWith(color: HiColors.brandSecondaryText, fontWeight: FontWeight.w800)),
               const SizedBox(height: 2),
               Text(pos == null ? '—' : '#$pos', style: HiType.titleL.copyWith(color: HiColors.textPrimary)),
             ],
@@ -296,9 +301,9 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text('$pts pts', style: HiType.numericM.copyWith(color: HiColors.textPrimary, fontSize: 20)),
+              Text(t.leaguePts(pts), style: HiType.numericM.copyWith(color: HiColors.textPrimary, fontSize: 20)),
               const SizedBox(height: 2),
-              Text(pos == null ? 'Fais la séance pour entrer au classement' : 'ce mois-ci',
+              Text(pos == null ? t.leagueDoWodToEnter : t.leagueThisMonth,
                   style: HiType.caption.copyWith(color: HiColors.textSecondary)),
             ],
           ),
@@ -308,6 +313,7 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
   }
 
   Widget _row(LeagueStandingEntry e) {
+    final t = AppLocalizations.of(context);
     final podium = e.position <= 3;
     final posColor = podium
         ? HiColors.rank(e.position == 1 ? 'gold' : e.position == 2 ? 'silver' : 'bronze')
@@ -347,7 +353,7 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
                 children: [
                   Flexible(
                     child: Text(
-                      e.isMe ? '${e.displayName} (moi)' : e.displayName,
+                      e.isMe ? t.leagueRowYou(e.displayName) : e.displayName,
                       overflow: TextOverflow.ellipsis,
                       style: (e.isMe ? HiType.bodyStrong : HiType.body).copyWith(color: HiColors.textPrimary),
                     ),
@@ -363,7 +369,7 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
                 ],
               ),
             ),
-            Text('${e.points} pts', style: HiType.numericM.copyWith(color: HiColors.textPrimary)),
+            Text(t.leaguePts(e.points), style: HiType.numericM.copyWith(color: HiColors.textPrimary)),
           ],
         ),
       ),
