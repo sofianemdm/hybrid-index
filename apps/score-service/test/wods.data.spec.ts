@@ -95,3 +95,28 @@ describe("WODs « Ligue du mois » (5 séances dédiées)", () => {
     expect(new Set(primaries)).toEqual(new Set(["speed", "engine", "muscular_endurance", "power", "hybrid"]));
   });
 });
+
+describe("Recalibration des paliers 28/06 (cohérence paliers ↔ scoring)", () => {
+  // champion = élite (P≥~0.90), intermédiaire = MÉDIANE (≈P50), occasionnel = grand débutant (≈P10-25).
+  // Verrouille l'objectif anti-frustration : un débutant n'est jamais écrasé (P>0.05), l'intermédiaire
+  // est bien la médiane du modèle, l'élite reste tout en haut. Spec : docs/recalibration-paliers-2026-06.md.
+  for (const [id, lv] of Object.entries(WOD_LEVELS)) {
+    const wod = WODS_BY_ID.get(id);
+    if (!wod) continue;
+    for (const sex of ["male", "female"] as const) {
+      it(`${id} (${sex}) : champion ≥P84, intermédiaire ≈P50, débutant ≈P10-25`, () => {
+        const model = wod.bySex[sex].model;
+        const pc = percentile(lv[sex].champion, model);
+        const pi = percentile(lv[sex].intermediate, model);
+        const po = percentile(lv[sex].occasional, model);
+        expect(pc).toBeGreaterThanOrEqual(0.84); // élite tout en haut (≥P84, la plupart ≥P95)
+        expect(pi).toBeGreaterThanOrEqual(0.42); // intermédiaire = médiane
+        expect(pi).toBeLessThanOrEqual(0.58);
+        expect(po).toBeGreaterThanOrEqual(0.05); // débutant : JAMAIS écrasé (pas P0)
+        expect(po).toBeLessThanOrEqual(0.30); // mais reste un débutant
+        expect(pc).toBeGreaterThan(pi);
+        expect(pi).toBeGreaterThan(po); // monotonie
+      });
+    }
+  }
+});

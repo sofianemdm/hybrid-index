@@ -19,13 +19,14 @@ describe("score-service — calcul (e2e)", () => {
   });
 
   describe("POST /v1/score/sub-score", () => {
-    it("calcule le sous-score d'un WOD de référence (5 km H, 24:00 → ~692 après recalibrage)", async () => {
+    it("calcule le sous-score d'un WOD de référence (5 km H, 24:00 → ~801 après recalibrage 28/06)", async () => {
       const res = await request(app.getHttpServer())
         .post("/v1/score/sub-score")
         .send({ wodId: "run_5k", sex: "male", scoreType: "time", rawResult: 1440 })
         .expect(201);
-      expect(res.body.subScore).toBeGreaterThanOrEqual(686);
-      expect(res.body.subScore).toBeLessThanOrEqual(698);
+      // Recalibration 28/06 (médiane 5 km H = 30 min) : un 24 min devient un bon amateur (~P80).
+      expect(res.body.subScore).toBeGreaterThanOrEqual(788);
+      expect(res.body.subScore).toBeLessThanOrEqual(814);
       expect(res.body.attributesAffected).toContain("engine");
       expect(res.body.scoringVersionId).toBe("scoring-v1");
     });
@@ -138,7 +139,7 @@ describe("score-service — calcul (e2e)", () => {
   });
 
   describe("POST /v1/score/profile (efforts bruts → radar + Index)", () => {
-    it("worked example A : Homme 'Partout', 3 efforts → ~450 (OR) après recalibrage des WODs", async () => {
+    it("worked example A : Homme 'Partout', 3 efforts → ~553 (OR) après recalibrage 28/06", async () => {
       const res = await request(app.getHttpServer())
         .post("/v1/score/profile")
         .send({
@@ -151,8 +152,8 @@ describe("score-service — calcul (e2e)", () => {
           ],
         })
         .expect(201);
-      expect(res.body.index.value).toBeGreaterThanOrEqual(445);
-      expect(res.body.index.value).toBeLessThanOrEqual(455);
+      expect(res.body.index.value).toBeGreaterThanOrEqual(545);
+      expect(res.body.index.value).toBeLessThanOrEqual(562);
       expect(res.body.index.radarCoverage).toBe(4);
       expect(res.body.index.isProvisional).toBe(false);
       const strength = res.body.radar.find((a: { attribute: string }) => a.attribute === "strength");
