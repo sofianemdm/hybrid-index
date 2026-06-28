@@ -450,6 +450,15 @@ class ApiClient {
     return j['id'] as String;
   }
 
+  /// Édite un WOD personnalisé (créateur uniquement) → renvoie l'id du WOD mis à jour.
+  Future<String> updateWod(String id, Map<String, dynamic> payload) async {
+    final j = await _send('PATCH', '/v1/wods/$id', payload) as Map<String, dynamic>;
+    return j['id'] as String;
+  }
+
+  /// Supprime un WOD personnalisé (créateur uniquement). 409 si des résultats existent déjà.
+  Future<void> deleteWod(String id) async => _send('DELETE', '/v1/wods/$id');
+
   /// Logue un résultat sur un WOD (officiel ou custom) → renvoie le profil recalculé ET les badges
   /// nouvellement débloqués par ce log (pour la célébration dopamine côté app).
   Future<WodLogResult> logWodResult(String wodId, Map<String, dynamic> payload) async {

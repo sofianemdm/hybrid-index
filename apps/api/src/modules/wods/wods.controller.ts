@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Param, Post, Query, UseGuards } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from "@nestjs/common";
 import { Sex } from "@hybrid-index/contracts";
 import { ZodValidationPipe } from "../../common/zod-validation.pipe";
 import { CurrentUser } from "../auth/current-user.decorator";
@@ -44,6 +44,25 @@ export class WodsController {
     @Body(new ZodValidationPipe(CreateWodRequest)) body: CreateWodRequest,
   ): Promise<unknown> {
     return this.wods.create(user.userId, body);
+  }
+
+  /** Édite un WOD personnalisé. Réservé au créateur d'un WOD `isCustom` (403 sinon). */
+  @Patch(":id")
+  @UseGuards(JwtAuthGuard)
+  update(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("id") id: string,
+    @Body(new ZodValidationPipe(CreateWodRequest)) body: CreateWodRequest,
+  ): Promise<unknown> {
+    return this.wods.update(user.userId, id, body);
+  }
+
+  /** Supprime un WOD personnalisé. Réservé au créateur d'un WOD `isCustom` (403 sinon) ; refusé si
+   *  des résultats existent déjà (409). */
+  @Delete(":id")
+  @UseGuards(JwtAuthGuard)
+  remove(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string): Promise<unknown> {
+    return this.wods.remove(user.userId, id);
   }
 
   /** Logue un résultat sur un WOD (officiel ou custom) → recalcule l'Index. */

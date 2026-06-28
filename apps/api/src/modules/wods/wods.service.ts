@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException, UnprocessableEntityException } from "@nestjs/common";
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException, UnprocessableEntityException } from "@nestjs/common";
 import type { AttributeKey, Sex, WodType } from "@prisma/client";
 import type { internalScore } from "@hybrid-index/contracts";
 import { PrismaService } from "../../infra/prisma/prisma.service";
@@ -103,6 +103,78 @@ export class WodsService {
       },
     });
     return this.detail(wod.id, userId);
+  }
+
+  /** Charge un WOD et VÉRIFIE qu'il est éditable/supprimable par `userId` :
+   *  - existe (404 sinon) ;
+   *  - est bien communautaire (`isCustom`) — jamais un benchmark/officiel ni un WOD Ligue (403) ;
+   *  - appartient à l'utilisateur (`createdById === userId`, 403 sinon).
+   *  Renvoie le WOD pour réutilisation par update/remove. */
+  private async assertOwnedCustomWod(userId: string, wodId: string): Promise<{ id: string; isCustom: boolean; createdById: string | null }> {
+    const wod = await this.prisma.wod.findUnique({
+      where: { id: wodId },
+      select: { id: true, isCustom: true, createdById: true },
+    });
+    if (!wod) throw new NotFoundException({ code: "NOT_FOUND", message: "WOD introuvable." });
+    // Officiel / benchmark / Ligue : jamais modifiable (un WOD Ligue n'est de toute façon pas isCustom).
+    if (!wod.isCustom) {
+      throw new ForbiddenException({ code: "FORBIDDEN", message: "Cette séance ne peut pas être modifiée." });
+    }
+    if (wod.createdById !== userId) {
+      throw new ForbiddenException({ code: "FORBIDDEN", message: "Seul le créateur peut modifier cette séance." });
+    }
+    return wod;
+  }
+
+  /** Met à jour un WOD communautaire (créateur uniquement). Réutilise la validation du DTO de
+   *  création (mêmes bornes anti-abus) et recalcule les attributs ciblés via le moteur d'estimation,
+   *  comme à la création. 403 si non-créateur ou WOD non-custom ; 404 si introuvable. */
+  async update(userId: string, wodId: string, body: CreateWodRequest): Promise<unknown> {
+    await this.assertOwnedCustomWod(userId, wodId);
+
+    const profile = await this.prisma.profile.findUnique({ where: { userId } });
+    const sex = (profile?.sex ?? "male") as Sex;
+    const est = await this.scoreClient.computeEstimate({
+      sex,
+      scoreType: body.scoreType,
+      wodType: body.type,
+      timeCapSec: body.timeCapSec,
+      rounds: body.rounds,
+      blocks: body.blocks,
+    });
+    const targetAttributes = (est.attributesAffected.length > 0 ? est.attributesAffected : ["hybrid"]) as AttributeKey[];
+    await this.prisma.wod.update({
+      where: { id: wodId },
+      data: {
+        name: body.name.trim(),
+        type: body.type as WodType,
+        requiresEquipment: body.requiresEquipment,
+        targetAttributes,
+        scoreType: body.scoreType,
+        movements: body.blocks,
+        timeCapSec: body.timeCapSec ?? null,
+        rounds: body.rounds ?? null,
+      },
+    });
+    return this.detail(wodId, userId);
+  }
+
+  /** Supprime un WOD communautaire (créateur uniquement). 403 si non-créateur ou WOD non-custom ;
+   *  404 si introuvable. EFFETS : la relation `WodResult.wod` n'a PAS d'`onDelete: Cascade` (Restrict
+   *  par défaut). Supprimer un WOD déjà loggé invaliderait des résultats/sous-scores comptés dans
+   *  l'Index → on REFUSE explicitement (409) avec un message clair plutôt que de cascader et fausser
+   *  les Index/classements. Tant qu'aucun résultat n'existe, la suppression est sûre. */
+  async remove(userId: string, wodId: string): Promise<{ deleted: true }> {
+    await this.assertOwnedCustomWod(userId, wodId);
+    const resultCount = await this.prisma.wodResult.count({ where: { wodId } });
+    if (resultCount > 0) {
+      throw new ConflictException({
+        code: "WOD_HAS_RESULTS",
+        message: "Impossible de supprimer : des athlètes ont déjà enregistré un résultat sur cette séance.",
+      });
+    }
+    await this.prisma.wod.delete({ where: { id: wodId } });
+    return { deleted: true };
   }
 
   /** Logue un résultat sur un WOD (officiel → barème ; custom → moteur d'estimation), puis
@@ -462,6 +534,9 @@ export class WodsService {
       isBenchmark: wod.isBenchmark,
       isFlagship: FLAGSHIP_WOD_IDS.includes(wod.id),
       isCustom: wod.isCustom,
+      // Vrai uniquement si l'utilisateur connecté est le créateur d'un WOD communautaire : le mobile
+      // n'affiche les actions Éditer/Supprimer QUE dans ce cas (mêmes garde-fous que PATCH/DELETE).
+      isMine: wod.isCustom && userId != null && wod.createdById === userId,
       levels,
       myBest,
       myHistory, // mes prestations passées sur cette séance (récent → ancien)
@@ -473,6 +548,21 @@ export class WodsService {
       scalable: prescription ? isScalable(prescription) : false,
       // Cibles « Référence Pro » (données publiques) à viser sur cette séance.
       references: WOD_REFERENCES[wod.id] ?? [],
+      // Payload BRUT pour ré-ouvrir le constructeur pré-rempli (mêmes champs que CreateWodRequest).
+      // Fourni UNIQUEMENT au créateur d'un WOD custom (sinon inutile, et on ne divulgue pas les blocs
+      // d'édition d'autrui). `movements` est déjà au format des blocs du builder.
+      editPayload:
+        wod.isCustom && userId != null && wod.createdById === userId
+          ? {
+              name: wod.name,
+              type: wod.type,
+              scoreType: wod.scoreType,
+              requiresEquipment: wod.requiresEquipment,
+              timeCapSec: wod.timeCapSec,
+              rounds: wod.rounds,
+              blocks: wod.movements,
+            }
+          : null,
     };
   }
 

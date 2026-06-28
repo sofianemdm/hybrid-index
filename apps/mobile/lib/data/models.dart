@@ -1475,6 +1475,39 @@ class WodReference {
       );
 }
 
+/// Données brutes d'un WOD custom permettant de ré-ouvrir le constructeur pré-rempli.
+/// `blocks` reprend exactement le format des blocs du builder (`movementId` + quantité + `loadKg`).
+class WodEditPayload {
+  final String name;
+  final String type;
+  final String scoreType;
+  final bool requiresEquipment;
+  final int? timeCapSec;
+  final int? rounds;
+  final List<Map<String, dynamic>> blocks;
+  const WodEditPayload({
+    required this.name,
+    required this.type,
+    required this.scoreType,
+    required this.requiresEquipment,
+    required this.timeCapSec,
+    required this.rounds,
+    required this.blocks,
+  });
+
+  factory WodEditPayload.fromJson(Map<String, dynamic> j) => WodEditPayload(
+        name: j['name'] as String? ?? '',
+        type: j['type'] as String? ?? 'for_time',
+        scoreType: j['scoreType'] as String? ?? 'time',
+        requiresEquipment: j['requiresEquipment'] as bool? ?? false,
+        timeCapSec: (j['timeCapSec'] as num?)?.toInt(),
+        rounds: (j['rounds'] as num?)?.toInt(),
+        blocks: ((j['blocks'] as List?) ?? [])
+            .map((e) => (e as Map).cast<String, dynamic>())
+            .toList(),
+      );
+}
+
 class WodDetail {
   final String id;
   final String name;
@@ -1485,6 +1518,15 @@ class WodDetail {
   final WodTriple? female;
   final num? myBestRaw;
   final int? myBestSubScore;
+
+  /// WOD communautaire (créé par un utilisateur) plutôt qu'officiel/benchmark.
+  final bool isCustom;
+
+  /// Vrai si l'utilisateur connecté est le créateur de ce WOD custom (→ actions éditer/supprimer).
+  final bool isMine;
+
+  /// Payload brut pour ré-ouvrir le constructeur pré-rempli (créateur d'un WOD custom uniquement).
+  final WodEditPayload? editPayload;
 
   /// Énoncé concret de la séance (mouvements + poids). Null pour les WODs custom.
   final WodPrescription? prescription;
@@ -1504,6 +1546,9 @@ class WodDetail {
     required this.female,
     required this.myBestRaw,
     required this.myBestSubScore,
+    this.isCustom = false,
+    this.isMine = false,
+    this.editPayload,
     this.prescription,
     this.myHistory = const [],
     this.references = const [],
@@ -1524,6 +1569,11 @@ class WodDetail {
       female: levels == null ? null : WodTriple.fromJson(levels['female'] as Map<String, dynamic>),
       myBestRaw: best?['rawResult'] as num?,
       myBestSubScore: (best?['subScore'] as num?)?.toInt(),
+      isCustom: j['isCustom'] as bool? ?? false,
+      isMine: j['isMine'] as bool? ?? false,
+      editPayload: j['editPayload'] == null
+          ? null
+          : WodEditPayload.fromJson((j['editPayload'] as Map).cast<String, dynamic>()),
       prescription: j['prescription'] == null
           ? null
           : WodPrescription.fromJson((j['prescription'] as Map).cast<String, dynamic>()),

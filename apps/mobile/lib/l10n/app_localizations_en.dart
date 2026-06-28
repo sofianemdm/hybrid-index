@@ -445,6 +445,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get wodDetailDoThisWorkout => 'Do this workout';
 
   @override
+  String get wodDetailEdit => 'Edit workout';
+
+  @override
+  String get wodDetailDelete => 'Delete workout';
+
+  @override
+  String get wodDetailDeleteTitle => 'Delete this workout?';
+
+  @override
+  String get wodDetailDeleteBody =>
+      'This action is permanent. If athletes have already logged a result, deletion will be refused.';
+
+  @override
+  String get wodDetailDeleteCancel => 'Cancel';
+
+  @override
+  String get wodDetailDeleteConfirm => 'Delete';
+
+  @override
+  String get wodDetailDeleteDone => 'Workout deleted.';
+
+  @override
   String get wodDetailMen => 'Men';
 
   @override
@@ -531,6 +553,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get wodBuilderTitle => 'Build a workout';
 
   @override
+  String get wodBuilderEditTitle => 'Edit workout';
+
+  @override
+  String get wodBuilderSaveChanges => 'Save changes';
+
+  @override
   String get wodBuilderFormat => 'Format';
 
   @override
@@ -609,6 +637,87 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get wodBuilderSearchMovement => 'Search a movement';
+
+  @override
+  String get wodFmtForTime => 'For Time';
+
+  @override
+  String get wodFmtAmrap => 'AMRAP';
+
+  @override
+  String get wodFmtEmom => 'EMOM';
+
+  @override
+  String get wodFmtChipper => 'Chipper';
+
+  @override
+  String get wodFmtInterval => 'Intervals';
+
+  @override
+  String get wodFmtTabata => 'Tabata';
+
+  @override
+  String get wodFmtStrength => 'Strength';
+
+  @override
+  String get wodUnitHintMeter => 'e.g. 2000';
+
+  @override
+  String get wodUnitHintCalorie => 'e.g. 15';
+
+  @override
+  String get wodUnitHintSecond => 'e.g. 30';
+
+  @override
+  String get wodUnitHintRep => 'e.g. 10';
+
+  @override
+  String get wodUnitSuffixMeter => 'm';
+
+  @override
+  String get wodUnitSuffixCalorie => 'cal';
+
+  @override
+  String get wodUnitSuffixSecond => 'sec';
+
+  @override
+  String get wodUnitSuffixRep => 'reps';
+
+  @override
+  String get wodUnitSuffixKg => 'kg';
+
+  @override
+  String get wodUnitMeters => 'meters';
+
+  @override
+  String get wodBuilderCatalogLoading => 'Loading movements…';
+
+  @override
+  String get wodBuilderCatalogError => 'Couldn\'t load movements.';
+
+  @override
+  String get wodBuilderNameLabel => 'Workout name';
+
+  @override
+  String get wodBuilderNameHint => 'Name your workout';
+
+  @override
+  String get wodBuilderNameAutoHint => 'Auto-generated — you can edit it.';
+
+  @override
+  String get wodBuilderDiscardTitle => 'Discard workout?';
+
+  @override
+  String get wodBuilderDiscardBody => 'Your movements won\'t be saved.';
+
+  @override
+  String get wodBuilderDiscardStay => 'Keep editing';
+
+  @override
+  String get wodBuilderDiscardLeave => 'Discard';
+
+  @override
+  String get a11yEstimateLiveRegion => 'Estimate updated';
 
   @override
   String get communityTitle => 'Community';

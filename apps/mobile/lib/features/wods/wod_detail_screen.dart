@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../widgets/glossary_text.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../data/api_client.dart';
 import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../l10n/app_localizations.dart';
@@ -9,6 +10,7 @@ import '../../theme/tokens.dart';
 import '../../widgets/error_retry.dart';
 import '../../widgets/hi_button.dart';
 import '../../widgets/rank_badge.dart';
+import 'wod_builder_screen.dart';
 import 'wod_format.dart';
 import 'wod_result_entry_screen.dart';
 
@@ -33,6 +35,7 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
   late Future<WodLeaderboard> _leaderboard;
   bool _clubScope = false;
   String _variant = 'rx'; // 'rx' (Rx) ou 'scaled' (allégé) — classements séparés
+  WodDetail? _loaded; // dernier détail chargé → pilote le menu Éditer/Supprimer (auteur uniquement)
 
   @override
   void initState() {
@@ -75,11 +78,97 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
     }
   }
 
+  /// Ouvre le constructeur pré-rempli pour éditer ce WOD custom (auteur uniquement).
+  /// Sans `editPayload` (ne devrait pas arriver si isMine), on retombe sur un message d'erreur.
+  Future<void> _editWod(WodDetail d) async {
+    final prefill = d.editPayload;
+    if (prefill == null) return;
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute(builder: (_) => WodBuilderScreen(editWodId: d.id, prefill: prefill)),
+    );
+    // Le builder fait pushReplacement vers une NOUVELLE fiche après PATCH ; au retour ici, on
+    // rafraîchit quand même cette instance au cas où l'utilisateur revient en arrière.
+    if (mounted) {
+      setState(() {
+        _detail = ref.read(apiClientProvider).wodDetail(widget.wodId);
+        _prediction = ref.read(apiClientProvider).wodPrediction(widget.wodId);
+        _loadLeaderboard();
+      });
+    }
+  }
+
+  /// Confirme puis supprime ce WOD custom. 409 (résultats existants) → message clair, pas de retour.
+  Future<void> _deleteWod() async {
+    final t = AppLocalizations.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: HiColors.bgElevated,
+        title: Text(t.wodDetailDeleteTitle, style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
+        content: Text(t.wodDetailDeleteBody, style: HiType.body.copyWith(color: HiColors.textSecondary)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(t.wodDetailDeleteCancel, style: TextStyle(color: HiColors.textSecondary)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(t.wodDetailDeleteConfirm, style: TextStyle(color: HiColors.error, fontWeight: FontWeight.w600)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+    try {
+      await ref.read(apiClientProvider).deleteWod(widget.wodId);
+      if (!mounted) return;
+      messenger.showSnackBar(SnackBar(content: Text(t.wodDetailDeleteDone)));
+      navigator.pop(true); // retour à l'écran précédent (liste) avec un signal de rafraîchissement
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      messenger.showSnackBar(SnackBar(content: Text(e.message)));
+    } catch (e) {
+      if (!mounted) return;
+      messenger.showSnackBar(SnackBar(content: Text('$e')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: Text(widget.wodName), backgroundColor: Colors.transparent, elevation: 0),
+      appBar: AppBar(
+        title: Text(widget.wodName),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        // Menu Éditer/Supprimer : visible UNIQUEMENT pour l'auteur d'un WOD custom (back: isMine).
+        actions: [
+          if (_loaded?.isMine == true)
+            PopupMenuButton<String>(
+              icon: Icon(Icons.more_vert, color: HiColors.textPrimary),
+              color: HiColors.bgElevated,
+              onSelected: (v) {
+                if (v == 'edit') {
+                  _editWod(_loaded!);
+                } else if (v == 'delete') {
+                  _deleteWod();
+                }
+              },
+              itemBuilder: (_) => [
+                PopupMenuItem(
+                  value: 'edit',
+                  child: Text(t.wodDetailEdit, style: HiType.body.copyWith(color: HiColors.textPrimary)),
+                ),
+                PopupMenuItem(
+                  value: 'delete',
+                  child: Text(t.wodDetailDelete, style: HiType.body.copyWith(color: HiColors.error)),
+                ),
+              ],
+            ),
+        ],
+      ),
       body: SafeArea(
         child: FutureBuilder<WodDetail>(
           future: _detail,
@@ -95,6 +184,14 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
               }));
             }
             final d = snap.data!;
+            // Mémorise le détail pour piloter le menu de l'AppBar (hors FutureBuilder). On déclenche
+            // un rebuild post-frame la 1re fois pour faire apparaître le menu sans flicker.
+            if (!identical(_loaded, d)) {
+              _loaded = d;
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted) setState(() {});
+              });
+            }
             final challenge = _challengeCard(d);
             return ListView(
               padding: const EdgeInsets.fromLTRB(HiSpace.lg, HiSpace.lg, HiSpace.lg, 96),

@@ -17,15 +17,30 @@ import 'wod_format.dart';
 // Le format « distance » est RETIRÉ du builder : le moteur ne le note pas correctement (la
 // distribution dégénère → résultat rejeté/aberrant, audit BUG-005). À réintroduire avec une vraie
 // notation par allure/distance. La course se mesure via les WODs de course existants.
-const _formats = {
-  'for_time': 'For Time',
-  'amrap': 'AMRAP',
-  'emom': 'EMOM',
-  'chipper': 'Chipper',
-  'interval': 'Intervalles',
-  'tabata': 'Tabata',
-  'strength': 'Force',
-};
+// Ordre d'affichage des formats. Les libellés sont localisés via [_formatLabel] (i18n FR+EN) :
+// « Intervalles »/« Force » ne doivent plus s'afficher en français en locale EN.
+const _formatKeys = ['for_time', 'amrap', 'emom', 'chipper', 'interval', 'tabata', 'strength'];
+
+String _formatLabel(AppLocalizations t, String key) {
+  switch (key) {
+    case 'for_time':
+      return t.wodFmtForTime;
+    case 'amrap':
+      return t.wodFmtAmrap;
+    case 'emom':
+      return t.wodFmtEmom;
+    case 'chipper':
+      return t.wodFmtChipper;
+    case 'interval':
+      return t.wodFmtInterval;
+    case 'tabata':
+      return t.wodFmtTabata;
+    case 'strength':
+      return t.wodFmtStrength;
+    default:
+      return t.wodBuilderWorkout;
+  }
+}
 
 String _scoreTypeFor(String wodType) {
   switch (wodType) {
@@ -35,8 +50,6 @@ String _scoreTypeFor(String wodType) {
       return 'reps';
     case 'strength':
       return 'load';
-    case 'distance':
-      return 'distance';
     default:
       return 'time';
   }
@@ -60,8 +73,16 @@ class _Block {
 }
 
 /// Constructeur de séance : format + mouvements + aperçu live de l'estimation, puis publication.
+/// En mode ÉDITION (`editWodId` + `prefill` fournis), le formulaire est pré-rempli et la
+/// publication appelle PATCH au lieu de POST (seul le créateur peut éditer, garanti côté back).
 class WodBuilderScreen extends ConsumerStatefulWidget {
-  const WodBuilderScreen({super.key});
+  /// Id du WOD à éditer (mode édition). Null → création d'un nouveau WOD.
+  final String? editWodId;
+
+  /// Données pré-remplissant le constructeur en mode édition.
+  final WodEditPayload? prefill;
+
+  const WodBuilderScreen({super.key, this.editWodId, this.prefill});
 
   @override
   ConsumerState<WodBuilderScreen> createState() => _WodBuilderScreenState();
@@ -74,6 +95,12 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
   final _rounds = TextEditingController(text: '1'); // nb de tours (la séance répète les mouvements)
   final List<_Block> _blocks = [];
   List<MovementSummary> _catalog = [];
+  bool _catalogLoading = true; // chargement initial du catalogue de mouvements
+  bool _catalogError = false; // échec de chargement → on affiche un état d'erreur + réessayer
+  // Nom de séance : pré-rempli avec le nom auto, mais ÉDITABLE. Tant que l'utilisateur n'a pas
+  // touché le champ, on suit le nom auto-généré ; dès qu'il édite, on respecte sa saisie.
+  final _name = TextEditingController();
+  bool _nameEdited = false;
   EstimateResult? _estimate;
   bool _estimating = false;
   bool _estimateError = false; // dernier appel d'estimation a échoué (réseau/serveur)
@@ -86,15 +113,68 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
   @override
   void initState() {
     super.initState();
-    ref.read(apiClientProvider).movements().then((m) {
-      if (mounted) setState(() => _catalog = m);
-    });
+    final p = widget.prefill;
+    if (p != null) {
+      // Mode édition : on pré-remplit les champs hors blocs immédiatement. Les blocs (qui dépendent
+      // du catalogue de mouvements) sont reconstitués après son chargement (cf. _loadCatalog).
+      _type = p.type;
+      _requiresEquipment = p.requiresEquipment;
+      if (p.timeCapSec != null) _timeCap.text = '${(p.timeCapSec! / 60).round()}';
+      if (p.rounds != null && p.rounds! > 1) _rounds.text = '${p.rounds}';
+      _name.text = p.name;
+      _nameEdited = true; // le nom existant fait foi (on ne le réécrase pas avec le nom auto)
+    }
+    _loadCatalog();
+  }
+
+  /// Reconstitue les blocs à partir du payload d'édition, une fois le catalogue chargé : on associe
+  /// chaque `movementId` enregistré à son [MovementSummary] et on relit la quantité selon son unité.
+  void _hydrateBlocksFromPrefill() {
+    final p = widget.prefill;
+    if (p == null || _blocks.isNotEmpty) return;
+    final byId = {for (final m in _catalog) m.id: m};
+    for (final raw in p.blocks) {
+      final m = byId[raw['movementId'] as String?];
+      if (m == null) continue; // mouvement retiré du catalogue → on l'ignore proprement
+      final amount = (raw['reps'] ?? raw['distanceMeters'] ?? raw['calories'] ?? raw['durationSec'] ?? 0) as num;
+      final loadKg = (raw['loadKg'] as num?)?.toDouble();
+      _blocks.add(_Block(m, amount.toInt(), loadKg));
+    }
+    if (_blocks.isNotEmpty) _refreshEstimate();
+  }
+
+  /// Charge le catalogue de mouvements. En cas d'échec réseau, on EXPOSE l'erreur (état + retry)
+  /// au lieu de laisser le bouton « Ajouter un mouvement » désactivé à vie sans explication.
+  Future<void> _loadCatalog() async {
+    if (mounted) {
+      setState(() {
+        _catalogLoading = true;
+        _catalogError = false;
+      });
+    }
+    try {
+      final m = await ref.read(apiClientProvider).movements();
+      if (!mounted) return;
+      setState(() {
+        _catalog = m;
+        _catalogLoading = false;
+        _catalogError = false;
+        _hydrateBlocksFromPrefill(); // mode édition : reconstitue les blocs depuis le payload
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _catalogLoading = false;
+        _catalogError = true;
+      });
+    }
   }
 
   @override
   void dispose() {
     _timeCap.dispose();
     _rounds.dispose();
+    _name.dispose();
     for (final b in _blocks) {
       b.controller.dispose();
       b.loadController.dispose();
@@ -105,11 +185,16 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
 
   String get _scoreType => _scoreTypeFor(_type);
 
+  /// Le DTO back limite `name` à 60 caractères → on tronque côté client (sécurité : un nom auto
+  /// avec beaucoup de mouvements pouvait dépasser et faire échouer la création).
+  static const int _nameMaxLength = 60;
+  String _clampName(String s) => s.length > _nameMaxLength ? s.substring(0, _nameMaxLength) : s;
+
   /// Nom généré automatiquement : format (For Time, EMOM…) + mouvements clés.
-  /// L'utilisateur ne choisit pas le nom — l'app en propose un cohérent.
+  /// L'app PROPOSE ce nom (pré-rempli) mais l'utilisateur peut le surcharger.
   String get _generatedName {
     if (_blocks.isEmpty) return AppLocalizations.of(context).wodBuilderCustomWorkout;
-    final fmt = _formats[_type] ?? AppLocalizations.of(context).wodBuilderWorkout;
+    final fmt = _formatLabel(AppLocalizations.of(context), _type);
     final seen = <String>{};
     final names = <String>[];
     for (final b in _blocks) {
@@ -125,7 +210,21 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
     } else {
       part = '${names[0]}, ${names[1]} +${names.length - 2}';
     }
-    return '$fmt · $part';
+    return _clampName('$fmt · $part');
+  }
+
+  /// Nom effectif à enregistrer : la saisie utilisateur si elle existe, sinon le nom auto.
+  String get _effectiveName {
+    final typed = _name.text.trim();
+    if (_nameEdited && typed.isNotEmpty) return _clampName(typed);
+    return _generatedName;
+  }
+
+  /// Synchronise le champ avec le nom auto tant que l'utilisateur n'a rien tapé.
+  void _syncAutoName() {
+    if (_nameEdited) return;
+    final auto = _generatedName;
+    if (_name.text != auto) _name.text = auto;
   }
 
   Map<String, dynamic> _payload({double? userResult}) {
@@ -151,6 +250,7 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
   /// Point d'entrée appelé à chaque modif (frappe, chip, ajout/suppression). DEBOUNCE ~400ms :
   /// on n'envoie la requête qu'après une courte pause de saisie → 1 POST au lieu d'un par frappe.
   void _refreshEstimate() {
+    _syncAutoName(); // garde le champ nom aligné sur le nom auto tant qu'on n'a pas édité
     _debounce?.cancel();
     if (_blocks.isEmpty) {
       _estimateSeq++; // invalide toute réponse en vol
@@ -214,7 +314,7 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
       _toast(AppLocalizations.of(context).wodBuilderAddMovementError);
       return;
     }
-    final name = _generatedName;
+    final name = _effectiveName;
     setState(() => _saving = true);
     try {
       final payload = _payload()
@@ -225,7 +325,10 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
       // L'estimation utilise `wodType` ; la création attend `type` (CreateWodRequest) → on convertit.
       payload['type'] = _type;
       payload.remove('wodType');
-      final id = await ref.read(apiClientProvider).createWod(payload);
+      final editId = widget.editWodId;
+      final id = editId != null
+          ? await ref.read(apiClientProvider).updateWod(editId, payload)
+          : await ref.read(apiClientProvider).createWod(payload);
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => WodDetailScreen(wodId: id, wodName: name)),
@@ -241,11 +344,50 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
 
   void _toast(String m) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m)));
 
+  /// Confirme l'abandon si des mouvements ont été saisis (sinon rien à perdre → on quitte direct).
+  /// Retourne true s'il faut effectivement quitter.
+  Future<bool> _confirmDiscard() async {
+    if (_blocks.isEmpty) return true;
+    final t = AppLocalizations.of(context);
+    final leave = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: HiColors.bgElevated,
+        title: Text(t.wodBuilderDiscardTitle, style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
+        content: Text(t.wodBuilderDiscardBody, style: HiType.body.copyWith(color: HiColors.textSecondary)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(t.wodBuilderDiscardStay, style: TextStyle(color: HiColors.textSecondary)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(t.wodBuilderDiscardLeave, style: TextStyle(color: HiColors.error, fontWeight: FontWeight.w600)),
+          ),
+        ],
+      ),
+    );
+    return leave ?? false;
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
-    return Scaffold(
-      appBar: AppBar(title: Text(t.wodBuilderTitle), backgroundColor: Colors.transparent, elevation: 0),
+    return PopScope(
+      // Garde de sortie : on intercepte le retour pour demander confirmation si la séance contient
+      // des blocs non publiés (sinon on perdait tout sans prévenir).
+      canPop: _blocks.isEmpty,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        final navigator = Navigator.of(context);
+        if (await _confirmDiscard()) navigator.pop();
+      },
+      child: Scaffold(
+      appBar: AppBar(
+        title: Text(widget.editWodId != null ? t.wodBuilderEditTitle : t.wodBuilderTitle),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(HiSpace.lg),
@@ -259,10 +401,10 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
-                  children: _formats.entries.map((e) {
-                    final active = _type == e.key;
+                  children: _formatKeys.map((key) {
+                    final active = _type == key;
                     return ChoiceChip(
-                      label: Text(e.value),
+                      label: Text(_formatLabel(t, key)),
                       selected: active,
                       showCheckmark: false,
                       selectedColor: HiColors.brandPrimary,
@@ -270,7 +412,7 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
                       labelStyle: TextStyle(color: active ? HiColors.textOnBrand : HiColors.textSecondary, fontWeight: FontWeight.w600),
                       side: BorderSide(color: HiColors.strokeSubtle),
                       onSelected: (_) {
-                        setState(() => _type = e.key);
+                        setState(() => _type = key);
                         _refreshEstimate();
                       },
                     );
@@ -331,34 +473,90 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
                 Text(t.wodBuilderMovements, style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
                 const SizedBox(height: HiSpace.sm),
                 ..._blocks.asMap().entries.map((e) => _blockRow(e.key, e.value)),
-                OutlinedButton.icon(
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: const Size.fromHeight(48),
-                    side: BorderSide(color: HiColors.strokeStrong),
-                    foregroundColor: HiColors.brandPrimary,
-                  ),
-                  icon: const Icon(Icons.add_rounded),
-                  label: Text(t.wodBuilderAddMovement),
-                  onPressed: _catalog.isEmpty ? null : _addMovement,
-                ),
+                _addMovementArea(t),
                 const SizedBox(height: HiSpace.lg),
-                _estimateCard(),
+                // a11y : l'estimation se met à jour en arrière-plan (debounce/réseau) → liveRegion
+                // pour que le lecteur d'écran annonce le nouvel encart sans action de l'utilisateur.
+                Semantics(
+                  liveRegion: true,
+                  label: t.a11yEstimateLiveRegion,
+                  container: true,
+                  child: _estimateCard(),
+                ),
                 const SizedBox(height: HiSpace.lg),
                 _nameCard(),
                 const SizedBox(height: HiSpace.md),
-                HiButton(label: t.wodBuilderPublish, loading: _saving, onPressed: _save),
+                HiButton(
+                  label: widget.editWodId != null ? t.wodBuilderSaveChanges : t.wodBuilderPublish,
+                  loading: _saving,
+                  onPressed: _save,
+                ),
               ],
             ),
           ),
         ),
       ),
+      ),
     );
   }
 
-  String _unitHint(String unit) =>
-      unit == 'meter' ? 'ex. 2000' : unit == 'calorie' ? 'ex. 15' : unit == 'second' ? 'ex. 30' : 'ex. 10';
-  String _unitSuffix(String unit) =>
-      unit == 'meter' ? 'm' : unit == 'calorie' ? 'cal' : unit == 'second' ? 'sec' : 'reps';
+  /// Zone « ajouter un mouvement » : gère chargement / erreur+retry / catalogue prêt.
+  Widget _addMovementArea(AppLocalizations t) {
+    if (_catalogLoading) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: HiSpace.md),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: HiColors.brandPrimary)),
+            const SizedBox(width: HiSpace.sm),
+            Text(t.wodBuilderCatalogLoading, style: HiType.body.copyWith(color: HiColors.textTertiary)),
+          ],
+        ),
+      );
+    }
+    if (_catalogError || _catalog.isEmpty) {
+      // Échec de chargement (ou catalogue vide) : on l'EXPOSE avec un retry au lieu d'un bouton
+      // désactivé silencieux.
+      return ErrorRetry(
+        compact: true,
+        message: t.wodBuilderCatalogError,
+        onRetry: _loadCatalog,
+      );
+    }
+    return OutlinedButton.icon(
+      style: OutlinedButton.styleFrom(
+        minimumSize: const Size.fromHeight(48),
+        side: BorderSide(color: HiColors.strokeStrong),
+        foregroundColor: HiColors.brandPrimary,
+      ),
+      icon: const Icon(Icons.add_rounded),
+      label: Text(t.wodBuilderAddMovement),
+      onPressed: _addMovement,
+    );
+  }
+
+  String _unitHint(String unit) {
+    final t = AppLocalizations.of(context);
+    return unit == 'meter'
+        ? t.wodUnitHintMeter
+        : unit == 'calorie'
+            ? t.wodUnitHintCalorie
+            : unit == 'second'
+                ? t.wodUnitHintSecond
+                : t.wodUnitHintRep;
+  }
+
+  String _unitSuffix(String unit) {
+    final t = AppLocalizations.of(context);
+    return unit == 'meter'
+        ? t.wodUnitSuffixMeter
+        : unit == 'calorie'
+            ? t.wodUnitSuffixCalorie
+            : unit == 'second'
+                ? t.wodUnitSuffixSecond
+                : t.wodUnitSuffixRep;
+  }
 
   Widget _blockRow(int i, _Block b) {
     final isLoaded = b.movement.category == 'weightlifting';
@@ -408,7 +606,7 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
                     FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
                   ],
                   textAlign: TextAlign.center,
-                  decoration: const InputDecoration(hintText: 'kg', isDense: true),
+                  decoration: InputDecoration(hintText: AppLocalizations.of(context).wodUnitSuffixKg, isDense: true),
                   onChanged: (v) {
                     // Normalise la virgule en point pour le parse (12,5 → 12.5).
                     b.loadKg = double.tryParse(v.replaceAll(',', '.'));
@@ -436,8 +634,10 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
     );
   }
 
-  /// Aperçu du nom auto-attribué (l'utilisateur ne le saisit pas).
+  /// Nom de la séance : pré-rempli avec le nom auto, mais ÉDITABLE. L'utilisateur peut surcharger.
+  /// Champ borné à 60 caractères (limite du DTO back).
   Widget _nameCard() {
+    final t = AppLocalizations.of(context);
     return Container(
       padding: const EdgeInsets.all(HiSpace.md),
       decoration: BoxDecoration(
@@ -446,16 +646,36 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
         border: Border.all(color: HiColors.strokeSubtle),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.auto_awesome_rounded, color: HiColors.brandPrimary, size: 20),
+          Padding(
+            padding: const EdgeInsets.only(top: 18),
+            child: Icon(Icons.auto_awesome_rounded, color: HiColors.brandPrimary, size: 20),
+          ),
           const SizedBox(width: HiSpace.sm),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(AppLocalizations.of(context).wodBuilderAssignedName, style: HiType.caption.copyWith(color: HiColors.textTertiary)),
+                Text(t.wodBuilderNameLabel, style: HiType.caption.copyWith(color: HiColors.textTertiary)),
                 const SizedBox(height: 2),
-                Text(_generatedName, style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
+                TextField(
+                  controller: _name,
+                  maxLength: _nameMaxLength,
+                  textInputAction: TextInputAction.done,
+                  style: HiType.titleM.copyWith(color: HiColors.textPrimary),
+                  decoration: InputDecoration(
+                    isDense: true,
+                    counterText: '', // on borne via maxLength sans afficher le compteur
+                    hintText: t.wodBuilderNameHint,
+                    border: InputBorder.none,
+                  ),
+                  onChanged: (v) {
+                    // Dès la première frappe, on respecte la saisie utilisateur (champ libre vidé inclus).
+                    setState(() => _nameEdited = true);
+                  },
+                ),
+                Text(t.wodBuilderNameAutoHint, style: HiType.caption.copyWith(color: HiColors.textTertiary)),
               ],
             ),
           ),

@@ -5,7 +5,8 @@ import { ScoreType, Sex } from "@hybrid-index/contracts";
 export const EstimateWodRequest = z.object({
   sex: Sex,
   scoreType: ScoreType,
-  wodType: z.enum(["for_time", "amrap", "emom", "chipper", "strength", "interval", "tabata", "distance"]),
+  // Voir CreateWodRequest : `"distance"` retiré (aucun chemin UI builder, séquelle BUG-005).
+  wodType: z.enum(["for_time", "amrap", "emom", "chipper", "strength", "interval", "tabata"]),
   timeCapSec: z.number().int().positive().optional(),
   rounds: z.number().int().positive().optional(),
   blocks: z

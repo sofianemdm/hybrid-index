@@ -902,6 +902,48 @@ abstract class AppLocalizations {
   /// **'Do this workout'**
   String get wodDetailDoThisWorkout;
 
+  /// No description provided for @wodDetailEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit workout'**
+  String get wodDetailEdit;
+
+  /// No description provided for @wodDetailDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete workout'**
+  String get wodDetailDelete;
+
+  /// No description provided for @wodDetailDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this workout?'**
+  String get wodDetailDeleteTitle;
+
+  /// No description provided for @wodDetailDeleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This action is permanent. If athletes have already logged a result, deletion will be refused.'**
+  String get wodDetailDeleteBody;
+
+  /// No description provided for @wodDetailDeleteCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get wodDetailDeleteCancel;
+
+  /// No description provided for @wodDetailDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get wodDetailDeleteConfirm;
+
+  /// No description provided for @wodDetailDeleteDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Workout deleted.'**
+  String get wodDetailDeleteDone;
+
   /// No description provided for @wodDetailMen.
   ///
   /// In en, this message translates to:
@@ -1058,6 +1100,18 @@ abstract class AppLocalizations {
   /// **'Build a workout'**
   String get wodBuilderTitle;
 
+  /// No description provided for @wodBuilderEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit workout'**
+  String get wodBuilderEditTitle;
+
+  /// No description provided for @wodBuilderSaveChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Save changes'**
+  String get wodBuilderSaveChanges;
+
   /// No description provided for @wodBuilderFormat.
   ///
   /// In en, this message translates to:
@@ -1201,6 +1255,168 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Search a movement'**
   String get wodBuilderSearchMovement;
+
+  /// No description provided for @wodFmtForTime.
+  ///
+  /// In en, this message translates to:
+  /// **'For Time'**
+  String get wodFmtForTime;
+
+  /// No description provided for @wodFmtAmrap.
+  ///
+  /// In en, this message translates to:
+  /// **'AMRAP'**
+  String get wodFmtAmrap;
+
+  /// No description provided for @wodFmtEmom.
+  ///
+  /// In en, this message translates to:
+  /// **'EMOM'**
+  String get wodFmtEmom;
+
+  /// No description provided for @wodFmtChipper.
+  ///
+  /// In en, this message translates to:
+  /// **'Chipper'**
+  String get wodFmtChipper;
+
+  /// No description provided for @wodFmtInterval.
+  ///
+  /// In en, this message translates to:
+  /// **'Intervals'**
+  String get wodFmtInterval;
+
+  /// No description provided for @wodFmtTabata.
+  ///
+  /// In en, this message translates to:
+  /// **'Tabata'**
+  String get wodFmtTabata;
+
+  /// No description provided for @wodFmtStrength.
+  ///
+  /// In en, this message translates to:
+  /// **'Strength'**
+  String get wodFmtStrength;
+
+  /// No description provided for @wodUnitHintMeter.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. 2000'**
+  String get wodUnitHintMeter;
+
+  /// No description provided for @wodUnitHintCalorie.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. 15'**
+  String get wodUnitHintCalorie;
+
+  /// No description provided for @wodUnitHintSecond.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. 30'**
+  String get wodUnitHintSecond;
+
+  /// No description provided for @wodUnitHintRep.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. 10'**
+  String get wodUnitHintRep;
+
+  /// No description provided for @wodUnitSuffixMeter.
+  ///
+  /// In en, this message translates to:
+  /// **'m'**
+  String get wodUnitSuffixMeter;
+
+  /// No description provided for @wodUnitSuffixCalorie.
+  ///
+  /// In en, this message translates to:
+  /// **'cal'**
+  String get wodUnitSuffixCalorie;
+
+  /// No description provided for @wodUnitSuffixSecond.
+  ///
+  /// In en, this message translates to:
+  /// **'sec'**
+  String get wodUnitSuffixSecond;
+
+  /// No description provided for @wodUnitSuffixRep.
+  ///
+  /// In en, this message translates to:
+  /// **'reps'**
+  String get wodUnitSuffixRep;
+
+  /// No description provided for @wodUnitSuffixKg.
+  ///
+  /// In en, this message translates to:
+  /// **'kg'**
+  String get wodUnitSuffixKg;
+
+  /// No description provided for @wodUnitMeters.
+  ///
+  /// In en, this message translates to:
+  /// **'meters'**
+  String get wodUnitMeters;
+
+  /// No description provided for @wodBuilderCatalogLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading movements…'**
+  String get wodBuilderCatalogLoading;
+
+  /// No description provided for @wodBuilderCatalogError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load movements.'**
+  String get wodBuilderCatalogError;
+
+  /// No description provided for @wodBuilderNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Workout name'**
+  String get wodBuilderNameLabel;
+
+  /// No description provided for @wodBuilderNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Name your workout'**
+  String get wodBuilderNameHint;
+
+  /// No description provided for @wodBuilderNameAutoHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-generated — you can edit it.'**
+  String get wodBuilderNameAutoHint;
+
+  /// No description provided for @wodBuilderDiscardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard workout?'**
+  String get wodBuilderDiscardTitle;
+
+  /// No description provided for @wodBuilderDiscardBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your movements won\'t be saved.'**
+  String get wodBuilderDiscardBody;
+
+  /// No description provided for @wodBuilderDiscardStay.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep editing'**
+  String get wodBuilderDiscardStay;
+
+  /// No description provided for @wodBuilderDiscardLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard'**
+  String get wodBuilderDiscardLeave;
+
+  /// No description provided for @a11yEstimateLiveRegion.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimate updated'**
+  String get a11yEstimateLiveRegion;
 
   /// No description provided for @communityTitle.
   ///

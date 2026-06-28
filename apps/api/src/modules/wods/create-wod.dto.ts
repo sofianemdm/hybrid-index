@@ -23,7 +23,9 @@ const WodBlock = z.object({
 /** Création d'un WOD personnalisé (constructeur). Les charges Rx sont dans `loadKg` des blocs. */
 export const CreateWodRequest = z.object({
   name: z.string().min(2).max(60),
-  type: z.enum(["for_time", "amrap", "emom", "chipper", "strength", "interval", "tabata", "distance"]),
+  // Pas de `"distance"` : ce format n'a jamais de chemin UI dans le builder (séquelle BUG-005).
+  // La course se mesure via les WODs de course dédiés (`run_*`), pas via un WOD custom.
+  type: z.enum(["for_time", "amrap", "emom", "chipper", "strength", "interval", "tabata"]),
   scoreType: ScoreType,
   requiresEquipment: z.boolean(),
   timeCapSec: z.number().int().positive().max(MAX_TIME_CAP_SEC).optional(),

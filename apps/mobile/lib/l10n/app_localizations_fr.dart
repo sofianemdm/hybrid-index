@@ -447,6 +447,28 @@ class AppLocalizationsFr extends AppLocalizations {
   String get wodDetailDoThisWorkout => 'Faire cette séance';
 
   @override
+  String get wodDetailEdit => 'Modifier la séance';
+
+  @override
+  String get wodDetailDelete => 'Supprimer la séance';
+
+  @override
+  String get wodDetailDeleteTitle => 'Supprimer cette séance ?';
+
+  @override
+  String get wodDetailDeleteBody =>
+      'Cette action est définitive. Si des athlètes ont déjà enregistré un résultat, la suppression sera refusée.';
+
+  @override
+  String get wodDetailDeleteCancel => 'Annuler';
+
+  @override
+  String get wodDetailDeleteConfirm => 'Supprimer';
+
+  @override
+  String get wodDetailDeleteDone => 'Séance supprimée.';
+
+  @override
   String get wodDetailMen => 'Hommes';
 
   @override
@@ -534,6 +556,12 @@ class AppLocalizationsFr extends AppLocalizations {
   String get wodBuilderTitle => 'Construire une séance';
 
   @override
+  String get wodBuilderEditTitle => 'Modifier la séance';
+
+  @override
+  String get wodBuilderSaveChanges => 'Enregistrer les modifications';
+
+  @override
   String get wodBuilderFormat => 'Format';
 
   @override
@@ -613,6 +641,87 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get wodBuilderSearchMovement => 'Rechercher un mouvement';
+
+  @override
+  String get wodFmtForTime => 'For Time';
+
+  @override
+  String get wodFmtAmrap => 'AMRAP';
+
+  @override
+  String get wodFmtEmom => 'EMOM';
+
+  @override
+  String get wodFmtChipper => 'Chipper';
+
+  @override
+  String get wodFmtInterval => 'Intervalles';
+
+  @override
+  String get wodFmtTabata => 'Tabata';
+
+  @override
+  String get wodFmtStrength => 'Force';
+
+  @override
+  String get wodUnitHintMeter => 'ex. 2000';
+
+  @override
+  String get wodUnitHintCalorie => 'ex. 15';
+
+  @override
+  String get wodUnitHintSecond => 'ex. 30';
+
+  @override
+  String get wodUnitHintRep => 'ex. 10';
+
+  @override
+  String get wodUnitSuffixMeter => 'm';
+
+  @override
+  String get wodUnitSuffixCalorie => 'cal';
+
+  @override
+  String get wodUnitSuffixSecond => 'sec';
+
+  @override
+  String get wodUnitSuffixRep => 'reps';
+
+  @override
+  String get wodUnitSuffixKg => 'kg';
+
+  @override
+  String get wodUnitMeters => 'mètres';
+
+  @override
+  String get wodBuilderCatalogLoading => 'Chargement des mouvements…';
+
+  @override
+  String get wodBuilderCatalogError => 'Impossible de charger les mouvements.';
+
+  @override
+  String get wodBuilderNameLabel => 'Nom de la séance';
+
+  @override
+  String get wodBuilderNameHint => 'Nomme ta séance';
+
+  @override
+  String get wodBuilderNameAutoHint => 'Généré automatiquement — tu peux le modifier.';
+
+  @override
+  String get wodBuilderDiscardTitle => 'Abandonner la séance ?';
+
+  @override
+  String get wodBuilderDiscardBody => 'Tes mouvements ne seront pas enregistrés.';
+
+  @override
+  String get wodBuilderDiscardStay => 'Continuer l\'édition';
+
+  @override
+  String get wodBuilderDiscardLeave => 'Abandonner';
+
+  @override
+  String get a11yEstimateLiveRegion => 'Estimation mise à jour';
 
   @override
   String get communityTitle => 'Communauté';
