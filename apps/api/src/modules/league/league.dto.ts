@@ -53,3 +53,31 @@ export interface LeagueMeView {
   weeksPlayed: number;
   clubName: string | null; // club « principal » du viewer, affiché sur sa carte « ma position »
 }
+
+/** Une ligne du podium (top 3) d'une saison CLOSE, pour le reveal de fin de saison. */
+export interface LeaguePodiumRow {
+  finalRank: number; // 1 | 2 | 3
+  userId: string;
+  displayName: string;
+  totalPoints: number;
+  avatar: AvatarView | null; // mini-vignette (mobile) ; null si pas d'avatar
+}
+
+/** Ligne du viewer dans la saison close (s'il a participé). */
+export interface LeagueLastResultMe {
+  finalRank: number;
+  totalPoints: number;
+  movement: string | null; // "promoted" | "relegated" | "stay" | null (tier=1)
+}
+
+/**
+ * Résultat de la DERNIÈRE saison close, pour le « reveal » de fin de saison côté mobile.
+ * `monthKey` = mois de la saison ; `podium` = top 3 du SEXE du viewer ; `me` = sa ligne (ou null).
+ * Le contrôleur renvoie `null` (pas d'objet) s'il n'existe aucune saison close.
+ */
+export interface LeagueLastResultView {
+  monthKey: string;
+  sex: string;
+  podium: LeaguePodiumRow[];
+  me: LeagueLastResultMe | null;
+}

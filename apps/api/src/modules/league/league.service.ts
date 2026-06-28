@@ -2,7 +2,14 @@ import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { isoWeekKey } from "../engagement/iso-week";
 import { totalsBestPerWeek, rankTotals } from "./league.aggregate";
-import type { LeagueSeasonView, LeagueWeekView, LeagueStandingsView, LeagueMeView } from "./league.dto";
+import type {
+  LeagueSeasonView,
+  LeagueWeekView,
+  LeagueStandingsView,
+  LeagueMeView,
+  LeagueLastResultView,
+  LeaguePodiumRow,
+} from "./league.dto";
 import { avatarMapByUserId } from "../../common/avatar.serializer";
 import { primaryClubNameByUserId } from "../../common/club-lookup";
 
@@ -111,6 +118,86 @@ export class LeagueService {
         me = { position: idx + 1, points: ranked[idx].total, clubName: clubOf.get(viewerUserId) ?? null };
     }
     return { monthKey: season.monthKey, sex, total: ranked.length, entries, me };
+  }
+
+  /**
+   * Résultat de la DERNIÈRE saison CLOSE (status="closed", closedAt le plus récent), pour le
+   * « reveal » de fin de saison côté mobile. Renvoie le PODIUM (top 3) du SEXE du viewer + sa
+   * propre ligne (s'il a participé). Renvoie `null` si aucune saison close n'existe.
+   *
+   * Le sexe du viewer = celui de son standing dans cette saison s'il a participé, sinon celui de
+   * son Profil (un non-participant voit quand même le podium de SA ligue). Sans viewer connu, on
+   * retombe sur "male" (le contrôleur protège l'endpoint, ce cas reste défensif).
+   *
+   * Aucune requête N+1 : profils + avatars du podium sont chargés en UNE requête batch chacun.
+   */
+  async lastResult(viewerUserId: string | undefined): Promise<LeagueLastResultView | null> {
+    const season = await this.prisma.leagueSeason.findFirst({
+      where: { status: "closed", closedAt: { not: null } },
+      orderBy: { closedAt: "desc" },
+      select: { id: true, monthKey: true },
+    });
+    if (!season) return null;
+
+    // Sexe du viewer : standing de la saison en priorité, sinon profil.
+    let viewerStanding: { finalRank: number; totalPoints: number; movement: string | null; sex: string } | null =
+      null;
+    let sex: "male" | "female" = "male";
+    if (viewerUserId) {
+      const std = await this.prisma.leagueStanding.findUnique({
+        where: { seasonId_userId: { seasonId: season.id, userId: viewerUserId } },
+        select: { finalRank: true, totalPoints: true, movement: true, sex: true },
+      });
+      if (std) {
+        viewerStanding = std;
+        sex = std.sex as "male" | "female";
+      } else {
+        const profile = await this.prisma.profile.findUnique({
+          where: { userId: viewerUserId },
+          select: { sex: true },
+        });
+        if (profile?.sex === "female" || profile?.sex === "male") sex = profile.sex;
+      }
+    }
+
+    const top = await this.prisma.leagueStanding.findMany({
+      where: { seasonId: season.id, sex },
+      orderBy: { finalRank: "asc" },
+      take: 3,
+      select: { userId: true, finalRank: true, totalPoints: true },
+    });
+
+    const podiumIds = top.map((s) => s.userId);
+    const [names, avatars] = await Promise.all([
+      this.prisma.profile.findMany({
+        where: { userId: { in: podiumIds } },
+        select: { userId: true, displayName: true },
+      }),
+      this.prisma.avatar.findMany({ where: { userId: { in: podiumIds } } }),
+    ]);
+    const nameOf = new Map(names.map((n) => [n.userId, n.displayName]));
+    const avatarOf = avatarMapByUserId(avatars);
+
+    const podium: LeaguePodiumRow[] = top.map((s) => ({
+      finalRank: s.finalRank,
+      userId: s.userId,
+      displayName: nameOf.get(s.userId) ?? "Athlète",
+      totalPoints: s.totalPoints,
+      avatar: avatarOf.get(s.userId) ?? null,
+    }));
+
+    return {
+      monthKey: season.monthKey,
+      sex,
+      podium,
+      me: viewerStanding
+        ? {
+            finalRank: viewerStanding.finalRank,
+            totalPoints: viewerStanding.totalPoints,
+            movement: viewerStanding.movement,
+          }
+        : null,
+    };
   }
 
   async me(userId: string): Promise<LeagueMeView> {

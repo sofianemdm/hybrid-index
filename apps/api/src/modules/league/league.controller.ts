@@ -4,7 +4,14 @@ import { OptionalJwtAuthGuard } from "../auth/optional-jwt-auth.guard";
 import { CurrentUser } from "../auth/current-user.decorator";
 import { LeagueService } from "./league.service";
 import { LeagueEnrollmentService } from "./league-enrollment.service";
-import type { EnrollResponse, LeagueMeView, LeagueSeasonView, LeagueStandingsView, LeagueWeekView } from "./league.dto";
+import type {
+  EnrollResponse,
+  LeagueLastResultView,
+  LeagueMeView,
+  LeagueSeasonView,
+  LeagueStandingsView,
+  LeagueWeekView,
+} from "./league.dto";
 
 function parseSex(sex: string | undefined): "male" | "female" {
   if (sex === "male" || sex === "female") return sex;
@@ -47,6 +54,16 @@ export class LeagueController {
     @CurrentUser() user: AuthenticatedUser | undefined,
   ): Promise<LeagueStandingsView> {
     return this.league.standings(parseSex(sex), user?.userId);
+  }
+
+  /**
+   * Résultat de la DERNIÈRE saison close (reveal de fin de saison) : podium top 3 du sexe du viewer
+   * + sa ligne s'il a participé. Renvoie `null` s'il n'existe aucune saison close.
+   */
+  @Get("last-result")
+  @UseGuards(OptionalJwtAuthGuard)
+  async lastResult(@CurrentUser() user: AuthenticatedUser | undefined): Promise<LeagueLastResultView | null> {
+    return this.league.lastResult(user?.userId);
   }
 
   /** Mon résumé Ligue (points du mois, position, semaines jouées). */

@@ -1960,6 +1960,71 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
+  String get leagueSegmentMen => 'Hommes';
+
+  @override
+  String get leagueSegmentWomen => 'Femmes';
+
+  @override
+  String get leagueHowItWorksTitle => 'Comment ça marche ?';
+
+  @override
+  String get leagueHowItWorksBest =>
+      'Seul ton MEILLEUR essai de la semaine compte — tu peux retenter autant de fois que tu veux, on ne garde que le meilleur.';
+
+  @override
+  String get leagueHowItWorksReset =>
+      'Les points repartent à zéro au début de chaque mois. Tout le monde recommence à égalité.';
+
+  @override
+  String get leagueHowItWorksIndex =>
+      'Ton Index ne bouge jamais ici : la Ligue est une compétition mensuelle séparée.';
+
+  @override
+  String leagueRevealTitle(String month) {
+    return 'Saison $month — résultats';
+  }
+
+  @override
+  String get leagueRevealPodium => 'PODIUM';
+
+  @override
+  String leagueRevealYouFinished(String rank) {
+    return 'Tu finis $rank';
+  }
+
+  @override
+  String leagueRevealRankOrdinal(int rank) {
+    String _temp0 = intl.Intl.pluralLogic(
+      rank,
+      locale: localeName,
+      other: '${rank}e',
+      one: '1er',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get leagueRevealNotRanked => 'Tu n\'étais pas classé cette saison.';
+
+  @override
+  String get leagueRevealNewSeason =>
+      'Une nouvelle saison commence — à toi de jouer !';
+
+  @override
+  String get leagueRevealClose => 'C\'est parti';
+
+  @override
+  String leagueRevealMovementUp(int delta) {
+    return 'Gagne $delta';
+  }
+
+  @override
+  String leagueRevealMovementDown(int delta) {
+    return 'Perd $delta';
+  }
+
+  @override
   String notificationsJoinedClub(String clubName) {
     return 'Tu as rejoint $clubName !';
   }

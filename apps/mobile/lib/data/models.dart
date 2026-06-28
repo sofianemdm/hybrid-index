@@ -1740,6 +1740,65 @@ class LeagueMe {
       );
 }
 
+/// Une ligne du podium (top 3) d'une saison close — pour le « reveal » de fin de saison.
+class LeaguePodiumRow {
+  final int finalRank; // 1 | 2 | 3
+  final String userId;
+  final String displayName;
+  final int totalPoints;
+  final AvatarConfig? avatar;
+  const LeaguePodiumRow({
+    required this.finalRank,
+    required this.userId,
+    required this.displayName,
+    required this.totalPoints,
+    this.avatar,
+  });
+
+  factory LeaguePodiumRow.fromJson(Map<String, dynamic> j) => LeaguePodiumRow(
+        finalRank: (j['finalRank'] as num).toInt(),
+        userId: j['userId'] as String,
+        displayName: j['displayName'] as String? ?? '—',
+        totalPoints: (j['totalPoints'] as num?)?.toInt() ?? 0,
+        avatar: j['avatar'] == null ? null : AvatarConfig.fromJson(j['avatar'] as Map<String, dynamic>),
+      );
+}
+
+/// Résultat de la DERNIÈRE saison close : podium top 3 du sexe du viewer + sa ligne (s'il a participé).
+class LeagueLastResult {
+  final String monthKey;
+  final String sex;
+  final List<LeaguePodiumRow> podium;
+  final int? myFinalRank;
+  final int? myTotalPoints;
+  final String? myMovement; // "promoted" | "relegated" | "stay" | null
+  const LeagueLastResult({
+    required this.monthKey,
+    required this.sex,
+    required this.podium,
+    this.myFinalRank,
+    this.myTotalPoints,
+    this.myMovement,
+  });
+
+  /// true si le viewer a une ligne dans cette saison close (il a participé).
+  bool get participated => myFinalRank != null;
+
+  factory LeagueLastResult.fromJson(Map<String, dynamic> j) {
+    final me = j['me'] as Map<String, dynamic>?;
+    return LeagueLastResult(
+      monthKey: j['monthKey'] as String,
+      sex: j['sex'] as String? ?? 'male',
+      podium: (j['podium'] as List<dynamic>? ?? const [])
+          .map((e) => LeaguePodiumRow.fromJson(Map<String, dynamic>.from(e as Map)))
+          .toList(),
+      myFinalRank: me == null ? null : (me['finalRank'] as num?)?.toInt(),
+      myTotalPoints: me == null ? null : (me['totalPoints'] as num?)?.toInt(),
+      myMovement: me == null ? null : me['movement'] as String?,
+    );
+  }
+}
+
 class PrItem {
   final String wodId;
   final String wodName;

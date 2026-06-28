@@ -318,6 +318,13 @@ class ApiClient {
     return LeagueMe.fromJson(j);
   }
 
+  /// Résultat de la dernière saison CLOSE (reveal de fin de saison) ; null si aucune saison close.
+  Future<LeagueLastResult?> leagueLastResult() async {
+    final dynamic j = await _send('GET', '/v1/league/last-result');
+    if (j is! Map || j['monthKey'] == null) return null;
+    return LeagueLastResult.fromJson(Map<String, dynamic>.from(j));
+  }
+
   // --- Records personnels (A8 — PR Wall) ---
   Future<List<PrItem>> personalRecords() async {
     final j = await _send('GET', '/v1/results/prs') as List<dynamic>;

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../data/models.dart';
 import '../../data/session.dart';
@@ -10,6 +11,8 @@ import '../../widgets/hi_skeleton.dart';
 import '../../widgets/hi_avatar.dart';
 import '../profile/public_profile_screen.dart';
 import '../wods/wod_detail_screen.dart';
+import 'league_reveal_sheet.dart';
+import 'month_format.dart';
 
 /// Mode LIGUE — compétition mensuelle OUVERTE À TOUS, SÉPARÉE de l'Index.
 /// Pas d'inscription : tout le monde est classé dès qu'il fait le WOD imposé de la semaine.
@@ -32,6 +35,9 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
     super.initState();
     _sex = ref.read(sessionProvider).sex ?? 'male';
     _load();
+    // REVEAL de fin de saison : déclenché APRÈS le 1er frame (contexte prêt), une seule fois par
+    // saison close (mémorisé via shared_preferences). N'affiche rien s'il n'y a aucune saison close.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _maybeShowReveal());
   }
 
   void _load() {
@@ -40,10 +46,41 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
     _standings = api.leagueStandings(_sex);
   }
 
+  /// Clé « déjà vu » par saison close (monthKey). Ne montrer le reveal qu'UNE fois par saison.
+  static String _revealSeenKey(String monthKey) => 'hi_league_reveal_seen_$monthKey';
+
+  /// Charge le dernier résultat de saison close ; si non encore vu, présente le reveal et le marque vu.
+  Future<void> _maybeShowReveal() async {
+    try {
+      final api = ref.read(apiClientProvider);
+      final result = await api.leagueLastResult();
+      if (result == null || !mounted) return;
+      final prefs = await SharedPreferences.getInstance();
+      final key = _revealSeenKey(result.monthKey);
+      if (prefs.getBool(key) == true) return; // déjà vu cette saison
+      if (!mounted) return;
+      await LeagueRevealSheet.show(context, result);
+      await prefs.setBool(key, true);
+    } catch (_) {
+      // Reveal best-effort : jamais bloquant pour l'écran Ligue.
+    }
+  }
+
   Future<void> _refresh() async {
     setState(_load);
     await _season;
     if (_standings != null) await _standings;
+  }
+
+  /// Change la ligue affichée (Hommes/Femmes) et re-fetch UNIQUEMENT le classement (la saison/WOD
+  /// imposé sont communs aux deux ligues). No-op si on retoque le sexe déjà sélectionné.
+  void _selectSex(String sex) {
+    if (sex == _sex) return;
+    HiHaptics.tap();
+    setState(() {
+      _sex = sex;
+      _standings = ref.read(apiClientProvider).leagueStandings(_sex);
+    });
   }
 
   /// Ouvre DIRECTEMENT le WOD imposé de la semaine (pas un sélecteur générique).
@@ -100,11 +137,15 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
                   _seasonHeader(season),
                   const SizedBox(height: HiSpace.md),
                   _explainerCard(),
+                  const SizedBox(height: HiSpace.sm),
+                  _howItWorks(),
                   const SizedBox(height: HiSpace.md),
                   if (season.currentWeek != null) ...[
                     _wodCard(season.currentWeek!),
                     const SizedBox(height: HiSpace.md),
                   ],
+                  _sexSegmented(),
+                  const SizedBox(height: HiSpace.md),
                   _standingsSection(),
                 ],
               );
@@ -115,11 +156,12 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
     );
   }
 
-  // En-tête : mois + compte à rebours + rappel de la remise à zéro mensuelle.
+  // En-tête : ligue + MOIS formaté (« Juin 2026 ») + compte à rebours + remise à zéro mensuelle.
   Widget _seasonHeader(LeagueSeason season) {
     final t = AppLocalizations.of(context);
     final daysLeft = season.closesAt.difference(DateTime.now()).inDays;
     final violet = HiColors.brandSecondary;
+    final monthLabel = formatMonthKey(season.monthKey, Localizations.localeOf(context).toString());
     return Container(
       padding: const EdgeInsets.all(HiSpace.lg),
       decoration: BoxDecoration(
@@ -144,8 +186,13 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
           ),
           const SizedBox(height: HiSpace.sm),
           Text(
+            monthLabel,
+            style: HiType.titleL.copyWith(color: HiColors.textPrimary, fontWeight: FontWeight.w900),
+          ),
+          const SizedBox(height: 2),
+          Text(
             daysLeft <= 0 ? t.leagueLastDay : t.leagueEndsIn(daysLeft),
-            style: HiType.titleL.copyWith(color: HiColors.textPrimary),
+            style: HiType.body.copyWith(color: HiColors.textSecondary),
           ),
           const SizedBox(height: 4),
           Text(t.leaguePointsReset,
@@ -182,6 +229,73 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
             style: HiType.body.copyWith(color: HiColors.textSecondary),
           ),
         ],
+      ),
+    );
+  }
+
+  // D — Bloc dépliable « Comment ça marche ? » : règle du meilleur essai, reset mensuel, Index figé.
+  Widget _howItWorks() {
+    final t = AppLocalizations.of(context);
+    return Container(
+      decoration: BoxDecoration(
+        color: HiColors.bgElevated2,
+        borderRadius: BorderRadius.circular(HiRadius.sm),
+        border: Border.all(color: HiColors.strokeSubtle),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Theme(
+        // Retire les séparateurs par défaut de l'ExpansionTile (intégration au design sombre).
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          tilePadding: const EdgeInsets.symmetric(horizontal: HiSpace.lg, vertical: 2),
+          childrenPadding: const EdgeInsets.fromLTRB(HiSpace.lg, 0, HiSpace.lg, HiSpace.md),
+          iconColor: HiColors.brandSecondaryText,
+          collapsedIconColor: HiColors.textTertiary,
+          leading: Icon(Icons.help_outline_rounded, color: HiColors.brandSecondaryText, size: 20),
+          title: Text(t.leagueHowItWorksTitle,
+              style: HiType.bodyStrong.copyWith(color: HiColors.textPrimary)),
+          children: [
+            _howItWorksLine(Icons.emoji_events_outlined, t.leagueHowItWorksBest),
+            const SizedBox(height: HiSpace.sm),
+            _howItWorksLine(Icons.restart_alt_rounded, t.leagueHowItWorksReset),
+            const SizedBox(height: HiSpace.sm),
+            _howItWorksLine(Icons.lock_outline_rounded, t.leagueHowItWorksIndex),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _howItWorksLine(IconData icon, String text) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, color: HiColors.brandSecondaryText, size: 16),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(text, style: HiType.caption.copyWith(color: HiColors.textSecondary, height: 1.4)),
+        ),
+      ],
+    );
+  }
+
+  // B — Bascule Hommes | Femmes : re-fetch le classement du sexe choisi (saison/WOD communs).
+  Widget _sexSegmented() {
+    final t = AppLocalizations.of(context);
+    return SegmentedButton<String>(
+      segments: [
+        ButtonSegment(value: 'male', label: Text(t.leagueSegmentMen), icon: const Icon(Icons.male_rounded, size: 16)),
+        ButtonSegment(value: 'female', label: Text(t.leagueSegmentWomen), icon: const Icon(Icons.female_rounded, size: 16)),
+      ],
+      selected: {_sex},
+      showSelectedIcon: false,
+      onSelectionChanged: (s) => _selectSex(s.first),
+      style: ButtonStyle(
+        backgroundColor: WidgetStateProperty.resolveWith((states) =>
+            states.contains(WidgetState.selected) ? HiColors.brandSecondary.withValues(alpha: 0.22) : Colors.transparent),
+        foregroundColor: WidgetStateProperty.resolveWith((states) =>
+            states.contains(WidgetState.selected) ? HiColors.textPrimary : HiColors.textSecondary),
+        side: WidgetStatePropertyAll(BorderSide(color: HiColors.brandSecondary.withValues(alpha: 0.45))),
       ),
     );
   }

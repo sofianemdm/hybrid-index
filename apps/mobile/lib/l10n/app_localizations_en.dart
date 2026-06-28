@@ -1947,6 +1947,70 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get leagueSegmentMen => 'Men';
+
+  @override
+  String get leagueSegmentWomen => 'Women';
+
+  @override
+  String get leagueHowItWorksTitle => 'How does it work?';
+
+  @override
+  String get leagueHowItWorksBest =>
+      'Only your BEST attempt of the week counts — you can retry as many times as you want, only the best one is kept.';
+
+  @override
+  String get leagueHowItWorksReset =>
+      'Points reset to zero at the start of every month. Everyone restarts equal.';
+
+  @override
+  String get leagueHowItWorksIndex =>
+      'Your Index never moves here: the League is a separate monthly competition.';
+
+  @override
+  String leagueRevealTitle(String month) {
+    return 'Season $month — results';
+  }
+
+  @override
+  String get leagueRevealPodium => 'PODIUM';
+
+  @override
+  String leagueRevealYouFinished(String rank) {
+    return 'You finished $rank';
+  }
+
+  @override
+  String leagueRevealRankOrdinal(int rank) {
+    String _temp0 = intl.Intl.pluralLogic(
+      rank,
+      locale: localeName,
+      other: '${rank}th',
+      one: '1st',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get leagueRevealNotRanked => 'You weren\'t ranked this season.';
+
+  @override
+  String get leagueRevealNewSeason => 'A new season has begun — go for it!';
+
+  @override
+  String get leagueRevealClose => 'Let\'s go';
+
+  @override
+  String leagueRevealMovementUp(int delta) {
+    return 'Up $delta';
+  }
+
+  @override
+  String leagueRevealMovementDown(int delta) {
+    return 'Down $delta';
+  }
+
+  @override
   String notificationsJoinedClub(String clubName) {
     return 'You joined $clubName!';
   }

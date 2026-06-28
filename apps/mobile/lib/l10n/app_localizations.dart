@@ -3380,6 +3380,96 @@ abstract class AppLocalizations {
   /// **'{name} (me)'**
   String leagueRowYou(String name);
 
+  /// No description provided for @leagueSegmentMen.
+  ///
+  /// In en, this message translates to:
+  /// **'Men'**
+  String get leagueSegmentMen;
+
+  /// No description provided for @leagueSegmentWomen.
+  ///
+  /// In en, this message translates to:
+  /// **'Women'**
+  String get leagueSegmentWomen;
+
+  /// No description provided for @leagueHowItWorksTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How does it work?'**
+  String get leagueHowItWorksTitle;
+
+  /// No description provided for @leagueHowItWorksBest.
+  ///
+  /// In en, this message translates to:
+  /// **'Only your BEST attempt of the week counts — you can retry as many times as you want, only the best one is kept.'**
+  String get leagueHowItWorksBest;
+
+  /// No description provided for @leagueHowItWorksReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Points reset to zero at the start of every month. Everyone restarts equal.'**
+  String get leagueHowItWorksReset;
+
+  /// No description provided for @leagueHowItWorksIndex.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Index never moves here: the League is a separate monthly competition.'**
+  String get leagueHowItWorksIndex;
+
+  /// No description provided for @leagueRevealTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Season {month} — results'**
+  String leagueRevealTitle(String month);
+
+  /// No description provided for @leagueRevealPodium.
+  ///
+  /// In en, this message translates to:
+  /// **'PODIUM'**
+  String get leagueRevealPodium;
+
+  /// No description provided for @leagueRevealYouFinished.
+  ///
+  /// In en, this message translates to:
+  /// **'You finished {rank}'**
+  String leagueRevealYouFinished(String rank);
+
+  /// No description provided for @leagueRevealRankOrdinal.
+  ///
+  /// In en, this message translates to:
+  /// **'{rank, plural, =1{1st} other{{rank}th}}'**
+  String leagueRevealRankOrdinal(int rank);
+
+  /// No description provided for @leagueRevealNotRanked.
+  ///
+  /// In en, this message translates to:
+  /// **'You weren\'t ranked this season.'**
+  String get leagueRevealNotRanked;
+
+  /// No description provided for @leagueRevealNewSeason.
+  ///
+  /// In en, this message translates to:
+  /// **'A new season has begun — go for it!'**
+  String get leagueRevealNewSeason;
+
+  /// No description provided for @leagueRevealClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Let\'s go'**
+  String get leagueRevealClose;
+
+  /// No description provided for @leagueRevealMovementUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Up {delta}'**
+  String leagueRevealMovementUp(int delta);
+
+  /// No description provided for @leagueRevealMovementDown.
+  ///
+  /// In en, this message translates to:
+  /// **'Down {delta}'**
+  String leagueRevealMovementDown(int delta);
+
   /// No description provided for @notificationsJoinedClub.
   ///
   /// In en, this message translates to:
