@@ -20,7 +20,8 @@ class NotificationsScreen extends ConsumerStatefulWidget {
   ConsumerState<NotificationsScreen> createState() => _NotificationsScreenState();
 }
 
-class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
+class _NotificationsScreenState extends ConsumerState<NotificationsScreen>
+    with WidgetsBindingObserver {
   late Future<List<FeedItem>> _future;
   List<ClubInvite> _invites = [];
   bool _busy = false;
@@ -28,8 +29,36 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _future = ref.read(apiClientProvider).notificationsFeed();
     _loadInvites();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  /// Retour au premier plan : on rafraîchit (le contexte a pu changer pendant l'absence).
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && mounted) {
+      _refresh();
+    }
+  }
+
+  /// Recharge feed + invitations et invalide le badge d'inbox (cloche). Sûr à appeler depuis
+  /// le pull-to-refresh comme depuis le retour premier-plan.
+  Future<void> _refresh() async {
+    final feed = ref.read(apiClientProvider).notificationsFeed();
+    setState(() => _future = feed);
+    ref.invalidate(inboxBadgeProvider);
+    ref.invalidate(unreadMessagesProvider);
+    await Future.wait<void>([
+      _loadInvites(),
+      feed.then((_) {}).catchError((_) {}),
+    ]);
   }
 
   Future<void> _loadInvites() async {
@@ -87,41 +116,57 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         ],
       ),
       body: SafeArea(
-        child: FutureBuilder<List<FeedItem>>(
-          future: _future,
-          builder: (context, snap) {
-            if (snap.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator(color: HiColors.brandPrimary));
-            }
-            if (snap.hasError) {
-              return Center(child: Text('${snap.error}', style: HiType.body.copyWith(color: HiColors.error)));
-            }
-            final items = snap.data ?? [];
-            final unread = ref.watch(unreadMessagesProvider).value ?? 0;
+        child: RefreshIndicator(
+          color: HiColors.brandPrimary,
+          onRefresh: _refresh,
+          child: FutureBuilder<List<FeedItem>>(
+            future: _future,
+            builder: (context, snap) {
+              if (snap.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator(color: HiColors.brandPrimary));
+              }
+              if (snap.hasError) {
+                // Scrollable pour permettre le pull-to-refresh même en erreur.
+                return ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  children: [
+                    const SizedBox(height: 120),
+                    Center(child: Text('${snap.error}', style: HiType.body.copyWith(color: HiColors.error))),
+                  ],
+                );
+              }
+              final items = snap.data ?? [];
+              final unread = ref.watch(unreadMessagesProvider).value ?? 0;
 
-            // Ordre : invitations de club (action requise) → nouveaux messages → engagement.
-            final widgets = <Widget>[
-              for (final inv in _invites) _inviteCard(inv),
-              if (unread > 0) _messagesCard(context, unread),
-              for (final item in items) _tile(item),
-            ];
+              // Ordre : invitations de club (action requise) → nouveaux messages → engagement.
+              final widgets = <Widget>[
+                for (final inv in _invites) _inviteCard(inv),
+                if (unread > 0) _messagesCard(context, unread),
+                for (final item in items) _tile(item),
+              ];
 
-            if (widgets.isEmpty) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(HiSpace.lg),
-                  child: Text(t.notificationsEmpty,
-                      textAlign: TextAlign.center, style: HiType.body.copyWith(color: HiColors.textTertiary)),
-                ),
+              if (widgets.isEmpty) {
+                return ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  children: [
+                    const SizedBox(height: 120),
+                    Padding(
+                      padding: const EdgeInsets.all(HiSpace.lg),
+                      child: Text(t.notificationsEmpty,
+                          textAlign: TextAlign.center, style: HiType.body.copyWith(color: HiColors.textTertiary)),
+                    ),
+                  ],
+                );
+              }
+              return ListView.separated(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(HiSpace.lg),
+                itemCount: widgets.length,
+                separatorBuilder: (_, __) => const SizedBox(height: HiSpace.sm),
+                itemBuilder: (_, i) => widgets[i],
               );
-            }
-            return ListView.separated(
-              padding: const EdgeInsets.all(HiSpace.lg),
-              itemCount: widgets.length,
-              separatorBuilder: (_, __) => const SizedBox(height: HiSpace.sm),
-              itemBuilder: (_, i) => widgets[i],
-            );
-          },
+            },
+          ),
         ),
       ),
     );
@@ -224,7 +269,31 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     );
   }
 
+  /// Résout (title, body) d'un item du feed. Priorité à key+params (localisé) ; repli sur les
+  /// champs title/body hérités si l'API renvoie encore une phrase en dur (compat).
+  (String, String) _resolve(FeedItem item) {
+    final t = AppLocalizations.of(context);
+    switch (item.key) {
+      case 'week-almost-complete':
+        return (t.feedWeekAlmostTitle, t.feedWeekAlmostBody(item.intParam('count'), item.intParam('goal')));
+      case 'week-validated':
+        return (t.feedWeekValidatedTitle, t.feedWeekValidatedBody(item.intParam('streak')));
+      case 'next-rank-close':
+        return (t.feedNextRankTitle(item.strParam('rank')), t.feedNextRankBody(item.intParam('points')));
+      case 'rank-overtaken':
+        final c = item.intParam('count', 1);
+        return (t.feedRankOvertakenTitle(c), t.feedRankOvertakenBody);
+      case 'wod-overtaken':
+        final c = item.intParam('count', 1);
+        return (t.feedWodOvertakenTitle(c), t.feedWodOvertakenBody);
+      default:
+        // Compat : item hérité avec phrases en dur, ou clé inconnue → on affiche ce qu'on a.
+        return (item.title ?? item.key, item.body ?? '');
+    }
+  }
+
   Widget _tile(FeedItem item) {
+    final (title, body) = _resolve(item);
     final color = item.priority == 'high'
         ? HiColors.brandPrimary
         : (item.priority == 'low' ? HiColors.textTertiary : HiColors.brandSecondary);
@@ -247,9 +316,9 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(item.title, style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
+                Text(title, style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
                 const SizedBox(height: 2),
-                Text(item.body, style: HiType.caption.copyWith(color: HiColors.textSecondary)),
+                Text(body, style: HiType.caption.copyWith(color: HiColors.textSecondary)),
               ],
             ),
           ),

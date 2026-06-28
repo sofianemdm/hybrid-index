@@ -911,27 +911,49 @@ class AvatarConfig {
 
 class FeedItem {
   final String key;
-  final String title;
-  final String body;
+
+  /// Paramètres d'interpolation du message localisé (résolu via la clé côté app).
+  final Map<String, dynamic> params;
   final String priority;
+
+  /// COMPAT héritée : anciens items renvoyaient des phrases FR en dur. Si présents, on les
+  /// affiche tels quels ; sinon on résout key+params via AppLocalizations.
+  final String? title;
+  final String? body;
 
   /// Zone à ouvrir au tap ('league' / 'leaderboard'), résolue côté app. Null = tuile non cliquable.
   final String? route;
   const FeedItem({
     required this.key,
-    required this.title,
-    required this.body,
+    this.params = const {},
     required this.priority,
+    this.title,
+    this.body,
     this.route,
   });
 
   factory FeedItem.fromJson(Map<String, dynamic> j) => FeedItem(
         key: j['key'] as String,
-        title: j['title'] as String,
-        body: j['body'] as String,
+        params: (j['params'] as Map<String, dynamic>?) ?? const {},
         priority: j['priority'] as String? ?? 'medium',
+        title: j['title'] as String?,
+        body: j['body'] as String?,
         route: j['route'] as String?,
       );
+
+  /// Lit un paramètre entier (les nombres JSON peuvent arriver en int ou num).
+  int intParam(String name, [int fallback = 0]) {
+    final v = params[name];
+    if (v is int) return v;
+    if (v is num) return v.toInt();
+    if (v is String) return int.tryParse(v) ?? fallback;
+    return fallback;
+  }
+
+  String strParam(String name, [String fallback = '']) {
+    final v = params[name];
+    return v == null ? fallback : v.toString();
+  }
 }
 
 class WodResultItem {

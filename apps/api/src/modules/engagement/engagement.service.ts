@@ -7,6 +7,7 @@ import { StreakService } from "./streak.service";
 import { addWeeks, weekStart } from "./iso-week";
 import { weeklyRecapDelta } from "./recap.logic";
 import { NOTIFICATION_TRIGGERS } from "./notifications.data";
+import { prefEnabled } from "./notification-gating";
 
 /** Récap hebdomadaire (non compétitif) : ce que tu as accompli cette semaine. */
 export interface WeeklyRecap {
@@ -22,12 +23,20 @@ export interface WeeklyRecap {
 export type FeedRoute = "league" | "leaderboard";
 
 export interface FeedItem {
+  /** Clé de message STABLE et localisée côté app (ex. "rank-overtaken"). */
   key: string;
-  title: string;
-  body: string;
+  /** Paramètres d'interpolation du message localisé (ex. { points: 12, rank: "Or" }). */
+  params: Record<string, string | number>;
   priority: "high" | "medium" | "low";
   /** Zone à ouvrir au tap (chevron côté app). Absent = tuile non cliquable. */
   route?: FeedRoute;
+  /**
+   * COMPAT héritée : anciens items rendaient des phrases FR en dur. On ne les remplit plus
+   * (l'app résout key+params), mais le champ reste optionnel pour ne pas casser d'éventuels
+   * consommateurs. Les nouveaux items s'appuient sur key+params.
+   */
+  title?: string;
+  body?: string;
 }
 
 const DEFAULT_PREFS = {
@@ -101,7 +110,7 @@ export class EngagementService {
     if (!profile || !idx) return items;
 
     const prefs = (prefsRow?.prefs as Record<string, boolean> | undefined) ?? {};
-    const enabled = (key: string): boolean => prefs[key] !== false;
+    const enabled = (key: string): boolean => prefEnabled(prefs, key);
 
     // Série hebdomadaire.
     const streak = await this.streak.evaluateAndGet(userId).catch(() => null);
@@ -109,15 +118,13 @@ export class EngagementService {
       if (enabled("week-almost-complete") && streak.thisWeekCount === streak.weeklyGoal - 1) {
         items.push({
           key: "week-almost-complete",
-          title: "Plus qu'un WOD",
-          body: `Un entraînement et ta semaine est validée (${streak.thisWeekCount}/${streak.weeklyGoal}).`,
+          params: { count: streak.thisWeekCount, goal: streak.weeklyGoal },
           priority: "high",
         });
       } else if (enabled("rest-week-respected") && streak.weekValidated) {
         items.push({
           key: "week-validated",
-          title: "Semaine validée ✓",
-          body: `Série en cours : ${streak.current} semaine(s). Continue !`,
+          params: { streak: streak.current },
           priority: "low",
         });
       }
@@ -130,8 +137,7 @@ export class EngagementService {
       if (pts <= 40) {
         items.push({
           key: "next-rank-close",
-          title: `Le rang ${next.rank} est proche`,
-          body: `Encore ${pts} points. Un bon WOD et tu y es.`,
+          params: { rank: next.rank, points: pts },
           priority: "medium",
           route: "league",
         });
@@ -150,8 +156,7 @@ export class EngagementService {
       if (passedBy > 0 && (appPercentile >= 0.7 || passedBy <= 2)) {
         items.push({
           key: "rank-overtaken",
-          title: passedBy === 1 ? "Un athlète t'a dépassé" : `${passedBy} athlètes t'ont dépassé`,
-          body: "Reprends ta place au classement 💪",
+          params: { count: passedBy },
           priority: "medium",
           route: "league",
         });
@@ -197,8 +202,7 @@ export class EngagementService {
           if (overtaken.length > 0) {
             items.push({
               key: "wod-overtaken",
-              title: overtaken.length === 1 ? "Un athlète a battu ton temps" : `Battu sur ${overtaken.length} WODs`,
-              body: "Va défendre tes scores 🔥",
+              params: { count: overtaken.length },
               priority: "medium",
               route: "leaderboard",
             });

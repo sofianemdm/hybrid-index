@@ -767,13 +767,15 @@ class AppLocalizationsFr extends AppLocalizations {
       'Tu envoies trop de messages. Réessaie dans un instant.';
 
   @override
-  String get messagingErrorNotAllowed => 'Message impossible avec cet utilisateur.';
+  String get messagingErrorNotAllowed =>
+      'Message impossible avec cet utilisateur.';
 
   @override
   String get messagingErrorNotFound => 'Conversation introuvable.';
 
   @override
-  String get messagingErrorTooLong => 'Message trop long (2000 caractères max).';
+  String get messagingErrorTooLong =>
+      'Message trop long (2000 caractères max).';
 
   @override
   String get messagingErrorNetwork =>
@@ -805,6 +807,72 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get notificationsNewMessagesBody => 'Ouvre tes conversations.';
+
+  @override
+  String get feedWeekAlmostTitle => 'Plus qu\'un WOD';
+
+  @override
+  String feedWeekAlmostBody(int count, int goal) {
+    return 'Un entraînement et ta semaine est validée ($count/$goal).';
+  }
+
+  @override
+  String get feedWeekValidatedTitle => 'Semaine validée';
+
+  @override
+  String feedWeekValidatedBody(int streak) {
+    String _temp0 = intl.Intl.pluralLogic(
+      streak,
+      locale: localeName,
+      other: 'Série en cours : $streak semaines. Continue !',
+      one: 'Série en cours : 1 semaine. Continue !',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String feedNextRankTitle(String rank) {
+    return 'Le rang $rank est proche';
+  }
+
+  @override
+  String feedNextRankBody(int points) {
+    String _temp0 = intl.Intl.pluralLogic(
+      points,
+      locale: localeName,
+      other: 'Encore $points points. Un bon WOD et tu y es.',
+      one: 'Encore 1 point. Un bon WOD et tu y es.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String feedRankOvertakenTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count athlètes t\'ont dépassé',
+      one: 'Un athlète t\'a dépassé',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get feedRankOvertakenBody => 'Reprends ta place au classement.';
+
+  @override
+  String feedWodOvertakenTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Battu sur $count WODs',
+      one: 'Un athlète a battu ton temps',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get feedWodOvertakenBody => 'Va défendre tes scores.';
 
   @override
   String get notificationSettingsTitle => 'Réglages des notifications';

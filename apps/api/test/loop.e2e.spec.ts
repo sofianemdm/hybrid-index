@@ -293,7 +293,9 @@ describe("api — boucle complète persistée (e2e réel)", () => {
       .expect(200);
     expect(Array.isArray(res.body)).toBe(true);
     for (const item of res.body) {
-      expect(typeof item.title).toBe("string");
+      // Feed localisé : chaque item porte une CLE stable (le mobile la traduit) ; title/body
+      // sont optionnels (compat héritée). On valide donc la clé + la priorité.
+      expect(typeof item.key).toBe("string");
       expect(["high", "medium", "low"]).toContain(item.priority);
     }
   });

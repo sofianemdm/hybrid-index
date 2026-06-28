@@ -803,6 +803,72 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notificationsNewMessagesBody => 'Open your conversations.';
 
   @override
+  String get feedWeekAlmostTitle => 'One WOD to go';
+
+  @override
+  String feedWeekAlmostBody(int count, int goal) {
+    return 'One workout and your week is validated ($count/$goal).';
+  }
+
+  @override
+  String get feedWeekValidatedTitle => 'Week validated';
+
+  @override
+  String feedWeekValidatedBody(int streak) {
+    String _temp0 = intl.Intl.pluralLogic(
+      streak,
+      locale: localeName,
+      other: 'Current streak: $streak weeks. Keep it up!',
+      one: 'Current streak: 1 week. Keep it up!',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String feedNextRankTitle(String rank) {
+    return 'Rank $rank is close';
+  }
+
+  @override
+  String feedNextRankBody(int points) {
+    String _temp0 = intl.Intl.pluralLogic(
+      points,
+      locale: localeName,
+      other: 'Just $points points to go. One good WOD and you\'re there.',
+      one: 'Just 1 point to go. One good WOD and you\'re there.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String feedRankOvertakenTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count athletes passed you',
+      one: 'An athlete passed you',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get feedRankOvertakenBody => 'Reclaim your spot on the leaderboard.';
+
+  @override
+  String feedWodOvertakenTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Beaten on $count WODs',
+      one: 'An athlete beat your time',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get feedWodOvertakenBody => 'Go defend your scores.';
+
+  @override
   String get notificationSettingsTitle => 'Notification settings';
 
   @override

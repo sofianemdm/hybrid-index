@@ -1532,6 +1532,66 @@ abstract class AppLocalizations {
   /// **'Open your conversations.'**
   String get notificationsNewMessagesBody;
 
+  /// No description provided for @feedWeekAlmostTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'One WOD to go'**
+  String get feedWeekAlmostTitle;
+
+  /// No description provided for @feedWeekAlmostBody.
+  ///
+  /// In en, this message translates to:
+  /// **'One workout and your week is validated ({count}/{goal}).'**
+  String feedWeekAlmostBody(int count, int goal);
+
+  /// No description provided for @feedWeekValidatedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Week validated'**
+  String get feedWeekValidatedTitle;
+
+  /// No description provided for @feedWeekValidatedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{streak, plural, one{Current streak: 1 week. Keep it up!} other{Current streak: {streak} weeks. Keep it up!}}'**
+  String feedWeekValidatedBody(int streak);
+
+  /// No description provided for @feedNextRankTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Rank {rank} is close'**
+  String feedNextRankTitle(String rank);
+
+  /// No description provided for @feedNextRankBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{points, plural, one{Just 1 point to go. One good WOD and you\'re there.} other{Just {points} points to go. One good WOD and you\'re there.}}'**
+  String feedNextRankBody(int points);
+
+  /// No description provided for @feedRankOvertakenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{An athlete passed you} other{{count} athletes passed you}}'**
+  String feedRankOvertakenTitle(int count);
+
+  /// No description provided for @feedRankOvertakenBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Reclaim your spot on the leaderboard.'**
+  String get feedRankOvertakenBody;
+
+  /// No description provided for @feedWodOvertakenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{An athlete beat your time} other{Beaten on {count} WODs}}'**
+  String feedWodOvertakenTitle(int count);
+
+  /// No description provided for @feedWodOvertakenBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Go defend your scores.'**
+  String get feedWodOvertakenBody;
+
   /// No description provided for @notificationSettingsTitle.
   ///
   /// In en, this message translates to:
