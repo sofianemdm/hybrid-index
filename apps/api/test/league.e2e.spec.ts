@@ -25,7 +25,11 @@ describe("api — mode Ligue (e2e réel)", () => {
   let token = "";
   let userId = "";
   let seasonId = "";
-  const IMPOSED_WOD = "fran"; // WOD imposé de la semaine de test (WOD valide connu du score-service)
+  // WOD imposé de la semaine de test : un WOD valide qu'AUCUN autre spec e2e ne logue dans la
+  // semaine ISO courante. En parallèle (Jest multi-workers, même Postgres), les résultats « fran »
+  // d'autres specs tombaient dans CETTE saison (seule active couvrant maintenant) et gonflaient le
+  // classement → `position` non déterministe. « grace » isole cette saison des autres specs.
+  const IMPOSED_WOD = "grace";
 
   beforeAll(async () => {
     const scoreRef = await Test.createTestingModule({ imports: [ScoreAppModule] }).compile();

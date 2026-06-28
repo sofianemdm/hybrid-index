@@ -77,6 +77,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonGenericError => 'Something went wrong. Please try again.';
 
   @override
+  String get celebrationContinue => 'Continue';
+
+  @override
+  String get celebrationTapToContinue => 'Tap to continue';
+
+  @override
+  String get celebrationClose => 'Close';
+
+  @override
   String get commonGotIt => 'Got it';
 
   @override
@@ -208,6 +217,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String wreBandUp(int percent) {
     return '🚀 You\'re entering the top $percent% of the fittest!';
   }
+
+  @override
+  String wreOvertookTitle(String name) {
+    return 'You passed $name!';
+  }
+
+  @override
+  String get wreOvertookSubtitle => 'A new rival in sight';
 
   @override
   String get wreUnitTime => 'time';
@@ -1336,6 +1353,39 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get coachLibraryTitle => 'Coach library';
+
+  @override
+  String get coachLibrarySubtitle => 'Ready-to-run guided sessions. Pick one and follow the plan.';
+
+  @override
+  String get coachLibraryAll => 'All';
+
+  @override
+  String get coachLibraryError => 'Couldn\'t load the session library right now.';
+
+  @override
+  String get coachLibraryEmpty => 'No guided session for this filter with your equipment.';
+
+  @override
+  String get coachLibraryEntryTitle => 'Coach library';
+
+  @override
+  String get coachLibraryEntrySubtitle => 'Guided sessions to follow — separate from the workouts you log.';
+
+  @override
+  String get sessionsByFocusCaption => 'Workouts to log that measure each axis of your score.';
+
+  @override
+  String get sessionsToLog => 'Workouts to log';
+
+  @override
+  String get sessionsGuidedLinkTitle => 'Guided coach sessions';
+
+  @override
+  String get sessionsGuidedLinkSubtitle => 'Ready-to-run training for this axis';
+
+  @override
   String get coachWithEquipment => 'Equipment';
 
   @override
@@ -2046,14 +2096,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get leagueRevealClose => 'Let\'s go';
 
   @override
-  String leagueRevealMovementUp(int delta) {
-    return 'Up $delta';
-  }
+  String get leagueRevealMovedUp => 'You climbed the ranking';
 
   @override
-  String leagueRevealMovementDown(int delta) {
-    return 'Down $delta';
-  }
+  String get leagueRevealMovedDown => 'You slipped down the ranking';
+
+  @override
+  String get leagueRevealStable => 'You held your position';
 
   @override
   String notificationsJoinedClub(String clubName) {
@@ -2079,4 +2128,131 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notificationsDecline => 'Decline';
+
+  @override
+  String get a11ySend => 'Send message';
+
+  @override
+  String get a11yRetryMessage => 'Resend message';
+
+  @override
+  String a11yUnreadCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count unread messages',
+      one: '$count unread message',
+    );
+    return _temp0;
+  }
+
+  @override
+  String get a11yDecrease => 'Decrease';
+
+  @override
+  String get a11yIncrease => 'Increase';
+
+  @override
+  String a11yDailyCapValue(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count notifications per day',
+      one: '$count notification per day',
+    );
+    return _temp0;
+  }
+
+  @override
+  String a11yLeagueMyPosition(int position, int points) {
+    return 'You are $position with $points points';
+  }
+
+  @override
+  String a11yLeagueRow(int position, String name, int points) {
+    return 'Position $position, $name, $points points';
+  }
+
+  @override
+  String a11yPodiumPlace(String ordinal, String name, int points) {
+    return '$ordinal place: $name, $points points';
+  }
+
+  @override
+  String a11yRemoveMovementNamed(String name) {
+    return 'Remove $name';
+  }
+
+  @override
+  String a11yAmountField(String movement, String unit) {
+    return 'Amount for $movement in $unit';
+  }
+
+  @override
+  String a11yLoadField(String movement) {
+    return 'Load in kilograms for $movement';
+  }
+
+  @override
+  String get a11yEstimateBadge => 'Estimated values, indicative';
+
+  @override
+  String a11yFlagshipDone(String name, int score) {
+    return '$name, done, score $score out of 100';
+  }
+
+  @override
+  String a11yFlagshipTodo(String name) {
+    return '$name, to do';
+  }
+
+  @override
+  String get a11yUnlocked => 'unlocked';
+
+  @override
+  String get a11yLocked => 'locked';
+
+  @override
+  String a11yBadge(String name) {
+    return 'Badge $name';
+  }
+
+  @override
+  String get a11yHomeViewProgression => 'View your progress';
+
+  @override
+  String get a11yHomeEditAvatar => 'Edit your avatar';
+
+  @override
+  String get a11yHomeBetaInfo => 'Beta version info';
+
+  @override
+  String a11yRivalChasing(String name, int ovr, int gap) {
+    String _temp0 = intl.Intl.pluralLogic(
+      gap,
+      locale: localeName,
+      other: '$gap points above you',
+      one: '1 point above you',
+    );
+    return 'Your rival $name, Index $ovr, $_temp0. Tap to view the leaderboard.';
+  }
+
+  @override
+  String get a11yRivalLeader =>
+      'You\'re leading your league. Tap to view the leaderboard.';
+
+  @override
+  String a11yCoachFilter(String name) {
+    return 'Filter: $name';
+  }
+
+  @override
+  String a11yCoachSession(String name, int duration, String intensity) {
+    return 'Session $name, $duration minutes, intensity $intensity';
+  }
+
+  @override
+  String a11ySessionWod(String name) {
+    return 'Challenge $name';
+  }
 }

@@ -5,6 +5,7 @@ import '../../l10n/app_localizations.dart';
 import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../theme/tokens.dart';
+import '../../widgets/error_retry.dart';
 import '../wods/wod_detail_screen.dart';
 
 /// Grand Chelem : réussir les 4 séances phares — Bronze (terminées), Argent (bonnes notes),
@@ -44,7 +45,7 @@ class _EndgameScreenState extends ConsumerState<EndgameScreen> {
             if (snap.connectionState == ConnectionState.waiting) {
               return Center(child: CircularProgressIndicator(color: HiColors.brandPrimary));
             }
-            if (snap.hasError) return Center(child: Text('${snap.error}', style: HiType.body.copyWith(color: HiColors.error)));
+            if (snap.hasError) return ErrorRetry(onRetry: () => setState(() => _future = ref.read(apiClientProvider).endgame()));
             final e = snap.data!;
             return ListView(
               padding: const EdgeInsets.fromLTRB(HiSpace.lg, HiSpace.lg, HiSpace.lg, 96),
@@ -99,6 +100,7 @@ class _EndgameScreenState extends ConsumerState<EndgameScreen> {
   }
 
   Widget _flagshipRow(SlamFlagship f, EndgameInfo e) {
+    final t = AppLocalizations.of(context);
     final Color sc;
     if (!f.done) {
       sc = HiColors.textTertiary;
@@ -109,7 +111,15 @@ class _EndgameScreenState extends ConsumerState<EndgameScreen> {
     } else {
       sc = _tierColor['bronze']!;
     }
-    return Container(
+    // a11y : statut (faite/à faire) + score énoncés, rôle bouton (ouvre le WOD).
+    final rowLabel = f.done
+        ? t.a11yFlagshipDone(f.name, f.score ?? 0)
+        : t.a11yFlagshipTodo(f.name);
+    return Semantics(
+      button: true,
+      label: rowLabel,
+      child: ExcludeSemantics(
+      child: Container(
       margin: const EdgeInsets.only(bottom: 6),
       decoration: BoxDecoration(
         color: HiColors.bgElevated,
@@ -139,13 +149,20 @@ class _EndgameScreenState extends ConsumerState<EndgameScreen> {
           ),
         ),
       ),
+    ),
+    ),
     );
   }
 
   Widget _trophyTier(String tier, String title, String desc, EndgameInfo e) {
+    final t = AppLocalizations.of(context);
     final unlocked = _order.indexOf(e.tier) >= _order.indexOf(tier);
     final c = _tierColor[tier]!;
-    return Container(
+    // a11y : palier de trophée énoncé avec son état (débloqué / verrouillé).
+    return Semantics(
+      label: '$title, ${unlocked ? t.a11yUnlocked : t.a11yLocked}. $desc',
+      child: ExcludeSemantics(
+      child: Container(
       margin: const EdgeInsets.only(bottom: HiSpace.sm),
       padding: const EdgeInsets.all(HiSpace.md),
       decoration: BoxDecoration(
@@ -169,6 +186,8 @@ class _EndgameScreenState extends ConsumerState<EndgameScreen> {
           Icon(unlocked ? Icons.emoji_events_rounded : Icons.lock_outline_rounded, color: unlocked ? c : HiColors.textTertiary),
         ],
       ),
+    ),
+    ),
     );
   }
 

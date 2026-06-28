@@ -8,6 +8,7 @@ import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../data/wod_catalog.dart';
 import '../../theme/tokens.dart';
+import '../../widgets/error_retry.dart';
 import '../wods/wod_detail_screen.dart';
 import '../wods/wod_format.dart';
 
@@ -70,7 +71,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
       ref.invalidate(completionPlanProvider); // suppression → un attribut peut redevenir verrouillé
       if (mounted) setState(() => _future = ref.read(apiClientProvider).results());
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t.commonGenericError)));
     }
   }
 
@@ -87,7 +88,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
               return Center(child: CircularProgressIndicator(color: HiColors.brandPrimary));
             }
             if (snap.hasError) {
-              return Center(child: Text('${snap.error}', style: HiType.body.copyWith(color: HiColors.error)));
+              return ErrorRetry(onRetry: () => setState(() => _future = ref.read(apiClientProvider).results()));
             }
             final items = snap.data!;
             if (items.isEmpty) {

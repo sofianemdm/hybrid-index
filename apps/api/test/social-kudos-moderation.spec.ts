@@ -31,19 +31,22 @@ describe("Kudos unifié — événements de feed (SocialService)", () => {
     prisma.reaction.deleteMany.mockResolvedValue({ count: 1 });
     prisma.reaction.create.mockResolvedValue({});
     prisma.reaction.count.mockResolvedValue(3);
-    const svc = new SocialService(prisma as never, {} as never, {} as never);
+    const push = { notifyKudos: jest.fn().mockResolvedValue(undefined) };
+    const svc = new SocialService(prisma as never, {} as never, {} as never, push as never);
 
     const res = await svc.react("me", "evt-1");
 
     expect(prisma.reaction.deleteMany).toHaveBeenCalledWith({ where: { fromUserId: "me", feedEventId: "evt-1" } });
     expect(prisma.reaction.create).toHaveBeenCalledWith({ data: { fromUserId: "me", feedEventId: "evt-1", emoji: "👏" } });
+    // Ré-engagement : on prévient l'AUTEUR applaudi (actorId), avec le compteur courant.
+    expect(push.notifyKudos).toHaveBeenCalledWith("author", 3);
     expect(res).toEqual({ kudosCount: 3, iKudo: true });
   });
 
   it("react() : interdit l'auto-kudos (acteur == moi)", async () => {
     const prisma = makePrismaMock();
     prisma.feedEvent.findUnique.mockResolvedValue({ actorId: "me" });
-    const svc = new SocialService(prisma as never, {} as never, {} as never);
+    const svc = new SocialService(prisma as never, {} as never, {} as never, {} as never);
     await expect(svc.react("me", "evt-1")).rejects.toThrow();
   });
 
@@ -51,7 +54,7 @@ describe("Kudos unifié — événements de feed (SocialService)", () => {
     const prisma = makePrismaMock();
     prisma.reaction.deleteMany.mockResolvedValue({ count: 1 });
     prisma.reaction.count.mockResolvedValue(2);
-    const svc = new SocialService(prisma as never, {} as never, {} as never);
+    const svc = new SocialService(prisma as never, {} as never, {} as never, {} as never);
     const res = await svc.unreact("me", "evt-1");
     expect(res).toEqual({ kudosCount: 2, iKudo: false });
   });
@@ -183,7 +186,7 @@ describe("Repli « Découvrir » (SocialService.feed)", () => {
     ]);
     const posts = { forFeed: jest.fn().mockResolvedValue([]) };
     const moderation = { blockedIds: jest.fn().mockResolvedValue([]) };
-    const svc = new SocialService(prisma as never, posts as never, moderation as never);
+    const svc = new SocialService(prisma as never, posts as never, moderation as never, {} as never);
 
     const out = (await svc.feed("me")) as Array<Record<string, unknown>>;
 

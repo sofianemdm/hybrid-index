@@ -90,8 +90,11 @@ class _ConversationsScreenState extends ConsumerState<ConversationsScreen> {
   }
 
   Widget _tile(ConversationSummary c) {
-    final preview = c.lastBody == null ? '' : '${c.lastIsMine ? AppLocalizations.of(context).conversationsYouPrefix : ''}${c.lastBody}';
-    return Card(
+    final t = AppLocalizations.of(context);
+    final preview = c.lastBody == null ? '' : '${c.lastIsMine ? t.conversationsYouPrefix : ''}${c.lastBody}';
+    // a11y : toute la ligne (nom + rang + aperçu + non-lus) lue en un seul bloc par le lecteur.
+    return MergeSemantics(
+      child: Card(
       color: HiColors.bgElevated,
       child: ListTile(
         leading: c.otherAvatar != null
@@ -118,15 +121,21 @@ class _ConversationsScreenState extends ConsumerState<ConversationsScreen> {
             overflow: TextOverflow.ellipsis,
             style: HiType.caption.copyWith(color: HiColors.textTertiary)),
         trailing: c.unread > 0
-            ? Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(color: HiColors.brandPrimary, shape: BoxShape.circle),
-                child: Text('${c.unread}',
-                    style: TextStyle(color: HiColors.textOnBrand, fontSize: 11, fontWeight: FontWeight.w800)),
+            ? Semantics(
+                label: t.a11yUnreadCount(c.unread),
+                child: ExcludeSemantics(
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(color: HiColors.brandPrimary, shape: BoxShape.circle),
+                    child: Text('${c.unread}',
+                        style: TextStyle(color: HiColors.textOnBrand, fontSize: 11, fontWeight: FontWeight.w800)),
+                  ),
+                ),
               )
             : Icon(Icons.chevron_right_rounded, color: HiColors.textTertiary),
         onTap: () => _open(c),
       ),
+    ),
     );
   }
 }

@@ -224,6 +224,24 @@ abstract class AppLocalizations {
   /// **'Something went wrong. Please try again.'**
   String get commonGenericError;
 
+  /// No description provided for @celebrationContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get celebrationContinue;
+
+  /// No description provided for @celebrationTapToContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to continue'**
+  String get celebrationTapToContinue;
+
+  /// No description provided for @celebrationClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get celebrationClose;
+
   /// No description provided for @commonGotIt.
   ///
   /// In en, this message translates to:
@@ -463,6 +481,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'🚀 You\'re entering the top {percent}% of the fittest!'**
   String wreBandUp(int percent);
+
+  /// No description provided for @wreOvertookTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You passed {name}!'**
+  String wreOvertookTitle(String name);
+
+  /// No description provided for @wreOvertookSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A new rival in sight'**
+  String get wreOvertookSubtitle;
 
   /// No description provided for @wreUnitTime.
   ///
@@ -2390,6 +2420,72 @@ abstract class AppLocalizations {
   /// **'{min} min'**
   String coachDurationMin(int min);
 
+  /// No description provided for @coachLibraryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Coach library'**
+  String get coachLibraryTitle;
+
+  /// No description provided for @coachLibrarySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready-to-run guided sessions. Pick one and follow the plan.'**
+  String get coachLibrarySubtitle;
+
+  /// No description provided for @coachLibraryAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get coachLibraryAll;
+
+  /// No description provided for @coachLibraryError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load the session library right now.'**
+  String get coachLibraryError;
+
+  /// No description provided for @coachLibraryEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No guided session for this filter with your equipment.'**
+  String get coachLibraryEmpty;
+
+  /// No description provided for @coachLibraryEntryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Coach library'**
+  String get coachLibraryEntryTitle;
+
+  /// No description provided for @coachLibraryEntrySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Guided sessions to follow — separate from the workouts you log.'**
+  String get coachLibraryEntrySubtitle;
+
+  /// No description provided for @sessionsByFocusCaption.
+  ///
+  /// In en, this message translates to:
+  /// **'Workouts to log that measure each axis of your score.'**
+  String get sessionsByFocusCaption;
+
+  /// No description provided for @sessionsToLog.
+  ///
+  /// In en, this message translates to:
+  /// **'Workouts to log'**
+  String get sessionsToLog;
+
+  /// No description provided for @sessionsGuidedLinkTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Guided coach sessions'**
+  String get sessionsGuidedLinkTitle;
+
+  /// No description provided for @sessionsGuidedLinkSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready-to-run training for this axis'**
+  String get sessionsGuidedLinkSubtitle;
+
   /// No description provided for @coachWithEquipment.
   ///
   /// In en, this message translates to:
@@ -3512,17 +3608,23 @@ abstract class AppLocalizations {
   /// **'Let\'s go'**
   String get leagueRevealClose;
 
-  /// No description provided for @leagueRevealMovementUp.
+  /// No description provided for @leagueRevealMovedUp.
   ///
   /// In en, this message translates to:
-  /// **'Up {delta}'**
-  String leagueRevealMovementUp(int delta);
+  /// **'You climbed the ranking'**
+  String get leagueRevealMovedUp;
 
-  /// No description provided for @leagueRevealMovementDown.
+  /// No description provided for @leagueRevealMovedDown.
   ///
   /// In en, this message translates to:
-  /// **'Down {delta}'**
-  String leagueRevealMovementDown(int delta);
+  /// **'You slipped down the ranking'**
+  String get leagueRevealMovedDown;
+
+  /// No description provided for @leagueRevealStable.
+  ///
+  /// In en, this message translates to:
+  /// **'You held your position'**
+  String get leagueRevealStable;
 
   /// No description provided for @notificationsJoinedClub.
   ///
@@ -3553,6 +3655,162 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Decline'**
   String get notificationsDecline;
+
+  /// No description provided for @a11ySend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send message'**
+  String get a11ySend;
+
+  /// No description provided for @a11yRetryMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend message'**
+  String get a11yRetryMessage;
+
+  /// No description provided for @a11yUnreadCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{{count} unread message} other{{count} unread messages}}'**
+  String a11yUnreadCount(int count);
+
+  /// No description provided for @a11yDecrease.
+  ///
+  /// In en, this message translates to:
+  /// **'Decrease'**
+  String get a11yDecrease;
+
+  /// No description provided for @a11yIncrease.
+  ///
+  /// In en, this message translates to:
+  /// **'Increase'**
+  String get a11yIncrease;
+
+  /// No description provided for @a11yDailyCapValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{{count} notification per day} other{{count} notifications per day}}'**
+  String a11yDailyCapValue(int count);
+
+  /// No description provided for @a11yLeagueMyPosition.
+  ///
+  /// In en, this message translates to:
+  /// **'You are {position} with {points} points'**
+  String a11yLeagueMyPosition(int position, int points);
+
+  /// No description provided for @a11yLeagueRow.
+  ///
+  /// In en, this message translates to:
+  /// **'Position {position}, {name}, {points} points'**
+  String a11yLeagueRow(int position, String name, int points);
+
+  /// No description provided for @a11yPodiumPlace.
+  ///
+  /// In en, this message translates to:
+  /// **'{ordinal} place: {name}, {points} points'**
+  String a11yPodiumPlace(String ordinal, String name, int points);
+
+  /// No description provided for @a11yRemoveMovementNamed.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {name}'**
+  String a11yRemoveMovementNamed(String name);
+
+  /// No description provided for @a11yAmountField.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount for {movement} in {unit}'**
+  String a11yAmountField(String movement, String unit);
+
+  /// No description provided for @a11yLoadField.
+  ///
+  /// In en, this message translates to:
+  /// **'Load in kilograms for {movement}'**
+  String a11yLoadField(String movement);
+
+  /// No description provided for @a11yEstimateBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated values, indicative'**
+  String get a11yEstimateBadge;
+
+  /// No description provided for @a11yFlagshipDone.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}, done, score {score} out of 100'**
+  String a11yFlagshipDone(String name, int score);
+
+  /// No description provided for @a11yFlagshipTodo.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}, to do'**
+  String a11yFlagshipTodo(String name);
+
+  /// No description provided for @a11yUnlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'unlocked'**
+  String get a11yUnlocked;
+
+  /// No description provided for @a11yLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'locked'**
+  String get a11yLocked;
+
+  /// No description provided for @a11yBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Badge {name}'**
+  String a11yBadge(String name);
+
+  /// No description provided for @a11yHomeViewProgression.
+  ///
+  /// In en, this message translates to:
+  /// **'View your progress'**
+  String get a11yHomeViewProgression;
+
+  /// No description provided for @a11yHomeEditAvatar.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit your avatar'**
+  String get a11yHomeEditAvatar;
+
+  /// No description provided for @a11yHomeBetaInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Beta version info'**
+  String get a11yHomeBetaInfo;
+
+  /// No description provided for @a11yRivalChasing.
+  ///
+  /// In en, this message translates to:
+  /// **'Your rival {name}, Index {ovr}, {gap, plural, one{1 point above you} other{{gap} points above you}}. Tap to view the leaderboard.'**
+  String a11yRivalChasing(String name, int ovr, int gap);
+
+  /// No description provided for @a11yRivalLeader.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re leading your league. Tap to view the leaderboard.'**
+  String get a11yRivalLeader;
+
+  /// No description provided for @a11yCoachFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter: {name}'**
+  String a11yCoachFilter(String name);
+
+  /// No description provided for @a11yCoachSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Session {name}, {duration} minutes, intensity {intensity}'**
+  String a11yCoachSession(String name, int duration, String intensity);
+
+  /// No description provided for @a11ySessionWod.
+  ///
+  /// In en, this message translates to:
+  /// **'Challenge {name}'**
+  String a11ySessionWod(String name);
 }
 
 class _AppLocalizationsDelegate

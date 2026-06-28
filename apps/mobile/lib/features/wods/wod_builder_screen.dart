@@ -369,28 +369,36 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
         child: Row(
           children: [
             Expanded(child: Text(b.movement.name, style: HiType.body.copyWith(color: HiColors.textPrimary, fontWeight: FontWeight.w600))),
-            SizedBox(
-              width: 116,
-              child: TextField(
-                keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                textAlign: TextAlign.center,
-                decoration: InputDecoration(
-                  // Unité visible en permanence (suffixe) → ex. « mètres » pour la course.
-                  hintText: _unitHint(b.movement.unit),
-                  suffixText: _unitSuffix(b.movement.unit),
-                  isDense: true,
+            // a11y : champ sans libellé visible (juste un suffixe d'unité) → on nomme l'objet saisi.
+            Semantics(
+              textField: true,
+              label: AppLocalizations.of(context).a11yAmountField(b.movement.name, _unitSuffix(b.movement.unit)),
+              child: SizedBox(
+                width: 116,
+                child: TextField(
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  textAlign: TextAlign.center,
+                  decoration: InputDecoration(
+                    // Unité visible en permanence (suffixe) → ex. « mètres » pour la course.
+                    hintText: _unitHint(b.movement.unit),
+                    suffixText: _unitSuffix(b.movement.unit),
+                    isDense: true,
+                  ),
+                  controller: b.controller,
+                  onChanged: (v) {
+                    b.amount = int.tryParse(v) ?? b.amount;
+                    _refreshEstimate();
+                  },
                 ),
-                controller: b.controller,
-                onChanged: (v) {
-                  b.amount = int.tryParse(v) ?? b.amount;
-                  _refreshEstimate();
-                },
               ),
             ),
             if (isLoaded) ...[
               const SizedBox(width: 6),
-              SizedBox(
+              Semantics(
+                textField: true,
+                label: AppLocalizations.of(context).a11yLoadField(b.movement.name),
+                child: SizedBox(
                 width: 64,
                 child: TextField(
                   controller: b.loadController,
@@ -408,8 +416,10 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
                   },
                 ),
               ),
+              ),
             ],
             IconButton(
+              tooltip: AppLocalizations.of(context).a11yRemoveMovementNamed(b.movement.name),
               icon: Icon(Icons.close_rounded, color: HiColors.textTertiary, size: 20),
               onPressed: () {
                 setState(() {
@@ -511,12 +521,17 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
             Text(t.wodBuilderEstimate, style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
             const Spacer(),
             if (_estimating)
-              SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: HiColors.brandPrimary))
+              ExcludeSemantics(child: SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: HiColors.brandPrimary)))
             else
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(color: HiColors.warn.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(HiRadius.pill)),
-                child: Text(t.wodBuilderEstimated, style: HiType.caption.copyWith(color: HiColors.warn, fontWeight: FontWeight.w600)),
+              Semantics(
+                label: t.a11yEstimateBadge,
+                child: ExcludeSemantics(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(color: HiColors.warn.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(HiRadius.pill)),
+                    child: Text(t.wodBuilderEstimated, style: HiType.caption.copyWith(color: HiColors.warn, fontWeight: FontWeight.w600)),
+                  ),
+                ),
               ),
           ]),
           // Estimation valide mais le dernier rafraîchissement a échoué → on garde l'ancienne
@@ -535,9 +550,17 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
             ]),
           ],
           const SizedBox(height: HiSpace.sm),
-          if (champ != null) Text(t.wodBuilderEstimateChampion(formatWodResult(champ, _scoreType)), style: HiType.body.copyWith(color: HiColors.textSecondary)),
-          if (inter != null) Text(t.wodBuilderEstimateIntermediate(formatWodResult(inter, _scoreType)), style: HiType.body.copyWith(color: HiColors.textSecondary)),
-          if (beg != null) Text(t.wodBuilderEstimateBeginner(formatWodResult(beg, _scoreType)), style: HiType.body.copyWith(color: HiColors.textSecondary)),
+          // a11y : les 3 paliers d'estimation (champion/intermédiaire/débutant) lus comme un groupe.
+          MergeSemantics(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (champ != null) Text(t.wodBuilderEstimateChampion(formatWodResult(champ, _scoreType)), style: HiType.body.copyWith(color: HiColors.textSecondary)),
+                if (inter != null) Text(t.wodBuilderEstimateIntermediate(formatWodResult(inter, _scoreType)), style: HiType.body.copyWith(color: HiColors.textSecondary)),
+                if (beg != null) Text(t.wodBuilderEstimateBeginner(formatWodResult(beg, _scoreType)), style: HiType.body.copyWith(color: HiColors.textSecondary)),
+              ],
+            ),
+          ),
           const SizedBox(height: 6),
           Wrap(
             spacing: 6,

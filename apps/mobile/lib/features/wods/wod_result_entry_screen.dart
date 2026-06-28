@@ -167,6 +167,13 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
         if (hasGains || profile.bandCelebration != null) {
           maybeAskForReview();
         }
+        // Lever #1 (cahier §4.3) : l'auteur vient de DOUBLER un ou plusieurs athlètes au classement
+        // → célébration « Tu as doublé X ! » + « Nouveau rival en vue ». UNE seule fois : le flag
+        // n'est présent que dans CETTE réponse de log (jamais sur un GET), donc pas de répétition au
+        // rebuild. Enchaîne après le message de résultat ; Celebration rétrograde déjà une 2e « forte ».
+        if (mounted) {
+          await _celebrateOvertake(profile.overtook);
+        }
         // Célébration de badge : ENCHAÎNE après le message de résultat (et après une éventuelle montée
         // de bande). On ne double pas une « forte » : Celebration.show rétrograde déjà la 2e en moyenne.
         if (mounted) {
@@ -253,6 +260,22 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
           ),
         );
       },
+    );
+  }
+
+  /// Lever #1 (cahier §4.3) : célèbre l'auteur qui vient de DOUBLER un athlète au classement de sa
+  /// ligue. Titre « Tu as doublé X ! », sous-titre « Nouveau rival en vue ». No-op si pas de
+  /// dépassement (flag absent) ou pseudo vide. Intensité FORTE (moment dopamine du lever).
+  Future<void> _celebrateOvertake(Overtook? overtook) async {
+    if (overtook == null || overtook.topName.isEmpty || !mounted) return;
+    final t = AppLocalizations.of(context);
+    await Celebration.show(
+      context,
+      icon: Icons.trending_up_rounded,
+      title: t.wreOvertookTitle(overtook.topName),
+      subtitle: t.wreOvertookSubtitle,
+      accent: HiColors.accentVictory,
+      intensity: CelebrationIntensity.strong,
     );
   }
 

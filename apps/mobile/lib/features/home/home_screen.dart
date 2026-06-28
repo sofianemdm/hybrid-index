@@ -53,21 +53,27 @@ class HomeScreen extends ConsumerWidget {
           children: [
             Row(
               children: [
-                GestureDetector(
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const DiceAvatarScreen()),
-                  ),
-                  child: ref.watch(avatarProvider).maybeWhen(
-                        data: (a) => Hero(
-                          tag: 'me-avatar',
-                          child: HiAvatar(
-                            config: a,
-                            rank: profileAsync.value?.index.rank ?? 'rookie',
-                            size: 48,
+                Semantics(
+                  button: true,
+                  label: t.a11yHomeEditAvatar,
+                  child: GestureDetector(
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const DiceAvatarScreen()),
+                    ),
+                    child: ExcludeSemantics(
+                      child: ref.watch(avatarProvider).maybeWhen(
+                            data: (a) => Hero(
+                              tag: 'me-avatar',
+                              child: HiAvatar(
+                                config: a,
+                                rank: profileAsync.value?.index.rank ?? 'rookie',
+                                size: 48,
+                              ),
+                            ),
+                            orElse: () => const SizedBox(width: 48, height: 48),
                           ),
-                        ),
-                        orElse: () => const SizedBox(width: 48, height: 48),
-                      ),
+                    ),
+                  ),
                 ),
                 const SizedBox(width: HiSpace.sm),
                 Expanded(
@@ -149,7 +155,10 @@ class HomeScreen extends ConsumerWidget {
         // (translation négative → on lit « Index + grade » comme un seul bloc).
         // Tap sur l'Index → écran Progression (courbe + radar + badges). La Progression vit désormais
         // dans le header de l'Accueil (pattern Strava), plus dans la barre d'onglets (4 onglets).
-        GestureDetector(
+        Semantics(
+          button: true,
+          label: t.a11yHomeViewProgression,
+          child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: () => Navigator.of(context).push(
             // Enveloppée dans un Scaffold+AppBar : la Progression n'est plus un corps d'onglet (qui
@@ -185,6 +194,7 @@ class HomeScreen extends ConsumerWidget {
               ),
             ),
           ]),
+        ),
         ),
         // Encart « Index estimé » + plan de complétion : la PlayerCard montre l'OVR/grade mais ne
         // dit PLUS que l'Index est une estimation ni quelles séances faire pour le révéler. On le
@@ -299,50 +309,61 @@ class HomeScreen extends ConsumerWidget {
     final t = AppLocalizations.of(context);
     final names = stale.map((a) => HiLabels.attribute(a.attribute)).join(', ');
     final one = stale.length == 1;
-    return HiCard(
-      onTap: () => Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => SessionsByAttributeScreen(attribute: stale.first.attribute)),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.update_rounded, color: HiColors.warn, size: 22),
-          const SizedBox(width: HiSpace.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(one ? t.homeFreshnessTitleOne : t.homeFreshnessTitleMany,
-                    style: HiType.bodyStrong.copyWith(color: HiColors.textPrimary)),
-                const SizedBox(height: 2),
-                Text(t.homeFreshnessBody(names),
-                    style: HiType.caption.copyWith(color: HiColors.textSecondary)),
-              ],
-            ),
+    return Semantics(
+      button: true,
+      child: MergeSemantics(
+        child: HiCard(
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => SessionsByAttributeScreen(attribute: stale.first.attribute)),
           ),
-          Icon(Icons.chevron_right_rounded, color: HiColors.textTertiary),
-        ],
+          child: Row(
+            children: [
+              ExcludeSemantics(child: Icon(Icons.update_rounded, color: HiColors.warn, size: 22)),
+              const SizedBox(width: HiSpace.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(one ? t.homeFreshnessTitleOne : t.homeFreshnessTitleMany,
+                        style: HiType.bodyStrong.copyWith(color: HiColors.textPrimary)),
+                    const SizedBox(height: 2),
+                    Text(t.homeFreshnessBody(names),
+                        style: HiType.caption.copyWith(color: HiColors.textSecondary)),
+                  ],
+                ),
+              ),
+              ExcludeSemantics(child: Icon(Icons.chevron_right_rounded, color: HiColors.textTertiary)),
+            ],
+          ),
+        ),
       ),
     );
   }
 
   /// Chip de projection (« À ce rythme : 80+ dans ~3 sem »).
   Widget _projectionChip(IndexProjection proj, AppLocalizations t) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: HiSpace.md, vertical: 10),
-      decoration: BoxDecoration(
-        color: HiColors.success.withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(HiRadius.md),
-        border: Border.all(color: HiColors.success.withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.trending_up_rounded, color: HiColors.success, size: 18),
-          const SizedBox(width: HiSpace.sm),
-          Expanded(
-            child: Text(t.homeProjection(proj.targetGrade, proj.weeks),
-                style: HiType.bodyStrong.copyWith(color: HiColors.textPrimary)),
+    return Semantics(
+      label: t.homeProjection(proj.targetGrade, proj.weeks),
+      container: true,
+      child: ExcludeSemantics(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: HiSpace.md, vertical: 10),
+          decoration: BoxDecoration(
+            color: HiColors.success.withValues(alpha: 0.10),
+            borderRadius: BorderRadius.circular(HiRadius.md),
+            border: Border.all(color: HiColors.success.withValues(alpha: 0.3)),
           ),
-        ],
+          child: Row(
+            children: [
+              Icon(Icons.trending_up_rounded, color: HiColors.success, size: 18),
+              const SizedBox(width: HiSpace.sm),
+              Expanded(
+                child: Text(t.homeProjection(proj.targetGrade, proj.weeks),
+                    style: HiType.bodyStrong.copyWith(color: HiColors.textPrimary)),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -350,28 +371,34 @@ class HomeScreen extends ConsumerWidget {
   /// Bandeau bêta compact : tap → feuille d'info (prévient des bugs et invite à les signaler).
   Widget _betaBanner(BuildContext context) {
     final t = AppLocalizations.of(context);
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(HiRadius.md),
-        onTap: () => _showBetaInfo(context),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: HiSpace.md, vertical: 10),
-          decoration: BoxDecoration(
-            color: HiColors.warn.withValues(alpha: 0.10),
-            borderRadius: BorderRadius.circular(HiRadius.md),
-            border: Border.all(color: HiColors.warn.withValues(alpha: 0.35)),
-          ),
-          child: Row(
-            children: [
-              Icon(Icons.science_outlined, size: 18, color: HiColors.warn),
-              const SizedBox(width: HiSpace.sm),
-              Expanded(
-                child: Text(t.homeBetaBanner,
-                    style: HiType.caption.copyWith(color: HiColors.textSecondary, fontWeight: FontWeight.w600)),
+    return Semantics(
+      button: true,
+      label: t.homeBetaBanner,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(HiRadius.md),
+          onTap: () => _showBetaInfo(context),
+          child: ExcludeSemantics(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: HiSpace.md, vertical: 10),
+              decoration: BoxDecoration(
+                color: HiColors.warn.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(HiRadius.md),
+                border: Border.all(color: HiColors.warn.withValues(alpha: 0.35)),
               ),
-              Icon(Icons.chevron_right_rounded, size: 18, color: HiColors.textTertiary),
-            ],
+              child: Row(
+                children: [
+                  Icon(Icons.science_outlined, size: 18, color: HiColors.warn),
+                  const SizedBox(width: HiSpace.sm),
+                  Expanded(
+                    child: Text(t.homeBetaBanner,
+                        style: HiType.caption.copyWith(color: HiColors.textSecondary, fontWeight: FontWeight.w600)),
+                  ),
+                  Icon(Icons.chevron_right_rounded, size: 18, color: HiColors.textTertiary),
+                ],
+              ),
+            ),
           ),
         ),
       ),

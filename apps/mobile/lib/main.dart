@@ -7,6 +7,7 @@ import 'data/locale_mode.dart';
 import 'data/push_service.dart';
 import 'data/session.dart';
 import 'data/theme_mode.dart';
+import 'data/ui_state.dart';
 import 'l10n/app_localizations.dart';
 import 'theme/app_theme.dart';
 import 'theme/tokens.dart';
@@ -59,8 +60,14 @@ class _HybridIndexAppState extends ConsumerState<HybridIndexApp> with WidgetsBin
     WidgetsBinding.instance.addObserver(this);
     // Restaure la session (token persisté) au démarrage.
     Future.microtask(() => ref.read(sessionProvider.notifier).bootstrap());
-    // Push : prêt mais inactif (no-op tant que Env.pushEnabled est faux).
-    Future.microtask(() => PushService(ref.read(apiClientProvider)).init());
+    // Push : prêt mais inactif (no-op tant que Env.pushEnabled est faux). Le service route les taps
+    // de notification via le navigator global + bascule l'onglet de la coquille (homeTabProvider).
+    Future.microtask(
+      () => PushService(
+        ref.read(apiClientProvider),
+        goToTab: (tab) => ref.read(homeTabProvider.notifier).state = tab,
+      ).init(),
+    );
     Analytics.capture('app_open');
   }
 
@@ -82,6 +89,8 @@ class _HybridIndexAppState extends ConsumerState<HybridIndexApp> with WidgetsBin
     final locale = ref.watch(localeProvider);
     return MaterialApp(
       title: 'Athlete League',
+      navigatorKey: appNavigatorKey, // routage des taps sur notifications FCM (sans contexte d'écran)
+      scaffoldMessengerKey: appMessengerKey, // bannière in-app si une notif arrive app au premier plan
       debugShowCheckedModeBanner: false,
       theme: buildHiTheme(Brightness.light),
       darkTheme: buildHiTheme(Brightness.dark),

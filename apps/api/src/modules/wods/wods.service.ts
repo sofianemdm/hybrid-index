@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, UnprocessableEntityException } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException, UnprocessableEntityException } from "@nestjs/common";
 import type { AttributeKey, Sex, WodType } from "@prisma/client";
 import type { internalScore } from "@hybrid-index/contracts";
 import { PrismaService } from "../../infra/prisma/prisma.service";
@@ -56,8 +56,25 @@ export class WodsService {
     private readonly progress: ProgressService,
   ) {}
 
+  /** Garde-fou anti-spam de création de WOD : nb max de WODs custom créés par un utilisateur sur une
+   *  heure glissante. @nestjs/throttler n'est pas configuré → garde-fou applicatif (count createdAt). */
+  static readonly MAX_CUSTOM_WODS_PER_HOUR = 10;
+
   /** Crée un WOD personnalisé (attributs ciblés dérivés du moteur d'estimation). */
   async create(userId: string, body: CreateWodRequest): Promise<unknown> {
+    // Anti-abus : refuse si l'utilisateur a déjà créé trop de WODs sur la dernière heure (spam /
+    // pollution du catalogue communautaire). Pas de throttler global dans l'app → contrôle applicatif.
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+    const recentCount = await this.prisma.wod.count({
+      where: { createdById: userId, isCustom: true, createdAt: { gte: oneHourAgo } },
+    });
+    if (recentCount >= WodsService.MAX_CUSTOM_WODS_PER_HOUR) {
+      throw new BadRequestException({
+        code: "RATE_LIMIT",
+        message: "Trop de séances créées récemment. Réessaie dans un moment.",
+      });
+    }
+
     const profile = await this.prisma.profile.findUnique({ where: { userId } });
     const sex = (profile?.sex ?? "male") as Sex;
     const est = await this.scoreClient.computeEstimate({

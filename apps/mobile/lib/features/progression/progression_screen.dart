@@ -5,6 +5,7 @@ import '../../l10n/app_localizations.dart';
 import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../theme/tokens.dart';
+import '../../widgets/error_retry.dart';
 import '../challenge/challenge_screen.dart';
 import '../endgame/endgame_screen.dart';
 import '../history/history_screen.dart';
@@ -48,8 +49,8 @@ class _ProgressionScreenState extends ConsumerState<ProgressionScreen> {
             if (snap.hasError) {
               return ListView(children: [
                 Padding(
-                  padding: const EdgeInsets.all(HiSpace.lg),
-                  child: Text('${snap.error}', style: TextStyle(color: HiColors.error)),
+                  padding: const EdgeInsets.symmetric(vertical: HiSpace.xl),
+                  child: ErrorRetry(onRetry: () => setState(_load)),
                 ),
               ]);
             }
@@ -139,9 +140,14 @@ class _ProgressionScreenState extends ConsumerState<ProgressionScreen> {
   }
 
   Widget _badgeTile(BadgeModel b) {
+    final t = AppLocalizations.of(context);
     final color = _rarityColor(b.rarity);
     final on = b.unlocked;
-    return Container(
+    // a11y : tuile de badge énoncée avec son état (débloqué / verrouillé) + sa description.
+    return Semantics(
+      label: '${t.a11yBadge(b.name)}, ${on ? t.a11yUnlocked : t.a11yLocked}. ${b.description}',
+      child: ExcludeSemantics(
+      child: Container(
       padding: const EdgeInsets.all(HiSpace.sm),
       decoration: BoxDecoration(
         color: on ? color.withValues(alpha: 0.12) : HiColors.bgElevated2,
@@ -173,6 +179,8 @@ class _ProgressionScreenState extends ConsumerState<ProgressionScreen> {
           ),
         ],
       ),
+    ),
+    ),
     );
   }
 

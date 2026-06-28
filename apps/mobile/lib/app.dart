@@ -9,6 +9,16 @@ import 'features/onboarding/onboarding_screen.dart';
 import 'theme/tokens.dart';
 import 'widgets/error_retry.dart';
 
+/// Navigator global de l'app (branché sur [MaterialApp.navigatorKey] dans main.dart).
+/// Permet de naviguer SANS `BuildContext` — indispensable pour router un tap sur une notification
+/// FCM (le handler n'a pas de contexte d'écran). Voir `data/push_service.dart`.
+final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
+
+/// Messenger global (branché sur [MaterialApp.scaffoldMessengerKey] dans main.dart) → permet
+/// d'afficher une bannière/snackbar in-app NON bloquante sans `BuildContext`, p. ex. lorsqu'une
+/// notification FCM arrive alors que l'app est au premier plan. Voir `data/push_service.dart`.
+final GlobalKey<ScaffoldMessengerState> appMessengerKey = GlobalKey<ScaffoldMessengerState>();
+
 /// Profil de l'utilisateur connecté (Index + radar). `null` = onboarding non terminé.
 final myProfileProvider = FutureProvider<Profile?>((ref) async {
   final session = ref.watch(sessionProvider);

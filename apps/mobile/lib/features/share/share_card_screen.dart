@@ -55,7 +55,7 @@ class _ShareCardScreenState extends ConsumerState<ShareCardScreen> {
       );
       Analytics.capture('share_card_shared');
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context).commonGenericError)));
     }
   }
 
@@ -70,7 +70,7 @@ class _ShareCardScreenState extends ConsumerState<ShareCardScreen> {
         SnackBar(content: Text(ok ? t.shareCardDownloaded : t.shareCardDownloadUnsupported)),
       );
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context).commonGenericError)));
     }
   }
 

@@ -176,6 +176,10 @@ class Profile {
   final Rival? rival; // athlète juste au-dessus (null si leader)
   /// Renseigné quand le dernier recalcul a fait MONTER de bande population (déclenche la célébration).
   final List<String>? bandCelebration; // [from, to] où from peut être '' (null)
+  /// Renseigné après un log qui fait GRIMPER l'auteur au classement de sa ligue : il vient de
+  /// doubler `count` athlètes ; `topName` = le plus haut d'entre eux. Déclenche la célébration
+  /// « Tu as doublé X ! » (lever #1 du cahier §4.3). null s'il n'a pas grimpé.
+  final Overtook? overtook;
   const Profile({
     required this.index,
     required this.radar,
@@ -186,6 +190,7 @@ class Profile {
     this.leagueTotal,
     this.rival,
     this.bandCelebration,
+    this.overtook,
   });
 
   factory Profile.fromJson(Map<String, dynamic> j) {
@@ -209,8 +214,23 @@ class Profile {
       bandCelebration: celeb == null
           ? null
           : [celeb['from'] as String? ?? '', celeb['to'] as String? ?? ''],
+      overtook: j['overtook'] == null ? null : Overtook.fromJson(j['overtook'] as Map<String, dynamic>),
     );
   }
+}
+
+/// Auto-dépassement au classement de la ligue suite à un log (lever #1, cahier §4.3).
+class Overtook {
+  /// Nombre d'athlètes doublés (= places gagnées).
+  final int count;
+  /// Pseudo du plus haut athlète doublé (= celui désormais juste sous l'auteur).
+  final String topName;
+  const Overtook({required this.count, required this.topName});
+
+  factory Overtook.fromJson(Map<String, dynamic> j) => Overtook(
+        count: (j['count'] as num?)?.toInt() ?? 1,
+        topName: j['topName'] as String? ?? '',
+      );
 }
 
 /// Messagerie privée (Phase C5).
@@ -580,6 +600,9 @@ class CoachSession {
   final String id;
   final String name;
   final String primaryAttribute;
+
+  /// Attributs secondaires travaillés par la séance (renseigné par /v1/coach/library).
+  final List<String> secondaryAttributes;
   final bool requiresEquipment;
   final int durationMin;
   final String intensity;
@@ -591,6 +614,7 @@ class CoachSession {
     required this.id,
     required this.name,
     required this.primaryAttribute,
+    this.secondaryAttributes = const [],
     required this.requiresEquipment,
     required this.durationMin,
     required this.intensity,
@@ -599,13 +623,17 @@ class CoachSession {
   });
 
   factory CoachSession.fromJson(Map<String, dynamic> j) => CoachSession(
-        id: j['id'] as String,
-        name: j['name'] as String,
-        primaryAttribute: j['primaryAttribute'] as String,
+        id: (j['id'] as String?) ?? '',
+        name: (j['name'] as String?) ?? '',
+        primaryAttribute: (j['primaryAttribute'] as String?) ?? '',
+        secondaryAttributes: (j['secondaryAttributes'] as List<dynamic>?)
+                ?.map((e) => e as String)
+                .toList() ??
+            const [],
         requiresEquipment: j['requiresEquipment'] as bool? ?? false,
-        durationMin: (j['durationMin'] as num).toInt(),
-        intensity: j['intensity'] as String,
-        description: j['description'] as String,
+        durationMin: (j['durationMin'] as num?)?.toInt() ?? 0,
+        intensity: (j['intensity'] as String?) ?? 'medium',
+        description: (j['description'] as String?) ?? '',
         weight: (j['weight'] as num?)?.toDouble(),
       );
 }

@@ -4,6 +4,7 @@ import { ratingFromInternal } from "@hybrid-index/scoring-core";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { ModerationService } from "../moderation/moderation.service";
 import { PostsService } from "../posts/posts.service";
+import { PushService } from "../engagement/push.service";
 import { serializeAvatar } from "../../common/avatar.serializer";
 
 /** Valeur interne /1000 → OVR /100 affiché (null si non mesuré). */
@@ -23,6 +24,7 @@ export class SocialService {
     private readonly prisma: PrismaService,
     private readonly posts: PostsService,
     private readonly moderation: ModerationService,
+    private readonly push: PushService,
   ) {}
 
   // --- Follow ---
@@ -70,6 +72,13 @@ export class SocialService {
     await this.prisma.reaction.deleteMany({ where: { fromUserId: me, feedEventId } });
     await this.prisma.reaction.create({ data: { fromUserId: me, feedEventId, emoji: KUDOS } });
     const kudosCount = await this.prisma.reaction.count({ where: { feedEventId } });
+    // Ré-engagement : on prévient l'AUTEUR applaudi (event.actorId), jamais celui qui applaudit.
+    // Best-effort : un push KO ne doit jamais faire échouer le kudos (gating/cooldown gérés en aval).
+    try {
+      await this.push.notifyKudos(event.actorId, kudosCount);
+    } catch {
+      // best-effort : silencieux (le gating/no-op push est géré dans PushService)
+    }
     return { kudosCount, iKudo: true };
   }
 

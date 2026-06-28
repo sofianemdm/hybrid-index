@@ -431,7 +431,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
     final failed = m.status == DmSendStatus.failed;
     final pending = m.status == DmSendStatus.pending;
 
-    final bubble = GestureDetector(
+    final bubble = Semantics(
+      button: failed,
+      // Bulle en échec : tapable pour renvoyer → annoncée comme bouton « Renvoyer ».
+      label: failed ? t.a11yRetryMessage : null,
+      child: GestureDetector(
       onTap: failed ? () => _retry(m) : null,
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 4),
@@ -448,6 +452,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
           child: Text(m.body, style: HiType.body.copyWith(color: mine && !failed ? HiColors.textOnBrand : HiColors.textPrimary)),
         ),
       ),
+    ),
     );
 
     // Méta sous la bulle : heure + (pour mon dernier message) statut d'envoi / accusé de lecture.
@@ -466,23 +471,31 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
     }
     // Pour les messages reçus, seule l'heure est affichée (pas de statut d'envoi).
     final metaColor = failed ? HiColors.error : HiColors.textTertiary;
-    final meta = Padding(
+    // a11y : heure + statut d'envoi regroupés → lus en une phrase. L'icône de statut (check/
+    // done_all/schedule/error) est purement redondante avec le libellé texte → exclue.
+    final meta = MergeSemantics(
+      child: Padding(
       padding: EdgeInsets.only(top: 2, bottom: 4, left: mine ? 0 : 4, right: mine ? 4 : 0),
       child: Row(
         mainAxisAlignment: mine ? MainAxisAlignment.end : MainAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
           if (metaParts.isNotEmpty) Text(metaParts.join(' '), style: HiType.caption.copyWith(color: metaColor, fontSize: 11)),
-          if (metaParts.isNotEmpty && status != null) Text('  ·  ', style: HiType.caption.copyWith(color: metaColor, fontSize: 11)),
+          if (metaParts.isNotEmpty && status != null) ExcludeSemantics(child: Text('  ·  ', style: HiType.caption.copyWith(color: metaColor, fontSize: 11))),
           if (status != null) ...[
-            if (failed) Icon(Icons.error_outline_rounded, size: 12, color: HiColors.error)
-            else if (pending) Icon(Icons.schedule_rounded, size: 12, color: metaColor)
-            else Icon(m.isRead ? Icons.done_all_rounded : Icons.check_rounded, size: 13, color: m.isRead ? HiColors.brandPrimary : metaColor),
+            ExcludeSemantics(
+              child: failed
+                  ? Icon(Icons.error_outline_rounded, size: 12, color: HiColors.error)
+                  : pending
+                      ? Icon(Icons.schedule_rounded, size: 12, color: metaColor)
+                      : Icon(m.isRead ? Icons.done_all_rounded : Icons.check_rounded, size: 13, color: m.isRead ? HiColors.brandPrimary : metaColor),
+            ),
             const SizedBox(width: 3),
             Text(status, style: HiType.caption.copyWith(color: failed ? HiColors.error : metaColor, fontSize: 11)),
           ],
         ],
       ),
+    ),
     );
 
     return Align(
@@ -527,9 +540,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
           ),
           const SizedBox(width: 8),
           IconButton(
+            tooltip: AppLocalizations.of(context).a11ySend,
             icon: _sending
-                ? SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: HiColors.brandPrimary))
-                : Icon(Icons.send_rounded, color: HiColors.brandPrimary),
+                ? ExcludeSemantics(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: HiColors.brandPrimary)))
+                : Icon(Icons.send_rounded, color: HiColors.brandPrimary, semanticLabel: AppLocalizations.of(context).a11ySend),
             onPressed: _sending ? null : _send,
           ),
         ],

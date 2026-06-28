@@ -1,10 +1,12 @@
-import { Injectable } from "@nestjs/common";
-import { ATTRIBUTE_KEYS, type AttributeKey, type Goal, type Sex, type internalScore, rankFromIndex, rankProgress } from "@hybrid-index/contracts";
+import { Injectable, Logger } from "@nestjs/common";
+import { ATTRIBUTE_KEYS, type AttributeKey, type Goal, type Sex, type internalScore, RANK_BANDS, rankFromIndex, rankProgress } from "@hybrid-index/contracts";
 import { type AttributeResult, bandFromP, coverageAdjustedValue, indexPercentile, POP_BAND_ORDER, popPercentileIndex, ratingFromInternal } from "@hybrid-index/scoring-core";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { RedisService } from "../../infra/redis/redis.service";
 import { ScoreClient } from "../../infra/score-client/score-client.service";
 import { FeedEventsService } from "../social/feed-events.service";
+import { PushService } from "../engagement/push.service";
+import { NEXT_RANK_CLOSE_THRESHOLD } from "../engagement/notifications.data";
 import { SCORING_VERSION_UUID } from "../../common/constants";
 import { buildRival } from "./rival.logic";
 
@@ -55,6 +57,10 @@ export interface PersistedProfile {
   weakest: string | null;
   /** Renseigné après un recalcul qui fait MONTER de bande population (déclenche la célébration UI). */
   bandCelebration?: { from: string | null; to: string } | null;
+  /** Renseigné après un recalcul (suite à un résultat) qui fait MONTER l'auteur au classement de sa
+   *  ligue : il vient de DOUBLER au moins un athlète de même sexe. Déclenche la célébration « Tu as
+   *  doublé X ! » côté UI (lever #1 du cahier §4.3). null si l'auteur n'a pas grimpé. */
+  overtook?: { count: number; topName: string } | null;
   /** Position dans la ligue (sexe), 1-indexée, + taille de la ligue. Rempli sur un GET de profil. */
   leaguePosition?: number;
   leagueTotal?: number;
@@ -79,11 +85,14 @@ function confidenceFor(coverage: number, isEstimated: boolean): string {
  */
 @Injectable()
 export class ProfileScoringService {
+  private readonly logger = new Logger(ProfileScoringService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly scoreClient: ScoreClient,
     private readonly redis: RedisService,
     private readonly feedEvents: FeedEventsService,
+    private readonly push: PushService,
   ) {}
 
   async recomputeForUser(userId: string): Promise<PersistedProfile | null> {
@@ -190,12 +199,43 @@ export class ProfileScoringService {
     };
 
     const computedProfile: internalScore.ComputeProfileResponse = { index: adjIndex, radar: mergedRadar };
-    const existingIndex = await this.prisma.hybridIndex.findUnique({ where: { userId }, select: { populationBand: true } });
+    const existingIndex = await this.prisma.hybridIndex.findUnique({
+      where: { userId },
+      select: { populationBand: true, leaguePosition: true },
+    });
     const previousBand = existingIndex?.populationBand ?? null;
+    const previousLeaguePosition = existingIndex?.leaguePosition ?? null;
     const isFirstIndex = existingIndex === null; // tout premier Index de ce compte → arrivée en communauté
     const socialProof = await this.buildSocialProof(profile.sex, profile.goal, mergedRadar, adjIndex.percentile);
     await this.persist(userId, profile.sex, computedProfile, socialProof.population);
     const result = toPersistedProfile(computedProfile, socialProof);
+
+    // Position courante dans la ligue (même calcul autoritatif que persist : nb d'athlètes du même
+    // sexe au-dessus + 1). Calculée UNE fois ici puis réutilisée pour (a) la détection d'auto-
+    // dépassement renvoyée à l'auteur et (b) le push « tu as été doublé » vers le voisin.
+    const aboveNow = await this.prisma.hybridIndex.count({
+      where: { value: { gt: adjIndex.value }, user: { profile: { sex: profile.sex as never } } },
+    });
+    const newLeaguePosition = aboveNow + 1;
+
+    // Lever #1 (cahier §4.3) : si l'auteur vient de GRIMPER au classement, il a doublé au moins un
+    // athlète → on remonte le flag à SON client (best-effort, jamais bloquant) pour déclencher la
+    // célébration « Tu as doublé X ! ». `topName` = l'athlète le plus haut qu'il vient de passer
+    // (= celui désormais juste sous lui).
+    result.overtook = await this.detectOvertake(userId, profile.sex, adjIndex, previousLeaguePosition, newLeaguePosition).catch(
+      (e) => {
+        this.logger.warn(`Détection dépassement KO (${userId}) : ${e}`);
+        return null;
+      },
+    );
+
+    // Ré-engagement push (best-effort, JAMAIS bloquant) : ce recalcul vient d'un nouveau résultat,
+    // c'est le bon moment pour (a) prévenir l'athlète qu'un rang est tout proche et (b) prévenir
+    // celui que ce résultat vient de DOUBLER au classement. Le gating (cooldown/quietHours/opt-out)
+    // et le no-op si push inactif sont gérés en aval par PushService.
+    await this.fireReengagementPush(userId, profile.sex, adjIndex, previousLeaguePosition, newLeaguePosition).catch((e) =>
+      this.logger.warn(`Push ré-engagement KO (${userId}) : ${e}`),
+    );
 
     // Annonce d'arrivée : UN seul événement de feed (jamais la grappe de badges du 1er calcul).
     // On l'émet UNIQUEMENT quand l'Index est COMPLET (non estimé) : un Index encore estimé
@@ -222,6 +262,93 @@ export class ProfileScoringService {
       ? { from: previousBand, to: socialProof.population.band }
       : null;
     return result;
+  }
+
+  /**
+   * Déclencheurs push de ré-engagement consécutifs à un recalcul d'Index (après un résultat).
+   * Tout est best-effort et borné ; PushService applique ensuite le gating (cooldown/quietHours/
+   * opt-out/dailyCap) et no-ope si le push est inactif.
+   *
+   * 1) `near-rank` : si l'athlète est à ≤ NEXT_RANK_CLOSE_THRESHOLD points (/100) du rang suivant
+   *    (même logique exacte que le flux in-app engagement.service.ts), on le lui signale.
+   * 2) `rank-overtaken` : si ce résultat l'a fait MONTER au classement (nouvelle position < ancienne),
+   *    l'athlète qui occupe désormais la place juste EN DESSOUS de lui vient d'être doublé → on le
+   *    prévient. CHOIX BORNÉ (perf) : on ne notifie ce voisin direct QUE si le dépassement a lieu
+   *    dans le top 50 (newPos <= 50) — au-delà, l'enjeu de classement est faible et le coût d'une
+   *    requête supplémentaire à chaque log ne se justifie pas. Un seul voisin notifié (le plus
+   *    concerné), jamais toute la grappe des places décalées.
+   */
+  private async fireReengagementPush(
+    userId: string,
+    sex: string,
+    adjIndex: internalScore.ComputeIndexResponse,
+    previousLeaguePosition: number | null,
+    newPosition: number,
+  ): Promise<void> {
+    // (1) Prochain rang tout proche — seuil partagé avec le flux in-app (source unique).
+    if (adjIndex.ratingInt != null) {
+      const ovr = adjIndex.ratingInt;
+      const next = RANK_BANDS.find((b) => b.min > ovr);
+      if (next) {
+        const pts = Math.ceil(next.min - ovr);
+        if (pts > 0 && pts <= NEXT_RANK_CLOSE_THRESHOLD) {
+          await this.push.notifyNearRank(userId, pts).catch(() => undefined);
+        }
+      }
+    }
+
+    // (2) Quelqu'un vient d'être doublé — borné au top 50 (cf. doc méthode).
+    const RANK_OVERTAKEN_MAX_POSITION = 50;
+    if (
+      previousLeaguePosition != null &&
+      newPosition < previousLeaguePosition && // l'athlète a GRIMPÉ
+      newPosition <= RANK_OVERTAKEN_MAX_POSITION
+    ) {
+      // Le voisin direct doublé = celui à la valeur immédiatement INFÉRIEURE (même sexe) : il occupe
+      // désormais la position juste sous l'athlète qui vient de monter.
+      const overtaken = await this.prisma.hybridIndex.findFirst({
+        where: { value: { lt: adjIndex.value }, user: { profile: { sex: sex as never } } },
+        orderBy: [{ value: "desc" }, { userId: "asc" }],
+        select: { userId: true },
+      });
+      if (overtaken && overtaken.userId !== userId) {
+        await this.push.notifyRankOvertaken(overtaken.userId).catch(() => undefined);
+      }
+    }
+  }
+
+  /**
+   * Lever #1 (cahier §4.3) — auto-dépassement renvoyé à l'AUTEUR du résultat. Si sa nouvelle
+   * position de ligue est meilleure que l'ancienne, il vient de doubler `count` athlètes de même
+   * sexe ; `topName` est le pseudo du plus haut d'entre eux (= celui désormais juste sous lui), qui
+   * porte le message « Tu as doublé X ! ». Best-effort : tout échec → null (jamais bloquant pour le
+   * log). Retourne null si l'auteur n'a pas grimpé (1er Index, ex æquo, ou descente impossible ici).
+   */
+  private async detectOvertake(
+    userId: string,
+    sex: string,
+    adjIndex: internalScore.ComputeIndexResponse,
+    previousLeaguePosition: number | null,
+    newPosition: number,
+  ): Promise<{ count: number; topName: string } | null> {
+    // Pas d'ancienne position (tout premier Index) ou pas de montée → rien à célébrer.
+    if (previousLeaguePosition == null || newPosition >= previousLeaguePosition) return null;
+    const count = previousLeaguePosition - newPosition; // nb de places gagnées = athlètes doublés
+    // Le plus haut athlète doublé = celui à la valeur immédiatement INFÉRIEURE (même sexe), désormais
+    // juste sous l'auteur. Tie-break userId asc → choix stable, cohérent avec fireReengagementPush.
+    const justBelow = await this.prisma.hybridIndex.findFirst({
+      where: { value: { lt: adjIndex.value }, user: { profile: { sex: sex as never } } },
+      orderBy: [{ value: "desc" }, { userId: "asc" }],
+      select: { userId: true },
+    });
+    if (!justBelow || justBelow.userId === userId) return null;
+    const p = await this.prisma.profile.findUnique({
+      where: { userId: justBelow.userId },
+      select: { displayName: true },
+    });
+    const topName = p?.displayName?.trim();
+    if (!topName) return null; // sans pseudo, pas de message nommé → on n'invente rien
+    return { count, topName };
   }
 
   /** Remet le profil de score à l'état « aucune donnée » (plus de séance) : supprime l'Index,

@@ -34,61 +34,73 @@ class RivalCard extends StatelessWidget {
 
   Widget _chasing(BuildContext context, Rival r) {
     final t = AppLocalizations.of(context);
-    return Row(
-      children: [
-        _avatarBubble(Icons.sports_mma_rounded, HiColors.brandSecondaryText),
-        const SizedBox(width: HiSpace.md),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(t.rivalChasing, style: HiType.overline.copyWith(color: HiColors.brandSecondaryText)),
-              const SizedBox(height: 4),
-              RichText(
-                text: TextSpan(
-                  style: HiType.titleM.copyWith(color: HiColors.textPrimary),
-                  children: [
-                    TextSpan(text: r.displayName, style: TextStyle(color: HiColors.brandPrimary)),
-                    TextSpan(text: '  ·  ${r.ovr}', style: HiType.numericM.copyWith(color: HiColors.textSecondary)),
-                  ],
-                ),
+    return Semantics(
+      button: true,
+      label: t.a11yRivalChasing(r.displayName, r.ovr, r.gapPoints),
+      child: ExcludeSemantics(
+        child: Row(
+          children: [
+            _avatarBubble(Icons.sports_mma_rounded, HiColors.brandSecondaryText),
+            const SizedBox(width: HiSpace.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(t.rivalChasing, style: HiType.overline.copyWith(color: HiColors.brandSecondaryText)),
+                  const SizedBox(height: 4),
+                  RichText(
+                    text: TextSpan(
+                      style: HiType.titleM.copyWith(color: HiColors.textPrimary),
+                      children: [
+                        TextSpan(text: r.displayName, style: TextStyle(color: HiColors.brandPrimary)),
+                        TextSpan(text: '  ·  ${r.ovr}', style: HiType.numericM.copyWith(color: HiColors.textSecondary)),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    r.gapPoints <= 1
+                        ? t.rivalGapOne
+                        : t.rivalGapMany(r.gapPoints),
+                    style: HiType.caption.copyWith(color: HiColors.textSecondary),
+                  ),
+                ],
               ),
-              const SizedBox(height: 4),
-              Text(
-                r.gapPoints <= 1
-                    ? t.rivalGapOne
-                    : t.rivalGapMany(r.gapPoints),
-                style: HiType.caption.copyWith(color: HiColors.textSecondary),
-              ),
-            ],
-          ),
+            ),
+            Icon(Icons.chevron_right_rounded, color: HiColors.textTertiary),
+          ],
         ),
-        Icon(Icons.chevron_right_rounded, color: HiColors.textTertiary),
-      ],
+      ),
     );
   }
 
   Widget _leader(BuildContext context) {
     final t = AppLocalizations.of(context);
-    return Row(
-      children: [
-        _avatarBubble(Icons.workspace_premium_rounded, HiColors.accentVictory),
-        const SizedBox(width: HiSpace.md),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(t.rivalLeaderLabel, style: HiType.overline.copyWith(color: HiColors.accentVictory)),
-              const SizedBox(height: 4),
-              Text(t.rivalLeaderTitle, style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
-              const SizedBox(height: 4),
-              Text(t.rivalLeaderBody,
-                  style: HiType.caption.copyWith(color: HiColors.textSecondary)),
-            ],
-          ),
+    return Semantics(
+      button: true,
+      label: t.a11yRivalLeader,
+      child: ExcludeSemantics(
+        child: Row(
+          children: [
+            _avatarBubble(Icons.workspace_premium_rounded, HiColors.accentVictory),
+            const SizedBox(width: HiSpace.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(t.rivalLeaderLabel, style: HiType.overline.copyWith(color: HiColors.accentVictory)),
+                  const SizedBox(height: 4),
+                  Text(t.rivalLeaderTitle, style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
+                  const SizedBox(height: 4),
+                  Text(t.rivalLeaderBody,
+                      style: HiType.caption.copyWith(color: HiColors.textSecondary)),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right_rounded, color: HiColors.textTertiary),
+          ],
         ),
-        Icon(Icons.chevron_right_rounded, color: HiColors.textTertiary),
-      ],
+      ),
     );
   }
 

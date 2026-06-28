@@ -5,6 +5,7 @@ import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
+import '../../widgets/error_retry.dart';
 import '../profile/public_profile_screen.dart';
 
 /// Classement de PROGRESSION de la semaine : on classe par EFFORT fourni, pas par niveau.
@@ -69,7 +70,7 @@ class _ProgressBoardScreenState extends ConsumerState<ProgressBoardScreen> {
                     return const Center(child: CircularProgressIndicator());
                   }
                   if (snap.hasError) {
-                    return Center(child: Text('${snap.error}', style: TextStyle(color: HiColors.error)));
+                    return ErrorRetry(onRetry: () => setState(_load));
                   }
                   final b = snap.data!;
                   if (b.entries.isEmpty) {

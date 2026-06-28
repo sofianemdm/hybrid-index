@@ -8,6 +8,7 @@ import '../../data/session.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/haptics.dart';
 import '../../theme/tokens.dart';
+import '../../widgets/error_retry.dart';
 import '../../widgets/hi_avatar.dart';
 import '../../widgets/hi_skeleton.dart';
 import '../../widgets/rank_badge.dart';
@@ -166,7 +167,10 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
             }
             if (snap.hasError) {
               return ListView(children: [
-                Padding(padding: const EdgeInsets.all(HiSpace.lg), child: Text('${snap.error}', style: TextStyle(color: HiColors.error))),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: HiSpace.xl),
+                  child: ErrorRetry(onRetry: () => setState(_load)),
+                ),
               ]);
             }
             final items = _items;

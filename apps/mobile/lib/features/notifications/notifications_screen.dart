@@ -191,14 +191,16 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen>
               Icon(Icons.groups_rounded, color: HiColors.brandSecondaryText, size: 22),
               const SizedBox(width: HiSpace.md),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(t.notificationsClubInviteTitle, style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
-                    const SizedBox(height: 2),
-                    Text(t.notificationsClubInviteMembers(inv.clubName, inv.memberCount),
-                        style: HiType.caption.copyWith(color: HiColors.textSecondary)),
-                  ],
+                child: MergeSemantics(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(t.notificationsClubInviteTitle, style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
+                      const SizedBox(height: 2),
+                      Text(t.notificationsClubInviteMembers(inv.clubName, inv.memberCount),
+                          style: HiType.caption.copyWith(color: HiColors.textSecondary)),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -231,7 +233,12 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen>
   /// Carte « nouveaux messages » → ouvre les conversations.
   Widget _messagesCard(BuildContext context, int unread) {
     final t = AppLocalizations.of(context);
-    return InkWell(
+    // a11y : carte cliquable → rôle bouton + libellé regroupant titre + corps.
+    return Semantics(
+      button: true,
+      label: '${t.notificationsNewMessages(unread)}. ${t.notificationsNewMessagesBody}',
+      child: ExcludeSemantics(
+      child: InkWell(
       borderRadius: BorderRadius.circular(HiRadius.md),
       onTap: () async {
         await Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ConversationsScreen()));
@@ -267,6 +274,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen>
           ],
         ),
       ),
+    ),
+    ),
     );
   }
 
@@ -330,11 +339,18 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen>
         ],
       ),
     );
-    if (!hasRoute) return card;
-    return InkWell(
-      borderRadius: BorderRadius.circular(HiRadius.md),
-      onTap: () => _openRoute(item.route!),
-      child: card,
+    // a11y : carte info regroupée ; si actionnable (route) → annoncée comme bouton.
+    if (!hasRoute) return MergeSemantics(child: card);
+    return Semantics(
+      button: true,
+      label: '$title. $body',
+      child: ExcludeSemantics(
+        child: InkWell(
+          borderRadius: BorderRadius.circular(HiRadius.md),
+          onTap: () => _openRoute(item.route!),
+          child: card,
+        ),
+      ),
     );
   }
 

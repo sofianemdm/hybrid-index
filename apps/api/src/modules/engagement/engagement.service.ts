@@ -6,7 +6,7 @@ import { RedisService } from "../../infra/redis/redis.service";
 import { StreakService } from "./streak.service";
 import { addWeeks, weekStart } from "./iso-week";
 import { weeklyRecapDelta } from "./recap.logic";
-import { NOTIFICATION_TRIGGERS } from "./notifications.data";
+import { NEXT_RANK_CLOSE_THRESHOLD, NOTIFICATION_TRIGGERS } from "./notifications.data";
 import { prefEnabled } from "./notification-gating";
 
 /** Récap hebdomadaire (non compétitif) : ce que tu as accompli cette semaine. */
@@ -137,7 +137,7 @@ export class EngagementService {
     const next = RANK_BANDS.find((b) => b.min > ovr);
     if (next && enabled("next-rank-close")) {
       const pts = Math.ceil(next.min - ovr); // points /100 restants jusqu'au rang suivant
-      if (pts <= 5) {
+      if (pts <= NEXT_RANK_CLOSE_THRESHOLD) {
         items.push({
           key: "next-rank-close",
           params: { rank: next.rank, points: pts },

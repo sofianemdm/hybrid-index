@@ -394,7 +394,14 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
     final t = AppLocalizations.of(context);
     final pos = s.myPosition;
     final pts = s.myPoints ?? 0;
-    return Container(
+    // a11y : « Tu es 3e avec N points » plutôt que « #3 » et « N pts » lus séparément.
+    final myLabel = pos == null
+        ? '${t.leagueMyPosition}. ${t.leagueDoWodToEnter}'
+        : t.a11yLeagueMyPosition(pos, pts);
+    return Semantics(
+      label: myLabel,
+      child: ExcludeSemantics(
+      child: Container(
       padding: const EdgeInsets.all(HiSpace.lg),
       decoration: BoxDecoration(
         color: HiColors.brandSecondary.withValues(alpha: 0.12),
@@ -423,6 +430,8 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
           ),
         ],
       ),
+    ),
+    ),
     );
   }
 
@@ -432,7 +441,13 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
     final posColor = podium
         ? HiColors.rank(e.position == 1 ? 'gold' : e.position == 2 ? 'silver' : 'bronze')
         : HiColors.textTertiary;
-    return InkWell(
+    // a11y : ligne entière (rang + nom + club + points) lue d'un trait, comme un bouton vers le profil.
+    final rowLabel = t.a11yLeagueRow(e.position, e.isMe ? t.leagueRowYou(e.displayName) : e.displayName, e.points);
+    return Semantics(
+      button: true,
+      label: rowLabel,
+      child: ExcludeSemantics(
+      child: InkWell(
       borderRadius: BorderRadius.circular(HiRadius.sm),
       onTap: () {
         HiHaptics.tap();
@@ -441,6 +456,7 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
         );
       },
       child: Container(
+        constraints: const BoxConstraints(minHeight: 48), // cible tactile a11y >= 48dp
         margin: const EdgeInsets.only(bottom: 6),
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
         decoration: BoxDecoration(
@@ -487,6 +503,8 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
           ],
         ),
       ),
+    ),
+    ),
     );
   }
 

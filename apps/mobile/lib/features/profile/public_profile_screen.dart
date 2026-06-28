@@ -40,7 +40,7 @@ class _FollowButtonState extends ConsumerState<_FollowButton> {
       }
       if (mounted) setState(() => _following = !_following);
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context).commonGenericError)));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -187,7 +187,7 @@ class _InviteToClubButtonState extends ConsumerState<_InviteToClubButton> {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context).publicProfileInviteSent(club.name))));
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context).commonGenericError)));
     } finally {
       if (mounted) setState(() => _busy = false);
     }

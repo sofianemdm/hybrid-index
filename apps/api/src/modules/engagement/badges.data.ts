@@ -19,7 +19,7 @@ export interface BadgeDef {
 
 export const BADGES: BadgeDef[] = [
   // PROGRESSION
-  { id: "first-index", category: "progression", name: "Premier Index", description: "Tu as obtenu ton premier HYBRID INDEX.", rarity: "common", condition: "has_index", cosmeticUnlock: null },
+  { id: "first-index", category: "progression", name: "Premier Index", description: "Tu as obtenu ton premier Athlete Index.", rarity: "common", condition: "has_index", cosmeticUnlock: null },
   { id: "confirmed-athlete", category: "progression", name: "Athlète confirmé", description: "5 séances loggées — un membre actif.", rarity: "common", condition: "logs>=5", cosmeticUnlock: null },
   { id: "rank-bronze", category: "progression", name: "Bronze", description: "Atteins le rang Bronze.", rarity: "common", condition: "rank>=bronze", cosmeticUnlock: null },
   { id: "rank-gold", category: "progression", name: "Or", description: "Atteins le rang Or.", rarity: "rare", condition: "rank>=gold", cosmeticUnlock: "avatar_glow_gold" },
@@ -28,15 +28,15 @@ export const BADGES: BadgeDef[] = [
   // Paliers d'Index (display-v2 : plancher ~35, plafond 98). Rapprochés en bas (récompense rapide
   // juste au-dessus du plancher), espacés et rares en haut. PAS de palier <=35 (toujours vrai) ni
   // >=100 (inatteignable : la courbe plafonne à 98). cf. audit G-05/06/07.
-  { id: "index-45", category: "progression", name: "Seuil 45", description: "Franchis un HYBRID INDEX de 45.", rarity: "common", condition: "index>=45", cosmeticUnlock: null, series: "index", seriesOrder: 1 },
-  { id: "index-52", category: "progression", name: "Seuil 52", description: "Franchis un HYBRID INDEX de 52.", rarity: "common", condition: "index>=52", cosmeticUnlock: null, series: "index", seriesOrder: 2 },
-  { id: "index-60", category: "progression", name: "Seuil 60", description: "Franchis un HYBRID INDEX de 60.", rarity: "common", condition: "index>=60", cosmeticUnlock: null, series: "index", seriesOrder: 3 },
-  { id: "index-68", category: "progression", name: "Seuil 68", description: "Franchis un HYBRID INDEX de 68.", rarity: "rare", condition: "index>=68", cosmeticUnlock: null, series: "index", seriesOrder: 4 },
-  { id: "index-75", category: "progression", name: "Seuil 75", description: "Franchis un HYBRID INDEX de 75.", rarity: "rare", condition: "index>=75", cosmeticUnlock: null, series: "index", seriesOrder: 5 },
-  { id: "index-82", category: "progression", name: "Seuil 82", description: "Franchis un HYBRID INDEX de 82.", rarity: "epic", condition: "index>=82", cosmeticUnlock: null, series: "index", seriesOrder: 6 },
-  { id: "index-88", category: "progression", name: "Seuil 88", description: "Franchis un HYBRID INDEX de 88.", rarity: "epic", condition: "index>=88", cosmeticUnlock: null, series: "index", seriesOrder: 7 },
-  { id: "index-92", category: "progression", name: "Seuil 92", description: "Franchis un HYBRID INDEX de 92. Tu touches l'élite.", rarity: "epic", condition: "index>=92", cosmeticUnlock: null, series: "index", seriesOrder: 8 },
-  { id: "index-95", category: "progression", name: "Seuil 95", description: "Franchis un HYBRID INDEX de 95. Très peu y arrivent.", rarity: "legendary", condition: "index>=95", cosmeticUnlock: null, series: "index", seriesOrder: 9 },
+  { id: "index-45", category: "progression", name: "Seuil 45", description: "Franchis un Athlete Index de 45.", rarity: "common", condition: "index>=45", cosmeticUnlock: null, series: "index", seriesOrder: 1 },
+  { id: "index-52", category: "progression", name: "Seuil 52", description: "Franchis un Athlete Index de 52.", rarity: "common", condition: "index>=52", cosmeticUnlock: null, series: "index", seriesOrder: 2 },
+  { id: "index-60", category: "progression", name: "Seuil 60", description: "Franchis un Athlete Index de 60.", rarity: "common", condition: "index>=60", cosmeticUnlock: null, series: "index", seriesOrder: 3 },
+  { id: "index-68", category: "progression", name: "Seuil 68", description: "Franchis un Athlete Index de 68.", rarity: "rare", condition: "index>=68", cosmeticUnlock: null, series: "index", seriesOrder: 4 },
+  { id: "index-75", category: "progression", name: "Seuil 75", description: "Franchis un Athlete Index de 75.", rarity: "rare", condition: "index>=75", cosmeticUnlock: null, series: "index", seriesOrder: 5 },
+  { id: "index-82", category: "progression", name: "Seuil 82", description: "Franchis un Athlete Index de 82.", rarity: "epic", condition: "index>=82", cosmeticUnlock: null, series: "index", seriesOrder: 6 },
+  { id: "index-88", category: "progression", name: "Seuil 88", description: "Franchis un Athlete Index de 88.", rarity: "epic", condition: "index>=88", cosmeticUnlock: null, series: "index", seriesOrder: 7 },
+  { id: "index-92", category: "progression", name: "Seuil 92", description: "Franchis un Athlete Index de 92. Tu touches l'élite.", rarity: "epic", condition: "index>=92", cosmeticUnlock: null, series: "index", seriesOrder: 8 },
+  { id: "index-95", category: "progression", name: "Seuil 95", description: "Franchis un Athlete Index de 95. Très peu y arrivent.", rarity: "legendary", condition: "index>=95", cosmeticUnlock: null, series: "index", seriesOrder: 9 },
   { id: "index-98", category: "progression", name: "Seuil 98", description: "Tu frôles le plafond théorique de l'Index. L'extrême sommet.", rarity: "legendary", condition: "index>=98", cosmeticUnlock: null, series: "index", seriesOrder: 10 },
   // COLLECTION
   { id: "explorer-5", category: "collection", name: "Explorateur", description: "Complète 5 séances différentes.", rarity: "common", condition: "wods_distinct>=5", cosmeticUnlock: null },

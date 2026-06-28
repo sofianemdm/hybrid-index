@@ -1,5 +1,5 @@
 /**
- * Registre des PRESCRIPTIONS concrètes des 17 séances de référence HYBRID INDEX.
+ * Registre des PRESCRIPTIONS concrètes des 17 séances de référence Athlete Index.
  * « Ce que c'est » + « ce que tu dois faire », avec poids RX (standard) et version allégée (L1),
  * homme ET femme. Profondeur « Essentiel » : pas de standards de mouvement détaillés, pas de pacing.
  *
@@ -230,7 +230,7 @@ export const WOD_PRESCRIPTIONS: Record<string, WodPrescription> = {
     scalable: false, // séance d'entrée 100 % poids de corps : rien à scaler → retirer le toggle Rx/Allégé
     summary:
       "Ta séance d'ENTRÉE, 100 % sans matériel : elle touche les 6 qualités d'un coup et te donne " +
-      "un HYBRID INDEX ESTIMÉ en une séance. Cours fort, enchaîne sans traîner. Refais ensuite des " +
+      "un Athlete Index ESTIMÉ en une séance. Cours fort, enchaîne sans traîner. Refais ensuite des " +
       "séances ciblées pour affiner chaque note (ton vrai Index se précise au fil du temps).",
     format: "Pour le temps",
     blocks: [

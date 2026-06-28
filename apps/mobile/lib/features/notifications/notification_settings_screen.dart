@@ -135,11 +135,19 @@ class _NotificationSettingsScreenState extends ConsumerState<NotificationSetting
                             child: Text(t.notificationSettingsDailyCap, style: HiType.body.copyWith(color: HiColors.textPrimary)),
                           ),
                           IconButton(
+                            tooltip: t.a11yDecrease,
                             icon: Icon(Icons.remove_circle_outline_rounded, color: HiColors.textSecondary),
                             onPressed: _dailyCap > 0 ? () => setState(() => _dailyCap--) : null,
                           ),
-                          Text('$_dailyCap', style: HiType.numericM.copyWith(color: HiColors.textPrimary)),
+                          // a11y : la valeur courante est lue (« 2 par jour »), pas juste « 2 ».
+                          Semantics(
+                            label: t.a11yDailyCapValue(_dailyCap),
+                            child: ExcludeSemantics(
+                              child: Text('$_dailyCap', style: HiType.numericM.copyWith(color: HiColors.textPrimary)),
+                            ),
+                          ),
                           IconButton(
+                            tooltip: t.a11yIncrease,
                             icon: Icon(Icons.add_circle_outline_rounded, color: HiColors.textSecondary),
                             onPressed: _dailyCap < 10 ? () => setState(() => _dailyCap++) : null,
                           ),

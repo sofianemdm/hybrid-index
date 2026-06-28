@@ -8,7 +8,7 @@ import {
   prefEnabled,
   type QuietHours,
 } from "./notification-gating";
-import { NOTIFICATION_TRIGGERS } from "./notifications.data";
+import { NOTIFICATION_TRIGGERS, pushCopy, type PushLocale } from "./notifications.data";
 
 /** Charge utile d'une notification push (copie déjà localisée FR). */
 export interface PushMessage {
@@ -193,54 +193,39 @@ export class PushService {
     }
   }
 
-  // --- Déclencheurs amicaux (copie FR verrouillée, ton bienveillant) ---
+  // --- Déclencheurs amicaux (copie centralisée FR/EN dans notifications.data, ton bienveillant) ---
+  //
+  // TODO(i18n) : la langue est figée à "fr" tant que le modèle Profile/User ne porte pas de `locale`.
+  // Dès qu'un champ `locale` existe, le résoudre par appelant et le passer en 2e argument de pushCopy.
+
+  /** Compose un PushMessage à partir de la copie centralisée (locale FR par défaut). */
+  private compose(type: string, params: Record<string, string | number> = {}, locale: PushLocale = "fr"): PushMessage {
+    const { title, body } = pushCopy(type, locale, params);
+    return { title, body, data: { type } };
+  }
 
   notifyRankOvertaken(userId: string): Promise<void> {
-    return this.sendToUser(userId, {
-      title: "On t'a doublé au classement",
-      body: "Reprends ta place — un bon WOD peut suffire. 👊",
-      data: { type: "rank-overtaken" },
-    });
+    return this.sendToUser(userId, this.compose("rank-overtaken"));
   }
 
   notifyStaleAttribute(userId: string, attributeLabel: string): Promise<void> {
-    return this.sendToUser(userId, {
-      title: "Un de tes axes mérite un re-test",
-      body: `Ton ${attributeLabel} peut grimper. Quand tu veux.`,
-      data: { type: "stale-attribute" },
-    });
+    return this.sendToUser(userId, this.compose("stale-attribute", { attributeLabel }));
   }
 
   notifyNearRank(userId: string, points: number): Promise<void> {
-    return this.sendToUser(userId, {
-      title: "Le prochain palier est tout proche",
-      body: `Plus que ${points} point${points > 1 ? "s" : ""} — un bon WOD et tu y es.`,
-      data: { type: "near-rank" },
-    });
+    return this.sendToUser(userId, this.compose("near-rank", { points }));
   }
 
   notifyKudos(userId: string, count: number): Promise<void> {
-    return this.sendToUser(userId, {
-      title: "On a réagi à ta perf",
-      body: `${count} athlète${count > 1 ? "s ont" : " a"} salué ta séance. 🔥`,
-      data: { type: "kudos" },
-    });
+    return this.sendToUser(userId, this.compose("kudos", { count }));
   }
 
   notifyWeeklyRecap(userId: string, deltaIndex: number, sessions: number): Promise<void> {
-    return this.sendToUser(userId, {
-      title: "Ta semaine en bref",
-      body: `+${deltaIndex} pts d'Index, ${sessions} séance${sessions > 1 ? "s" : ""}. Belle semaine. 📈`,
-      data: { type: "weekly-recap" },
-    });
+    return this.sendToUser(userId, this.compose("weekly-recap", { deltaIndex, sessions }));
   }
 
   /** Nouveau message privé reçu. `senderName` = pseudo de l'expéditeur. */
   notifyNewMessage(userId: string, senderName: string): Promise<void> {
-    return this.sendToUser(userId, {
-      title: `Message de ${senderName}`,
-      body: "Ouvre la conversation pour répondre.",
-      data: { type: "new-message" },
-    });
+    return this.sendToUser(userId, this.compose("new-message", { senderName }));
   }
 }

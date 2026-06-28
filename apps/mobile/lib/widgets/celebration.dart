@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../theme/haptics.dart';
 import '../theme/tokens.dart';
 import 'hi_button.dart';
@@ -43,7 +44,7 @@ class Celebration {
     await showGeneralDialog<void>(
       context: context,
       barrierDismissible: true,
-      barrierLabel: 'Fermer',
+      barrierLabel: AppLocalizations.of(context).celebrationClose,
       barrierColor: Colors.black.withValues(alpha: 0.55),
       transitionDuration: HiMotion.base,
       pageBuilder: (ctx, _, __) => _CelebrationView(
@@ -210,9 +211,9 @@ class _CelebrationViewState extends State<_CelebrationView> with TickerProviderS
                         },
                       ),
                       const SizedBox(height: HiSpace.sm),
-                      Text('Continuer', style: HiType.caption.copyWith(color: HiColors.textTertiary)),
+                      Text(AppLocalizations.of(context).celebrationContinue, style: HiType.caption.copyWith(color: HiColors.textTertiary)),
                     ] else
-                      Text('Touche pour continuer', style: HiType.caption.copyWith(color: HiColors.textTertiary)),
+                      Text(AppLocalizations.of(context).celebrationTapToContinue, style: HiType.caption.copyWith(color: HiColors.textTertiary)),
                   ],
                 ),
               ),

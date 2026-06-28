@@ -6,6 +6,7 @@ import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/hi_button.dart';
+import '../../widgets/error_retry.dart';
 import '../../widgets/rank_badge.dart';
 import '../wods/wod_detail_screen.dart';
 import '../wods/wod_format.dart';
@@ -116,7 +117,11 @@ class _ChallengeScreenState extends ConsumerState<ChallengeScreen> {
             if (snap.connectionState == ConnectionState.waiting) {
               return Center(child: CircularProgressIndicator(color: HiColors.brandPrimary));
             }
-            if (snap.hasError) return Center(child: Text('${snap.error}', style: HiType.body.copyWith(color: HiColors.error)));
+            if (snap.hasError) {
+              return ErrorRetry(onRetry: () => setState(() {
+                _challenge = ref.read(apiClientProvider).currentChallenge();
+              }));
+            }
             final c = snap.data!;
             return ListView(
               padding: const EdgeInsets.fromLTRB(HiSpace.lg, HiSpace.lg, HiSpace.lg, 96),
@@ -260,7 +265,9 @@ class _ChallengeScreenState extends ConsumerState<ChallengeScreen> {
         if (snap.connectionState == ConnectionState.waiting) {
           return Padding(padding: const EdgeInsets.all(24), child: Center(child: CircularProgressIndicator(color: HiColors.brandPrimary)));
         }
-        if (snap.hasError) return Text('${snap.error}', style: HiType.body.copyWith(color: HiColors.error));
+        if (snap.hasError) {
+          return ErrorRetry(compact: true, onRetry: () => setState(_loadBoard));
+        }
         final entries = snap.data!;
         if (entries.isEmpty) {
           return Text(AppLocalizations.of(context).challengeBeFirst, style: HiType.body.copyWith(color: HiColors.textTertiary));

@@ -183,22 +183,31 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                 left: 0,
                 right: 0,
                 child: Center(
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: () {
-                      HiHaptics.tap();
-                      _openLog();
-                    },
-                    child: Container(
-                      width: 56,
-                      height: 56,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: HiColors.brandPrimary,
-                        boxShadow: HiShadow.glowBrand(0.4),
-                        border: Border.all(color: HiColors.bgBase, width: 3),
+                  child: Semantics(
+                    button: true,
+                    label: t.homeAddSessionTitle,
+                    child: Tooltip(
+                      message: t.homeAddSessionTitle,
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () {
+                          HiHaptics.tap();
+                          _openLog();
+                        },
+                        child: ExcludeSemantics(
+                          child: Container(
+                            width: 56,
+                            height: 56,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: HiColors.brandPrimary,
+                              boxShadow: HiShadow.glowBrand(0.4),
+                              border: Border.all(color: HiColors.bgBase, width: 3),
+                            ),
+                            child: Icon(Icons.add_rounded, color: HiColors.textOnBrand, size: 28),
+                          ),
+                        ),
                       ),
-                      child: Icon(Icons.add_rounded, color: HiColors.textOnBrand, size: 28),
                     ),
                   ),
                 ),

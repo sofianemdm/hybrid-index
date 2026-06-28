@@ -7,6 +7,7 @@ import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
+import '../../widgets/error_retry.dart';
 import '../../widgets/hi_button.dart';
 import 'club_detail_screen.dart';
 
@@ -89,7 +90,7 @@ class _ClubsScreenState extends ConsumerState<ClubsScreen> {
       await Navigator.of(context).push(MaterialPageRoute(builder: (_) => ClubDetailScreen(clubId: club.id)));
       if (mounted) setState(_load);
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context).commonGenericError)));
     }
   }
 
@@ -117,7 +118,7 @@ class _ClubsScreenState extends ConsumerState<ClubsScreen> {
             if (snap.connectionState == ConnectionState.waiting) {
               return Center(child: CircularProgressIndicator(color: HiColors.brandPrimary));
             }
-            if (snap.hasError) return Center(child: Text('${snap.error}', style: HiType.body.copyWith(color: HiColors.error)));
+            if (snap.hasError) return ErrorRetry(onRetry: () => setState(_load));
             final data = snap.data!;
             return ListView(
               padding: const EdgeInsets.fromLTRB(HiSpace.lg, HiSpace.lg, HiSpace.lg, 96),

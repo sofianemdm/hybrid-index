@@ -5,6 +5,7 @@ import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
+import '../../widgets/error_retry.dart';
 import '../../widgets/hi_button.dart';
 import '../../widgets/rank_badge.dart';
 import '../leaderboard/progress_board_screen.dart';
@@ -38,7 +39,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> {
       await ref.read(apiClientProvider).joinClub(d.id);
       if (mounted) setState(_load);
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context).commonGenericError)));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -71,7 +72,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> {
       await ref.read(apiClientProvider).leaveClub(d.id);
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context).commonGenericError)));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -123,7 +124,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> {
             if (snap.connectionState == ConnectionState.waiting) {
               return Center(child: CircularProgressIndicator(color: HiColors.brandPrimary));
             }
-            if (snap.hasError) return Center(child: Text('${snap.error}', style: HiType.body.copyWith(color: HiColors.error)));
+            if (snap.hasError) return ErrorRetry(onRetry: () => setState(_load));
             final d = snap.data!;
             return ListView(
               padding: const EdgeInsets.fromLTRB(HiSpace.lg, 0, HiSpace.lg, 96),

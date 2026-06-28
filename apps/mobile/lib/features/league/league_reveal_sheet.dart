@@ -179,16 +179,19 @@ class _LeagueRevealSheetState extends State<LeagueRevealSheet> {
     );
   }
 
-  /// Le mouvement de division n'existe qu'à partir de tier > 1 ; au lancement il est null.
+  /// Mouvement de POSITION au classement vs le mois précédent (2 ligues simples par sexe,
+  /// AUCUNE division). Le backend renvoie "promoted"/"relegated"/"stay" : on l'interprète
+  /// uniquement comme « tu as gagné / perdu des places » ou « tu es resté stable ».
   String? _movementLabel(AppLocalizations t) {
-    // Le backend renvoie une chaîne "promoted"/"relegated"/"stay" (sans delta numérique au lancement).
     switch (widget.result.myMovement) {
       case 'promoted':
-        return t.leagueRevealMovementUp(1);
+        return t.leagueRevealMovedUp;
       case 'relegated':
-        return t.leagueRevealMovementDown(1);
+        return t.leagueRevealMovedDown;
+      case 'stay':
+        return t.leagueRevealStable;
       default:
-        return null; // "stay" ou null → pas de mention de mouvement
+        return null; // null → première saison / pas de comparaison possible
     }
   }
 }
@@ -228,7 +231,12 @@ class _Podium extends StatelessWidget {
     final color = HiColors.rank(
       row.finalRank == 1 ? 'gold' : (row.finalRank == 2 ? 'silver' : 'bronze'),
     );
-    return Column(
+    // a11y : le rang est codé visuellement par la hauteur de la barre → on l'énonce explicitement
+    // (« 1re place : nom, N points »), sinon un lecteur d'écran ne perçoit pas la position.
+    return Semantics(
+      label: t.a11yPodiumPlace(t.leagueRevealRankOrdinal(row.finalRank), row.displayName, row.totalPoints),
+      child: ExcludeSemantics(
+      child: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         HiAvatar(
@@ -273,6 +281,8 @@ class _Podium extends StatelessWidget {
           ),
         ),
       ],
+    ),
+    ),
     );
   }
 }

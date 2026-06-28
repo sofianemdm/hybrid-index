@@ -10,6 +10,7 @@ import 'wod_detail_screen.dart';
 import 'other_workouts_screen.dart';
 import '../history/history_screen.dart';
 import '../coach/sessions_by_attribute_screen.dart';
+import '../coach/coach_library_screen.dart';
 
 /// Onglet WOD : catalogue des WODs (15 références + communautaires à venir).
 class WodTab extends ConsumerStatefulWidget {
@@ -74,7 +75,15 @@ class _WodTabState extends ConsumerState<WodTab> {
                 const SizedBox(height: HiSpace.lg),
                 // Séance de la semaine = le WOD imposé de la Ligue du mois (unifié) + séances par axe.
                 _weeklySection(),
+                // Séances GUIDÉES du coach (entraînements clés en main, distincts des épreuves à loguer).
+                _coachLibraryCard(context),
+                const SizedBox(height: HiSpace.lg),
                 _section(t.sessionsByFocus),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: HiSpace.sm),
+                  child: Text(t.sessionsByFocusCaption,
+                      style: TextStyle(color: HiColors.textTertiary, fontSize: 12, height: 1.4)),
+                ),
                 _attributeGrid(context),
                 const SizedBox(height: HiSpace.lg),
                 if (catalogEmpty)
@@ -251,6 +260,55 @@ class _WodTabState extends ConsumerState<WodTab> {
           ],
         );
       },
+    );
+  }
+
+  /// Entrée vers la bibliothèque de séances GUIDÉES du coach (entraînements clés en main type
+  /// « Le Forgeron » : déroulé complet). Distincte des ÉPREUVES loguables (axes ci-dessous).
+  Widget _coachLibraryCard(BuildContext context) {
+    final t = AppLocalizations.of(context);
+    return Material(
+      color: HiColors.bgElevated,
+      borderRadius: BorderRadius.circular(HiRadius.lg),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(HiRadius.lg),
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const CoachLibraryScreen()),
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(HiSpace.md),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(HiRadius.lg),
+            border: Border.all(color: HiColors.brandSecondary.withValues(alpha: 0.4)),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                    color: HiColors.brandSecondary.withValues(alpha: 0.16),
+                    borderRadius: BorderRadius.circular(HiRadius.sm)),
+                child: Icon(Icons.menu_book_rounded, color: HiColors.brandSecondary),
+              ),
+              const SizedBox(width: HiSpace.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(t.coachLibraryEntryTitle,
+                        style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w800, fontSize: 15)),
+                    const SizedBox(height: 2),
+                    Text(t.coachLibraryEntrySubtitle,
+                        style: TextStyle(color: HiColors.textTertiary, fontSize: 12, height: 1.35)),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right_rounded, color: HiColors.textTertiary),
+            ],
+          ),
+        ),
+      ),
     );
   }
 

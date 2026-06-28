@@ -6,6 +6,7 @@ import '../../data/session.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import '../wods/wod_detail_screen.dart';
+import 'coach_library_screen.dart';
 
 /// Les ÉPREUVES (WODs loguables) qui comptent pour le score d'un attribut, triées par contribution
 /// (celle qui compte le plus en haut). On y arrive depuis le menu Séances (6 axes) et le radar Accueil.
@@ -102,7 +103,12 @@ class _SessionsByAttributeScreenState extends ConsumerState<SessionsByAttributeS
                       ],
                     ),
                   ),
+                  const SizedBox(height: HiSpace.md),
+                  // Renvoi vers les séances GUIDÉES du coach pour cet axe (entraînements clés en
+                  // main), distinctes des ÉPREUVES à loguer listées ci-dessous.
+                  _guidedLink(color),
                   const SizedBox(height: HiSpace.lg),
+                  _section(t.sessionsToLog),
                   if (wods.isEmpty)
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 40),
@@ -120,12 +126,60 @@ class _SessionsByAttributeScreenState extends ConsumerState<SessionsByAttributeS
     );
   }
 
+  Widget _section(String label) => Padding(
+        padding: const EdgeInsets.only(bottom: HiSpace.sm),
+        child: Text(label.toUpperCase(),
+            style: TextStyle(
+                color: HiColors.textTertiary, fontSize: 12, letterSpacing: 1.5, fontWeight: FontWeight.w700)),
+      );
+
+  /// Renvoi vers la bibliothèque de séances GUIDÉES (entraînements clés en main) pour cet axe.
+  Widget _guidedLink(Color accent) {
+    final t = AppLocalizations.of(context);
+    return Material(
+      color: HiColors.bgElevated,
+      borderRadius: BorderRadius.circular(HiRadius.md),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(HiRadius.md),
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => CoachLibraryScreen(attribute: widget.attribute)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(HiSpace.md),
+          child: Row(
+            children: [
+              Icon(Icons.menu_book_rounded, color: accent, size: 20),
+              const SizedBox(width: HiSpace.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(t.sessionsGuidedLinkTitle,
+                        style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 14)),
+                    const SizedBox(height: 2),
+                    Text(t.sessionsGuidedLinkSubtitle,
+                        style: TextStyle(color: HiColors.textTertiary, fontSize: 12, height: 1.3)),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right_rounded, color: HiColors.textTertiary),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   /// Carte d'épreuve loguable. `top` = celle qui compte le plus (mise en avant).
   Widget _wodCard(WodCatalogEntry w, Color accent, bool top) {
     final t = AppLocalizations.of(context);
     final key = w.targetAttributes.length <= 2; // épreuve très centrée sur cet axe
     return Padding(
       padding: const EdgeInsets.only(bottom: HiSpace.sm),
+      child: Semantics(
+      button: true,
+      label: t.a11ySessionWod(w.name),
+      child: MergeSemantics(
       child: Material(
         color: HiColors.bgElevated,
         borderRadius: BorderRadius.circular(HiRadius.md),
@@ -189,6 +243,8 @@ class _SessionsByAttributeScreenState extends ConsumerState<SessionsByAttributeS
             ),
           ),
         ),
+      ),
+      ),
       ),
     );
   }

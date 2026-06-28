@@ -57,7 +57,7 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
           );
       if (mounted) Navigator.of(context).pop(true);
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t.commonGenericError)));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
