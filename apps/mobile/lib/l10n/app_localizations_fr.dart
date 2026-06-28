@@ -1965,6 +1965,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get leagueScreenTitle => 'Ligue du mois';
 
   @override
+  String get leagueRivalTitle => 'Ton rival dans la ligue';
+
+  @override
   String get leagueUnavailable => 'Ligue indisponible pour le moment.';
 
   @override
@@ -2257,5 +2260,54 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String a11ySessionWod(String name) {
     return 'Épreuve $name';
+  }
+
+  @override
+  String get guidedTimerStart => 'Démarrer';
+
+  @override
+  String get guidedTimerPause => 'Pause';
+
+  @override
+  String get guidedTimerResume => 'Reprendre';
+
+  @override
+  String get guidedTimerReset => 'Réinitialiser';
+
+  @override
+  String get guidedTimerFinish => 'Terminer';
+
+  @override
+  String get guidedTimerDone => 'Terminé !';
+
+  @override
+  String get guidedTimerClose => 'Fermer le chrono';
+
+  @override
+  String get guidedTimerCountdownLabel => 'COMPTE À REBOURS';
+
+  @override
+  String get guidedTimerStopwatchLabel => 'CHRONO LIBRE';
+
+  @override
+  String a11yGuidedTimerValue(String value) {
+    return 'Chrono : $value';
+  }
+
+  @override
+  String get coachSessionGuidedMode => 'Mode guidé';
+
+  @override
+  String get coachSessionMarkDone => 'Marquer comme faite';
+
+  @override
+  String get coachSessionDoneTitle => 'Séance validée';
+
+  @override
+  String get coachSessionDoneSubtitle => 'Beau travail. Garde ta série en vie.';
+
+  @override
+  String coachSessionDoneToast(String name) {
+    return 'Séance « $name » marquée comme faite.';
   }
 }

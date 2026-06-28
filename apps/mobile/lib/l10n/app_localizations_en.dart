@@ -1952,6 +1952,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get leagueScreenTitle => 'League of the month';
 
   @override
+  String get leagueRivalTitle => 'Your rival in the league';
+
+  @override
   String get leagueUnavailable => 'League unavailable right now.';
 
   @override
@@ -2254,5 +2257,54 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String a11ySessionWod(String name) {
     return 'Challenge $name';
+  }
+
+  @override
+  String get guidedTimerStart => 'Start';
+
+  @override
+  String get guidedTimerPause => 'Pause';
+
+  @override
+  String get guidedTimerResume => 'Resume';
+
+  @override
+  String get guidedTimerReset => 'Reset';
+
+  @override
+  String get guidedTimerFinish => 'Finish';
+
+  @override
+  String get guidedTimerDone => 'Done!';
+
+  @override
+  String get guidedTimerClose => 'Close timer';
+
+  @override
+  String get guidedTimerCountdownLabel => 'COUNTDOWN';
+
+  @override
+  String get guidedTimerStopwatchLabel => 'STOPWATCH';
+
+  @override
+  String a11yGuidedTimerValue(String value) {
+    return 'Timer: $value';
+  }
+
+  @override
+  String get coachSessionGuidedMode => 'Guided mode';
+
+  @override
+  String get coachSessionMarkDone => 'Mark as done';
+
+  @override
+  String get coachSessionDoneTitle => 'Session complete';
+
+  @override
+  String get coachSessionDoneSubtitle => 'Nice work. Keep your streak alive.';
+
+  @override
+  String coachSessionDoneToast(String name) {
+    return 'Session “$name” marked as done.';
   }
 }

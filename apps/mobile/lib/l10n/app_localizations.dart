@@ -3404,6 +3404,12 @@ abstract class AppLocalizations {
   /// **'League of the month'**
   String get leagueScreenTitle;
 
+  /// No description provided for @leagueRivalTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your rival in the league'**
+  String get leagueRivalTitle;
+
   /// No description provided for @leagueUnavailable.
   ///
   /// In en, this message translates to:
@@ -3811,6 +3817,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Challenge {name}'**
   String a11ySessionWod(String name);
+
+  /// No description provided for @guidedTimerStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get guidedTimerStart;
+
+  /// No description provided for @guidedTimerPause.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get guidedTimerPause;
+
+  /// No description provided for @guidedTimerResume.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume'**
+  String get guidedTimerResume;
+
+  /// No description provided for @guidedTimerReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get guidedTimerReset;
+
+  /// No description provided for @guidedTimerFinish.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish'**
+  String get guidedTimerFinish;
+
+  /// No description provided for @guidedTimerDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done!'**
+  String get guidedTimerDone;
+
+  /// No description provided for @guidedTimerClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close timer'**
+  String get guidedTimerClose;
+
+  /// No description provided for @guidedTimerCountdownLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'COUNTDOWN'**
+  String get guidedTimerCountdownLabel;
+
+  /// No description provided for @guidedTimerStopwatchLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'STOPWATCH'**
+  String get guidedTimerStopwatchLabel;
+
+  /// No description provided for @a11yGuidedTimerValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Timer: {value}'**
+  String a11yGuidedTimerValue(String value);
+
+  /// No description provided for @coachSessionGuidedMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Guided mode'**
+  String get coachSessionGuidedMode;
+
+  /// No description provided for @coachSessionMarkDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as done'**
+  String get coachSessionMarkDone;
+
+  /// No description provided for @coachSessionDoneTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Session complete'**
+  String get coachSessionDoneTitle;
+
+  /// No description provided for @coachSessionDoneSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Nice work. Keep your streak alive.'**
+  String get coachSessionDoneSubtitle;
+
+  /// No description provided for @coachSessionDoneToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Session “{name}” marked as done.'**
+  String coachSessionDoneToast(String name);
 }
 
 class _AppLocalizationsDelegate

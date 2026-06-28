@@ -5,6 +5,7 @@ import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
+import '../../widgets/error_retry.dart';
 import '../wods/wod_detail_screen.dart';
 import 'coach_library_screen.dart';
 
@@ -63,21 +64,7 @@ class _SessionsByAttributeScreenState extends ConsumerState<SessionsByAttributeS
               return Center(child: CircularProgressIndicator(color: color));
             }
             if (snap.hasError) {
-              return Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(t.coachLoadError,
-                        textAlign: TextAlign.center, style: TextStyle(color: HiColors.textSecondary)),
-                    const SizedBox(height: HiSpace.sm),
-                    OutlinedButton.icon(
-                      icon: const Icon(Icons.refresh, size: 18),
-                      label: Text(t.commonRetry),
-                      onPressed: () => setState(_load),
-                    ),
-                  ],
-                ),
-              );
+              return ErrorRetry(message: t.coachLoadError, onRetry: () => setState(_load));
             }
             final wods = _ranked(snap.data ?? const []);
             return RefreshIndicator(

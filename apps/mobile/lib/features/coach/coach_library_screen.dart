@@ -5,8 +5,11 @@ import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
+import '../../widgets/celebration.dart';
 import '../../widgets/error_retry.dart';
+import '../../widgets/hi_button.dart';
 import '../../widgets/hi_card.dart';
+import '../../widgets/hi_guided_timer.dart';
 import '../../widgets/hi_skeleton.dart';
 
 /// Bibliothèque de séances GUIDÉES du coach (type « Le Forgeron ») : des entraînements clés en main
@@ -237,12 +240,68 @@ class _CoachLibraryScreenState extends ConsumerState<CoachLibraryScreen> {
             const SizedBox(height: HiSpace.sm),
             Text(s.description,
                 style: HiType.body.copyWith(color: HiColors.textSecondary, height: 1.45)),
+            const SizedBox(height: HiSpace.md),
+            // Deux actions claires : lancer le Mode guidé (chrono) ou valider la séance.
+            Row(
+              children: [
+                Expanded(
+                  child: HiButtonSecondary(
+                    label: t.coachSessionGuidedMode,
+                    icon: Icons.play_circle_outline_rounded,
+                    onPressed: () => _openGuided(s),
+                  ),
+                ),
+                const SizedBox(width: HiSpace.sm),
+                Expanded(
+                  child: HiButton(
+                    label: t.coachSessionMarkDone,
+                    icon: Icons.check_rounded,
+                    onPressed: () => _markDone(s),
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),
       ),
       ),
     );
+  }
+
+  /// Ouvre le chrono guidé (HiGuidedTimer) avec le titre de la séance et sa durée comme cible.
+  /// À la fin (cible atteinte ou « Terminer »), on propose directement de valider la séance.
+  Future<void> _openGuided(CoachSession s) async {
+    final elapsed = await HiGuidedTimer.push(
+      context,
+      title: s.name,
+      durationMin: s.durationMin > 0 ? s.durationMin : null,
+    );
+    // elapsed != null ⇒ l'athlète a terminé (et non quitté) → enchaîner sur « Marquer comme faite ».
+    if (elapsed != null && mounted) {
+      await _markDone(s);
+    }
+  }
+
+  /// « Marquer comme faite » — VOIE CHOISIE : complétion côté client (feedback satisfaisant), SANS
+  /// routage vers la saisie de résultat. Raison : une [CoachSession] est une séance GUIDÉE clé en
+  /// main (GET /v1/coach/library), distincte des ÉPREUVES loguables (WodCatalogEntry) ; elle n'a
+  /// pas d'id de WOD ni de barème → router vers wod_result_entry serait fragile et hors-sujet. On
+  /// donne un retour léger (Celebration light = haptique + SnackBar de confirmation i18n).
+  Future<void> _markDone(CoachSession s) async {
+    final t = AppLocalizations.of(context);
+    await Celebration.show(
+      context,
+      title: t.coachSessionDoneTitle,
+      subtitle: t.coachSessionDoneSubtitle,
+      icon: Icons.check_circle_rounded,
+      accent: HiColors.accentVictory,
+      intensity: CelebrationIntensity.light,
+    );
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..clearSnackBars()
+      ..showSnackBar(SnackBar(content: Text(t.coachSessionDoneToast(s.name))));
   }
 
   Widget _meta(IconData icon, String text, Color color) => Row(

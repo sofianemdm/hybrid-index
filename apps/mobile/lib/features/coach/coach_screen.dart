@@ -5,6 +5,7 @@ import '../../l10n/app_localizations.dart';
 import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../theme/tokens.dart';
+import '../../widgets/error_retry.dart';
 import '../log/log_wod_screen.dart';
 
 const _attributes = ['engine', 'speed', 'strength', 'power', 'muscular_endurance', 'hybrid'];
@@ -72,18 +73,7 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
                           child: Center(child: CircularProgressIndicator(color: HiColors.brandPrimary)));
                     }
                     if (snap.hasError) {
-                      return Column(
-                        children: [
-                          Text(t.coachLoadError,
-                              textAlign: TextAlign.center, style: TextStyle(color: HiColors.textSecondary)),
-                          const SizedBox(height: HiSpace.sm),
-                          OutlinedButton.icon(
-                            icon: const Icon(Icons.refresh, size: 18),
-                            label: Text(t.commonRetry),
-                            onPressed: () => setState(_load),
-                          ),
-                        ],
-                      );
+                      return ErrorRetry(message: t.coachLoadError, onRetry: () => setState(_load));
                     }
                     return _content(snap.data!);
                   },
