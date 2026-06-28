@@ -167,6 +167,7 @@
   "wodBuilderWorkout": "Séance",
   "wodBuilderAssignedName": "Nom attribué",
   "wodBuilderEstimateEmpty": "Ajoute des mouvements pour voir l'estimation.",
+  "wodBuilderEstimateUnavailable": "L'estimation de charge n'est pas encore disponible pour les séances personnalisées. Ajoute un mouvement chargé (haltérophilie) pour une estimation en kg.",
   "wodBuilderEstimateError": "Estimation indisponible.",
   "wodBuilderEstimate": "Estimation",
   "wodBuilderEstimated": "≈ estimé",

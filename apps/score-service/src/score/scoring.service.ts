@@ -247,12 +247,30 @@ export class ScoringService {
    * noter un résultat. Confiance « estimated » tant que non calibré sur la communauté.
    */
   computeEstimate(req: internalScore.ComputeEstimateRequest): internalScore.ComputeEstimateResponse {
+    // Résolution + validation des mouvements en amont (mouvement inconnu ⇒ 400, quel que soit le
+    // format). Garantit aussi qu'on ne traverse jamais le moteur avec un bloc non résolu.
+    for (const block of req.blocks) {
+      if (!MOVEMENTS_BY_ID.get(block.movementId)) {
+        throw new BadRequestException({ code: "VALIDATION_ERROR", message: `Mouvement inconnu : ${block.movementId}` });
+      }
+    }
+
+    // FORCE / CHARGE (scoreType 'load') : le modèle de temps ne s'applique pas. On estime des
+    // paliers EN KG à partir de la charge des mouvements chargés (charge saisie, sinon Rx de réf =
+    // loadFactor × poids de corps), modulés par niveau. Branche dédiée → §A « Création de séance AAA ».
+    if (req.scoreType === "load") {
+      return this.estimateLoad(req);
+    }
+
     const BW = req.sex === "male" ? 80 : 65;
     const dir: 1 | -1 = req.scoreType === "time" ? -1 : 1;
     const levels = ["champion", "intermediate", "occasional"] as const;
     const predicted: Record<(typeof levels)[number], number> = { champion: 0, intermediate: 0, occasional: 0 };
     const attrShare = new Map<string, number>();
-    let repsPerRound = 0;
+    // Travail comptable par tour, en UNITÉS NATIVES : reps + mètres + calories + secondes. Sert de
+    // base à l'estimation des formats à volume (AMRAP/EMOM/…), y compris ceux SANS reps discrètes
+    // (course/cal/temps) qui dégénéraient à 0 auparavant. §B du chantier.
+    let workPerRound = 0;
 
     // Modèle de temps prédit (recalibré sport-science, 23 juin).
     const BREAK_SEC = { champion: 3.0, intermediate: 3.0, occasional: 4.0 } as const; // pause par coupure de série
@@ -263,10 +281,7 @@ export class ScoringService {
       let roundTime = 0;
       const lineCosts: Array<{ attrs: { attribute: string; weight: number }[]; cost: number }> = [];
       for (const block of req.blocks) {
-        const m = MOVEMENTS_BY_ID.get(block.movementId);
-        if (!m) {
-          throw new BadRequestException({ code: "VALIDATION_ERROR", message: `Mouvement inconnu : ${block.movementId}` });
-        }
+        const m = MOVEMENTS_BY_ID.get(block.movementId)!; // déjà validé en amont
         const rate = m.rate[level][req.sex];
         const amount = block.reps ?? block.distanceMeters ?? block.calories ?? block.durationSec ?? 0;
         let cost: number;
@@ -287,7 +302,12 @@ export class ScoringService {
         }
         roundTime += cost;
         lineCosts.push({ attrs: m.attributes, cost });
-        if (level === "champion") repsPerRound += block.reps ?? 0;
+        // Travail natif du tour (calculé une seule fois, sur le premier niveau parcouru) : on agrège
+        // toutes les unités comptables. Pour un AMRAP de course/cal/temps SANS reps, ce sont les
+        // mètres/calories/secondes qui portent le volume → plus d'estimation à 0.
+        if (level === "champion") {
+          workPerRound += block.reps ?? block.calories ?? block.durationSec ?? block.distanceMeters ?? 0;
+        }
       }
       roundTime += Math.max(0, req.blocks.length - 1) * TRANSITION; // transitions entre blocs
       const rounds = req.rounds ?? 1;
@@ -297,8 +317,12 @@ export class ScoringService {
         for (let i = 0; i < rounds; i++) mult += 1 + ROUND_DECAY[level] * i;
         predicted[level] = roundTime * mult;
       } else {
+        // AMRAP / volume : nb de tours tenables dans le cap × travail natif par tour. `workPerRound`
+        // agrège reps + mètres + cal + secondes (cf. §B), donc un AMRAP cardio produit un volume > 0
+        // au lieu de dégénérer. Clamp final : jamais 0/NaN (au moins 1 unité de travail).
         const cap = req.timeCapSec ?? 600;
-        predicted[level] = Math.round((cap / Math.max(roundTime, 1)) * Math.max(repsPerRound, 1));
+        const rounds = cap / Math.max(roundTime, 1);
+        predicted[level] = Math.max(1, Math.round(rounds * Math.max(workPerRound, 1)));
       }
       if (level === "intermediate") {
         const tot = roundTime || 1;
@@ -307,6 +331,13 @@ export class ScoringService {
           for (const t of attrs) attrShare.set(t.attribute, (attrShare.get(t.attribute) ?? 0) + share * t.weight);
         }
       }
+    }
+
+    // Garde-fou de finitude (§C) : si un paramètre dégénéré a produit NaN/±Inf/≤0, on retombe sur un
+    // plancher minimal (1) AVANT la monotonicité — aucune valeur non finie ne peut atteindre la
+    // pointTable ni l'affichage.
+    for (const level of levels) {
+      if (!Number.isFinite(predicted[level]) || predicted[level] <= 0) predicted[level] = 1;
     }
 
     // Monotonicité stricte requise par la pointTable (cas dégénéré : WOD 100% durée).
@@ -358,6 +389,116 @@ export class ScoringService {
       confidence: "estimated",
       outOfBounds,
       scoringVersionId: this.versions.getActiveVersionId(),
+    };
+  }
+
+  /**
+   * Estimation de CHARGE (scoreType 'load') — §A. On ancre sur la charge de travail des mouvements
+   * CHARGÉS du WOD (category 'weightlifting') : charge saisie par l'utilisateur si présente, sinon
+   * la charge Rx de réf du mouvement (`loadFactor × poids de corps de réf`). Moyenne des blocs
+   * chargés = palier INTERMÉDIAIRE, d'où on décline par multiplicateur de niveau (champion lève
+   * plus, occasionnel moins).
+   * Si AUCUN mouvement chargé (que du poids de corps) ⇒ on ne peut pas ancrer une charge crédible :
+   * état NON ESTIMABLE explicite (references à 0, subScore null, confidence 'low') plutôt qu'un
+   * chiffre faux. dir = +1 (plus de kg = mieux). Sortie bornée, finie, monotone, par construction.
+   */
+  private estimateLoad(req: internalScore.ComputeEstimateRequest): internalScore.ComputeEstimateResponse {
+    const BW = req.sex === "male" ? 80 : 65;
+    // Charge Rx de référence (kg) du WOD : moyenne des `loadFactor × BW` des blocs réellement chargés.
+    const refLoads: number[] = [];
+    const attrShare = new Map<string, number>();
+    for (const block of req.blocks) {
+      const m = MOVEMENTS_BY_ID.get(block.movementId)!; // déjà validé en amont
+      // Un mouvement ANCRE une charge externe seulement s'il porte une barre/haltère
+      // (category 'weightlifting'). Les mouvements au poids de corps ont aussi un `loadFactor`
+      // (fraction du corps soulevé) mais on ne peut PAS en déduire une charge en kg → ils ne
+      // comptent pas comme ancre. Sinon « 5 air squats » fabriquerait une fausse charge.
+      const anchorsLoad = m.category === "weightlifting" && m.loadFactor && m.loadFactor > 0;
+      if (anchorsLoad) {
+        // Si l'utilisateur a saisi une charge, elle prime comme ancre (sinon Rx de réf du mouvement).
+        refLoads.push(block.loadKg && block.loadKg > 0 ? block.loadKg : m.loadFactor! * BW);
+      }
+      for (const t of m.attributes) attrShare.set(t.attribute, (attrShare.get(t.attribute) ?? 0) + t.weight);
+    }
+
+    const versionId = this.versions.getActiveVersionId();
+    // Aucun mouvement chargé → NON ESTIMABLE (pas de chiffre faux). references à 0 (sentinelle),
+    // subScore null, confidence 'low'. Le front affiche un message « charge non estimable ».
+    if (refLoads.length === 0) {
+      return {
+        subScore: null,
+        percentile: null,
+        attributesAffected: [],
+        references: [
+          { level: "champion", rawResult: 0 },
+          { level: "intermediate", rawResult: 0 },
+          { level: "occasional", rawResult: 0 },
+        ],
+        confidence: "low",
+        outOfBounds: false,
+        scoringVersionId: versionId,
+      };
+    }
+
+    // Ancre = charge de travail « intermédiaire » du WOD pour le SCHÉMA prescrit (moyenne des blocs
+    // chargés). C'est la charge qu'un pratiquant intermédiaire utilise tel quel ; on en décline les
+    // paliers par multiplicateur de niveau. Multiplicateurs calibrés (sport-science) : intermédiaire = 1.
+    const refLoad = refLoads.reduce((a, b) => a + b, 0) / refLoads.length;
+    const LEVEL_MULT = { champion: 1.45, intermediate: 1.0, occasional: 0.62 } as const;
+    const clampKg = (kg: number) => {
+      // Bornes plausibles (kg) : jamais ≤ 0 / NaN ; plafond physiologique large (3.5× poids de corps).
+      if (!Number.isFinite(kg) || kg <= 0) return 1;
+      return Math.min(BW * 3.5, kg);
+    };
+    const predicted = {
+      champion: clampKg(Math.round(refLoad * LEVEL_MULT.champion)),
+      intermediate: clampKg(Math.round(refLoad * LEVEL_MULT.intermediate)),
+      occasional: clampKg(Math.round(refLoad * LEVEL_MULT.occasional)),
+    };
+    // Monotonicité stricte (plus de kg = mieux) : champion > intermédiaire > occasionnel. Le rattrapage
+    // du champion reste BORNÉ par le plafond (jamais > 3.5× poids de corps, même sur une entrée absurde).
+    if (!(predicted.champion > predicted.intermediate)) predicted.champion = Math.min(BW * 3.5, predicted.intermediate + 1);
+    if (!(predicted.intermediate > predicted.occasional)) predicted.occasional = Math.max(1, predicted.intermediate - 1);
+
+    const model = {
+      kind: "pointTable" as const,
+      dir: 1 as const,
+      nodes: [
+        { p: 0.15, r: predicted.occasional },
+        { p: 0.5, r: predicted.intermediate },
+        { p: 0.98, r: predicted.champion },
+      ],
+    };
+    const totalShare = [...attrShare.values()].reduce((a, b) => a + b, 0) || 1;
+    const attributesAffected = ATTRIBUTE_KEYS.filter((a) => (attrShare.get(a) ?? 0) / totalShare >= 0.12);
+
+    let outOfBounds = false;
+    let subScore: number | null = null;
+    let pct: number | null = null;
+    if (req.userResult !== undefined) {
+      const hardMin = predicted.occasional * 0.3;
+      const hardMax = predicted.champion * 1.5;
+      let value = req.userResult;
+      if (value < hardMin || value > hardMax) {
+        outOfBounds = true;
+        value = Math.min(hardMax, Math.max(hardMin, value));
+      }
+      pct = percentileOf(value, model);
+      subScore = subScoreFromPercentile(pct);
+    }
+
+    return {
+      subScore,
+      percentile: pct,
+      attributesAffected,
+      references: [
+        { level: "champion", rawResult: predicted.champion },
+        { level: "intermediate", rawResult: predicted.intermediate },
+        { level: "occasional", rawResult: predicted.occasional },
+      ],
+      confidence: "estimated",
+      outOfBounds,
+      scoringVersionId: versionId,
     };
   }
 

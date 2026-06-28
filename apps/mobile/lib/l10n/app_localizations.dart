@@ -1082,6 +1082,12 @@ abstract class AppLocalizations {
   /// **'Add movements to see the estimate.'**
   String get wodBuilderEstimateEmpty;
 
+  /// No description provided for @wodBuilderEstimateUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Load estimation isn\'t available yet for custom workouts. Add a loaded (weightlifting) movement for a kg estimate.'**
+  String get wodBuilderEstimateUnavailable;
+
   /// No description provided for @wodBuilderEstimateError.
   ///
   /// In en, this message translates to:

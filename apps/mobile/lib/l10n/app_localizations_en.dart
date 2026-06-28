@@ -538,6 +538,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get wodBuilderEstimateEmpty => 'Add movements to see the estimate.';
 
   @override
+  String get wodBuilderEstimateUnavailable =>
+      'Load estimation isn\'t available yet for custom workouts. Add a loaded (weightlifting) movement for a kg estimate.';
+
+  @override
   String get wodBuilderEstimateError => 'Estimate unavailable.';
 
   @override

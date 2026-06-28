@@ -542,6 +542,10 @@ class AppLocalizationsFr extends AppLocalizations {
       'Ajoute des mouvements pour voir l\'estimation.';
 
   @override
+  String get wodBuilderEstimateUnavailable =>
+      'L\'estimation de charge n\'est pas encore disponible pour les séances personnalisées. Ajoute un mouvement chargé (haltérophilie) pour une estimation en kg.';
+
+  @override
   String get wodBuilderEstimateError => 'Estimation indisponible.';
 
   @override

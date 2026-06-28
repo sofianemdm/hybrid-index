@@ -1190,6 +1190,12 @@ class EstimateResult {
     }
     return null;
   }
+
+  /// Estimation NON disponible de façon fiable (ex. charge sans mouvement chargé à ancrer) : le
+  /// moteur renvoie confidence 'low' et des paliers à 0. On affiche un message clair plutôt qu'un
+  /// chiffre faux. Cf. §A « Création de séance AAA ».
+  bool get notEstimable =>
+      confidence == 'low' || references.every((r) => r.rawResult <= 0);
 }
 
 class WodCatalogEntry {

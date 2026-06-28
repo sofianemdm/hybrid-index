@@ -234,10 +234,125 @@ describe("score-service — calcul (e2e)", () => {
       expect(res.body.subScore).toBeNull();
     });
 
+    it("FORCE / charge (load) → paliers en kg crédibles, monotones et bornés (§A)", async () => {
+      // Complexe haltéro : 3 power clean lourds. scoreType 'load' → paliers EN KG.
+      const res = await request(app.getHttpServer())
+        .post("/v1/score/estimate")
+        .send({
+          sex: "male",
+          scoreType: "load",
+          wodType: "strength",
+          blocks: [{ movementId: "clean", reps: 3, loadKg: 70 }],
+        })
+        .expect(201);
+      const champ = res.body.references.find((r: { level: string }) => r.level === "champion").rawResult;
+      const inter = res.body.references.find((r: { level: string }) => r.level === "intermediate").rawResult;
+      const occ = res.body.references.find((r: { level: string }) => r.level === "occasional").rawResult;
+      // Monotonie (load : plus de kg = mieux) : champion > inter > occasionnel.
+      expect(champ).toBeGreaterThan(inter);
+      expect(inter).toBeGreaterThan(occ);
+      // Paliers crédibles : positifs, finis, bornés (jamais 0/NaN/négatif, < 3.5× poids de corps).
+      for (const v of [champ, inter, occ]) {
+        expect(Number.isFinite(v)).toBe(true);
+        expect(v).toBeGreaterThan(0);
+        expect(v).toBeLessThanOrEqual(80 * 3.5);
+      }
+      // Ancre saisie (70 kg, 3 reps) ⇒ intermédiaire dans le voisinage plausible [50, 110] kg.
+      expect(inter).toBeGreaterThanOrEqual(50);
+      expect(inter).toBeLessThanOrEqual(110);
+      expect(res.body.confidence).toBe("estimated");
+      expect(res.body.attributesAffected.length).toBeGreaterThan(0);
+    });
+
+    it("FORCE sans mouvement chargé → état NON ESTIMABLE explicite, pas de chiffre faux (§A)", async () => {
+      // air_squat n'a pas de charge externe ancrable → on ne fabrique pas une charge bidon.
+      const res = await request(app.getHttpServer())
+        .post("/v1/score/estimate")
+        .send({
+          sex: "female",
+          scoreType: "load",
+          wodType: "strength",
+          blocks: [{ movementId: "air_squat", reps: 5 }],
+        })
+        .expect(201);
+      expect(res.body.confidence).toBe("low");
+      expect(res.body.subScore).toBeNull();
+      // Paliers à 0 (sentinelle « non estimable »), jamais de NaN/négatif.
+      for (const r of res.body.references) expect(r.rawResult).toBe(0);
+    });
+
+    it("FORCE sans charge saisie → ancrée sur la charge Rx du mouvement (loadFactor × poids), kg crédibles (§A)", async () => {
+      // Deadlift sans loadKg : on ancre sur la charge Rx de réf (loadFactor 1.25 × 80 = 100 kg H).
+      const res = await request(app.getHttpServer())
+        .post("/v1/score/estimate")
+        .send({ sex: "male", scoreType: "load", wodType: "strength", blocks: [{ movementId: "deadlift", reps: 3 }] })
+        .expect(201);
+      const inter = res.body.references.find((r: { level: string }) => r.level === "intermediate").rawResult;
+      const champ = res.body.references.find((r: { level: string }) => r.level === "champion").rawResult;
+      const occ = res.body.references.find((r: { level: string }) => r.level === "occasional").rawResult;
+      // Ancre Rx ≈ 100 kg ⇒ intermédiaire ≈ 100, champion > inter > occasionnel, tout fini & borné.
+      expect(inter).toBeGreaterThanOrEqual(80);
+      expect(inter).toBeLessThanOrEqual(120);
+      expect(champ).toBeGreaterThan(inter);
+      expect(inter).toBeGreaterThan(occ);
+      expect(occ).toBeGreaterThan(0);
+      expect(res.body.confidence).toBe("estimated");
+    });
+
+    it("AMRAP CARDIO (course, sans reps) → estimation > 0 et monotone (§B)", async () => {
+      // AMRAP de 400 m de course : aucune rep discrète. Avant le fix → dégénérait à ~0.
+      const res = await request(app.getHttpServer())
+        .post("/v1/score/estimate")
+        .send({
+          sex: "male",
+          scoreType: "reps",
+          wodType: "amrap",
+          timeCapSec: 1200,
+          blocks: [{ movementId: "run", distanceMeters: 400 }],
+        })
+        .expect(201);
+      const champ = res.body.references.find((r: { level: string }) => r.level === "champion").rawResult;
+      const inter = res.body.references.find((r: { level: string }) => r.level === "intermediate").rawResult;
+      const occ = res.body.references.find((r: { level: string }) => r.level === "occasional").rawResult;
+      // Travail natif (mètres) agrégé → estimation strictement positive et monotone (plus = mieux).
+      for (const v of [champ, inter, occ]) {
+        expect(Number.isFinite(v)).toBe(true);
+        expect(v).toBeGreaterThan(0);
+      }
+      expect(champ).toBeGreaterThan(inter);
+      expect(inter).toBeGreaterThan(occ);
+      expect(res.body.confidence).toBe("estimated");
+    });
+
+    it("AMRAP CARDIO (calories) → estimation > 0 (§B garde-fou anti-zéro)", async () => {
+      const res = await request(app.getHttpServer())
+        .post("/v1/score/estimate")
+        .send({
+          sex: "female",
+          scoreType: "reps",
+          wodType: "amrap",
+          timeCapSec: 600,
+          blocks: [{ movementId: "row_cal", calories: 12 }],
+        })
+        .expect(201);
+      const occ = res.body.references.find((r: { level: string }) => r.level === "occasional").rawResult;
+      expect(occ).toBeGreaterThan(0);
+      const champ = res.body.references.find((r: { level: string }) => r.level === "champion").rawResult;
+      expect(champ).toBeGreaterThan(occ);
+    });
+
     it("mouvement inconnu → 400", async () => {
       const res = await request(app.getHttpServer())
         .post("/v1/score/estimate")
         .send({ sex: "male", scoreType: "time", wodType: "for_time", blocks: [{ movementId: "licorne", reps: 10 }] })
+        .expect(400);
+      expect(res.body.error.code).toBe("VALIDATION_ERROR");
+    });
+
+    it("mouvement inconnu en format FORCE → 400 (validation en amont, avant la branche load)", async () => {
+      const res = await request(app.getHttpServer())
+        .post("/v1/score/estimate")
+        .send({ sex: "male", scoreType: "load", wodType: "strength", blocks: [{ movementId: "licorne", reps: 3 }] })
         .expect(400);
       expect(res.body.error.code).toBe("VALIDATION_ERROR");
     });

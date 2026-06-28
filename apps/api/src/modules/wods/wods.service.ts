@@ -388,7 +388,13 @@ export class WodsService {
           const get = (lvl: string) => Math.round(refs.find((r) => r.level === lvl)?.rawResult ?? 0);
           return { champion: get("champion"), intermediate: get("intermediate"), occasional: get("occasional") };
         };
-        levels = { male: triple(m.references), female: triple(f.references) };
+        const ml = triple(m.references);
+        const fl = triple(f.references);
+        // Estimation NON disponible (ex. charge sans mouvement chargé) → paliers à 0 des deux côtés :
+        // on n'affiche AUCUN palier plutôt qu'un « 0 kg » trompeur (cf. §A « Création de séance AAA »).
+        const allZero = (l: { champion: number; intermediate: number; occasional: number }) =>
+          l.champion <= 0 && l.intermediate <= 0 && l.occasional <= 0;
+        levels = allZero(ml) && allZero(fl) ? null : { male: ml, female: fl };
       } catch {
         levels = null;
       }

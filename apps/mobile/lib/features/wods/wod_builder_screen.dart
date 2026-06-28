@@ -472,6 +472,28 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
       return Text(t.wodBuilderEstimateEmpty, textAlign: TextAlign.center, style: HiType.body.copyWith(color: HiColors.textTertiary));
     }
     final e = _estimate!;
+    // Format non estimable de façon fiable (ex. charge sans mouvement chargé) : message explicite,
+    // jamais de « 0 kg ». Cf. §A « Création de séance AAA ».
+    if (e.notEstimable) {
+      return Container(
+        padding: const EdgeInsets.all(HiSpace.md),
+        decoration: BoxDecoration(
+          color: HiColors.bgElevated,
+          borderRadius: BorderRadius.circular(HiRadius.md),
+          border: Border.all(color: HiColors.strokeSubtle),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.info_outline_rounded, color: HiColors.textTertiary, size: 20),
+            const SizedBox(width: HiSpace.sm),
+            Expanded(
+              child: Text(t.wodBuilderEstimateUnavailable,
+                  style: HiType.body.copyWith(color: HiColors.textSecondary)),
+            ),
+          ],
+        ),
+      );
+    }
     final champ = e.ref('champion')?.rawResult;
     final inter = e.ref('intermediate')?.rawResult;
     final beg = e.ref('occasional')?.rawResult;
