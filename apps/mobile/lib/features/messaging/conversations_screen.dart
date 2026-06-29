@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -22,11 +24,24 @@ class ConversationsScreen extends ConsumerStatefulWidget {
 
 class _ConversationsScreenState extends ConsumerState<ConversationsScreen> {
   late Future<List<ConversationSummary>> _future;
+  List<ConversationSummary>? _last; // dernier résultat connu (anti-flicker pendant le refresh auto)
+  Timer? _poll;
 
   @override
   void initState() {
     super.initState();
     _load();
+    // Auto-refresh de la liste tant qu'elle est visible → les nouveaux messages remontent en ~3 s.
+    // Avant : aucune actualisation automatique, d'où des messages vus jusqu'à ~30 s plus tard.
+    _poll = Timer.periodic(const Duration(seconds: 3), (_) {
+      if (mounted) setState(_load);
+    });
+  }
+
+  @override
+  void dispose() {
+    _poll?.cancel();
+    super.dispose();
   }
 
   void _load() => _future = ref.read(apiClientProvider).conversations();
@@ -52,10 +67,13 @@ class _ConversationsScreenState extends ConsumerState<ConversationsScreen> {
           child: FutureBuilder<List<ConversationSummary>>(
             future: _future,
             builder: (context, snap) {
-              if (snap.connectionState == ConnectionState.waiting) {
+              if (snap.hasData) _last = snap.data;
+              // Skeleton uniquement au TOUT premier chargement (pas à chaque refresh auto de 3 s).
+              if (snap.connectionState == ConnectionState.waiting && _last == null) {
                 return const HiListSkeleton(count: 6, itemHeight: 64);
               }
-              if (snap.hasError) {
+              // Erreur affichée seulement si on n'a encore rien à montrer (sinon on garde la liste).
+              if (snap.hasError && _last == null) {
                 return ListView(children: [
                   Padding(
                     padding: const EdgeInsets.all(HiSpace.lg),
@@ -63,7 +81,7 @@ class _ConversationsScreenState extends ConsumerState<ConversationsScreen> {
                   ),
                 ]);
               }
-              final items = snap.data!;
+              final items = snap.data ?? _last ?? const <ConversationSummary>[];
               if (items.isEmpty) {
                 return ListView(children: [
                   const SizedBox(height: 48),

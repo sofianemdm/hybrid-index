@@ -104,8 +104,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
   void _startPolling() {
     _poll?.cancel();
     // Polling léger : tant que le fil est ouvert ET au premier plan, on récupère les nouveaux
-    // messages reçus. Pas de websocket pour l'instant ; 3 s = livraison quasi-instantanée.
-    _poll = Timer.periodic(const Duration(seconds: 3), (_) => _pollMessages());
+    // messages reçus. Pas de websocket pour l'instant ; 2 s = livraison quasi-instantanée.
+    _poll = Timer.periodic(const Duration(seconds: 2), (_) => _pollMessages());
   }
 
   /// Liste affichée = messages serveur + messages optimistes en attente/échec (à la fin).

@@ -12,6 +12,8 @@ import '../../widgets/rank_badge.dart';
 import '../profile/public_profile_screen.dart';
 import 'progress_board_screen.dart';
 import '../league/league_screen.dart';
+import '../home/home_shell.dart';
+import '../../data/ui_state.dart';
 
 /// Classement public par ligue (Hommes / Femmes), trié par HYBRID INDEX.
 class LeaderboardScreen extends ConsumerStatefulWidget {
@@ -48,6 +50,13 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Recharge le classement à CHAQUE ouverture de l'onglet Ligue. Le HomeShell utilise un
+    // IndexedStack → cet écran reste monté en permanence, donc sans ça on réaffiche un instantané
+    // périmé (ex. ton ancien Index) après avoir logué une séance ailleurs. Les autres comptes,
+    // eux, voyaient déjà ta valeur fraîche → d'où l'incohérence « je me vois à 66, les autres à 97 ».
+    ref.listen<int>(homeTabProvider, (prev, next) {
+      if (next == kLeaderboardTabIndex && prev != next && mounted) setState(_load);
+    });
     // Ouvre par défaut l'onglet du sexe de l'utilisateur (le sexe de session peut n'arriver
     // qu'après le 1er build). On ne force plus dès que l'utilisateur a choisi un onglet.
     if (!_manual) {
