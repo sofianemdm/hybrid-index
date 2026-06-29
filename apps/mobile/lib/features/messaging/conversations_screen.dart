@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models.dart';
+import '../../data/realtime_service.dart';
 import '../../data/session.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
@@ -26,14 +27,20 @@ class _ConversationsScreenState extends ConsumerState<ConversationsScreen> {
   late Future<List<ConversationSummary>> _future;
   List<ConversationSummary>? _last; // dernier résultat connu (anti-flicker pendant le refresh auto)
   Timer? _poll;
+  StreamSubscription<RealtimeEvent>? _rtSub;
 
   @override
   void initState() {
     super.initState();
     _load();
-    // Auto-refresh de la liste tant qu'elle est visible → les nouveaux messages remontent en ~3 s.
-    // Avant : aucune actualisation automatique, d'où des messages vus jusqu'à ~30 s plus tard.
-    _poll = Timer.periodic(const Duration(seconds: 3), (_) {
+    // Temps réel : tout DM (reçu OU envoyé sur un autre device) déclenche un rafraîchissement
+    // immédiat de la liste. Le polling ci-dessous est le REPLI (si le WS n'est pas connecté).
+    _rtSub = ref.read(realtimeServiceProvider).events.listen((e) {
+      if (e is DmReceived && mounted) setState(_load);
+    });
+    // Repli : auto-refresh RALENTI (10 s) — l'instantanéité est désormais portée par le WebSocket.
+    // Si le WS est down (web/prod/réseau), ce poll assure quand même la livraison.
+    _poll = Timer.periodic(const Duration(seconds: 10), (_) {
       if (mounted) setState(_load);
     });
   }
@@ -41,6 +48,7 @@ class _ConversationsScreenState extends ConsumerState<ConversationsScreen> {
   @override
   void dispose() {
     _poll?.cancel();
+    _rtSub?.cancel();
     super.dispose();
   }
 

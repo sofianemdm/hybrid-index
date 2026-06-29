@@ -25,6 +25,7 @@ import { MessagingModule } from "./modules/messaging/messaging.module";
 import { ChallengeModule } from "./modules/challenge/challenge.module";
 import { LeagueModule } from "./modules/league/league.module";
 import { FeedbackModule } from "./modules/feedback/feedback.module";
+import { RealtimeModule } from "./modules/realtime/realtime.module";
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { FeedbackModule } from "./modules/feedback/feedback.module";
     EndgameModule,
     WodsModule,
     FeedbackModule,
+    RealtimeModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_GUARD, useClass: RateLimitGuard }],

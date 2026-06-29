@@ -27,6 +27,13 @@ class ApiClient {
 
   void setToken(String? token) => _token = token;
 
+  /// Token bearer courant (null si déconnecté). Exposé pour le handshake WebSocket temps réel,
+  /// qui passe le JWT en query `?token=` (le navigateur n'autorise pas d'en-tête custom sur `new WebSocket()`).
+  String? get token => _token;
+
+  /// URL de base de l'API (http/https). Exposée pour dériver l'URL WebSocket (`ws(s)://…/ws/messaging`).
+  String get baseUrl => _baseUrl;
+
   Map<String, String> get _headers => {
         'content-type': 'application/json',
         if (_token != null) 'authorization': 'Bearer $_token',

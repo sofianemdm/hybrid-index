@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app.dart';
 import '../../data/api_client.dart';
 import '../../data/models.dart';
+import '../../data/realtime_service.dart';
 import '../../data/session.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/haptics.dart';
@@ -64,6 +65,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
   bool _sending = false;
   String? _error;
   Timer? _poll;
+  StreamSubscription<RealtimeEvent>? _rtSub;
   // Pagination « charger les messages précédents » (scroll vers le haut).
   bool _hasMore = false;
   String? _nextBefore;
@@ -77,12 +79,18 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
     _scroll.addListener(_onScroll);
     _load();
     _startPolling();
+    // Temps réel : un DM sur LA conversation ouverte déclenche un poll immédiat (les messages
+    // d'autres conversations sont ignorés ici). Repli : le polling ralenti ci-dessous.
+    _rtSub = ref.read(realtimeServiceProvider).events.listen((e) {
+      if (e is DmReceived && e.conversationId == _convId) _pollMessages();
+    });
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _poll?.cancel();
+    _rtSub?.cancel();
     _input.dispose();
     _scroll.removeListener(_onScroll);
     _scroll.dispose();
@@ -103,9 +111,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
 
   void _startPolling() {
     _poll?.cancel();
-    // Polling léger : tant que le fil est ouvert ET au premier plan, on récupère les nouveaux
-    // messages reçus. Pas de websocket pour l'instant ; 2 s = livraison quasi-instantanée.
-    _poll = Timer.periodic(const Duration(seconds: 2), (_) => _pollMessages());
+    // Repli RALENTI (5 s) : l'instantanéité est portée par le WebSocket (un DM déclenche un poll
+    // immédiat). Si le WS est down (web/prod/réseau), ce poll assure quand même la livraison.
+    _poll = Timer.periodic(const Duration(seconds: 5), (_) => _pollMessages());
   }
 
   /// Liste affichée = messages serveur + messages optimistes en attente/échec (à la fin).

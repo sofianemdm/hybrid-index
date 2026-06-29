@@ -4,6 +4,7 @@ import { ratingFromInternal } from "@hybrid-index/scoring-core";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { ModerationService } from "../moderation/moderation.service";
 import { PushService } from "../engagement/push.service";
+import { RealtimeService } from "../realtime/realtime.service";
 import { serializeAvatar } from "../../common/avatar.serializer";
 
 /** OVR /100 d'un Index interne /1000 (grade affiché), ou null. */
@@ -28,6 +29,7 @@ export class MessagingService {
     private readonly prisma: PrismaService,
     private readonly moderation: ModerationService,
     private readonly push: PushService,
+    private readonly realtime: RealtimeService,
   ) {}
 
   /** Couple canonique (ordre stable) pour une conversation 1‑à‑1. */
@@ -87,6 +89,15 @@ export class MessagingService {
     });
     // Notification push au destinataire (best-effort, no-op si push inactif).
     void this.notifyRecipient(me, toUserId);
+    // Signal temps réel APRÈS commit (best-effort, jamais bloquant pour l'envoi REST) : on pousse
+    // un événement léger au DESTINATAIRE et à l'EXPÉDITEUR (multi-device). Pas de contenu : le client
+    // refetch via REST. `emitToUser` est déjà best-effort, on isole tout de même par prudence.
+    try {
+      this.realtime.emitToUser(toUserId, { type: "dm", conversationId: conv.id });
+      this.realtime.emitToUser(me, { type: "dm", conversationId: conv.id });
+    } catch {
+      // best-effort : le DM est persisté, le temps réel est un bonus.
+    }
     return {
       conversationId: conv.id,
       message: {

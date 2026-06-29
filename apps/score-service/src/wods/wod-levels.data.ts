@@ -31,12 +31,14 @@ export const WOD_LEVELS: Record<string, { male: WodLevels; female: WodLevels }> 
   max_strict_pullups: { male: { champion: 30, intermediate: 6, occasional: 2 }, female: { champion: 18, intermediate: 2, occasional: 0 } },
   squat_1rm: { male: { champion: 220, intermediate: 85, occasional: 45 }, female: { champion: 145, intermediate: 52, occasional: 30 } },
   burpees_7min: { male: { champion: 125, intermediate: 58, occasional: 35 }, female: { champion: 110, intermediate: 48, occasional: 28 } },
-  // WODs « Ligue du mois » (5). time → champion < inter < occ ; reps/tours → champion > inter > occ.
-  league_sprint_ladder: { male: { champion: 290, intermediate: 480, occasional: 720 }, female: { champion: 335, intermediate: 540, occasional: 810 } }, // s
-  league_engine_12: { male: { champion: 210, intermediate: 115, occasional: 65 }, female: { champion: 130, intermediate: 80, occasional: 45 } }, // reps (course non comptée)
-  league_grind_squats: { male: { champion: 520, intermediate: 320, occasional: 180 }, female: { champion: 330, intermediate: 230, occasional: 130 } }, // reps
-  league_power_amrap: { male: { champion: 360, intermediate: 175, occasional: 100 }, female: { champion: 195, intermediate: 105, occasional: 60 } }, // reps
-  league_hybrid_chipper: { male: { champion: 400, intermediate: 720, occasional: 1020 }, female: { champion: 460, intermediate: 780, occasional: 1080 } }, // s
+  // WODs « Ligue du mois » (5) — RECALIBRÉS 29/06 (sport-science). time → champion < inter < occ ;
+  // reps → champion > inter > occ. inter = médiane du modèle de wods.data.ts ; champion = élite hybride
+  // (≈P95-98) ; occasionnel = débutant qui termine (≈P10-15, jamais écrasé). Détail : docs/recalibration-baremes-ligue.md.
+  league_sprint_ladder: { male: { champion: 270, intermediate: 450, occasional: 630 }, female: { champion: 310, intermediate: 510, occasional: 720 } }, // s (échelle 1500 m)
+  league_engine_12: { male: { champion: 215, intermediate: 140, occasional: 75 }, female: { champion: 160, intermediate: 100, occasional: 52 } }, // reps (air squats + burpees ; course non comptée)
+  league_grind_squats: { male: { champion: 540, intermediate: 320, occasional: 160 }, female: { champion: 415, intermediate: 235, occasional: 120 } }, // reps
+  league_power_amrap: { male: { champion: 330, intermediate: 170, occasional: 95 }, female: { champion: 200, intermediate: 105, occasional: 58 } }, // reps
+  league_hybrid_chipper: { male: { champion: 430, intermediate: 720, occasional: 1020 }, female: { champion: 470, intermediate: 790, occasional: 1080 } }, // s (cap 15 min)
   ergo_skill: { male: { champion: 360, intermediate: 660, occasional: 960 }, female: { champion: 420, intermediate: 750, occasional: 1080 } },
   // Épreuves « Autre » : intermédiaire = finisher médian réel (loisir), occasionnel = débutant lent.
   hyrox_solo: { male: { champion: 3119, intermediate: 5700, occasional: 7800 }, female: { champion: 3265, intermediate: 6300, occasional: 8700 } },

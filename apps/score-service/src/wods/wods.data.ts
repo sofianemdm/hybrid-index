@@ -591,7 +591,11 @@ export const WODS: ReadonlyArray<WodDefinition> = [
   // Dédiés à la Ligue (isBenchmark:false → JAMAIS dans l'Index). Barèmes estimation `low`, à
   // recalibrer N≥200/sexe après le 1er mois. Spec : docs/wods-ligue-mensuelle.md (sport-science).
   {
-    // Semaine 1 — VITESSE. Intervalles de course en échelle (100→400→100 m), score = temps couru.
+    // Semaine 1 — VITESSE. Intervalles de course en échelle (100-200-300-400-300-200-100 = 1500 m),
+    // score = temps couru total (départs toutes les 90 s, le reliquat est récup). Recalibrage 29/06 :
+    // médiane = pratiquant régulier qui boucle les 1500 m en ~7:30 (M) / ~8:30 (F) à allure de seuil
+    // entrecoupée ; champion = athlète hybride élite ~4:30 (M, ~5,5 m/s net) / ~5:10 (F) ; débutant
+    // motivé qui termine ~10:30 (M) / ~12:00 (F). σ 0.30 (queue lente réaliste, réf. intervalles 5k).
     id: "league_sprint_ladder",
     name: "La Flèche",
     scoreType: "time",
@@ -602,14 +606,17 @@ export const WODS: ReadonlyArray<WodDefinition> = [
       { attribute: "engine", estimated: false },
     ],
     bySex: {
-      male: { model: lognormalFromMedian(480, 0.31), hardMin: 270, hardMax: 900, proReference: 290 },
-      female: { model: lognormalFromMedian(540, 0.31), hardMin: 310, hardMax: 1020, proReference: 335 },
+      male: { model: lognormalFromMedian(450, 0.30), hardMin: 250, hardMax: 900, proReference: 270 },
+      female: { model: lognormalFromMedian(510, 0.30), hardMin: 290, hardMax: 1020, proReference: 310 },
     },
   },
   {
     // Semaine 2 — ENDURANCE (moteur aérobie). AMRAP 12 min, tour ≥3 min (400m course + 20 air squats
     // + 15 burpees = 35 reps/tour). Score = REPS totales (air squats + burpees) ; la course est imposée
-    // mais NE COMPTE PAS dans le score (choix produit : saisie simple). Intermédiaire ~4 tours = 140 reps.
+    // mais NE COMPTE PAS dans le score (choix produit : saisie simple). Recalibrage 29/06 : un tour
+    // complet « 400 m + 35 reps » prend ~2:45-3:15, donc médiane = pratiquant régulier ≈ 4 tours = 140
+    // reps (M) / ~3 tours = 100 reps (F, course plus lente) ; champion hybride ≈ 6 tours = 215/160 ;
+    // débutant ≈ 2 tours = 70-75/52. σ ≈ 0.3·µ (dispersion typique d'un AMRAP cardio reps).
     id: "league_engine_12",
     name: "Le Moteur",
     scoreType: "reps",
@@ -621,13 +628,16 @@ export const WODS: ReadonlyArray<WodDefinition> = [
       { attribute: "hybrid", estimated: false },
     ],
     bySex: {
-      male: { model: normal(115, 45), hardMin: 40, hardMax: 320, proReference: 210 },
-      female: { model: normal(80, 30), hardMin: 30, hardMax: 250, proReference: 130 },
+      male: { model: normal(140, 42), hardMin: 40, hardMax: 320, proReference: 215 },
+      female: { model: normal(100, 32), hardMin: 30, hardMax: 250, proReference: 160 },
     },
   },
   {
     // Semaine 3 — FORCE-ENDURANCE (bas du corps). AMRAP 12 min, tour ≥3 min (40 fentes + 30 squats +
-    // 20 sit-ups + 16 pistols = 106 reps/tour). Score = reps totales.
+    // 20 sit-ups + 16 pistols = 106 reps/tour). Score = reps totales. Recalibrage 29/06 : les pistols
+    // (lents, ~0.3 rep/s régulier) bornent le débit, un tour complet prend ~3:30-4:00 ⇒ médiane =
+    // pratiquant régulier ≈ 3 tours = 320 reps (M) / ~2,2 tours = 235 (F) ; champion ≈ 5 tours = 540/415 ;
+    // débutant ≈ 1,5 tour = 160/120 (pistols souvent scalés, d'où la queue basse). σ ≈ 0.35·µ.
     id: "league_grind_squats",
     name: "Le Pilier",
     scoreType: "reps",
@@ -638,13 +648,17 @@ export const WODS: ReadonlyArray<WodDefinition> = [
       { attribute: "strength", estimated: true },
     ],
     bySex: {
-      male: { model: normal(320, 125), hardMin: 90, hardMax: 760, proReference: 560 },
-      female: { model: normal(230, 90), hardMin: 70, hardMax: 560, proReference: 400 },
+      male: { model: normal(320, 110), hardMin: 90, hardMax: 760, proReference: 540 },
+      female: { model: normal(235, 82), hardMin: 70, hardMax: 560, proReference: 415 },
     },
   },
   {
     // Semaine 4 — PUISSANCE. AMRAP 12 min, tour ≥3 min (30 squat jumps + 25 burpee broad jumps =
     // 55 reps/tour, 100 % explosif). Score = reps totales. Jamais d'EMOM (décision produit).
+    // Recalibrage 29/06 : format 100 % explosif → forte dégradation, un tour propre prend ~3:30-4:00 ⇒
+    // médiane = pratiquant régulier ≈ 3 tours = 170 reps (M) / ~2 tours = 105 (F) ; champion ≈ 6 tours
+    // = 330/200 (rare maintien de la détente) ; débutant ≈ 1,7 tour = 95/58. σ ≈ 0.37·µ (puissance =
+    // qualité la plus dispersée).
     id: "league_power_amrap",
     name: "La Détente",
     scoreType: "reps",
@@ -655,12 +669,16 @@ export const WODS: ReadonlyArray<WodDefinition> = [
       { attribute: "muscular_endurance", estimated: false },
     ],
     bySex: {
-      male: { model: normal(175, 72), hardMin: 50, hardMax: 480, proReference: 380 },
-      female: { model: normal(105, 42), hardMin: 30, hardMax: 300, proReference: 210 },
+      male: { model: normal(170, 62), hardMin: 50, hardMax: 480, proReference: 330 },
+      female: { model: normal(105, 40), hardMin: 30, hardMax: 300, proReference: 200 },
     },
   },
   {
     // Semaine 5 — HYBRIDE (chipper for time, cap 15 min). Le profil complet/équilibré brille.
+    // Recalibrage 29/06 : chipper long (course + gym + explosif), médiane = pratiquant régulier qui
+    // boucle en ~12:00 (M, 720 s) / ~13:10 (F, 790 s) sous le cap ; champion hybride ≈ 7:10 (M, 430 s) /
+    // ~7:50 (F, 470 s) ; débutant proche du cap (~17:00 → ramené à 1020/1080 s, beaucoup tapent le cap).
+    // σ 0.30/0.28 : queue lente réaliste mais bornée par le cap 15 min.
     id: "league_hybrid_chipper",
     name: "Le Chaos",
     scoreType: "time",
@@ -672,8 +690,8 @@ export const WODS: ReadonlyArray<WodDefinition> = [
       { attribute: "muscular_endurance", estimated: false },
     ],
     bySex: {
-      male: { model: lognormalFromMedian(720, 0.30), hardMin: 360, hardMax: 1200, proReference: 400 },
-      female: { model: lognormalFromMedian(780, 0.28), hardMin: 420, hardMax: 1200, proReference: 460 },
+      male: { model: lognormalFromMedian(720, 0.30), hardMin: 360, hardMax: 1200, proReference: 430 },
+      female: { model: lognormalFromMedian(790, 0.28), hardMin: 420, hardMax: 1200, proReference: 470 },
     },
   },
 ];

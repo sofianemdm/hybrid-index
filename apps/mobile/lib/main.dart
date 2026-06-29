@@ -5,6 +5,7 @@ import 'app.dart';
 import 'data/analytics.dart';
 import 'data/locale_mode.dart';
 import 'data/push_service.dart';
+import 'data/realtime_service.dart';
 import 'data/session.dart';
 import 'data/theme_mode.dart';
 import 'data/ui_state.dart';
@@ -77,6 +78,9 @@ class _HybridIndexAppState extends ConsumerState<HybridIndexApp> with WidgetsBin
         deviceLocale: _resolveLocaleCode(ref.read(localeProvider)),
       ).init(),
     );
+    // Service WebSocket temps réel : on l'INSTANCIE ici (provider paresseux) pour activer ses
+    // écoutes session/lifecycle. Purement additif — le polling REST reste en repli si le WS échoue.
+    Future.microtask(() => ref.read(realtimeServiceProvider));
     Analytics.capture('app_open');
   }
 
