@@ -196,8 +196,11 @@ class ApiClient {
     return j.map((e) => ConversationSummary.fromJson(e as Map<String, dynamic>)).toList();
   }
 
-  Future<Conversation> conversationMessages(String id) async {
-    final j = await _send('GET', '/v1/conversations/$id/messages') as Map<String, dynamic>;
+  /// Messages d'une conversation (page la plus récente par défaut). `before` = id d'un message →
+  /// charge la page ANTÉRIEURE (scroll vers le haut). La réponse porte `hasMore` / `nextBefore`.
+  Future<Conversation> conversationMessages(String id, {String? before}) async {
+    final q = before == null ? '' : '?before=${Uri.encodeQueryComponent(before)}';
+    final j = await _send('GET', '/v1/conversations/$id/messages$q') as Map<String, dynamic>;
     return Conversation.fromJson(j);
   }
 
@@ -220,6 +223,13 @@ class ApiClient {
   /// Bibliothèque de séances qui travaillent un attribut, triées par pertinence (poids décroissant).
   Future<List<CoachSession>> coachLibrary(String attribute) async {
     final j = await _send('GET', '/v1/coach/library?attribute=$attribute') as Map<String, dynamic>;
+    return (j['sessions'] as List<dynamic>).map((e) => CoachSession.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  /// TOUTE la bibliothèque (filtre « Tout ») en UN appel — séances dédupliquées, filtrées selon le
+  /// matériel du profil, triées stable (durée asc → nom). Remplace les 6 appels par-axe (anti N+1).
+  Future<List<CoachSession>> coachLibraryAll() async {
+    final j = await _send('GET', '/v1/coach/library/all') as Map<String, dynamic>;
     return (j['sessions'] as List<dynamic>).map((e) => CoachSession.fromJson(e as Map<String, dynamic>)).toList();
   }
 

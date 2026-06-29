@@ -78,6 +78,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get commonGenericError => 'Une erreur est survenue. Réessaie.';
 
   @override
+  String get commonGotIt => 'Compris';
+
+  @override
   String get celebrationContinue => 'Continuer';
 
   @override
@@ -85,9 +88,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get celebrationClose => 'Fermer';
-
-  @override
-  String get commonGotIt => 'Compris';
 
   @override
   String get bugReportTitle => 'Signaler un bug';
@@ -706,13 +706,15 @@ class AppLocalizationsFr extends AppLocalizations {
   String get wodBuilderNameHint => 'Nomme ta séance';
 
   @override
-  String get wodBuilderNameAutoHint => 'Généré automatiquement — tu peux le modifier.';
+  String get wodBuilderNameAutoHint =>
+      'Généré automatiquement — tu peux le modifier.';
 
   @override
   String get wodBuilderDiscardTitle => 'Abandonner la séance ?';
 
   @override
-  String get wodBuilderDiscardBody => 'Tes mouvements ne seront pas enregistrés.';
+  String get wodBuilderDiscardBody =>
+      'Tes mouvements ne seront pas enregistrés.';
 
   @override
   String get wodBuilderDiscardStay => 'Continuer l\'édition';
@@ -762,6 +764,60 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get communityReportSent => 'Merci, signalement envoyé.';
+
+  @override
+  String get communityBlockConfirmTitle => 'Bloquer cet athlète ?';
+
+  @override
+  String get communityBlockConfirmBody =>
+      'Vous ne verrez plus son activité et il ne pourra plus vous contacter. Vous pourrez le débloquer plus tard dans les réglages.';
+
+  @override
+  String get communityBlockConfirmAction => 'Bloquer';
+
+  @override
+  String get communityDeleteConfirmTitle => 'Supprimer cette publication ?';
+
+  @override
+  String get communityDeleteConfirmBody =>
+      'Cette publication sera définitivement supprimée. Action irréversible.';
+
+  @override
+  String get communityPostDeleted => 'Publication supprimée.';
+
+  @override
+  String get communityGlossaryTooltip => 'Termes des séances';
+
+  @override
+  String get communityGlossaryTitle => 'Le jargon des séances';
+
+  @override
+  String get communityGlossaryAmrapTerm => 'AMRAP';
+
+  @override
+  String get communityGlossaryAmrapDef =>
+      'Le plus de tours (ou de répétitions) possible dans un temps donné. Plus il y a de tours, meilleur est le score.';
+
+  @override
+  String get communityGlossaryEmomTerm => 'EMOM';
+
+  @override
+  String get communityGlossaryEmomDef =>
+      'Chaque minute, pile à la minute : on lance les répétitions prévues en début de minute, puis on récupère jusqu\'à la suivante.';
+
+  @override
+  String get communityGlossaryForTimeTerm => 'For Time';
+
+  @override
+  String get communityGlossaryForTimeDef =>
+      'Terminer le travail prévu le plus vite possible. Le score, c\'est le temps total.';
+
+  @override
+  String get communityGlossaryRxTerm => 'Rx';
+
+  @override
+  String get communityGlossaryRxDef =>
+      '« Comme prescrit » : la séance faite avec les charges et mouvements officiels. Scaled = adaptée (plus léger / plus facile).';
 
   @override
   String get communityDiscoverTitle => 'Personne à suivre… pour l\'instant';
@@ -908,6 +964,9 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get chatYesterday => 'Hier';
+
+  @override
+  String get chatLoadOlder => 'Charger les messages précédents';
 
   @override
   String get chatStatusSending => 'Envoi…';
@@ -1476,25 +1535,30 @@ class AppLocalizationsFr extends AppLocalizations {
   String get coachLibraryTitle => 'Bibliothèque du coach';
 
   @override
-  String get coachLibrarySubtitle => 'Des séances guidées, clés en main. Choisis-en une et suis le déroulé.';
+  String get coachLibrarySubtitle =>
+      'Des séances guidées, clés en main. Choisis-en une et suis le déroulé.';
 
   @override
   String get coachLibraryAll => 'Tout';
 
   @override
-  String get coachLibraryError => 'Impossible de charger la bibliothèque de séances pour le moment.';
+  String get coachLibraryError =>
+      'Impossible de charger la bibliothèque de séances pour le moment.';
 
   @override
-  String get coachLibraryEmpty => 'Aucune séance guidée pour ce filtre avec ton matériel.';
+  String get coachLibraryEmpty =>
+      'Aucune séance guidée pour ce filtre avec ton matériel.';
 
   @override
   String get coachLibraryEntryTitle => 'Bibliothèque du coach';
 
   @override
-  String get coachLibraryEntrySubtitle => 'Des séances guidées à suivre — distinctes des épreuves que tu logues.';
+  String get coachLibraryEntrySubtitle =>
+      'Des séances guidées à suivre — distinctes des épreuves que tu logues.';
 
   @override
-  String get sessionsByFocusCaption => 'Les épreuves à loguer qui mesurent chaque axe de ton score.';
+  String get sessionsByFocusCaption =>
+      'Les épreuves à loguer qui mesurent chaque axe de ton score.';
 
   @override
   String get sessionsToLog => 'Épreuves à loguer';
@@ -1503,7 +1567,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get sessionsGuidedLinkTitle => 'Séances guidées du coach';
 
   @override
-  String get sessionsGuidedLinkSubtitle => 'Des entraînements clés en main pour cet axe';
+  String get sessionsGuidedLinkSubtitle =>
+      'Des entraînements clés en main pour cet axe';
 
   @override
   String get coachWithEquipment => 'Matériel';
@@ -1849,12 +1914,12 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
+  String get shareCardAthlete => 'Athlète';
+
+  @override
   String shareCardA11y(Object name, Object ovr, Object archetype) {
     return 'Carte de $name, Athlete Index $ovr, archétype $archetype';
   }
-
-  @override
-  String get shareCardAthlete => 'Athlète';
 
   @override
   String get leaderboardTitle => 'Ligue';
@@ -2190,14 +2255,8 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String leagueRevealRankOrdinal(int rank) {
-    String _temp0 = intl.Intl.pluralLogic(
-      rank,
-      locale: localeName,
-      other: '${rank}e',
-      one: '1er',
-    );
-    return '$_temp0';
+  String leagueRevealRankOrdinal(String ordinal) {
+    return '$ordinal';
   }
 
   @override
@@ -2258,7 +2317,7 @@ class AppLocalizationsFr extends AppLocalizations {
       other: '$count messages non lus',
       one: '$count message non lu',
     );
-    return _temp0;
+    return '$_temp0';
   }
 
   @override
@@ -2275,7 +2334,7 @@ class AppLocalizationsFr extends AppLocalizations {
       other: '$count notifications par jour',
       one: '$count notification par jour',
     );
-    return _temp0;
+    return '$_temp0';
   }
 
   @override

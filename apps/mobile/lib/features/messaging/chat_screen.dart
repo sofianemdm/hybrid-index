@@ -64,12 +64,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
   bool _sending = false;
   String? _error;
   Timer? _poll;
+  // Pagination « charger les messages précédents » (scroll vers le haut).
+  bool _hasMore = false;
+  String? _nextBefore;
+  bool _loadingMore = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _convId = widget.conversationId;
+    _scroll.addListener(_onScroll);
     _load();
     _startPolling();
   }
@@ -79,6 +84,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
     WidgetsBinding.instance.removeObserver(this);
     _poll?.cancel();
     _input.dispose();
+    _scroll.removeListener(_onScroll);
     _scroll.dispose();
     super.dispose();
   }
@@ -108,14 +114,23 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
   /// Rafraîchit silencieusement les messages (n'affiche ni spinner ni erreur ; n'écrase pas une
   /// saisie en cours). Met à jour la pastille de non-lus globale au passage.
   Future<void> _pollMessages() async {
-    if (_convId == null || _sending) return;
+    if (_convId == null || _sending || _loadingMore) return;
+    // Le poll ne récupère QUE la page la plus récente. Si l'utilisateur a remonté l'historique
+    // (chargé des pages antérieures et pas revenu en bas), on ne remplace pas la liste : cela
+    // écraserait l'historique chargé et le téléporterait. On ne poll « activement » que près du bas.
+    final atBottom = _isNearBottom();
+    if (!atBottom) return;
     try {
       final c = await ref.read(apiClientProvider).conversationMessages(_convId!);
       if (!mounted) return;
       // On rafraîchit si le nombre de messages change OU si un accusé de lecture a évolué
       // (pour faire passer « Envoyé » → « Lu » sur mon dernier message).
       if (_serverStateChanged(c.messages)) {
-        setState(() => _messages = c.messages);
+        setState(() {
+          _messages = c.messages;
+          _hasMore = c.hasMore;
+          _nextBefore = c.nextBefore;
+        });
         _jumpToEnd();
         ref.invalidate(unreadMessagesProvider);
       }
@@ -144,6 +159,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
           _messages = c.messages;
           _otherAvatar = c.otherAvatar;
           _otherRank = c.otherRank;
+          _hasMore = c.hasMore;
+          _nextBefore = c.nextBefore;
           _loading = false;
         });
         _jumpToEnd();
@@ -162,6 +179,50 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scroll.hasClients) _scroll.jumpTo(_scroll.position.maxScrollExtent);
     });
+  }
+
+  /// L'utilisateur est-il (quasi) en bas du fil ? Sert à décider de coller au bas sur nouveau
+  /// message reçu (poll) sans interrompre la relecture de l'historique. Seuil = ~120 px.
+  /// Avant le 1er layout (pas de clients), on considère « en bas » (cas du chargement initial).
+  bool _isNearBottom() {
+    if (!_scroll.hasClients) return true;
+    final p = _scroll.position;
+    return p.maxScrollExtent - p.pixels < 120;
+  }
+
+  /// Détecte le scroll vers le HAUT (proche de l'offset 0) pour charger la page antérieure.
+  void _onScroll() {
+    if (!_scroll.hasClients || !_hasMore || _loadingMore) return;
+    if (_scroll.position.pixels <= 80) _loadMore();
+  }
+
+  /// « Charger les messages précédents » : récupère la page ANTÉRIEURE (curseur `_nextBefore`) et
+  /// la PRÉPEND, en préservant la position de lecture (on compense le saut de hauteur introduit).
+  Future<void> _loadMore() async {
+    if (_convId == null || !_hasMore || _loadingMore || _nextBefore == null) return;
+    setState(() => _loadingMore = true);
+    final beforeExtent = _scroll.hasClients ? _scroll.position.maxScrollExtent : 0.0;
+    final beforePixels = _scroll.hasClients ? _scroll.position.pixels : 0.0;
+    try {
+      final c = await ref.read(apiClientProvider).conversationMessages(_convId!, before: _nextBefore);
+      if (!mounted) return;
+      setState(() {
+        _messages = [...c.messages, ..._messages]; // prépend les plus anciens
+        _hasMore = c.hasMore;
+        _nextBefore = c.nextBefore;
+      });
+      // Préserver la position : après l'ajout en tête, maxScrollExtent grandit ; on décale les
+      // pixels du même delta pour que le message qui était sous les yeux ne bouge pas.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!_scroll.hasClients) return;
+        final delta = _scroll.position.maxScrollExtent - beforeExtent;
+        _scroll.jumpTo((beforePixels + delta).clamp(0.0, _scroll.position.maxScrollExtent));
+      });
+    } catch (_) {
+      // silencieux : pas de page chargée, l'utilisateur peut réessayer en re-scrollant.
+    } finally {
+      if (mounted) setState(() => _loadingMore = false);
+    }
   }
 
   Future<void> _send() async {
@@ -197,9 +258,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
       final c = await api.conversationMessages(_convId!);
       if (mounted) {
         setState(() {
-          _messages = c.messages; // vérité serveur
+          _messages = c.messages; // vérité serveur (page la plus récente)
           _otherAvatar = c.otherAvatar;
           _otherRank = c.otherRank;
+          _hasMore = c.hasMore;
+          _nextBefore = c.nextBefore;
           _pending.removeWhere((m) => m.id == pendingId); // l'optimiste est désormais côté serveur
         });
         _jumpToEnd();
@@ -350,11 +413,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
     for (var i = 0; i < items.length; i++) {
       if (items[i].isMine) lastMineIdx = i;
     }
+    // Un en-tête de chargement « messages précédents » occupe l'index 0 quand il reste de l'historique.
+    final hasHeader = _hasMore || _loadingMore;
     return ListView.builder(
       controller: _scroll,
       padding: const EdgeInsets.all(HiSpace.lg),
-      itemCount: items.length,
-      itemBuilder: (context, i) {
+      itemCount: items.length + (hasHeader ? 1 : 0),
+      itemBuilder: (context, rawIndex) {
+        if (hasHeader && rawIndex == 0) return _loadMoreHeader();
+        final i = hasHeader ? rawIndex - 1 : rawIndex;
         final m = items[i];
         final prev = i == 0 ? null : items[i - 1];
         final showSep = _needsDaySeparator(prev, m);
@@ -366,6 +433,27 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
           ],
         );
       },
+    );
+  }
+
+  /// En-tête de liste : indicateur « charger les messages précédents » (tap ou scroll vers le haut).
+  Widget _loadMoreHeader() {
+    final t = AppLocalizations.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Center(
+        child: _loadingMore
+            ? const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : TextButton(
+                onPressed: _loadMore,
+                child: Text(t.chatLoadOlder,
+                    style: HiType.caption.copyWith(color: HiColors.textSecondary)),
+              ),
+      ),
     );
   }
 

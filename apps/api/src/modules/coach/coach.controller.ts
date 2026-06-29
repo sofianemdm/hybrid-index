@@ -22,6 +22,17 @@ export class CoachController {
     return this.coach.coach(user.userId, attribute);
   }
 
+  /**
+   * Bibliothèque COMPLÈTE en UNE requête (filtre « Tout » du mobile) : toutes les séances curées,
+   * dédupliquées, filtrées selon le matériel du profil, triées stable (durée asc → nom). Évite les
+   * 6 appels parallèles `library?attribute=…` (anti N+1). Doit être déclaré AVANT `:` libre /
+   * `@Get("library")` n'a pas de conflit ici car la route est plus spécifique.
+   */
+  @Get("library/all")
+  libraryAll(@CurrentUser() user: AuthenticatedUser): Promise<LibraryResponse> {
+    return this.coach.libraryAll(user.userId);
+  }
+
   /** Bibliothèque de séances pour un attribut, triée par poids (écran « Séances de [attribut] »). */
   @Get("library")
   library(

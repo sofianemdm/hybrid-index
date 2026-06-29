@@ -353,6 +353,10 @@ class Conversation {
   final String otherRank;
   final AvatarConfig? otherAvatar; // avatar de l'interlocuteur (en-tête du chat)
   final List<DmMessage> messages;
+  // Pagination : `hasMore` = il existe des messages plus anciens ; `nextBefore` = curseur (id du
+  // plus ancien message reçu) à passer à `conversationMessages(before:)` pour charger la page d'avant.
+  final bool hasMore;
+  final String? nextBefore;
   const Conversation({
     required this.id,
     required this.otherUserId,
@@ -360,6 +364,8 @@ class Conversation {
     required this.otherRank,
     this.otherAvatar,
     required this.messages,
+    this.hasMore = false,
+    this.nextBefore,
   });
 
   factory Conversation.fromJson(Map<String, dynamic> j) {
@@ -371,6 +377,8 @@ class Conversation {
       otherRank: other['rank'] as String? ?? 'rookie',
       otherAvatar: other['avatar'] == null ? null : AvatarConfig.fromJson((other['avatar'] as Map).cast<String, dynamic>()),
       messages: ((j['messages'] as List?) ?? []).map((e) => DmMessage.fromJson(e as Map<String, dynamic>)).toList(),
+      hasMore: j['hasMore'] as bool? ?? false,
+      nextBefore: j['nextBefore'] as String?,
     );
   }
 }

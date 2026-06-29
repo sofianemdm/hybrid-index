@@ -33,6 +33,12 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
   // Copie locale mutable du fil → retrait optimiste (blocage), toggle kudos et suivi en place.
   List<FeedActivity> _items = [];
 
+  // PAGINATION CLIENT : le serveur renvoie un fil FINI borné (FEED_LIMIT, cf. social.service.ts,
+  // décision « pas de scroll infini »). On ne construit pas toutes les cartes d'un coup : le
+  // ListView.builder est paresseux et on n'expose qu'une fenêtre qui grandit au scroll.
+  static const int _pageSize = 15;
+  int _visibleCount = _pageSize;
+
   @override
   void initState() {
     super.initState();
@@ -40,6 +46,7 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
   }
 
   void _load() {
+    _visibleCount = _pageSize; // tout rechargement repart de la première page
     _future = ref.read(apiClientProvider).feed().then((list) {
       _items = list;
       return list;
@@ -120,11 +127,31 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
       ),
     );
     if (action == null || !mounted) return;
+    // Actions DESTRUCTIVES (suppression, blocage) → on demande confirmation avant d'exécuter
+    // (un tap dans une feuille ne doit pas suffire à supprimer ou bloquer).
+    if (action == 'delete') {
+      final ok = await _confirmDestructive(
+        title: t.communityDeleteConfirmTitle,
+        body: t.communityDeleteConfirmBody,
+        confirmLabel: t.commonDelete,
+      );
+      if (!ok || !mounted) return;
+    } else if (action == 'block') {
+      final ok = await _confirmDestructive(
+        title: t.communityBlockConfirmTitle,
+        body: t.communityBlockConfirmBody,
+        confirmLabel: t.communityBlockConfirmAction,
+      );
+      if (!ok || !mounted) return;
+    }
     try {
       final api = ref.read(apiClientProvider);
       if (action == 'delete') {
         await api.deletePost(a.id);
-        if (mounted) setState(() => _items.removeWhere((x) => x.id == a.id));
+        if (mounted) {
+          setState(() => _items.removeWhere((x) => x.id == a.id));
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t.communityPostDeleted)));
+        }
       } else if (action == 'report') {
         await api.reportPost(a.id, 'inappropriate');
         // Le post signalé disparaît immédiatement de MON fil (auto-masquage côté back aussi).
@@ -144,6 +171,87 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context).commonGenericError)));
     }
   }
+
+  /// Dialogue de confirmation pour une action destructive (suppression / blocage). Renvoie `true`
+  /// si l'utilisateur confirme. Le bouton de confirmation est en rouge (HiColors.error).
+  Future<bool> _confirmDestructive({
+    required String title,
+    required String body,
+    required String confirmLabel,
+  }) async {
+    final t = AppLocalizations.of(context);
+    final res = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: HiColors.bgElevated,
+        title: Text(title, style: TextStyle(color: HiColors.textPrimary)),
+        content: Text(body, style: TextStyle(color: HiColors.textSecondary)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(t.commonCancel, style: TextStyle(color: HiColors.textTertiary)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(confirmLabel, style: TextStyle(color: HiColors.error, fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+    return res ?? false;
+  }
+
+  /// Glossaire du jargon des séances (AMRAP / EMOM / For Time / Rx) → feuille de définitions i18n,
+  /// accessible depuis l'en-tête du fil. Démystifie les termes pour les débutants.
+  void _showGlossary() {
+    final t = AppLocalizations.of(context);
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: HiColors.bgElevated,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(HiRadius.xxl))),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(HiSpace.lg, HiSpace.lg, HiSpace.lg, HiSpace.xl),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(children: [
+                Icon(Icons.menu_book_outlined, color: HiColors.brandPrimary),
+                const SizedBox(width: HiSpace.sm),
+                Expanded(child: Text(t.communityGlossaryTitle, style: HiType.titleM.copyWith(color: HiColors.textPrimary))),
+              ]),
+              const SizedBox(height: HiSpace.md),
+              _glossaryEntry(t.communityGlossaryAmrapTerm, t.communityGlossaryAmrapDef),
+              _glossaryEntry(t.communityGlossaryEmomTerm, t.communityGlossaryEmomDef),
+              _glossaryEntry(t.communityGlossaryForTimeTerm, t.communityGlossaryForTimeDef),
+              _glossaryEntry(t.communityGlossaryRxTerm, t.communityGlossaryRxDef),
+              const SizedBox(height: HiSpace.sm),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  child: Text(t.commonGotIt, style: TextStyle(color: HiColors.textTertiary)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _glossaryEntry(String term, String def) => Padding(
+        padding: const EdgeInsets.only(bottom: HiSpace.md),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(term, style: HiType.bodyStrong.copyWith(color: HiColors.brandPrimary)),
+            const SizedBox(height: 2),
+            Text(def, style: HiType.body.copyWith(color: HiColors.textSecondary, height: 1.4)),
+          ],
+        ),
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -203,54 +311,94 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
                 ),
               ]);
             }
-            return ListView(
-              padding: const EdgeInsets.fromLTRB(HiSpace.lg, HiSpace.lg, HiSpace.lg, 96),
-              children: [
-                Row(children: [
-                  Expanded(
-                    child: Text(t.communityTitle,
-                        style: HiType.titleL.copyWith(color: HiColors.textPrimary)),
-                  ),
-                  Badge.count(
-                    count: ref.watch(unreadMessagesProvider).value ?? 0,
-                    isLabelVisible: (ref.watch(unreadMessagesProvider).value ?? 0) > 0,
-                    backgroundColor: HiColors.error,
-                    child: IconButton(
-                      tooltip: t.communityTooltipMessages,
-                      icon: Icon(Icons.forum_outlined, color: HiColors.textTertiary),
-                      onPressed: () async {
-                        await Navigator.of(context)
-                            .push(MaterialPageRoute(builder: (_) => const ConversationsScreen()));
-                        ref.invalidate(unreadMessagesProvider); // maj de la pastille au retour
-                      },
-                    ),
-                  ),
-                  IconButton(
-                    tooltip: t.communityTooltipPublish,
-                    icon: Icon(Icons.edit_outlined, color: HiColors.brandPrimary),
-                    onPressed: _openComposer,
-                  ),
-                  IconButton(
-                    tooltip: t.communityTooltipClubs,
-                    icon: Icon(Icons.groups, color: HiColors.textTertiary),
-                    onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ClubsScreen())),
-                  ),
-                  IconButton(
-                    tooltip: t.communityTooltipSearch,
-                    icon: Icon(Icons.search, color: HiColors.textTertiary),
-                    onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ExploreScreen())),
-                  ),
-                ]),
-                const SizedBox(height: HiSpace.sm),
-                if (discoverMode) _discoverHeader(t),
-                ...items.map((a) => a.isDiscover ? _discoverCard(a) : _card(a)),
-              ],
+            // En-tête (titre + actions) puis cartes du fil. ListView.builder PARESSEUX : seules les
+            // cartes visibles sont construites, et on n'expose qu'une fenêtre (_visibleCount) qui
+            // grandit quand on approche du bas (pagination client sur le fil fini du serveur).
+            final shown = items.length < _visibleCount ? items.length : _visibleCount;
+            final hasMore = shown < items.length;
+            return NotificationListener<ScrollNotification>(
+              onNotification: (n) {
+                if (hasMore && n.metrics.pixels >= n.metrics.maxScrollExtent - 400) {
+                  // Approche du bas → on étend la fenêtre (frame suivante pour éviter setState en build).
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (mounted && _visibleCount < _items.length) {
+                      setState(() => _visibleCount = (_visibleCount + _pageSize).clamp(0, _items.length));
+                    }
+                  });
+                }
+                return false;
+              },
+              child: ListView.builder(
+                padding: const EdgeInsets.fromLTRB(HiSpace.lg, HiSpace.lg, HiSpace.lg, 96),
+                // +1 en-tête, +1 indicateur « charge la suite » s'il reste des cartes.
+                itemCount: 1 + (discoverMode ? 1 : 0) + shown + (hasMore ? 1 : 0),
+                itemBuilder: (context, i) {
+                  if (i == 0) return _header(t);
+                  var idx = i - 1;
+                  if (discoverMode) {
+                    if (idx == 0) return _discoverHeader(t);
+                    idx -= 1;
+                  }
+                  if (idx < shown) {
+                    final a = items[idx];
+                    return a.isDiscover ? _discoverCard(a) : _card(a);
+                  }
+                  // Sentinelle de chargement en bas tant qu'il reste des cartes à révéler.
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: HiSpace.md),
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                },
+              ),
             );
           },
         ),
       ),
     );
   }
+
+  /// En-tête du fil : titre + actions (messages, publier, clubs, recherche, glossaire).
+  Widget _header(AppLocalizations t) => Padding(
+        padding: const EdgeInsets.only(bottom: HiSpace.sm),
+        child: Row(children: [
+          Expanded(
+            child: Text(t.communityTitle, style: HiType.titleL.copyWith(color: HiColors.textPrimary)),
+          ),
+          Badge.count(
+            count: ref.watch(unreadMessagesProvider).value ?? 0,
+            isLabelVisible: (ref.watch(unreadMessagesProvider).value ?? 0) > 0,
+            backgroundColor: HiColors.error,
+            child: IconButton(
+              tooltip: t.communityTooltipMessages,
+              icon: Icon(Icons.forum_outlined, color: HiColors.textTertiary),
+              onPressed: () async {
+                await Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ConversationsScreen()));
+                ref.invalidate(unreadMessagesProvider); // maj de la pastille au retour
+              },
+            ),
+          ),
+          IconButton(
+            tooltip: t.communityTooltipPublish,
+            icon: Icon(Icons.edit_outlined, color: HiColors.brandPrimary),
+            onPressed: _openComposer,
+          ),
+          IconButton(
+            tooltip: t.communityTooltipClubs,
+            icon: Icon(Icons.groups, color: HiColors.textTertiary),
+            onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ClubsScreen())),
+          ),
+          IconButton(
+            tooltip: t.communityTooltipSearch,
+            icon: Icon(Icons.search, color: HiColors.textTertiary),
+            onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ExploreScreen())),
+          ),
+          IconButton(
+            tooltip: t.communityGlossaryTooltip,
+            icon: Icon(Icons.help_outline, color: HiColors.textTertiary),
+            onPressed: _showGlossary,
+          ),
+        ]),
+      );
 
   /// Bandeau « Découvrir » affiché quand on ne suit personne (le fil est rempli par le top de la ligue).
   Widget _discoverHeader(AppLocalizations t) => Padding(

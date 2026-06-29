@@ -224,6 +224,12 @@ abstract class AppLocalizations {
   /// **'Something went wrong. Please try again.'**
   String get commonGenericError;
 
+  /// No description provided for @commonGotIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Got it'**
+  String get commonGotIt;
+
   /// No description provided for @celebrationContinue.
   ///
   /// In en, this message translates to:
@@ -241,12 +247,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Close'**
   String get celebrationClose;
-
-  /// No description provided for @commonGotIt.
-  ///
-  /// In en, this message translates to:
-  /// **'Got it'**
-  String get commonGotIt;
 
   /// No description provided for @bugReportTitle.
   ///
@@ -1496,6 +1496,102 @@ abstract class AppLocalizations {
   /// **'Thanks, report sent.'**
   String get communityReportSent;
 
+  /// No description provided for @communityBlockConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Block this athlete?'**
+  String get communityBlockConfirmTitle;
+
+  /// No description provided for @communityBlockConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You will no longer see their activity and they cannot contact you. You can unblock them later in settings.'**
+  String get communityBlockConfirmBody;
+
+  /// No description provided for @communityBlockConfirmAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Block'**
+  String get communityBlockConfirmAction;
+
+  /// No description provided for @communityDeleteConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this post?'**
+  String get communityDeleteConfirmTitle;
+
+  /// No description provided for @communityDeleteConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This post will be permanently removed. This action cannot be undone.'**
+  String get communityDeleteConfirmBody;
+
+  /// No description provided for @communityPostDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Post deleted.'**
+  String get communityPostDeleted;
+
+  /// No description provided for @communityGlossaryTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Workout terms'**
+  String get communityGlossaryTooltip;
+
+  /// No description provided for @communityGlossaryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Workout jargon'**
+  String get communityGlossaryTitle;
+
+  /// No description provided for @communityGlossaryAmrapTerm.
+  ///
+  /// In en, this message translates to:
+  /// **'AMRAP'**
+  String get communityGlossaryAmrapTerm;
+
+  /// No description provided for @communityGlossaryAmrapDef.
+  ///
+  /// In en, this message translates to:
+  /// **'As Many Rounds (or Reps) As Possible in a set time. The more rounds, the better the score.'**
+  String get communityGlossaryAmrapDef;
+
+  /// No description provided for @communityGlossaryEmomTerm.
+  ///
+  /// In en, this message translates to:
+  /// **'EMOM'**
+  String get communityGlossaryEmomTerm;
+
+  /// No description provided for @communityGlossaryEmomDef.
+  ///
+  /// In en, this message translates to:
+  /// **'Every Minute On the Minute: start the prescribed reps at the top of each minute, then rest until the next one.'**
+  String get communityGlossaryEmomDef;
+
+  /// No description provided for @communityGlossaryForTimeTerm.
+  ///
+  /// In en, this message translates to:
+  /// **'For Time'**
+  String get communityGlossaryForTimeTerm;
+
+  /// No description provided for @communityGlossaryForTimeDef.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish the prescribed work as fast as you can. Your score is the total time.'**
+  String get communityGlossaryForTimeDef;
+
+  /// No description provided for @communityGlossaryRxTerm.
+  ///
+  /// In en, this message translates to:
+  /// **'Rx'**
+  String get communityGlossaryRxTerm;
+
+  /// No description provided for @communityGlossaryRxDef.
+  ///
+  /// In en, this message translates to:
+  /// **'\"As prescribed\": the workout done with the official loads and movements. Scaled means it was adapted (lighter / easier).'**
+  String get communityGlossaryRxDef;
+
   /// No description provided for @communityDiscoverTitle.
   ///
   /// In en, this message translates to:
@@ -1741,6 +1837,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Yesterday'**
   String get chatYesterday;
+
+  /// No description provided for @chatLoadOlder.
+  ///
+  /// In en, this message translates to:
+  /// **'Load earlier messages'**
+  String get chatLoadOlder;
 
   /// No description provided for @chatStatusSending.
   ///
@@ -3254,17 +3356,17 @@ abstract class AppLocalizations {
   /// **'★ TOP {pct} %'**
   String shareCardTopPct(Object pct);
 
-  /// No description provided for @shareCardA11y.
-  ///
-  /// In en, this message translates to:
-  /// **'{name}\'s card, Athlete Index {ovr}, archetype {archetype}'**
-  String shareCardA11y(Object name, Object ovr, Object archetype);
-
   /// No description provided for @shareCardAthlete.
   ///
   /// In en, this message translates to:
   /// **'Athlete'**
   String get shareCardAthlete;
+
+  /// No description provided for @shareCardA11y.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}\'s card, Athlete Index {ovr}, archetype {archetype}'**
+  String shareCardA11y(Object name, Object ovr, Object archetype);
 
   /// No description provided for @leaderboardTitle.
   ///
@@ -3809,8 +3911,8 @@ abstract class AppLocalizations {
   /// No description provided for @leagueRevealRankOrdinal.
   ///
   /// In en, this message translates to:
-  /// **'{rank, plural, =1{1st} =2{2nd} =3{3rd} =11{11th} =12{12th} =13{13th} =21{21st} =22{22nd} =23{23rd} other{{rank}th}}'**
-  String leagueRevealRankOrdinal(int rank);
+  /// **'{ordinal}'**
+  String leagueRevealRankOrdinal(String ordinal);
 
   /// No description provided for @leagueRevealNotRanked.
   ///

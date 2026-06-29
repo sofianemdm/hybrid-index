@@ -155,6 +155,25 @@ export function sessionsForAttribute(
     );
 }
 
+/**
+ * TOUTES les séances curées de la bibliothèque (filtre « Tout » du mobile), dédupliquées et triées
+ * de façon STABLE et indépendante d'un attribut : durationMin asc → name (localeCompare). C'est le
+ * même ordre que l'agrégation client `aggregateAllSessions`, pour que « Tout » soit cohérent qu'il
+ * vienne d'un seul appel serveur ou de la fusion des 6 axes. Chaque séance est annotée du `weight`
+ * de son attribut PRIMAIRE (toujours 1.0) — il n'y a pas d'axe unique en mode « Tout ».
+ * Si `noGear`, exclut les séances nécessitant du matériel.
+ *
+ * NB cohérence : le résultat est exactement l'union dédupliquée des 6 `sessionsForAttribute`
+ * (chaque séance a un primaire à 1.0 ≥ 0.35, donc remonte au moins sur un axe), incluant la
+ * signature `weekly-forgeron` (elle dépasse le seuil sur hybrid/engine/musc_end) — afin que
+ * « Tout » soit identique qu'il vienne de cet appel unique ou de la fusion client des axes.
+ */
+export function allSessions(noGear: boolean): Array<Session & { weight: number }> {
+  return SESSIONS.filter((s) => !noGear || !s.requiresEquipment)
+    .map((s) => ({ ...s, weight: attributeWeights(s)[s.primaryAttribute] }))
+    .sort((a, b) => a.durationMin - b.durationMin || a.name.localeCompare(b.name));
+}
+
 /** Séance signature « de la semaine » (cf. seance-de-la-semaine.md). Peut être undefined. */
 export function weeklySession(): Session | undefined {
   return SESSIONS.find((s) => s.id === "weekly-forgeron");

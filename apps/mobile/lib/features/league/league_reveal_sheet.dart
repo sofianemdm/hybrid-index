@@ -7,6 +7,37 @@ import '../../theme/tokens.dart';
 import '../../widgets/hi_avatar.dart';
 import 'month_format.dart';
 
+/// Construit l'ordinal localisé d'un rang (FR : 1er / Ne ; EN : 1st/2nd/3rd/4th… avec les
+/// exceptions 11-13 et 21-23). ICU `plural` de gen-l10n ne sait pas exprimer les ordinaux
+/// (pas de cas `=N` arbitraires), donc on le calcule ici puis on l'injecte dans la clé
+/// `leagueRevealRankOrdinal` qui n'est plus qu'un passe-plat `{ordinal}`.
+extension LeagueRevealOrdinalX on AppLocalizations {
+  String rankOrdinal(int rank) => leagueRevealRankOrdinal(_ordinalFor(localeName, rank));
+}
+
+String _ordinalFor(String localeName, int rank) {
+  final isFr = localeName.toLowerCase().startsWith('fr');
+  if (isFr) {
+    return rank == 1 ? '1er' : '${rank}e';
+  }
+  // EN : suffixe selon les deux derniers chiffres (11-13 → th), sinon selon le dernier chiffre.
+  final mod100 = rank % 100;
+  final mod10 = rank % 10;
+  String suffix;
+  if (mod100 >= 11 && mod100 <= 13) {
+    suffix = 'th';
+  } else if (mod10 == 1) {
+    suffix = 'st';
+  } else if (mod10 == 2) {
+    suffix = 'nd';
+  } else if (mod10 == 3) {
+    suffix = 'rd';
+  } else {
+    suffix = 'th';
+  }
+  return '$rank$suffix';
+}
+
 /// REVEAL de fin de saison de Ligue : podium top 3 stylisé + « Tu finis Ne » + delta de mouvement.
 /// Présenté UNE fois par saison close (la gestion du « déjà vu » est faite par l'appelant via
 /// shared_preferences). Animation sobre et respectueuse de reduce-motion.
@@ -154,7 +185,7 @@ class _LeagueRevealSheetState extends State<LeagueRevealSheet> {
       );
     }
     final rank = r.myFinalRank!;
-    final ordinal = t.leagueRevealRankOrdinal(rank);
+    final ordinal = t.rankOrdinal(rank);
     final movementLabel = _movementLabel(t);
     return Column(
       children: [
@@ -234,7 +265,7 @@ class _Podium extends StatelessWidget {
     // a11y : le rang est codé visuellement par la hauteur de la barre → on l'énonce explicitement
     // (« 1re place : nom, N points »), sinon un lecteur d'écran ne perçoit pas la position.
     return Semantics(
-      label: t.a11yPodiumPlace(t.leagueRevealRankOrdinal(row.finalRank), row.displayName, row.totalPoints),
+      label: t.a11yPodiumPlace(t.rankOrdinal(row.finalRank), row.displayName, row.totalPoints),
       child: ExcludeSemantics(
       child: Column(
       mainAxisSize: MainAxisSize.min,

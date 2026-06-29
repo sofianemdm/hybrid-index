@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Query, UseGuards } from "@nestjs/common";
 import { z } from "zod";
 import { ZodValidationPipe } from "../../common/zod-validation.pipe";
 import { RateLimit } from "../../common/rate-limit.guard";
@@ -25,8 +25,18 @@ export class MessagingController {
   }
 
   @Get("conversations/:id/messages")
-  messages(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string): Promise<unknown> {
-    return this.messaging.messages(user.userId, id);
+  messages(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("id") id: string,
+    // Pagination par curseur : `before` = id d'un message → charge la page antérieure (scroll haut).
+    @Query("before") before?: string,
+    @Query("limit") limit?: string,
+  ): Promise<unknown> {
+    const parsedLimit = limit !== undefined ? Number.parseInt(limit, 10) : undefined;
+    return this.messaging.messages(user.userId, id, {
+      before,
+      limit: parsedLimit !== undefined && Number.isFinite(parsedLimit) ? parsedLimit : undefined,
+    });
   }
 
   // Anti-spam DM : 20 messages / min / utilisateur.

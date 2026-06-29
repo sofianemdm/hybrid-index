@@ -77,6 +77,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonGenericError => 'Something went wrong. Please try again.';
 
   @override
+  String get commonGotIt => 'Got it';
+
+  @override
   String get celebrationContinue => 'Continue';
 
   @override
@@ -84,9 +87,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get celebrationClose => 'Close';
-
-  @override
-  String get commonGotIt => 'Got it';
 
   @override
   String get bugReportTitle => 'Report a bug';
@@ -760,6 +760,60 @@ class AppLocalizationsEn extends AppLocalizations {
   String get communityReportSent => 'Thanks, report sent.';
 
   @override
+  String get communityBlockConfirmTitle => 'Block this athlete?';
+
+  @override
+  String get communityBlockConfirmBody =>
+      'You will no longer see their activity and they cannot contact you. You can unblock them later in settings.';
+
+  @override
+  String get communityBlockConfirmAction => 'Block';
+
+  @override
+  String get communityDeleteConfirmTitle => 'Delete this post?';
+
+  @override
+  String get communityDeleteConfirmBody =>
+      'This post will be permanently removed. This action cannot be undone.';
+
+  @override
+  String get communityPostDeleted => 'Post deleted.';
+
+  @override
+  String get communityGlossaryTooltip => 'Workout terms';
+
+  @override
+  String get communityGlossaryTitle => 'Workout jargon';
+
+  @override
+  String get communityGlossaryAmrapTerm => 'AMRAP';
+
+  @override
+  String get communityGlossaryAmrapDef =>
+      'As Many Rounds (or Reps) As Possible in a set time. The more rounds, the better the score.';
+
+  @override
+  String get communityGlossaryEmomTerm => 'EMOM';
+
+  @override
+  String get communityGlossaryEmomDef =>
+      'Every Minute On the Minute: start the prescribed reps at the top of each minute, then rest until the next one.';
+
+  @override
+  String get communityGlossaryForTimeTerm => 'For Time';
+
+  @override
+  String get communityGlossaryForTimeDef =>
+      'Finish the prescribed work as fast as you can. Your score is the total time.';
+
+  @override
+  String get communityGlossaryRxTerm => 'Rx';
+
+  @override
+  String get communityGlossaryRxDef =>
+      '\"As prescribed\": the workout done with the official loads and movements. Scaled means it was adapted (lighter / easier).';
+
+  @override
   String get communityDiscoverTitle => 'Nobody to follow… yet';
 
   @override
@@ -904,6 +958,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chatYesterday => 'Yesterday';
+
+  @override
+  String get chatLoadOlder => 'Load earlier messages';
 
   @override
   String get chatStatusSending => 'Sending…';
@@ -1465,25 +1522,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get coachLibraryTitle => 'Coach library';
 
   @override
-  String get coachLibrarySubtitle => 'Ready-to-run guided sessions. Pick one and follow the plan.';
+  String get coachLibrarySubtitle =>
+      'Ready-to-run guided sessions. Pick one and follow the plan.';
 
   @override
   String get coachLibraryAll => 'All';
 
   @override
-  String get coachLibraryError => 'Couldn\'t load the session library right now.';
+  String get coachLibraryError =>
+      'Couldn\'t load the session library right now.';
 
   @override
-  String get coachLibraryEmpty => 'No guided session for this filter with your equipment.';
+  String get coachLibraryEmpty =>
+      'No guided session for this filter with your equipment.';
 
   @override
   String get coachLibraryEntryTitle => 'Coach library';
 
   @override
-  String get coachLibraryEntrySubtitle => 'Guided sessions to follow — separate from the workouts you log.';
+  String get coachLibraryEntrySubtitle =>
+      'Guided sessions to follow — separate from the workouts you log.';
 
   @override
-  String get sessionsByFocusCaption => 'Workouts to log that measure each axis of your score.';
+  String get sessionsByFocusCaption =>
+      'Workouts to log that measure each axis of your score.';
 
   @override
   String get sessionsToLog => 'Workouts to log';
@@ -1492,7 +1554,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sessionsGuidedLinkTitle => 'Guided coach sessions';
 
   @override
-  String get sessionsGuidedLinkSubtitle => 'Ready-to-run training for this axis';
+  String get sessionsGuidedLinkSubtitle =>
+      'Ready-to-run training for this axis';
 
   @override
   String get coachWithEquipment => 'Equipment';
@@ -1838,12 +1901,12 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get shareCardAthlete => 'Athlete';
+
+  @override
   String shareCardA11y(Object name, Object ovr, Object archetype) {
     return '$name\'s card, Athlete Index $ovr, archetype $archetype';
   }
-
-  @override
-  String get shareCardAthlete => 'Athlete';
 
   @override
   String get leaderboardTitle => 'League';
@@ -2177,25 +2240,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String leagueRevealRankOrdinal(int rank) {
-    // Ordinal anglais correct : 1st, 2nd, 3rd, 4th… avec l'exception 11th/12th/13th
-    // (et 111th, 112th, 113th…). Intl.pluralLogic gère le cardinal, pas l'ordinal —
-    // d'où le calcul explicite du suffixe ici.
-    final mod100 = rank % 100;
-    final mod10 = rank % 10;
-    final String suffix;
-    if (mod100 >= 11 && mod100 <= 13) {
-      suffix = 'th';
-    } else if (mod10 == 1) {
-      suffix = 'st';
-    } else if (mod10 == 2) {
-      suffix = 'nd';
-    } else if (mod10 == 3) {
-      suffix = 'rd';
-    } else {
-      suffix = 'th';
-    }
-    return '$rank$suffix';
+  String leagueRevealRankOrdinal(String ordinal) {
+    return '$ordinal';
   }
 
   @override
@@ -2255,7 +2301,7 @@ class AppLocalizationsEn extends AppLocalizations {
       other: '$count unread messages',
       one: '$count unread message',
     );
-    return _temp0;
+    return '$_temp0';
   }
 
   @override
@@ -2272,7 +2318,7 @@ class AppLocalizationsEn extends AppLocalizations {
       other: '$count notifications per day',
       one: '$count notification per day',
     );
-    return _temp0;
+    return '$_temp0';
   }
 
   @override

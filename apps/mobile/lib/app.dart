@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -93,9 +95,16 @@ final unreadMessagesProvider = FutureProvider<int>((ref) async {
   }
 });
 
+/// État du cycle de vie de l'app, alimenté par l'observateur global de [main.dart]
+/// (`didChangeAppLifecycleState`). Permet aux providers à scrutation périodique (ex.
+/// [inboxBadgeProvider]) de SUSPENDRE leur poll quand l'app n'est pas au premier plan,
+/// comme le fait déjà le chat — on n'interroge pas le réseau en arrière-plan.
+final appLifecycleProvider = StateProvider<AppLifecycleState>((ref) => AppLifecycleState.resumed);
+
 /// Pastille « boîte de réception » de la CLOCHE = messages non lus + invitations de club en attente.
-/// AUTO-RAFRAÎCHIE toutes les 8 s tant que la cloche est visible → l'utilisateur voit arriver un
-/// message ou une invitation SANS rien rafraîchir (livraison quasi-instantanée, sans push FCM).
+/// AUTO-RAFRAÎCHIE toutes les 8 s tant que la cloche est visible ET que l'app est au premier plan →
+/// l'utilisateur voit arriver un message ou une invitation SANS rien rafraîchir (livraison
+/// quasi-instantanée, sans push FCM). Le poll se met en PAUSE en arrière-plan (cf. chat_screen).
 final inboxBadgeProvider = StreamProvider.autoDispose<int>((ref) async* {
   final session = ref.watch(sessionProvider);
   if (session.status != AuthStatus.loggedIn) {
@@ -104,6 +113,16 @@ final inboxBadgeProvider = StreamProvider.autoDispose<int>((ref) async* {
   }
   final api = ref.read(apiClientProvider);
   while (true) {
+    // Hors premier plan : on ne scrute pas. On attend le retour au premier plan avant de reprendre
+    // (un `await` sur le changement d'état évite tout poll réseau en arrière-plan).
+    if (ref.read(appLifecycleProvider) != AppLifecycleState.resumed) {
+      final completer = Completer<void>();
+      final sub = ref.listen<AppLifecycleState>(appLifecycleProvider, (_, next) {
+        if (next == AppLifecycleState.resumed && !completer.isCompleted) completer.complete();
+      });
+      await completer.future;
+      sub.close();
+    }
     var count = 0;
     try {
       final convos = await api.conversations();

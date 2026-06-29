@@ -7,7 +7,7 @@ import { PrismaClient } from "@prisma/client";
 import { AppModule as ScoreAppModule } from "@hybrid-index/score-service/dist/app.module";
 import { configureApp as configureScoreApp } from "@hybrid-index/score-service/dist/app.config";
 import { ATTRIBUTE_KEYS } from "@hybrid-index/contracts";
-import { SESSIONS, attributeWeights, sessionsForAttribute } from "../src/modules/coach/sessions.data";
+import { SESSIONS, attributeWeights, sessionsForAttribute, allSessions } from "../src/modules/coach/sessions.data";
 
 /**
  * Bibliothèque de séances PAR ATTRIBUT (écran mobile « Séances de [attribut] »).
@@ -181,6 +181,66 @@ describe("api — bibliothèque de séances par attribut (e2e réel)", () => {
       .get("/v1/coach/library")
       .set("authorization", `Bearer ${tokenGeared}`)
       .expect(400);
+  });
+
+  // ─── (b bis) GET /v1/coach/library/all (filtre « Tout », anti N+1) ─────────
+  describe("allSessions (logique pure « Tout »)", () => {
+    it("dédup + tri stable (durée asc → nom) et inclut chaque séance une seule fois", () => {
+      const all = allSessions(false);
+      // Toutes les séances curées présentes, exactement une fois (dédup par id).
+      const ids = all.map((s) => s.id);
+      expect(new Set(ids).size).toBe(ids.length);
+      expect(all.length).toBe(SESSIONS.length);
+      // Tri : durationMin asc, puis name localeCompare.
+      for (let i = 1; i < all.length; i++) {
+        const prev = all[i - 1];
+        const cur = all[i];
+        const ok = prev.durationMin < cur.durationMin || (prev.durationMin === cur.durationMin && prev.name.localeCompare(cur.name) <= 0);
+        expect(ok).toBe(true);
+      }
+      // weight = poids de l'attribut primaire (toujours 1.0).
+      expect(all.every((s) => s.weight === 1.0)).toBe(true);
+    });
+
+    it("noGear ⇒ uniquement du sans-matériel", () => {
+      expect(allSessions(true).every((s) => !s.requiresEquipment)).toBe(true);
+      expect(allSessions(true).length).toBeLessThan(allSessions(false).length);
+    });
+
+    it("« Tout » = union dédupliquée des 6 axes (cohérence single-call vs fusion par-axe)", () => {
+      const perAxis = ATTRIBUTE_KEYS.flatMap((a) => sessionsForAttribute(a, false));
+      const unionIds = new Set(perAxis.map((s) => s.id));
+      const allIds = new Set(allSessions(false).map((s) => s.id));
+      expect(allIds).toEqual(unionIds);
+    });
+  });
+
+  it("library/all : toutes les séances, dédupliquées, triées (durée asc → nom) — user équipé", async () => {
+    const res = await request(api.getHttpServer())
+      .get("/v1/coach/library/all")
+      .set("authorization", `Bearer ${tokenGeared}`)
+      .expect(200);
+    expect(res.body.attribute).toBe("all");
+    const sessions: Array<{ id: string; durationMin: number; name: string; requiresEquipment: boolean }> = res.body.sessions;
+    expect(sessions.length).toBe(SESSIONS.length);
+    // Dédup par id.
+    expect(new Set(sessions.map((s) => s.id)).size).toBe(sessions.length);
+    // Tri stable durée asc → nom.
+    for (let i = 1; i < sessions.length; i++) {
+      const ok = sessions[i - 1].durationMin < sessions[i].durationMin || (sessions[i - 1].durationMin === sessions[i].durationMin && sessions[i - 1].name.localeCompare(sessions[i].name) <= 0);
+      expect(ok).toBe(true);
+    }
+    // User équipé ⇒ contient des séances avec matériel.
+    expect(sessions.some((s) => s.requiresEquipment)).toBe(true);
+  });
+
+  it("library/all : user equipmentPref=\"none\" ne reçoit QUE du sans-matériel", async () => {
+    const res = await request(api.getHttpServer())
+      .get("/v1/coach/library/all")
+      .set("authorization", `Bearer ${tokenNoGear}`)
+      .expect(200);
+    expect(res.body.sessions.length).toBeGreaterThan(0);
+    expect(res.body.sessions.every((s: { requiresEquipment: boolean }) => s.requiresEquipment === false)).toBe(true);
   });
 
   // ─── (c) GET /v1/coach/weekly ─────────────────────────────────────────────

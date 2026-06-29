@@ -151,29 +151,65 @@ export class MessagingService {
     return result;
   }
 
-  /** Messages d'une conversation (participant requis) + marquage comme lus. */
-  async messages(me: string, conversationId: string): Promise<unknown> {
+  /**
+   * Messages d'une conversation (participant requis) + marquage comme lus.
+   *
+   * Pagination par curseur descendant : on renvoie la PAGE LA PLUS RÉCENTE (les `limit` derniers
+   * messages, ré-ordonnés asc pour l'affichage) ; passer `before` = id d'un message charge la page
+   * ANTÉRIEURE (« charger les messages précédents » au scroll vers le haut). `hasMore` indique s'il
+   * reste des messages plus anciens à charger. Le marquage « lu » ne s'applique qu'à la page la
+   * plus récente (before absent), pour ne pas marquer lu en remontant l'historique.
+   */
+  async messages(me: string, conversationId: string, opts?: { before?: string; limit?: number }): Promise<unknown> {
     const conv = await this.prisma.conversation.findUnique({ where: { id: conversationId } });
     if (!conv) throw new NotFoundException({ code: "NOT_FOUND", message: "Conversation introuvable." });
     if (conv.userAId !== me && conv.userBId !== me) {
       throw new ForbiddenException({ code: "FORBIDDEN", message: "Conversation non accessible." });
     }
     const otherId = conv.userAId === me ? conv.userBId : conv.userAId;
-    const [rows, other] = await Promise.all([
+    const limit = Math.min(Math.max(opts?.limit ?? 50, 1), 100);
+
+    // Curseur : on borne par le createdAt du message `before` (messages STRICTEMENT plus anciens).
+    let beforeCursor: Date | undefined;
+    if (opts?.before) {
+      const anchor = await this.prisma.message.findFirst({
+        where: { id: opts.before, conversationId },
+        select: { createdAt: true },
+      });
+      // Curseur inconnu (id étranger à la conversation) ⇒ page la plus récente (pas d'erreur dure).
+      beforeCursor = anchor?.createdAt;
+    }
+
+    const [page, other] = await Promise.all([
+      // On lit `limit + 1` en DESC pour savoir s'il reste des messages plus anciens (hasMore).
       this.prisma.message.findMany({
-        where: { conversationId, status: "visible" },
-        orderBy: { createdAt: "asc" },
-        take: 200,
+        where: {
+          conversationId,
+          status: "visible",
+          ...(beforeCursor ? { createdAt: { lt: beforeCursor } } : {}),
+        },
+        // `id` en tie-breaker pour un ordre déterministe si deux messages partagent le createdAt.
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+        take: limit + 1,
       }),
       this.prisma.user.findUnique({
         where: { id: otherId },
         include: { profile: { select: { displayName: true, rank: true } }, avatar: true },
       }),
     ]);
-    await this.prisma.message.updateMany({
-      where: { conversationId, senderId: { not: me }, readAt: null },
-      data: { readAt: new Date() },
-    });
+
+    const hasMore = page.length > limit;
+    // On garde `limit` messages, puis on ré-ordonne asc pour l'affichage du fil (du + ancien au + récent).
+    const rows = page.slice(0, limit).reverse();
+
+    // Marquer « lu » uniquement sur la page la plus récente (chargement / poll), pas en remontant.
+    if (!opts?.before) {
+      await this.prisma.message.updateMany({
+        where: { conversationId, senderId: { not: me }, readAt: null },
+        data: { readAt: new Date() },
+      });
+    }
+
     return {
       id: conv.id,
       other: {
@@ -182,6 +218,9 @@ export class MessagingService {
         rank: other?.profile?.rank ?? "rookie",
         avatar: serializeAvatar(other?.avatar),
       },
+      // `hasMore` = il existe des messages plus anciens ; `nextBefore` = curseur à passer pour les charger.
+      hasMore,
+      nextBefore: hasMore && rows.length > 0 ? rows[0].id : null,
       messages: rows.map((m) => ({
         id: m.id,
         senderId: m.senderId,

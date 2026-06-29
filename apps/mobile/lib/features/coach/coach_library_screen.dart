@@ -18,7 +18,8 @@ import '../../widgets/hi_skeleton.dart';
 ///
 /// La donnée vient de GET /v1/coach/library?attribute=… (api_client.coachLibrary). L'API exige UN
 /// attribut et renvoie les séances qui le travaillent, triées par pertinence (poids décroissant).
-/// On propose un filtre par axe ; l'option « Tout » agrège les 6 axes (dédupliqués par id).
+/// On propose un filtre par axe ; l'option « Tout » fait UN appel GET /v1/coach/library/all
+/// (séances dédupliquées + triées côté serveur, anti N+1) au lieu d'agréger 6 appels par-axe.
 class CoachLibraryScreen extends ConsumerStatefulWidget {
   /// Axe initialement sélectionné (clé interne). Null ⇒ « Tout ».
   final String? attribute;
@@ -48,22 +49,11 @@ class _CoachLibraryScreenState extends ConsumerState<CoachLibraryScreen> {
     if (sel != null) {
       _future = api.coachLibrary(sel);
     } else {
-      // « Tout » : on interroge les 6 axes en parallèle puis on déduplique par id (une séance peut
-      // remonter sur plusieurs axes). Tri stable : durée croissante puis nom.
-      _future = Future.wait(_attrs.map(api.coachLibrary)).then((lists) {
-        final byId = <String, CoachSession>{};
-        for (final list in lists) {
-          for (final s in list) {
-            byId.putIfAbsent(s.id, () => s);
-          }
-        }
-        final all = byId.values.toList()
-          ..sort((a, b) {
-            final d = a.durationMin.compareTo(b.durationMin);
-            return d != 0 ? d : a.name.compareTo(b.name);
-          });
-        return all;
-      });
+      // « Tout » : UN SEUL appel serveur (GET /v1/coach/library/all) — séances déjà dédupliquées,
+      // filtrées matériel et triées (durée asc → nom) côté back. Remplace les 6 appels par-axe
+      // (anti N+1, plus all-or-nothing). Même ordre que l'ancienne agrégation client
+      // (aggregateAllSessions, conservée et testée dans coach_library_aggregate.dart, repli possible).
+      _future = api.coachLibraryAll();
     }
   }
 

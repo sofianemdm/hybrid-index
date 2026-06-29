@@ -88,6 +88,9 @@ class _HybridIndexAppState extends ConsumerState<HybridIndexApp> with WidgetsBin
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Publie l'état pour les providers à scrutation périodique (ex. inboxBadgeProvider) → ils
+    // suspendent leur poll réseau en arrière-plan et le reprennent au retour au premier plan.
+    ref.read(appLifecycleProvider.notifier).state = state;
     // Nouveau « passage » dans l'app → on ré-autorise une célébration FORTE (anti-fatigue : 1/session).
     if (state == AppLifecycleState.resumed) Celebration.resetSession();
   }

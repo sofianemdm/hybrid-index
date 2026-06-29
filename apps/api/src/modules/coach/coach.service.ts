@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 import { ATTRIBUTE_KEYS, type internalScore } from "@hybrid-index/contracts";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { ScoreClient } from "../../infra/score-client/score-client.service";
-import { SESSIONS, sessionsForAttribute, weeklySession, type Session } from "./sessions.data";
+import { SESSIONS, allSessions, sessionsForAttribute, weeklySession, type Session } from "./sessions.data";
 import type { AttributeKey } from "@hybrid-index/contracts";
 
 export interface CoachResponse {
@@ -27,6 +27,21 @@ export interface LibrarySession {
 export interface LibraryResponse {
   attribute: string;
   sessions: LibrarySession[];
+}
+
+/** Projette une séance (annotée de son `weight`) sur la forme JSON attendue par le mobile. */
+function toLibrarySession(s: Session & { weight: number }): LibrarySession {
+  return {
+    id: s.id,
+    name: s.name,
+    primaryAttribute: s.primaryAttribute,
+    secondaryAttributes: s.secondaryAttributes,
+    requiresEquipment: s.requiresEquipment,
+    durationMin: s.durationMin,
+    intensity: s.intensity,
+    description: s.description,
+    weight: s.weight,
+  };
 }
 
 /**
@@ -78,23 +93,26 @@ export class CoachService {
    * Filtre matériel selon la préférence du profil (`equipmentPref === "none"` ⇒ sans matériel).
    */
   async library(userId: string, attribute: AttributeKey): Promise<LibraryResponse> {
-    const profile = await this.prisma.profile.findUnique({ where: { userId } });
+    const noGear = await this.noGearFor(userId);
+    return { attribute, sessions: sessionsForAttribute(attribute, noGear).map(toLibrarySession) };
+  }
+
+  /**
+   * Bibliothèque COMPLÈTE (filtre « Tout » du mobile) en UNE requête : toutes les séances curées,
+   * dédupliquées, filtrées matériel, triées de façon stable (durée asc → nom). Remplace les 6
+   * appels parallèles `library?attribute=…` côté client (anti N+1). `attribute` vaut "all" en
+   * réponse (pas d'axe unique).
+   */
+  async libraryAll(userId: string): Promise<LibraryResponse> {
+    const noGear = await this.noGearFor(userId);
+    return { attribute: "all", sessions: allSessions(noGear).map(toLibrarySession) };
+  }
+
+  /** Préférence matériel du profil ⇒ true si l'utilisateur s'entraîne sans matériel. */
+  private async noGearFor(userId: string): Promise<boolean> {
+    const profile = await this.prisma.profile.findUnique({ where: { userId }, select: { equipmentPref: true } });
     if (!profile) throw new NotFoundException({ code: "NOT_FOUND", message: "Profil introuvable." });
-
-    const noGear = profile.equipmentPref === "none";
-    const sessions = sessionsForAttribute(attribute, noGear).map((s) => ({
-      id: s.id,
-      name: s.name,
-      primaryAttribute: s.primaryAttribute,
-      secondaryAttributes: s.secondaryAttributes,
-      requiresEquipment: s.requiresEquipment,
-      durationMin: s.durationMin,
-      intensity: s.intensity,
-      description: s.description,
-      weight: s.weight,
-    }));
-
-    return { attribute, sessions };
+    return profile.equipmentPref === "none";
   }
 
   /** La « séance de la semaine » (signature `weekly-forgeron`). */

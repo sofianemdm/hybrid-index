@@ -16,6 +16,13 @@ import '../wods/wod_tab.dart';
 import '../wods/wod_builder_screen.dart';
 import 'home_screen.dart';
 
+/// Index des onglets de la coquille (ordre de l'IndexedStack ci-dessous). Nommés pour éviter
+/// les nombres magiques dispersés dans le code (ex. le tap « rival » qui bascule sur le Classement).
+const int kHomeTabIndex = 0;
+const int kSessionsTabIndex = 1;
+const int kCommunityTabIndex = 2;
+const int kLeaderboardTabIndex = 3;
+
 /// Coquille principale : Accueil / Classement + bouton central « Logger une séance ».
 class HomeShell extends ConsumerStatefulWidget {
   const HomeShell({super.key});
@@ -137,10 +144,10 @@ class _HomeShellState extends ConsumerState<HomeShell> {
   /// dont le placement dépendait de la géométrie du Scaffold. Centrage garanti, indépendant des items.
   Widget _notchedNav(AppLocalizations t) {
     final tabs = <(IconData, IconData, String, int)>[
-      (Icons.bolt_outlined, Icons.bolt_rounded, t.navHome, 0),
-      (Icons.fitness_center_outlined, Icons.fitness_center_rounded, t.navSessions, 1),
-      (Icons.groups_outlined, Icons.groups_rounded, t.navCommunity, 2),
-      (Icons.leaderboard_outlined, Icons.leaderboard_rounded, t.navLeaderboard, 3),
+      (Icons.bolt_outlined, Icons.bolt_rounded, t.navHome, kHomeTabIndex),
+      (Icons.fitness_center_outlined, Icons.fitness_center_rounded, t.navSessions, kSessionsTabIndex),
+      (Icons.groups_outlined, Icons.groups_rounded, t.navCommunity, kCommunityTabIndex),
+      (Icons.leaderboard_outlined, Icons.leaderboard_rounded, t.navLeaderboard, kLeaderboardTabIndex),
     ];
     return SafeArea(
       top: false,

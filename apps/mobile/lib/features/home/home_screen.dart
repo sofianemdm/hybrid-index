@@ -19,6 +19,7 @@ import '../../widgets/streak_chip.dart';
 import '../../widgets/bug_report.dart';
 import '../../widgets/error_retry.dart';
 import 'grade_block.dart';
+import 'home_shell.dart';
 import 'rival_card.dart';
 import 'weekly_recap_card.dart';
 import '../avatar/dice_avatar_screen.dart';
@@ -43,9 +44,18 @@ class HomeScreen extends ConsumerWidget {
     return SafeArea(
       child: RefreshIndicator(
         onRefresh: () async {
-          ref.invalidate(myProfileProvider);
-          ref.invalidate(streakProvider);
-          ref.invalidate(weeklyRecapProvider);
+          // Tire-pour-rafraîchir : on invalide TOUS les providers réellement affichés sur l'Accueil
+          // (sinon la moitié de l'écran restait périmée). myProfile porte aussi le radar, le rang,
+          // la position en ligue, le rival et la preuve sociale (socialProof). La projection dérive
+          // de indexHistory + myProfile → pas de provider dédié à invalider.
+          ref.invalidate(myProfileProvider); // Index, radar, rang, rival, position ligue, socialProof
+          ref.invalidate(streakProvider); // flamme de série
+          ref.invalidate(weeklyRecapProvider); // récap « ta semaine »
+          ref.invalidate(indexHistoryProvider); // projection « à ce rythme »
+          ref.invalidate(inboxBadgeProvider); // pastille cloche (messages + invitations)
+          ref.invalidate(cardBadgesProvider); // badges de la carte joueur
+          ref.invalidate(avatarProvider); // avatar (en-tête + carte)
+          ref.invalidate(completionPlanProvider); // encart « Index estimé » + plan de complétion
           await ref.read(myProfileProvider.future);
         },
         child: ListView(
@@ -233,10 +243,10 @@ class HomeScreen extends ConsumerWidget {
           RivalCard(
             rival: p.rival,
             leaguePosition: p.leaguePosition,
-            // Bascule sur l'onglet Classement (index 4 du HomeShell) plutôt que de pousser
-            // LeaderboardScreen en route : cet écran n'a pas de Scaffold (c'est un corps d'onglet),
-            // le pousser donnait un écran blanc. cf. home_shell.dart (IndexedStack).
-            onTap: () => ref.read(homeTabProvider.notifier).state = 3,
+            // Bascule sur l'onglet Classement (kLeaderboardTabIndex du HomeShell) plutôt que de
+            // pousser LeaderboardScreen en route : cet écran n'a pas de Scaffold (c'est un corps
+            // d'onglet), le pousser donnait un écran blanc. cf. home_shell.dart (IndexedStack).
+            onTap: () => ref.read(homeTabProvider.notifier).state = kLeaderboardTabIndex,
           ),
           const SizedBox(height: HiSpace.md),
         ],
