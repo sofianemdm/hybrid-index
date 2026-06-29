@@ -182,8 +182,13 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
   Widget _tab(String label, String sex) {
     final active = _sex == sex;
     return Expanded(
-      child: GestureDetector(
+      child: Semantics(
+        button: true,
+        selected: active,
+        label: AppLocalizations.of(context).a11yLeaderboardTab(label),
+        child: GestureDetector(
         onTap: () => _switch(sex),
+        child: ExcludeSemantics(
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 12),
           alignment: Alignment.center,
@@ -196,6 +201,8 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
               style: TextStyle(
                   color: active ? HiColors.textOnBrand : HiColors.textSecondary, fontWeight: FontWeight.w700)),
         ),
+        ),
+        ),
       ),
     );
   }
@@ -203,7 +210,18 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
   Widget _row(LeaderboardEntry e) {
     final podium = e.position <= 3;
     final posColor = podium ? HiColors.rank(e.position == 1 ? 'gold' : e.position == 2 ? 'silver' : 'bronze') : HiColors.textTertiary;
-    return InkWell(
+    final t = AppLocalizations.of(context);
+    // a11y : chaque ligne lue d'un bloc « Rang N, <nom>, Index X » (l'utilisateur courant annoncé
+    // comme tel). Le contenu visuel (avatar, badge, chiffres) est décoratif → ExcludeSemantics.
+    final rowLabel = e.isMe
+        ? t.a11yLeaderboardRowMe(e.position, e.displayName, e.value)
+        : t.a11yLeaderboardRow(e.position, e.displayName, e.value);
+    return MergeSemantics(
+      child: Semantics(
+      button: true,
+      selected: e.isMe,
+      label: rowLabel,
+      child: InkWell(
       borderRadius: BorderRadius.circular(HiRadius.sm),
       onTap: () {
         HiHaptics.tap();
@@ -211,6 +229,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
           MaterialPageRoute(builder: (_) => PublicProfileScreen(userId: e.userId)),
         );
       },
+      child: ExcludeSemantics(
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
         decoration: BoxDecoration(
@@ -257,6 +276,9 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
             Text('${e.value}', style: HiType.numericM.copyWith(color: HiColors.textPrimary)),
           ],
         ),
+      ),
+      ),
+      ),
       ),
     );
   }

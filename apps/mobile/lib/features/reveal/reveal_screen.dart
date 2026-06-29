@@ -85,14 +85,25 @@ class _RevealScreenState extends ConsumerState<RevealScreen> {
                     Text(t.revealYourIndex, style: HiType.overline.copyWith(color: HiColors.textSecondary)),
                     const SizedBox(height: HiSpace.lg),
                     // Phase 0 : suspense ; Phase 1+ : l'anneau qui se remplit en comptant.
+                    // a11y : l'anneau animé est décoratif (ExcludeSemantics) ; le résultat est annoncé
+                    // par un liveRegion dédié dès qu'il est révélé (phase 2), cf. plus bas.
                     SizedBox(
                       height: 280,
                       child: Center(
                         child: _step == 0
                             ? const _Suspense()
-                            : IndexRing(value: idx.value, percentile: idx.percentile),
+                            : ExcludeSemantics(child: IndexRing(value: idx.value, percentile: idx.percentile)),
                       ),
                     ),
+                    // Annonce vocale du résultat (liveRegion + header) — lue automatiquement quand le
+                    // compte-à-rebours se termine, sans dépendre du visuel de l'anneau.
+                    if (_step >= 2)
+                      Semantics(
+                        header: true,
+                        liveRegion: true,
+                        label: t.a11yRevealResult(idx.value, HiLabels.rank(idx.rank)),
+                        child: const SizedBox.shrink(),
+                      ),
                     const SizedBox(height: HiSpace.lg),
                     // Phase 2 : rang + preuve sociale (« top X% des humains »).
                     _staged(
@@ -244,7 +255,14 @@ class _SuspenseState extends State<_Suspense> with SingleTickerProviderStateMixi
               child: Icon(Icons.bolt_rounded, color: HiColors.brandPrimary, size: 32),
             ),
             const SizedBox(height: HiSpace.lg),
-            Text(AppLocalizations.of(context).revealComputing, style: HiType.body.copyWith(color: HiColors.textSecondary)),
+            Semantics(
+              liveRegion: true,
+              label: AppLocalizations.of(context).a11yRevealComputing,
+              child: ExcludeSemantics(
+                child: Text(AppLocalizations.of(context).revealComputing,
+                    style: HiType.body.copyWith(color: HiColors.textSecondary)),
+              ),
+            ),
           ],
         );
       },

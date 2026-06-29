@@ -2416,4 +2416,59 @@ class AppLocalizationsEn extends AppLocalizations {
   String coachSessionDoneToast(String name) {
     return 'Session “$name” marked as done.';
   }
+
+  @override
+  String a11yHomePlayerCard(String name, int ovr, String rank) {
+    return '$name, Index $ovr, rank $rank. Tap to view your progress.';
+  }
+
+  @override
+  String get a11yHomeCoachCta => 'Get a training session from the coach';
+
+  @override
+  String a11yLeaderboardRow(int position, String name, int ovr) {
+    return 'Rank $position, $name, Index $ovr';
+  }
+
+  @override
+  String a11yLeaderboardRowMe(int position, String name, int ovr) {
+    return 'Rank $position, you, $name, Index $ovr';
+  }
+
+  @override
+  String a11yLeaderboardTab(String name) {
+    return '$name league';
+  }
+
+  @override
+  String a11yRevealResult(int ovr, String rank) {
+    return 'Your Index is $ovr, rank $rank';
+  }
+
+  @override
+  String get a11yRevealComputing => 'Calculating your Index';
+
+  @override
+  String a11yOnbStep(int current, int total) {
+    return 'Step $current of $total';
+  }
+
+  @override
+  String get a11yOnbContinue => 'Continue to the next step';
+
+  @override
+  String get a11yOnbReveal => 'Reveal my Index';
+
+  @override
+  String a11yOnbEffortToggle(String name, String state) {
+    String _temp0 = intl.Intl.selectLogic(
+      state,
+      {
+        'on': 'enabled',
+        'off': 'disabled',
+        'other': '',
+      },
+    );
+    return '$name, $_temp0';
+  }
 }

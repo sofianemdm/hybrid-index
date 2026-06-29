@@ -10,6 +10,7 @@ import '../messaging/chat_screen.dart';
 import '../../theme/cosmetics.dart';
 import '../../widgets/error_retry.dart';
 import '../../widgets/hi_avatar.dart';
+import '../../widgets/hi_skeleton.dart';
 import '../../widgets/index_ring.dart';
 import '../../widgets/radar_view.dart';
 import '../../widgets/overlay_radar.dart';
@@ -229,7 +230,18 @@ class PublicProfileScreen extends ConsumerWidget {
           future: future,
           builder: (context, snap) {
             if (snap.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator(color: HiColors.brandPrimary));
+              return ListView(
+                padding: const EdgeInsets.all(HiSpace.lg),
+                children: const [
+                  Center(child: HiSkeleton.circle(96)),
+                  SizedBox(height: HiSpace.lg),
+                  HiSkeleton(height: 24, width: 180, radius: HiRadius.sm),
+                  SizedBox(height: HiSpace.lg),
+                  HiSkeleton(height: 220, radius: HiRadius.lg),
+                  SizedBox(height: HiSpace.md),
+                  HiSkeleton(height: 96, radius: HiRadius.lg),
+                ],
+              );
             }
             if (snap.hasError) {
               return const ErrorRetry();

@@ -102,7 +102,8 @@ class StreakChip extends StatelessWidget {
             _row(t.streakThisWeek, '${streak.thisWeekCount}/${streak.weeklyGoal}'),
             _row(t.streakBest, t.streakBestValue(streak.best)),
             if (streak.freezeTokens > 0)
-              _row(t.streakFreezeTokens, '${streak.freezeTokens} 🛡️', hint: t.streakFreezeHint),
+              _row(t.streakFreezeTokens, '${streak.freezeTokens}',
+                  hint: t.streakFreezeHint, valueIcon: Icons.shield_rounded),
             const SizedBox(height: HiSpace.md),
             Text(t.streakNoPressure,
                 style: HiType.caption.copyWith(color: HiColors.textTertiary)),
@@ -112,7 +113,7 @@ class StreakChip extends StatelessWidget {
     );
   }
 
-  Widget _row(String label, String value, {String? hint}) {
+  Widget _row(String label, String value, {String? hint, IconData? valueIcon}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
@@ -127,6 +128,10 @@ class StreakChip extends StatelessWidget {
             ),
           ),
           Text(value, style: HiType.numericM.copyWith(color: HiColors.textSecondary)),
+          if (valueIcon != null) ...[
+            const SizedBox(width: HiSpace.xs),
+            Icon(valueIcon, size: 18, color: HiColors.textSecondary),
+          ],
         ],
       ),
     );

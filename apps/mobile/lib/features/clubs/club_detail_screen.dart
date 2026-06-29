@@ -6,6 +6,7 @@ import '../../data/session.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/error_retry.dart';
+import '../../widgets/hi_skeleton.dart';
 import '../../widgets/hi_button.dart';
 import '../../widgets/rank_badge.dart';
 import '../leaderboard/progress_board_screen.dart';
@@ -98,7 +99,9 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> {
                   style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
             ),
             ...wods.map((w) => ListTile(
-                  leading: Text(w.isFlagship ? '⭐' : '•', style: const TextStyle(fontSize: 16)),
+                  leading: Icon(w.isFlagship ? Icons.star_rounded : Icons.circle,
+                      size: w.isFlagship ? 20 : 8,
+                      color: w.isFlagship ? HiColors.rank('gold') : HiColors.textTertiary),
                   title: Text(w.name, style: HiType.body.copyWith(color: HiColors.textPrimary)),
                   onTap: () => Navigator.of(context).pop(w),
                 )),
@@ -122,7 +125,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> {
           future: _future,
           builder: (context, snap) {
             if (snap.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator(color: HiColors.brandPrimary));
+              return const HiListSkeleton(count: 5, itemHeight: 72);
             }
             if (snap.hasError) return ErrorRetry(onRetry: () => setState(_load));
             final d = snap.data!;
@@ -204,7 +207,8 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> {
                 style: HiType.body.copyWith(color: HiColors.textPrimary, fontWeight: e.isMe ? FontWeight.w800 : FontWeight.w500)),
           ),
           if (e.role == 'owner')
-            const Padding(padding: EdgeInsets.only(right: 6), child: Text('👑', style: TextStyle(fontSize: 13))),
+            Padding(padding: const EdgeInsets.only(right: 6),
+                child: Icon(Icons.workspace_premium_rounded, size: 16, color: HiColors.rank('gold'))),
           RankBadge(ovr: e.index, fontSize: 10),
           const SizedBox(width: HiSpace.sm),
           Text('${e.index}',

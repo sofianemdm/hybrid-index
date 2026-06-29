@@ -5,6 +5,7 @@ import '../../data/session.dart';
 import '../../l10n/app_localizations.dart';
 import '../../core/env.dart';
 import '../../theme/tokens.dart';
+import '../../widgets/hi_skeleton.dart';
 import '../../widgets/hi_button.dart';
 
 /// Réglages de notifications : activer/désactiver chaque type, heures de silence, plafond/jour.
@@ -88,7 +89,7 @@ class _NotificationSettingsScreenState extends ConsumerState<NotificationSetting
       appBar: AppBar(title: Text(t.notificationSettingsTitle), backgroundColor: Colors.transparent, elevation: 0),
       body: SafeArea(
         child: _loading
-            ? Center(child: CircularProgressIndicator(color: HiColors.brandPrimary))
+            ? const HiListSkeleton(count: 5, itemHeight: 64)
             : SingleChildScrollView(
                 padding: const EdgeInsets.all(HiSpace.lg),
                 child: ConstrainedBox(

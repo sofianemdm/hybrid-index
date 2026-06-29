@@ -50,17 +50,17 @@ class SocialProofCard extends StatelessWidget {
               // Sous la médiane : jamais dévalorisant, formulé en progression.
               ? Text(
                   t.socialProofBases,
-                  style: TextStyle(color: HiColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600),
+                  style: HiType.body.copyWith(color: HiColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600),
                 )
               : top <= 1
                   // Tout en haut : on célèbre, sans surenchère « des humains ».
                   ? Text(
                       t.socialProofElite,
-                      style: TextStyle(color: HiColors.textPrimary, fontSize: 15, fontWeight: FontWeight.w700, height: 1.3),
+                      style: HiType.bodyStrong.copyWith(color: HiColors.textPrimary, height: 1.3),
                     )
                   : RichText(
                       text: TextSpan(
-                        style: TextStyle(color: HiColors.textPrimary, fontSize: 15, fontWeight: FontWeight.w700, height: 1.3),
+                        style: HiType.bodyStrong.copyWith(color: HiColors.textPrimary, height: 1.3),
                         children: [
                           TextSpan(text: t.socialProofTopPrefix),
                           TextSpan(text: '$top%', style: TextStyle(color: HiColors.brandPrimary)),
@@ -82,7 +82,7 @@ class SocialProofCard extends StatelessWidget {
         Expanded(
           child: RichText(
             text: TextSpan(
-              style: TextStyle(color: HiColors.textSecondary, fontSize: 14, fontWeight: FontWeight.w600),
+              style: HiType.body.copyWith(color: HiColors.textSecondary, fontSize: 14, fontWeight: FontWeight.w600),
               children: [
                 TextSpan(text: t.socialProofAppPrefix),
                 TextSpan(text: '${proof.appTopPercent}%', style: TextStyle(color: HiColors.brandSecondaryText, fontWeight: FontWeight.w700)),

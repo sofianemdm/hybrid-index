@@ -6,6 +6,7 @@ import '../../data/session.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/error_retry.dart';
+import '../../widgets/hi_skeleton.dart';
 import 'wod_detail_screen.dart';
 import 'other_workouts_screen.dart';
 import '../history/history_screen.dart';
@@ -46,7 +47,7 @@ class _WodTabState extends ConsumerState<WodTab> {
           future: _future,
           builder: (context, snap) {
             if (snap.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
+              return const HiListSkeleton(count: 5, itemHeight: 88);
             }
             if (snap.hasError) {
               return ErrorRetry(onRetry: () => setState(() {
@@ -129,10 +130,10 @@ class _WodTabState extends ConsumerState<WodTab> {
                   builder: (context) => Card(
                     color: HiColors.bgElevated,
                     child: ListTile(
-                      leading: const Text('🌍', style: TextStyle(fontSize: 20)),
+                      leading: Icon(Icons.public_rounded, size: 24, color: HiColors.brandPrimary),
                       title: Text(t.wodTabOtherTitle, style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
                       subtitle: Text(t.wodTabOtherSubtitle,
-                          style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
+                          style: HiType.caption.copyWith(color: HiColors.textTertiary)),
                       trailing: Icon(Icons.chevron_right, color: HiColors.textTertiary),
                       onTap: () => Navigator.of(context).push(
                         MaterialPageRoute(builder: (_) => const OtherWorkoutsScreen()),
@@ -178,7 +179,7 @@ class _WodTabState extends ConsumerState<WodTab> {
         if (snap.connectionState == ConnectionState.waiting) {
           return const Padding(
             padding: EdgeInsets.only(bottom: HiSpace.lg),
-            child: SizedBox(height: 84, child: Center(child: CircularProgressIndicator())),
+            child: HiSkeleton(height: 84, radius: HiRadius.lg),
           );
         }
         final week = snap.data?.currentWeek;

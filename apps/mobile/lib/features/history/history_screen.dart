@@ -9,6 +9,7 @@ import '../../data/session.dart';
 import '../../data/wod_catalog.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/error_retry.dart';
+import '../../widgets/hi_skeleton.dart';
 import '../wods/wod_detail_screen.dart';
 import '../wods/wod_format.dart';
 
@@ -85,7 +86,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
           future: _future,
           builder: (context, snap) {
             if (snap.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator(color: HiColors.brandPrimary));
+              return const HiListSkeleton(count: 6, itemHeight: 72);
             }
             if (snap.hasError) {
               return ErrorRetry(onRetry: () => setState(() => _future = ref.read(apiClientProvider).results()));

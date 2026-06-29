@@ -55,7 +55,7 @@ class OverlayRadar extends StatelessWidget {
               ticksTextStyle: const TextStyle(color: Colors.transparent, fontSize: 1),
               tickCount: 4,
               titlePositionPercentageOffset: 0.18,
-              titleTextStyle: TextStyle(color: HiColors.textSecondary, fontSize: 11),
+              titleTextStyle: HiType.caption.copyWith(color: HiColors.textSecondary, fontSize: 11),
               getTitle: (index, angle) => RadarChartTitle(text: HiLabels.attribute(mine[index % mine.length].attribute)),
             ),
           ),
@@ -78,7 +78,7 @@ class OverlayRadar extends StatelessWidget {
         children: [
           Container(width: 12, height: 12, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
           const SizedBox(width: 6),
-          Text(label, style: TextStyle(color: HiColors.textSecondary, fontSize: 12)),
+          Text(label, style: HiType.caption.copyWith(color: HiColors.textSecondary)),
         ],
       );
 }

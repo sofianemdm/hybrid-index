@@ -185,6 +185,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  // Progression d'étape annoncée (header + liveRegion) avant le titre de l'étape.
+                  Semantics(
+                    header: true,
+                    liveRegion: true,
+                    label: AppLocalizations.of(context).a11yOnbStep(1, 2),
+                    child: const SizedBox.shrink(),
+                  ),
                   Text(AppLocalizations.of(context).onbAvatarTitle,
                       style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: HiColors.textPrimary)),
                   const SizedBox(height: 6),
@@ -234,6 +241,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   List<Widget> _effortsStep() => [
+        // Progression d'étape annoncée (header + liveRegion) à l'arrivée sur les efforts.
+        Semantics(
+          header: true,
+          liveRegion: true,
+          label: AppLocalizations.of(context).a11yOnbStep(2, 2),
+          child: const SizedBox.shrink(),
+        ),
         Text(AppLocalizations.of(context).onbRevealTitle,
             style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: HiColors.textPrimary)),
         const SizedBox(height: 6),
@@ -285,7 +299,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
+            // Le titre et l'interrupteur lus comme un seul contrôle activable.
+            MergeSemantics(
+              child: Row(
               children: [
                 Expanded(
                   child: Text(AppLocalizations.of(context).onbRunTitle,
@@ -300,6 +316,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   },
                 ),
               ],
+            ),
             ),
             if (_withCourse) ...[
               const SizedBox(height: HiSpace.sm),
@@ -336,7 +353,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
+            MergeSemantics(
+              child: Row(
               children: [
                 Expanded(
                   child: Text(AppLocalizations.of(context).onbSquat1rm,
@@ -351,6 +369,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   },
                 ),
               ],
+            ),
             ),
             if (_withSquat) ...[
               const SizedBox(height: HiSpace.sm),
@@ -379,7 +398,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
+            MergeSemantics(
+              child: Row(
               children: [
                 Expanded(
                   child: Text(title, style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w600)),
@@ -390,6 +410,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   onChanged: onToggle,
                 ),
               ],
+            ),
             ),
             if (enabled)
               Row(
@@ -422,10 +443,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   Widget _previewCard() {
     if (_previewing) {
-      return const Center(
+      return Center(
         child: Padding(
-          padding: EdgeInsets.all(HiSpace.md),
-          child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+          padding: const EdgeInsets.all(HiSpace.md),
+          child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: HiColors.brandPrimary)),
         ),
       );
     }
@@ -433,21 +454,29 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       return Text(AppLocalizations.of(context).onbEstimatedIndexHere,
           textAlign: TextAlign.center, style: TextStyle(color: HiColors.textTertiary));
     }
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: HiSpace.md),
-      decoration: BoxDecoration(
-        color: HiColors.bgElevated,
-        borderRadius: BorderRadius.circular(HiRadius.md),
-        border: Border.all(color: HiColors.strokeSubtle),
-      ),
-      child: Column(
-        children: [
-          Text(AppLocalizations.of(context).onbEstimatedIndexLabel,
-              style: TextStyle(color: HiColors.textSecondary, fontSize: 11, letterSpacing: 2)),
-          const SizedBox(height: 4),
-          Text('${_preview!.index.value}',
-              style: TextStyle(color: HiColors.brandPrimary, fontSize: 40, fontWeight: FontWeight.w800)),
-        ],
+    // a11y : l'aperçu d'Index se met à jour à chaque réglage → liveRegion qui lit « Index estimé X »
+    // (le visuel est résumé par le label, son détail est exclu pour éviter la double lecture).
+    return Semantics(
+      liveRegion: true,
+      label: '${AppLocalizations.of(context).onbEstimatedIndexLabel} ${_preview!.index.value}',
+      child: ExcludeSemantics(
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: HiSpace.md),
+          decoration: BoxDecoration(
+            color: HiColors.bgElevated,
+            borderRadius: BorderRadius.circular(HiRadius.md),
+            border: Border.all(color: HiColors.strokeSubtle),
+          ),
+          child: Column(
+            children: [
+              Text(AppLocalizations.of(context).onbEstimatedIndexLabel,
+                  style: TextStyle(color: HiColors.textSecondary, fontSize: 11, letterSpacing: 2)),
+              const SizedBox(height: 4),
+              Text('${_preview!.index.value}',
+                  style: TextStyle(color: HiColors.brandPrimary, fontSize: 40, fontWeight: FontWeight.w800)),
+            ],
+          ),
+        ),
       ),
     );
   }

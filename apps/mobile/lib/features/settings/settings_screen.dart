@@ -13,6 +13,7 @@ import '../../data/web_download.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/hi_button.dart';
+import '../../widgets/hi_skeleton.dart';
 import '../../widgets/bug_report.dart';
 import '../avatar/dice_avatar_screen.dart';
 
@@ -171,7 +172,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           title: Text(t.settingsTitle), backgroundColor: Colors.transparent, elevation: 0),
       body: SafeArea(
         child: _loading
-            ? const Center(child: CircularProgressIndicator())
+            ? const HiListSkeleton(count: 5, itemHeight: 64)
             : SingleChildScrollView(
                 padding: const EdgeInsets.all(HiSpace.lg),
                 child: ConstrainedBox(

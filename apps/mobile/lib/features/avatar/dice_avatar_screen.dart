@@ -10,6 +10,7 @@ import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../theme/haptics.dart';
 import '../../theme/tokens.dart';
+import '../../widgets/hi_skeleton.dart';
 import '../../widgets/celebration.dart';
 import '../../widgets/hi_avatar.dart';
 
@@ -256,7 +257,7 @@ class _DiceAvatarEditorState extends State<DiceAvatarEditor> {
                 errorBuilder: (_, __, ___) => const SizedBox(),
                 loadingBuilder: (ctx, child, p) => p == null
                     ? child
-                    : const Center(child: SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))),
+                    : Center(child: SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: HiColors.brandPrimary))),
               ),
             ),
           ),
@@ -336,7 +337,7 @@ class _DiceAvatarScreenState extends ConsumerState<DiceAvatarScreen> {
       ),
       body: SafeArea(
         child: _loading
-            ? Center(child: CircularProgressIndicator(color: HiColors.brandPrimary))
+            ? const HiListSkeleton(count: 4, itemHeight: 96)
             : Column(
                 children: [
                   Expanded(
@@ -359,7 +360,7 @@ class _DiceAvatarScreenState extends ConsumerState<DiceAvatarScreen> {
                         ),
                         onPressed: _saving ? null : _save,
                         child: _saving
-                            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                            ? SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: HiColors.textOnBrand))
                             : const Text('Valider mon athlète'),
                       ),
                     ),

@@ -28,24 +28,44 @@ class RankProgressBar extends StatelessWidget {
           Row(
             children: [
               Text(HiLabels.rank(rp.current),
-                  style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
+                  style: HiType.bodyStrong.copyWith(color: HiColors.textPrimary)),
               const Spacer(),
               if (atMax)
-                Text('Rang maximal 👑',
-                    style: TextStyle(color: HiColors.brandPrimary, fontWeight: FontWeight.w700, fontSize: 13))
+                Row(mainAxisSize: MainAxisSize.min, children: [
+                  Text('Rang maximal',
+                      style: HiType.label.copyWith(color: HiColors.brandPrimary, fontWeight: FontWeight.w700)),
+                  const SizedBox(width: HiSpace.xs),
+                  Icon(Icons.workspace_premium_rounded, size: 16, color: HiColors.brandPrimary),
+                ])
               else
                 Text('encore ${rp.pointsToNext} pts → ${HiLabels.rank(rp.next!)}',
-                    style: TextStyle(color: HiColors.textSecondary, fontSize: 14)),
+                    style: HiType.body.copyWith(color: HiColors.textSecondary)),
             ],
           ),
           const SizedBox(height: HiSpace.sm),
           ClipRRect(
             borderRadius: BorderRadius.circular(HiRadius.pill),
-            child: LinearProgressIndicator(
-              value: visual,
-              minHeight: 8,
-              backgroundColor: HiColors.bgElevated2,
-              valueColor: AlwaysStoppedAnimation(HiColors.brandPrimary),
+            child: SizedBox(
+              height: 8,
+              child: Stack(
+                children: [
+                  Container(color: HiColors.bgElevated2),
+                  LayoutBuilder(
+                    builder: (context, c) {
+                      final w = (c.maxWidth * visual).clamp(0.0, c.maxWidth);
+                      return AnimatedContainer(
+                        duration: HiMotion.base,
+                        curve: HiMotion.enter,
+                        width: w,
+                        decoration: BoxDecoration(
+                          color: HiColors.brandPrimary,
+                          borderRadius: BorderRadius.circular(HiRadius.pill),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         ],

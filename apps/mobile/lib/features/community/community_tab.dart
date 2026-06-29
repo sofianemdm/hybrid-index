@@ -209,7 +209,7 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
                 Row(children: [
                   Expanded(
                     child: Text(t.communityTitle,
-                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: HiColors.textPrimary)),
+                        style: HiType.titleL.copyWith(color: HiColors.textPrimary)),
                   ),
                   Badge.count(
                     count: ref.watch(unreadMessagesProvider).value ?? 0,
@@ -257,9 +257,9 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
         padding: const EdgeInsets.only(bottom: HiSpace.md),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(t.communityDiscoverTitle,
-              style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 16)),
+              style: HiType.titleM.copyWith(color: HiColors.textPrimary, fontSize: 16)),
           const SizedBox(height: 2),
-          Text(t.communityDiscoverSubtitle, style: TextStyle(color: HiColors.textTertiary, fontSize: 13)),
+          Text(t.communityDiscoverSubtitle, style: HiType.body.copyWith(color: HiColors.textTertiary, fontSize: 13)),
         ]),
       );
 
@@ -332,7 +332,7 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
                       ),
                       if (a.createdAt != null)
                         Text(timeAgo(t, a.createdAt!),
-                            style: TextStyle(color: HiColors.textTertiary, fontSize: 11)),
+                            style: HiType.caption.copyWith(color: HiColors.textTertiary, fontSize: 11)),
                     ],
                   ),
                 ),

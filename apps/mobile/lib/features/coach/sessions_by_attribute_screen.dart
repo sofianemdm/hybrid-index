@@ -6,6 +6,7 @@ import '../../data/session.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/error_retry.dart';
+import '../../widgets/hi_skeleton.dart';
 import '../wods/wod_detail_screen.dart';
 import 'coach_library_screen.dart';
 
@@ -61,7 +62,7 @@ class _SessionsByAttributeScreenState extends ConsumerState<SessionsByAttributeS
           future: _future,
           builder: (context, snap) {
             if (snap.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator(color: color));
+              return const HiListSkeleton(count: 5, itemHeight: 88);
             }
             if (snap.hasError) {
               return ErrorRetry(message: t.coachLoadError, onRetry: () => setState(_load));
@@ -116,8 +117,8 @@ class _SessionsByAttributeScreenState extends ConsumerState<SessionsByAttributeS
   Widget _section(String label) => Padding(
         padding: const EdgeInsets.only(bottom: HiSpace.sm),
         child: Text(label.toUpperCase(),
-            style: TextStyle(
-                color: HiColors.textTertiary, fontSize: 12, letterSpacing: 1.5, fontWeight: FontWeight.w700)),
+            style: HiType.caption.copyWith(
+                color: HiColors.textTertiary, letterSpacing: 1.5, fontWeight: FontWeight.w700)),
       );
 
   /// Renvoi vers la bibliothèque de séances GUIDÉES (entraînements clés en main) pour cet axe.
@@ -142,10 +143,10 @@ class _SessionsByAttributeScreenState extends ConsumerState<SessionsByAttributeS
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(t.sessionsGuidedLinkTitle,
-                        style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 14)),
+                        style: HiType.bodyStrong.copyWith(color: HiColors.textPrimary, fontSize: 14)),
                     const SizedBox(height: 2),
                     Text(t.sessionsGuidedLinkSubtitle,
-                        style: TextStyle(color: HiColors.textTertiary, fontSize: 12, height: 1.3)),
+                        style: HiType.caption.copyWith(color: HiColors.textTertiary, height: 1.3)),
                   ],
                 ),
               ),
@@ -239,6 +240,6 @@ class _SessionsByAttributeScreenState extends ConsumerState<SessionsByAttributeS
   Widget _tag(String text, Color color) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
         decoration: BoxDecoration(color: color.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(HiRadius.pill)),
-        child: Text(text, style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w600)),
+        child: Text(text, style: HiType.caption.copyWith(color: color, fontSize: 11, fontWeight: FontWeight.w600)),
       );
 }

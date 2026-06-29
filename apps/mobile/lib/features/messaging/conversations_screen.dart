@@ -5,6 +5,7 @@ import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
+import '../../widgets/hi_skeleton.dart';
 import '../../widgets/hi_avatar.dart';
 import '../../widgets/hi_empty_state.dart';
 import '../../widgets/rank_badge.dart';
@@ -52,7 +53,7 @@ class _ConversationsScreenState extends ConsumerState<ConversationsScreen> {
             future: _future,
             builder: (context, snap) {
               if (snap.connectionState == ConnectionState.waiting) {
-                return Center(child: CircularProgressIndicator(color: HiColors.brandPrimary));
+                return const HiListSkeleton(count: 6, itemHeight: 64);
               }
               if (snap.hasError) {
                 return ListView(children: [

@@ -157,7 +157,14 @@ class HomeScreen extends ConsumerWidget {
         // dans le header de l'Accueil (pattern Strava), plus dans la barre d'onglets (4 onglets).
         Semantics(
           button: true,
-          label: t.a11yHomeViewProgression,
+          // Résumé parlé du héros : « <nom>, Index X, rang Y. Touchez pour voir votre progression. »
+          // La PlayerCard visuelle est décorative (son propre résumé est exclu ci-dessous) → un seul
+          // nœud focusable annonce à la fois le score et l'action.
+          label: t.a11yHomePlayerCard(
+            ref.watch(sessionProvider).user?.displayName ?? '',
+            p.index.value,
+            HiLabels.rank(p.index.rank),
+          ),
           child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: () => Navigator.of(context).push(
@@ -182,13 +189,17 @@ class HomeScreen extends ConsumerWidget {
                 alignment: Alignment.topCenter,
                 // RepaintBoundary : isole le repaint du sheen animé de la carte du reste de l'accueil
                 // (le reflet en boucle ne re-peint plus le ListView entier à chaque frame).
-                child: RepaintBoundary(
-                  child: PlayerCard(
-                    profile: p,
-                    name: ref.watch(sessionProvider).user?.displayName ?? '',
-                    sex: ref.watch(sessionProvider).sex,
-                    avatar: ref.watch(avatarProvider).value,
-                    badges: ref.watch(cardBadgesProvider).value ?? const [],
+                // ExcludeSemantics : la carte porte son propre résumé (container) ; ici le héros est
+                // déjà résumé par le Semantics(button) parent → on évite la double annonce.
+                child: ExcludeSemantics(
+                  child: RepaintBoundary(
+                    child: PlayerCard(
+                      profile: p,
+                      name: ref.watch(sessionProvider).user?.displayName ?? '',
+                      sex: ref.watch(sessionProvider).sex,
+                      avatar: ref.watch(avatarProvider).value,
+                      badges: ref.watch(cardBadgesProvider).value ?? const [],
+                    ),
                   ),
                 ),
               ),

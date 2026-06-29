@@ -16,7 +16,7 @@ class AttributeGains extends StatelessWidget {
       return Text(
         'Pas de nouveau record cette fois — mais chaque séance compte pour ta régularité.',
         textAlign: TextAlign.center,
-        style: TextStyle(color: HiColors.textSecondary, fontSize: 14),
+        style: HiType.body.copyWith(color: HiColors.textSecondary, fontSize: 14),
       );
     }
     return Column(
@@ -40,7 +40,7 @@ class AttributeGains extends StatelessWidget {
               // Texte en couleur lisible (textPrimary) ; la couleur d'attribut reste portée par l'icône
               // ET le libellé → l'info n'est jamais codée par la seule couleur (WCAG 1.4.1).
               Text('+${g.delta}',
-                  style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w800, fontSize: 15)),
+                  style: HiType.bodyStrong.copyWith(color: HiColors.textPrimary, fontWeight: FontWeight.w800)),
               const SizedBox(width: 6),
               Text(HiLabels.attribute(g.attribute),
                   style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w600)),
@@ -53,7 +53,7 @@ class AttributeGains extends StatelessWidget {
                     borderRadius: BorderRadius.circular(HiRadius.pill),
                   ),
                   child: Text('🎯 ton point faible',
-                      style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w700)),
+                      style: HiType.caption.copyWith(color: color, fontSize: 11, fontWeight: FontWeight.w700)),
                 ),
               ],
             ],

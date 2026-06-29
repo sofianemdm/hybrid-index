@@ -7,6 +7,7 @@ import '../../data/session.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/hi_button.dart';
 import '../../widgets/error_retry.dart';
+import '../../widgets/hi_skeleton.dart';
 import '../../widgets/rank_badge.dart';
 import '../wods/wod_detail_screen.dart';
 import '../wods/wod_format.dart';
@@ -35,7 +36,7 @@ class ChallengeBanner extends ConsumerWidget {
             ),
             child: Row(
               children: [
-                const Text('🔥', style: TextStyle(fontSize: 22)),
+                Icon(Icons.local_fire_department_rounded, size: 24, color: HiColors.textOnBrand),
                 const SizedBox(width: HiSpace.sm),
                 Expanded(
                   child: Column(
@@ -115,7 +116,7 @@ class _ChallengeScreenState extends ConsumerState<ChallengeScreen> {
           future: _challenge,
           builder: (context, snap) {
             if (snap.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator(color: HiColors.brandPrimary));
+              return const HiListSkeleton(count: 4, itemHeight: 96);
             }
             if (snap.hasError) {
               return ErrorRetry(onRetry: () => setState(() {
@@ -263,7 +264,7 @@ class _ChallengeScreenState extends ConsumerState<ChallengeScreen> {
       future: _board,
       builder: (context, snap) {
         if (snap.connectionState == ConnectionState.waiting) {
-          return Padding(padding: const EdgeInsets.all(24), child: Center(child: CircularProgressIndicator(color: HiColors.brandPrimary)));
+          return const HiListSkeleton(count: 4, itemHeight: 56, padding: EdgeInsets.symmetric(vertical: HiSpace.md));
         }
         if (snap.hasError) {
           return ErrorRetry(compact: true, onRetry: () => setState(_loadBoard));

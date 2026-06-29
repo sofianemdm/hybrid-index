@@ -5,6 +5,7 @@ import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
+import '../../widgets/hi_skeleton.dart';
 import '../../widgets/hi_button.dart';
 import '../wods/wod_format.dart';
 
@@ -128,9 +129,7 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
   Widget _perfPicker() {
     final t = AppLocalizations.of(context);
     if (_results == null) {
-      return Padding(
-          padding: const EdgeInsets.all(16),
-          child: Center(child: CircularProgressIndicator(color: HiColors.brandPrimary)));
+      return const HiListSkeleton(count: 3, itemHeight: 56, padding: EdgeInsets.all(16));
     }
     if (_results!.isEmpty) {
       return Container(

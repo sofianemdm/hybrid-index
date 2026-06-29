@@ -6,6 +6,7 @@ import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/error_retry.dart';
+import '../../widgets/hi_skeleton.dart';
 import '../wods/wod_detail_screen.dart';
 
 /// Grand Chelem : réussir les 4 séances phares — Bronze (terminées), Argent (bonnes notes),
@@ -27,11 +28,8 @@ class _EndgameScreenState extends ConsumerState<EndgameScreen> {
   }
 
   static const _order = ['none', 'bronze', 'silver', 'gold'];
-  static const _tierColor = {
-    'bronze': Color(0xFFC87E4F),
-    'silver': Color(0xFFC2CBD8),
-    'gold': Color(0xFFF3C13A),
-  };
+  // Réutilise les couleurs de rang du design system (pas de hex en dur).
+  static Color _tier(String key) => HiColors.rank(key);
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +41,7 @@ class _EndgameScreenState extends ConsumerState<EndgameScreen> {
           future: _future,
           builder: (context, snap) {
             if (snap.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator(color: HiColors.brandPrimary));
+              return const HiListSkeleton(count: 4, itemHeight: 80);
             }
             if (snap.hasError) return ErrorRetry(onRetry: () => setState(() => _future = ref.read(apiClientProvider).endgame()));
             final e = snap.data!;
@@ -74,7 +72,7 @@ class _EndgameScreenState extends ConsumerState<EndgameScreen> {
 
   Widget _hero(EndgameInfo e) {
     final t = AppLocalizations.of(context);
-    final c = _tierColor[e.tier] ?? HiColors.textTertiary;
+    final c = e.tier == 'none' ? HiColors.textTertiary : _tier(e.tier);
     final emoji = {'bronze': '🥉', 'silver': '🥈', 'gold': '🥇'}[e.tier] ?? '🔒';
     final label = {'bronze': t.endgameHeroBronze, 'silver': t.endgameHeroSilver, 'gold': t.endgameHeroGold}[e.tier] ??
         t.endgameHeroLocked;
@@ -105,11 +103,11 @@ class _EndgameScreenState extends ConsumerState<EndgameScreen> {
     if (!f.done) {
       sc = HiColors.textTertiary;
     } else if ((f.score ?? 0) >= e.goldMin) {
-      sc = _tierColor['gold']!;
+      sc = _tier('gold');
     } else if ((f.score ?? 0) >= e.silverMin) {
-      sc = _tierColor['silver']!;
+      sc = _tier('silver');
     } else {
-      sc = _tierColor['bronze']!;
+      sc = _tier('bronze');
     }
     // a11y : statut (faite/à faire) + score énoncés, rôle bouton (ouvre le WOD).
     final rowLabel = f.done
@@ -157,7 +155,7 @@ class _EndgameScreenState extends ConsumerState<EndgameScreen> {
   Widget _trophyTier(String tier, String title, String desc, EndgameInfo e) {
     final t = AppLocalizations.of(context);
     final unlocked = _order.indexOf(e.tier) >= _order.indexOf(tier);
-    final c = _tierColor[tier]!;
+    final c = _tier(tier);
     // a11y : palier de trophée énoncé avec son état (débloqué / verrouillé).
     return Semantics(
       label: '$title, ${unlocked ? t.a11yUnlocked : t.a11yLocked}. $desc',

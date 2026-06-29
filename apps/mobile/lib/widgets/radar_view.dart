@@ -225,7 +225,7 @@ class _RadarPainter extends CustomPainter {
           text: TextSpan(children: [
             TextSpan(
                 text: '${HiLabels.attribute(a.attribute)}\n',
-                style: (baseLabel ?? const TextStyle()).copyWith(
+                style: (baseLabel ?? HiType.caption).copyWith(
                     color: HiColors.textSecondary.withValues(alpha: labelT), fontSize: 11, fontWeight: FontWeight.w600)),
             TextSpan(
                 text: a.unlocked ? '${a.score}' : '—',

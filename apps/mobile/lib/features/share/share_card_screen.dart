@@ -13,6 +13,7 @@ import '../../data/session.dart';
 import '../../data/web_download.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
+import '../../widgets/hi_skeleton.dart';
 import '../../widgets/hi_avatar.dart';
 import '../../widgets/hi_button.dart';
 
@@ -86,9 +87,9 @@ class _ShareCardScreenState extends ConsumerState<ShareCardScreen> {
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(HiSpace.lg),
             child: profileAsync.when(
-              loading: () => Padding(
-                padding: const EdgeInsets.all(HiSpace.xxl),
-                child: CircularProgressIndicator(color: HiColors.brandPrimary),
+              loading: () => const Padding(
+                padding: EdgeInsets.symmetric(vertical: HiSpace.xxl),
+                child: HiSkeleton(height: 480, width: 300, radius: HiRadius.xl),
               ),
               error: (_, __) => _errorRetry(t),
               data: (profile) => profile == null ? _noIndex(t) : _cardAndActions(context, t, profile),

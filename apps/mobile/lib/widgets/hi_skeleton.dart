@@ -21,7 +21,21 @@ class HiSkeleton extends StatefulWidget {
 
 class _HiSkeletonState extends State<HiSkeleton> with SingleTickerProviderStateMixin {
   late final AnimationController _c =
-      AnimationController(vsync: this, duration: const Duration(milliseconds: 1200))..repeat();
+      AnimationController(vsync: this, duration: const Duration(milliseconds: 1200));
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Reduce-motion : on fige le gradient (pas de shimmer) si l'utilisateur a
+    // demande la reduction des animations. Sinon on (re)lance la boucle.
+    final reduceMotion = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+    if (reduceMotion) {
+      if (_c.isAnimating) _c.stop();
+      _c.value = 0.5; // gradient centre, fige a un etat neutre lisible
+    } else if (!_c.isAnimating) {
+      _c.repeat();
+    }
+  }
 
   @override
   void dispose() {
@@ -78,6 +92,31 @@ class HomeSkeleton extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Squelette de liste générique : N cartes empilées (≈ une ligne de contenu).
+/// Remplace un spinner plein écran quand le contenu attendu est une liste.
+class HiListSkeleton extends StatelessWidget {
+  final int count;
+  final double itemHeight;
+  final EdgeInsetsGeometry padding;
+  const HiListSkeleton({
+    super.key,
+    this.count = 5,
+    this.itemHeight = 72,
+    this.padding = const EdgeInsets.all(HiSpace.lg),
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.separated(
+      padding: padding,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: count,
+      separatorBuilder: (_, __) => const SizedBox(height: HiSpace.md),
+      itemBuilder: (_, __) => HiSkeleton(height: itemHeight, radius: HiRadius.lg),
     );
   }
 }

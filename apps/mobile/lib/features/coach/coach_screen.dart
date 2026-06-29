@@ -6,6 +6,7 @@ import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/error_retry.dart';
+import '../../widgets/hi_skeleton.dart';
 import '../log/log_wod_screen.dart';
 
 const _attributes = ['engine', 'speed', 'strength', 'power', 'muscular_endurance', 'hybrid'];
@@ -68,9 +69,7 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
                   future: _future,
                   builder: (context, snap) {
                     if (snap.connectionState == ConnectionState.waiting) {
-                      return Padding(
-                          padding: const EdgeInsets.all(40),
-                          child: Center(child: CircularProgressIndicator(color: HiColors.brandPrimary)));
+                      return const HiListSkeleton(count: 4, itemHeight: 88);
                     }
                     if (snap.hasError) {
                       return ErrorRetry(message: t.coachLoadError, onRetry: () => setState(_load));
@@ -159,7 +158,7 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
               ],
             ),
             const SizedBox(height: 8),
-            Text(s.description, style: TextStyle(color: HiColors.textSecondary, fontSize: 13, height: 1.4)),
+            Text(s.description, style: HiType.body.copyWith(color: HiColors.textSecondary, fontSize: 13)),
           ],
         ),
       ),
@@ -177,7 +176,7 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
           color: color.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(HiRadius.pill),
         ),
-        child: Text(text, style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w600)),
+        child: Text(text, style: HiType.caption.copyWith(color: color, fontSize: 11, fontWeight: FontWeight.w600)),
       );
 
   Widget _chip(String label, String? value) {

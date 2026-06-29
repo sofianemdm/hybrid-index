@@ -8,6 +8,7 @@ import '../../data/session.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/error_retry.dart';
+import '../../widgets/hi_skeleton.dart';
 import '../../widgets/rank_badge.dart';
 import '../profile/public_profile_screen.dart';
 
@@ -112,7 +113,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 future: _future,
                 builder: (context, snap) {
                   if (snap.connectionState == ConnectionState.waiting) {
-                    return Center(child: CircularProgressIndicator(color: HiColors.brandPrimary));
+                    return const HiListSkeleton(count: 7, itemHeight: 64);
                   }
                   if (snap.hasError) return ErrorRetry(onRetry: () => setState(_load));
                   final items = snap.data ?? [];

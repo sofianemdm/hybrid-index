@@ -12,6 +12,7 @@ import '../../l10n/app_localizations.dart';
 import '../../theme/haptics.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/hi_avatar.dart';
+import '../../widgets/hi_skeleton.dart';
 import '../../widgets/rank_badge.dart';
 import '../profile/public_profile_screen.dart';
 
@@ -332,7 +333,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
   }
 
   Widget _body() {
-    if (_loading) return Center(child: CircularProgressIndicator(color: HiColors.brandPrimary));
+    if (_loading) return const HiListSkeleton(count: 6, itemHeight: 48);
     if (_error != null) return Center(child: Text(_error!, style: HiType.body.copyWith(color: HiColors.error)));
     final items = _visible;
     if (items.isEmpty) {

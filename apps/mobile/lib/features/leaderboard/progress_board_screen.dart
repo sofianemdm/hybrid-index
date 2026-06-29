@@ -6,6 +6,7 @@ import '../../data/session.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/error_retry.dart';
+import '../../widgets/hi_skeleton.dart';
 import '../profile/public_profile_screen.dart';
 
 /// Classement de PROGRESSION de la semaine : on classe par EFFORT fourni, pas par niveau.
@@ -67,7 +68,7 @@ class _ProgressBoardScreenState extends ConsumerState<ProgressBoardScreen> {
                 future: _future,
                 builder: (context, snap) {
                   if (snap.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
+                    return const HiListSkeleton(count: 8, itemHeight: 56);
                   }
                   if (snap.hasError) {
                     return ErrorRetry(onRetry: () => setState(_load));

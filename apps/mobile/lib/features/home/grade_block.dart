@@ -50,29 +50,29 @@ class EstimationBlock extends ConsumerWidget {
             children: [
               Icon(Icons.auto_graph, color: HiColors.warn, size: 18),
               const SizedBox(width: HiSpace.sm),
-              Expanded(child: Text(title, style: TextStyle(color: HiColors.warn, fontWeight: FontWeight.w800, fontSize: 13))),
+              Expanded(child: Text(title, style: HiType.label.copyWith(color: HiColors.warn, fontWeight: FontWeight.w800))),
               _coverageDots(coverage),
             ],
           ),
           const SizedBox(height: 8),
           planAsync.when(
-            loading: () => Text(t.gradeEstimationLoading(coverage), style: TextStyle(color: HiColors.textSecondary, fontSize: 12)),
+            loading: () => Text(t.gradeEstimationLoading(coverage), style: HiType.caption.copyWith(color: HiColors.textSecondary)),
             error: (_, __) => Text(
               t.gradeEstimationError(coverage),
-              style: TextStyle(color: HiColors.textSecondary, fontSize: 12, height: 1.3),
+              style: HiType.caption.copyWith(color: HiColors.textSecondary, height: 1.3),
             ),
             data: (plan) {
               final n = plan.sessions.length;
               if (n == 0) {
                 return Text(t.gradeKeepLogging,
-                    style: TextStyle(color: HiColors.textSecondary, fontSize: 12));
+                    style: HiType.caption.copyWith(color: HiColors.textSecondary));
               }
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   RichText(
                     text: TextSpan(
-                      style: TextStyle(color: HiColors.textSecondary, fontSize: 12, height: 1.3),
+                      style: HiType.caption.copyWith(color: HiColors.textSecondary, height: 1.3),
                       children: [
                         TextSpan(text: t.gradeCompletePrefix),
                         TextSpan(text: n == 1 ? t.gradeCompleteSessionOne : t.gradeCompleteSessionMany(n),
@@ -115,8 +115,8 @@ class EstimationBlock extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(s.name, style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 13)),
-                      Text(AppLocalizations.of(context).gradeUnlocks(covers), style: TextStyle(color: HiColors.textTertiary, fontSize: 11)),
+                      Text(s.name, style: HiType.label.copyWith(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
+                      Text(AppLocalizations.of(context).gradeUnlocks(covers), style: HiType.caption.copyWith(color: HiColors.textTertiary, fontSize: 11)),
                     ],
                   ),
                 ),

@@ -9,6 +9,7 @@ import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/error_retry.dart';
 import '../../widgets/hi_button.dart';
+import '../../widgets/hi_skeleton.dart';
 import '../../widgets/rank_badge.dart';
 import 'wod_builder_screen.dart';
 import 'wod_format.dart';
@@ -174,7 +175,18 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
           future: _detail,
           builder: (context, snap) {
             if (snap.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator(color: HiColors.brandPrimary));
+              return ListView(
+                padding: const EdgeInsets.all(HiSpace.lg),
+                children: const [
+                  HiSkeleton(height: 28, width: 220, radius: HiRadius.sm),
+                  SizedBox(height: HiSpace.lg),
+                  HiSkeleton(height: 160, radius: HiRadius.lg),
+                  SizedBox(height: HiSpace.lg),
+                  HiSkeleton(height: 96, radius: HiRadius.lg),
+                  SizedBox(height: HiSpace.md),
+                  HiSkeleton(height: 72, radius: HiRadius.lg),
+                ],
+              );
             }
             if (snap.hasError) {
               return ErrorRetry(onRetry: () => setState(() {
@@ -537,13 +549,15 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
       children: [
         _scopeChip(AppLocalizations.of(context).wodDetailScopeAll, false),
         const SizedBox(width: 8),
-        _scopeChip('👥 ${widget.clubName ?? AppLocalizations.of(context).wodDetailMyClub}', true),
+        _scopeChip(widget.clubName ?? AppLocalizations.of(context).wodDetailMyClub, true,
+            icon: Icons.group_rounded),
       ],
     );
   }
 
-  Widget _scopeChip(String label, bool club) {
+  Widget _scopeChip(String label, bool club, {IconData? icon}) {
     final active = _clubScope == club;
+    final fg = active ? HiColors.textOnBrand : HiColors.textSecondary;
     return GestureDetector(
       onTap: () => setState(() {
         _clubScope = club;
@@ -556,10 +570,17 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
           color: active ? null : HiColors.bgElevated2,
           borderRadius: BorderRadius.circular(HiRadius.pill),
         ),
-        child: Text(label,
-            style: HiType.caption.copyWith(
-                color: active ? HiColors.textOnBrand : HiColors.textSecondary,
-                fontWeight: FontWeight.w700)),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[
+              Icon(icon, size: 14, color: fg),
+              const SizedBox(width: 4),
+            ],
+            Text(label,
+                style: HiType.caption.copyWith(color: fg, fontWeight: FontWeight.w700)),
+          ],
+        ),
       ),
     );
   }
@@ -675,7 +696,7 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
           future: _leaderboard,
           builder: (context, snap) {
             if (snap.connectionState == ConnectionState.waiting) {
-              return Padding(padding: const EdgeInsets.all(24), child: Center(child: CircularProgressIndicator(color: HiColors.brandPrimary)));
+              return const HiListSkeleton(count: 4, itemHeight: 56, padding: EdgeInsets.symmetric(vertical: HiSpace.md));
             }
             if (snap.hasError) {
               return ErrorRetry(compact: true, onRetry: () => setState(_loadLeaderboard));

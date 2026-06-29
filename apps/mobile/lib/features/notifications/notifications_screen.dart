@@ -9,6 +9,7 @@ import '../../data/ui_state.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/error_retry.dart';
+import '../../widgets/hi_skeleton.dart';
 import '../messaging/conversations_screen.dart';
 import 'notification_settings_screen.dart';
 
@@ -124,7 +125,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen>
             future: _future,
             builder: (context, snap) {
               if (snap.connectionState == ConnectionState.waiting) {
-                return Center(child: CircularProgressIndicator(color: HiColors.brandPrimary));
+                return const HiListSkeleton(count: 6, itemHeight: 72);
               }
               if (snap.hasError) {
                 // Scrollable pour permettre le pull-to-refresh même en erreur.

@@ -4123,6 +4123,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Session “{name}” marked as done.'**
   String coachSessionDoneToast(String name);
+
+  /// No description provided for @a11yHomePlayerCard.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}, Index {ovr}, rank {rank}. Tap to view your progress.'**
+  String a11yHomePlayerCard(String name, int ovr, String rank);
+
+  /// No description provided for @a11yHomeCoachCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Get a training session from the coach'**
+  String get a11yHomeCoachCta;
+
+  /// No description provided for @a11yLeaderboardRow.
+  ///
+  /// In en, this message translates to:
+  /// **'Rank {position}, {name}, Index {ovr}'**
+  String a11yLeaderboardRow(int position, String name, int ovr);
+
+  /// No description provided for @a11yLeaderboardRowMe.
+  ///
+  /// In en, this message translates to:
+  /// **'Rank {position}, you, {name}, Index {ovr}'**
+  String a11yLeaderboardRowMe(int position, String name, int ovr);
+
+  /// No description provided for @a11yLeaderboardTab.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} league'**
+  String a11yLeaderboardTab(String name);
+
+  /// No description provided for @a11yRevealResult.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Index is {ovr}, rank {rank}'**
+  String a11yRevealResult(int ovr, String rank);
+
+  /// No description provided for @a11yRevealComputing.
+  ///
+  /// In en, this message translates to:
+  /// **'Calculating your Index'**
+  String get a11yRevealComputing;
+
+  /// No description provided for @a11yOnbStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Step {current} of {total}'**
+  String a11yOnbStep(int current, int total);
+
+  /// No description provided for @a11yOnbContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue to the next step'**
+  String get a11yOnbContinue;
+
+  /// No description provided for @a11yOnbReveal.
+  ///
+  /// In en, this message translates to:
+  /// **'Reveal my Index'**
+  String get a11yOnbReveal;
+
+  /// No description provided for @a11yOnbEffortToggle.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}, {state, select, on{enabled} off{disabled} other{}}'**
+  String a11yOnbEffortToggle(String name, String state);
 }
 
 class _AppLocalizationsDelegate
