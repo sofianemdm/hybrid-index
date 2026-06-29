@@ -9,8 +9,8 @@ import '../../widgets/celebration.dart';
 import '../../widgets/error_retry.dart';
 import '../../widgets/hi_button.dart';
 import '../../widgets/hi_card.dart';
-import '../../widgets/hi_guided_timer.dart';
 import '../../widgets/hi_skeleton.dart';
+import '../guided/guided_session_screen.dart';
 
 /// Bibliothèque de séances GUIDÉES du coach (type « Le Forgeron ») : des entraînements clés en main
 /// (nom, durée, intensité, attributs travaillés, déroulé). À ne PAS confondre avec les ÉPREUVES
@@ -232,24 +232,10 @@ class _CoachLibraryScreenState extends ConsumerState<CoachLibraryScreen> {
                 style: HiType.body.copyWith(color: HiColors.textSecondary, height: 1.45)),
             const SizedBox(height: HiSpace.md),
             // Deux actions claires : lancer le Mode guidé (chrono) ou valider la séance.
-            Row(
-              children: [
-                Expanded(
-                  child: HiButtonSecondary(
-                    label: t.coachSessionGuidedMode,
-                    icon: Icons.play_circle_outline_rounded,
-                    onPressed: () => _openGuided(s),
-                  ),
-                ),
-                const SizedBox(width: HiSpace.sm),
-                Expanded(
-                  child: HiButton(
-                    label: t.coachSessionMarkDone,
-                    icon: Icons.check_rounded,
-                    onPressed: () => _markDone(s),
-                  ),
-                ),
-              ],
+            HiButton(
+              label: t.coachSessionGuidedMode,
+              icon: Icons.play_circle_outline_rounded,
+              onPressed: () => _openGuided(s),
             ),
           ],
         ),
@@ -259,43 +245,35 @@ class _CoachLibraryScreenState extends ConsumerState<CoachLibraryScreen> {
     );
   }
 
-  /// Ouvre le chrono guidé (HiGuidedTimer) avec le titre de la séance et sa durée comme cible.
-  /// À la fin (cible atteinte ou « Terminer »), on propose directement de valider la séance.
-  Future<void> _openGuided(CoachSession s) async {
-    final elapsed = await HiGuidedTimer.push(
+  /// Lance le Mode guidé format-aware (GuidedSessionScreen) pour la séance. La complétion
+  /// (crédit de série) se déclenche AUTOMATIQUEMENT à la fin du lecteur via onCompleted —
+  /// plus de bouton « Marquer comme faite ».
+  Future<void> _openGuided(CoachSession s) {
+    return GuidedSessionScreen.fromCoach(
       context,
-      title: s.name,
-      durationMin: s.durationMin > 0 ? s.durationMin : null,
+      session: s,
+      onCompleted: () => _creditCoachSession(s),
     );
-    // elapsed != null ⇒ l'athlète a terminé (et non quitté) → enchaîner sur « Marquer comme faite ».
-    if (elapsed != null && mounted) {
-      await _markDone(s);
-    }
   }
 
-  /// « Marquer comme faite » — VOIE CHOISIE : complétion PERSISTÉE côté serveur (POST
+  /// Crédit de série d'une séance terminée — appelé par le lecteur en fin de Mode guidé via
+  /// onCompleted. VOIE CHOISIE : complétion PERSISTÉE côté serveur (POST
   /// /v1/coach/sessions/:id/complete), SANS routage vers la saisie de résultat. Raison : une
   /// [CoachSession] est une séance GUIDÉE clé en main (GET /v1/coach/library), distincte des
   /// ÉPREUVES loguables (WodCatalogEntry) ; elle n'a pas d'id de WOD ni de barème → l'API enregistre
   /// la complétion et CRÉDITE LA SÉRIE sans toucher l'Athlete Index.
   ///
-  /// L'appel réseau est BEST-EFFORT : on garde le feedback (Celebration + SnackBar) dans tous les
-  /// cas, mais on NE MENT PAS sur le crédit de série. Succès ⇒ message confirmant la série créditée ;
-  /// échec réseau ⇒ message honnête indiquant que la synchro (et donc la série) n'a pas abouti.
-  Future<void> _markDone(CoachSession s) async {
-    final t = AppLocalizations.of(context);
+  /// PEUT THROW si l'API échoue : le lecteur affiche alors l'état « échec » avec « réessayer »
+  /// (on NE MENT PAS sur le crédit — la série n'est créditée que si la synchro aboutit).
+  Future<void> _creditCoachSession(CoachSession s) async {
     final api = ref.read(apiClientProvider);
-
-    // Persistance + crédit de série (best-effort : un échec réseau ne casse pas le feedback).
-    bool streakCredited = false;
-    try {
-      final res = await api.completeCoachSession(s.id);
-      streakCredited = res.streakCredited;
-    } catch (_) {
-      streakCredited = false;
-    }
+    // Persistance + crédit de série. PEUT THROW : le lecteur attrape et affiche l'état « échec »
+    // avec un bouton « réessayer » (on ne crédite la série que si la synchro aboutit).
+    final res = await api.completeCoachSession(s.id);
+    final streakCredited = res.streakCredited;
     if (!mounted) return;
 
+    final t = AppLocalizations.of(context);
     await Celebration.show(
       context,
       title: t.coachSessionDoneTitle,

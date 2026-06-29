@@ -14,6 +14,7 @@ import '../../widgets/rank_badge.dart';
 import 'wod_builder_screen.dart';
 import 'wod_format.dart';
 import 'wod_result_entry_screen.dart';
+import '../guided/guided_session_screen.dart';
 
 /// Fiche WOD : paliers de référence (champion/intermédiaire/occasionnel) + classement + « Faire cette séance ».
 class WodDetailScreen extends ConsumerStatefulWidget {
@@ -77,6 +78,22 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
         _loadLeaderboard();
       });
     }
+  }
+
+  /// Lance le Mode guidé format-aware pour ce WOD (bloc `guided` du back, sinon repli via `type`).
+  /// COMPLÉTION : un WOD est une ÉPREUVE LOGUABLE → à la fin du lecteur (onCompleted), on enchaîne
+  /// AUTOMATIQUEMENT sur la saisie de résultat ([WodResultEntryScreen]) ; l'athlète peut renseigner
+  /// son score (qui met à jour l'Athlete Index) ou simplement revenir. Le crédit/refresh se fait via
+  /// le retour de [_doWod] (idempotent : rien n'est forcé si la saisie est annulée).
+  Future<void> _startGuidedWod(WodDetail d) {
+    final scalable = d.prescription?.weights.isNotEmpty ?? false;
+    return GuidedSessionScreen.fromWod(
+      context,
+      wod: d,
+      sex: _sex,
+      scaled: _variant == 'scaled',
+      onCompleted: () => _doWod(d.scoreType, scalable: scalable),
+    );
   }
 
   /// Ouvre le constructeur pré-rempli pour éditer ce WOD custom (auteur uniquement).
@@ -246,6 +263,12 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
                 _leaderboardSection(d.scoreType, d.prescription?.weights.isNotEmpty ?? false),
                 const SizedBox(height: HiSpace.lg),
                 _predictionCard(),
+                HiButtonSecondary(
+                  label: t.wodDetailGuidedMode,
+                  icon: Icons.play_circle_outline_rounded,
+                  onPressed: () => _startGuidedWod(d),
+                ),
+                const SizedBox(height: HiSpace.sm),
                 HiButton(
                   label: t.wodDetailDoThisWorkout,
                   onPressed: () => _doWod(d.scoreType, scalable: d.prescription?.weights.isNotEmpty ?? false),

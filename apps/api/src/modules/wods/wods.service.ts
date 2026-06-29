@@ -432,6 +432,38 @@ export class WodsService {
     };
   }
 
+  /**
+   * Bloc « guidé » dérivé pour le LECTEUR de séance (Mode guidé), exposé à TOUS (énoncé public,
+   * non sensible). Aucune migration : tout vient de `wod.type` / `wod.rounds` / `timeCapSec` et des
+   * `blocks` de la prescription. La structure work/rest n'étant PAS stockée en base, `work[]` n'est
+   * rempli QUE pour Tabata (constantes canoniques 20/10) ; les autres formats à fenêtres (EMOM/
+   * intervalles) sont reconstruits côté client à partir de `rounds`/`capSec`. C'est l'ajout API
+   * minimal du plan : il garantit que le client dispose toujours de `format` + `rounds` + `capSec`.
+   */
+  private buildGuided(
+    wod: { type: string; rounds: number | null; timeCapSec: number | null },
+    prescription: WodPrescription | null,
+  ): {
+    format: string;
+    rounds: number | null;
+    capSec: number | null;
+    work: Array<{ kind: "work" | "rest"; durationSec: number }>;
+    cues: string[];
+  } {
+    const capSec = prescription?.timeCapSec ?? wod.timeCapSec ?? null;
+    // Consignes = chaque ligne de l'énoncé, « reps mouvement (détail) », pour l'affichage au repos.
+    const cues = (prescription?.blocks ?? []).map((b) => {
+      const head = [b.reps, b.movement].filter((s) => s && s.trim().length > 0).join(" ").trim();
+      return b.detail && b.detail.trim().length > 0 ? `${head} (${b.detail.trim()})` : head;
+    });
+    // work[] : uniquement les fenêtres CANONIQUES connues sans donnée structurée (Tabata 20/10).
+    const work: Array<{ kind: "work" | "rest"; durationSec: number }> = [];
+    if (wod.type === "tabata") {
+      work.push({ kind: "work", durationSec: 20 }, { kind: "rest", durationSec: 10 });
+    }
+    return { format: wod.type, rounds: wod.rounds ?? null, capSec, work, cues };
+  }
+
   async catalog(): Promise<unknown[]> {
     const wods = await this.prisma.wod.findMany({
       where: { id: { notIn: HIDDEN_WOD_IDS } },
@@ -543,6 +575,10 @@ export class WodsService {
       // Énoncé concret de la séance (mouvements + poids) : barème de référence, ou reconstruit
       // depuis les mouvements enregistrés pour un WOD communautaire (« comment faire la séance »).
       prescription,
+      // Bloc dérivé pour le LECTEUR de séance guidée (format + rounds + cap + cues + fenêtres
+      // canoniques). Exposé à TOUS (énoncé public). Le client construit son `GuidedPlan` dessus,
+      // avec repli sur `type`/`timeCapSec` si ce bloc venait à manquer (vieux back).
+      guided: this.buildGuided(wod, prescription),
       // Source unique de vérité pour le toggle Rx/Allégé côté mobile : un WOD n'est
       // « scalable » que s'il porte au moins une charge adaptable (isScalable de la prescription).
       scalable: prescription ? isScalable(prescription) : false,

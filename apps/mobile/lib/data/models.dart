@@ -1516,6 +1516,39 @@ class WodEditPayload {
       );
 }
 
+/// Bloc « guidé » exposé par GET /v1/wods/:id (wods.service.ts > buildGuided) : énoncé normalisé
+/// pour le Mode guidé (format + tours + cap + fenêtres canoniques + consignes). Découplé du builder
+/// de plan (GuidedSource) pour rester un simple DTO de transport ; le builder le consomme.
+class WodGuided {
+  final String format;
+  final int? rounds;
+  final int? capSec;
+  final List<({String kind, int durationSec})> work;
+  final List<String> cues;
+  const WodGuided({
+    required this.format,
+    this.rounds,
+    this.capSec,
+    this.work = const [],
+    this.cues = const [],
+  });
+
+  factory WodGuided.fromJson(Map<String, dynamic> j) => WodGuided(
+        format: j['format'] as String? ?? 'for_time',
+        rounds: (j['rounds'] as num?)?.toInt(),
+        capSec: (j['capSec'] as num?)?.toInt(),
+        work: ((j['work'] as List?) ?? [])
+            .map((e) => (e as Map).cast<String, dynamic>())
+            .map((m) => (
+                  kind: m['kind'] as String? ?? 'work',
+                  durationSec: (m['durationSec'] as num?)?.toInt() ?? 0,
+                ))
+            .where((w) => w.durationSec > 0)
+            .toList(),
+        cues: ((j['cues'] as List?) ?? []).map((e) => e.toString()).toList(),
+      );
+}
+
 class WodDetail {
   final String id;
   final String name;
@@ -1536,8 +1569,14 @@ class WodDetail {
   /// Payload brut pour ré-ouvrir le constructeur pré-rempli (créateur d'un WOD custom uniquement).
   final WodEditPayload? editPayload;
 
+  /// Format brut du WOD ('for_time'|'amrap'|'emom'|'interval'|'tabata'|'strength'|…).
+  final String? type;
+
   /// Énoncé concret de la séance (mouvements + poids). Null pour les WODs custom.
   final WodPrescription? prescription;
+
+  /// Bloc normalisé pour le Mode guidé (format + tours + cap + cues). Null si back ancien (repli).
+  final WodGuided? guided;
 
   /// Mes prestations passées sur cette séance (récent → ancien).
   final List<WodHistoryEntry> myHistory;
@@ -1557,7 +1596,9 @@ class WodDetail {
     this.isCustom = false,
     this.isMine = false,
     this.editPayload,
+    this.type,
     this.prescription,
+    this.guided,
     this.myHistory = const [],
     this.references = const [],
   });
@@ -1582,9 +1623,13 @@ class WodDetail {
       editPayload: j['editPayload'] == null
           ? null
           : WodEditPayload.fromJson((j['editPayload'] as Map).cast<String, dynamic>()),
+      type: j['type'] as String?,
       prescription: j['prescription'] == null
           ? null
           : WodPrescription.fromJson((j['prescription'] as Map).cast<String, dynamic>()),
+      guided: j['guided'] == null
+          ? null
+          : WodGuided.fromJson((j['guided'] as Map).cast<String, dynamic>()),
       myHistory: ((j['myHistory'] as List?) ?? [])
           .map((e) => WodHistoryEntry.fromJson((e as Map).cast<String, dynamic>()))
           .toList(),

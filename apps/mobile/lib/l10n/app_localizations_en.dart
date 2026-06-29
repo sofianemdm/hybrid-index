@@ -445,6 +445,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get wodDetailDoThisWorkout => 'Do this workout';
 
   @override
+  String get wodDetailGuidedMode => 'Guided mode';
+
+  @override
   String get wodDetailEdit => 'Edit workout';
 
   @override
@@ -2543,6 +2546,143 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get coachSessionGuidedMode => 'Guided mode';
+
+  @override
+  String get guidedPhaseWork => 'Work';
+
+  @override
+  String get guidedPhaseRest => 'Rest';
+
+  @override
+  String get guidedPhasePrepare => 'Get ready';
+
+  @override
+  String get guidedStateRunning => 'In progress';
+
+  @override
+  String get guidedStatePaused => 'Paused';
+
+  @override
+  String guidedRoundOf(int current, int total) {
+    return 'Round $current / $total';
+  }
+
+  @override
+  String guidedMinuteOf(int current, int total) {
+    return 'Minute $current / $total';
+  }
+
+  @override
+  String guidedSetOf(int current, int total) {
+    return 'Set $current / $total';
+  }
+
+  @override
+  String guidedRoundsDone(int count) {
+    return 'Rounds: $count';
+  }
+
+  @override
+  String get guidedAddRound => 'Round +1';
+
+  @override
+  String get guidedSetDone => 'Set done';
+
+  @override
+  String get guidedSkip => 'Skip';
+
+  @override
+  String get guidedStart => 'Start';
+
+  @override
+  String get guidedPause => 'Pause';
+
+  @override
+  String get guidedResume => 'Resume';
+
+  @override
+  String get guidedFinish => 'Finish';
+
+  @override
+  String get guidedGo => 'Go!';
+
+  @override
+  String get guidedCountdownGo => 'GO';
+
+  @override
+  String get guidedDone => 'Workout complete';
+
+  @override
+  String guidedTotalTime(String time) {
+    return 'Total time $time';
+  }
+
+  @override
+  String get guidedStreakCredited => 'Streak credited 🔥';
+
+  @override
+  String get guidedValidating => 'Saving…';
+
+  @override
+  String get guidedCreditFailed => 'Couldn\'t save — retry';
+
+  @override
+  String get guidedRetry => 'Retry';
+
+  @override
+  String get guidedQuitTitle => 'Quit the workout?';
+
+  @override
+  String get guidedQuitBody => 'Your progress for this workout will be lost.';
+
+  @override
+  String get guidedQuitConfirm => 'Quit';
+
+  @override
+  String get guidedQuitCancel => 'Keep going';
+
+  @override
+  String get guidedSoundOn => 'Mute sound';
+
+  @override
+  String get guidedSoundOff => 'Unmute sound';
+
+  @override
+  String get guidedClose => 'Close';
+
+  @override
+  String get a11yGuidedPhaseWork => 'Work';
+
+  @override
+  String get a11yGuidedPhaseRest => 'Rest';
+
+  @override
+  String get a11yGuidedPhasePrepare => 'Get ready';
+
+  @override
+  String a11yGuidedRound(int n) {
+    return 'Round $n';
+  }
+
+  @override
+  String a11yGuidedMinute(int n) {
+    return 'Minute $n';
+  }
+
+  @override
+  String a11yGuidedSet(int n) {
+    return 'Set $n';
+  }
+
+  @override
+  String a11yGuidedCountdown(int n) {
+    return '$n';
+  }
+
+  @override
+  String a11yGuidedTimeValue(String value) {
+    return 'Timer: $value';
+  }
 
   @override
   String get coachSessionMarkDone => 'Mark as done';

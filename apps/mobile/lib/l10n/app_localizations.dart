@@ -902,6 +902,12 @@ abstract class AppLocalizations {
   /// **'Do this workout'**
   String get wodDetailDoThisWorkout;
 
+  /// No description provided for @wodDetailGuidedMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Guided mode'**
+  String get wodDetailGuidedMode;
+
   /// No description provided for @wodDetailEdit.
   ///
   /// In en, this message translates to:
@@ -4280,6 +4286,240 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Guided mode'**
   String get coachSessionGuidedMode;
+
+  /// No description provided for @guidedPhaseWork.
+  ///
+  /// In en, this message translates to:
+  /// **'Work'**
+  String get guidedPhaseWork;
+
+  /// No description provided for @guidedPhaseRest.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest'**
+  String get guidedPhaseRest;
+
+  /// No description provided for @guidedPhasePrepare.
+  ///
+  /// In en, this message translates to:
+  /// **'Get ready'**
+  String get guidedPhasePrepare;
+
+  /// No description provided for @guidedStateRunning.
+  ///
+  /// In en, this message translates to:
+  /// **'In progress'**
+  String get guidedStateRunning;
+
+  /// No description provided for @guidedStatePaused.
+  ///
+  /// In en, this message translates to:
+  /// **'Paused'**
+  String get guidedStatePaused;
+
+  /// No description provided for @guidedRoundOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Round {current} / {total}'**
+  String guidedRoundOf(int current, int total);
+
+  /// No description provided for @guidedMinuteOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Minute {current} / {total}'**
+  String guidedMinuteOf(int current, int total);
+
+  /// No description provided for @guidedSetOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Set {current} / {total}'**
+  String guidedSetOf(int current, int total);
+
+  /// No description provided for @guidedRoundsDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Rounds: {count}'**
+  String guidedRoundsDone(int count);
+
+  /// No description provided for @guidedAddRound.
+  ///
+  /// In en, this message translates to:
+  /// **'Round +1'**
+  String get guidedAddRound;
+
+  /// No description provided for @guidedSetDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Set done'**
+  String get guidedSetDone;
+
+  /// No description provided for @guidedSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get guidedSkip;
+
+  /// No description provided for @guidedStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get guidedStart;
+
+  /// No description provided for @guidedPause.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get guidedPause;
+
+  /// No description provided for @guidedResume.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume'**
+  String get guidedResume;
+
+  /// No description provided for @guidedFinish.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish'**
+  String get guidedFinish;
+
+  /// No description provided for @guidedGo.
+  ///
+  /// In en, this message translates to:
+  /// **'Go!'**
+  String get guidedGo;
+
+  /// No description provided for @guidedCountdownGo.
+  ///
+  /// In en, this message translates to:
+  /// **'GO'**
+  String get guidedCountdownGo;
+
+  /// No description provided for @guidedDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Workout complete'**
+  String get guidedDone;
+
+  /// No description provided for @guidedTotalTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Total time {time}'**
+  String guidedTotalTime(String time);
+
+  /// No description provided for @guidedStreakCredited.
+  ///
+  /// In en, this message translates to:
+  /// **'Streak credited 🔥'**
+  String get guidedStreakCredited;
+
+  /// No description provided for @guidedValidating.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving…'**
+  String get guidedValidating;
+
+  /// No description provided for @guidedCreditFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save — retry'**
+  String get guidedCreditFailed;
+
+  /// No description provided for @guidedRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get guidedRetry;
+
+  /// No description provided for @guidedQuitTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Quit the workout?'**
+  String get guidedQuitTitle;
+
+  /// No description provided for @guidedQuitBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your progress for this workout will be lost.'**
+  String get guidedQuitBody;
+
+  /// No description provided for @guidedQuitConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Quit'**
+  String get guidedQuitConfirm;
+
+  /// No description provided for @guidedQuitCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep going'**
+  String get guidedQuitCancel;
+
+  /// No description provided for @guidedSoundOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Mute sound'**
+  String get guidedSoundOn;
+
+  /// No description provided for @guidedSoundOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Unmute sound'**
+  String get guidedSoundOff;
+
+  /// No description provided for @guidedClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get guidedClose;
+
+  /// No description provided for @a11yGuidedPhaseWork.
+  ///
+  /// In en, this message translates to:
+  /// **'Work'**
+  String get a11yGuidedPhaseWork;
+
+  /// No description provided for @a11yGuidedPhaseRest.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest'**
+  String get a11yGuidedPhaseRest;
+
+  /// No description provided for @a11yGuidedPhasePrepare.
+  ///
+  /// In en, this message translates to:
+  /// **'Get ready'**
+  String get a11yGuidedPhasePrepare;
+
+  /// No description provided for @a11yGuidedRound.
+  ///
+  /// In en, this message translates to:
+  /// **'Round {n}'**
+  String a11yGuidedRound(int n);
+
+  /// No description provided for @a11yGuidedMinute.
+  ///
+  /// In en, this message translates to:
+  /// **'Minute {n}'**
+  String a11yGuidedMinute(int n);
+
+  /// No description provided for @a11yGuidedSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Set {n}'**
+  String a11yGuidedSet(int n);
+
+  /// No description provided for @a11yGuidedCountdown.
+  ///
+  /// In en, this message translates to:
+  /// **'{n}'**
+  String a11yGuidedCountdown(int n);
+
+  /// No description provided for @a11yGuidedTimeValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Timer: {value}'**
+  String a11yGuidedTimeValue(String value);
 
   /// No description provided for @coachSessionMarkDone.
   ///

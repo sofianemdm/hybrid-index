@@ -2,6 +2,7 @@ import { BadRequestException, ConflictException, ForbiddenException, NotFoundExc
 import { CreateWodRequest } from "../src/modules/wods/create-wod.dto";
 import { EstimateWodRequest } from "../src/modules/wods/wod-estimate.dto";
 import { WodsService } from "../src/modules/wods/wods.service";
+import { WOD_PRESCRIPTIONS } from "../src/modules/wods/wod-prescriptions.data";
 
 /** Un payload de base valide ; chaque test n'écrase que le champ qu'il vérifie. */
 const baseBody = (): unknown => ({
@@ -244,5 +245,84 @@ describe("WodsService.update / remove — garde-fous propriété & custom", () =
     const { service, deleteMock } = buildService({ id: "w1", isCustom: true, createdById: "owner" }, { resultCount: 3 });
     await expect(service.remove("owner", "w1")).rejects.toBeInstanceOf(ConflictException);
     expect(deleteMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("WodsService.detail — bloc `guided` (Mode guidé)", () => {
+  type WodRow = {
+    id: string;
+    name: string;
+    type: string;
+    scoreType: string;
+    rounds: number | null;
+    timeCapSec: number | null;
+    requiresEquipment: boolean;
+    targetAttributes: string[];
+    isBenchmark: boolean;
+    isCustom: boolean;
+    createdById: string | null;
+  };
+
+  const buildService = (wod: WodRow): WodsService => {
+    const prisma = {
+      wod: { findUnique: jest.fn().mockResolvedValue(wod) },
+      // detail() sans userId → pas de requête wodResult, mais on mock par sécurité.
+      wodResult: { findFirst: jest.fn(), findMany: jest.fn() },
+    };
+    // getWodLevels jette → levels = null (le bloc guided n'en dépend pas, c'est ce qu'on isole).
+    const scoreClient = { getWodLevels: jest.fn().mockRejectedValue(new Error("score down")) };
+    return new WodsService(prisma as never, scoreClient as never, {} as never, {} as never, {} as never);
+  };
+
+  const officialRow = (over: Partial<WodRow> = {}): WodRow => ({
+    id: "grace",
+    name: "Grace",
+    type: "for_time",
+    scoreType: "time",
+    rounds: null,
+    timeCapSec: null,
+    requiresEquipment: true,
+    targetAttributes: ["strength"],
+    isBenchmark: true,
+    isCustom: false,
+    createdById: null,
+    ...over,
+  });
+
+  it("expose format = type + capSec depuis la prescription + cues dérivés des blocks", async () => {
+    const service = buildService(officialRow({ id: "grace", type: "for_time" }));
+    const res = (await service.detail("grace")) as { guided: { format: string; capSec: number | null; cues: string[]; work: unknown[]; rounds: number | null } };
+    expect(res.guided.format).toBe("for_time");
+    // Grace a une prescription officielle avec timeCapSec → capSec hérité.
+    expect(res.guided.capSec).toBe(WOD_PRESCRIPTIONS["grace"]?.timeCapSec ?? null);
+    // cues = une ligne par block de la prescription.
+    expect(res.guided.cues.length).toBe(WOD_PRESCRIPTIONS["grace"]?.blocks.length ?? 0);
+    // for_time → pas de fenêtres canoniques.
+    expect(res.guided.work).toEqual([]);
+  });
+
+  it("tabata → fenêtres canoniques 20/10 dans work[]", async () => {
+    // Pas de prescription tabata officielle → on force un wod custom tabata pour isoler buildGuided.
+    const service = buildService(officialRow({ id: "tab", type: "tabata", isCustom: false, timeCapSec: 240, rounds: 8 }));
+    const res = (await service.detail("tab")) as { guided: { format: string; work: Array<{ kind: string; durationSec: number }> } };
+    expect(res.guided.format).toBe("tabata");
+    expect(res.guided.work).toEqual([
+      { kind: "work", durationSec: 20 },
+      { kind: "rest", durationSec: 10 },
+    ]);
+  });
+
+  it("rounds & capSec viennent du WOD quand la prescription n'en porte pas", async () => {
+    const service = buildService(officialRow({ id: "emomx", type: "emom", rounds: 12, timeCapSec: 720 }));
+    const res = (await service.detail("emomx")) as { guided: { rounds: number | null; capSec: number | null } };
+    // Pas de prescription pour "emomx" → capSec retombe sur wod.timeCapSec, rounds sur wod.rounds.
+    expect(res.guided.rounds).toBe(12);
+    expect(res.guided.capSec).toBe(720);
+  });
+
+  it("WOD introuvable → 404 (inchangé)", async () => {
+    const prisma = { wod: { findUnique: jest.fn().mockResolvedValue(null) } };
+    const service = new WodsService(prisma as never, {} as never, {} as never, {} as never, {} as never);
+    await expect(service.detail("ghost")).rejects.toBeInstanceOf(NotFoundException);
   });
 });
