@@ -1019,6 +1019,28 @@
       "archetype": { "type": "Object" }
     }
   },
+  "shareCardOvrEstimated": "ESTIMATED LEVEL",
+  "shareCardEstimatedBadge": "ESTIMATED",
+  "shareCardUnderConstruction": "IN PROGRESS",
+  "archetypeInProgress": "PROFILE IN PROGRESS",
+  "shareCardRevealCta": "{n, plural, one{1 session} other{{n} sessions}} left to reveal your real card",
+  "@shareCardRevealCta": {
+    "placeholders": {
+      "n": { "type": "int" }
+    }
+  },
+  "shareCardRevealConfirm": "Log real sessions to lock in your card",
+  "shareCardRevealedTitle": "Your card is revealed!",
+  "shareCardRevealedSubtitle": "Your real Athlete Index is unlocked.",
+  "shareCardA11yUnderConstruction": "{name}'s card in progress. Estimated level {ovr}. {n, plural, =0{Log real sessions to lock it in.} one{1 session left to reveal your real card.} other{{n} sessions left to reveal your real card.}} {coverage} of 6 attributes measured.",
+  "@shareCardA11yUnderConstruction": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "ovr": { "type": "int" },
+      "n": { "type": "int" },
+      "coverage": { "type": "int" }
+    }
+  },
   "leaderboardTitle": "League",
   "leaderboardWeeklyProgress": "Weekly progress (by effort)",
   "leaderboardMen": "Men",

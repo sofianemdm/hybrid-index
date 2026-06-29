@@ -224,6 +224,12 @@ class PlayerCard extends StatefulWidget {
 
   /// Pendant l'export PNG : on fige (OVR plein, sans reflet animé) pour une capture propre.
   final bool exporting;
+
+  /// Nombre de séances minimales pour révéler la vraie carte (= plan.sessions.length), fourni
+  /// par l'appelant qui watch déjà completionPlanProvider. null hors construction ou pendant le
+  /// chargement du plan → fallback `6 - radarCoverage`. La carte reste un widget de présentation
+  /// (pas de Consumer) → capture PNG déterministe.
+  final int? completionSessions;
   const PlayerCard({
     super.key,
     required this.profile,
@@ -232,6 +238,7 @@ class PlayerCard extends StatefulWidget {
     this.avatar,
     this.badges = const [],
     this.exporting = false,
+    this.completionSessions,
   });
 
   @override
@@ -267,6 +274,27 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
   bool _motionStarted = false;
 
   _Skin get _skin => _skins[widget.profile.index.rank] ?? _skins['rookie']!;
+
+  // ─── État « EN CONSTRUCTION » (Index estimé / radar incomplet) ───
+  // Source de vérité UNIQUE, identique à l'EstimationBlock (grade_block l.27) et home_screen
+  // (l.224) : la carte est « scellée » tant que l'Index n'est pas réellement complet.
+  // En export PNG l'écran de partage suppose un Index complet → on NE force PAS l'état scellé
+  // pour exporting (la carte de partage reste l'état FINAL, cf. contrainte).
+  bool get _underConstruction =>
+      !widget.exporting &&
+      (widget.profile.index.isEstimated || widget.profile.index.radarCoverage < 6);
+
+  /// Un attribut est « scellé » s'il n'est pas mesuré OU s'il n'est qu'estimé (pas de
+  /// fausse flatterie : on ne montre un chiffre que s'il est réellement mesuré).
+  bool _attrSealed(RadarAttribute? a) => a == null || !a.unlocked || a.isEstimated;
+
+  /// On neutralise la flatterie « legendary » (halo/iridescence élite) tant qu'estimé.
+  bool get _legendaryEffective => _skin.legendary && !_underConstruction;
+
+  /// N pour l'accroche « plus que N séances » : plan fourni par l'appelant, sinon fallback
+  /// sur le nombre d'attributs restants (jamais d'écran cassé).
+  int get _revealSessions =>
+      widget.completionSessions ?? (6 - widget.profile.index.radarCoverage).clamp(0, 6);
 
   @override
   void initState() {
@@ -335,13 +363,25 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
 
     final dom = _dominantKey();
     final balanced = _isBalanced();
-    final archLabel = (dom == null || balanced) ? loc.archetypeHybrid : _archetypeLabelFor(loc, dom);
-    final archColor = (dom == null || balanced) ? HiColors.attrHybrid : HiColors.attribute(dom);
-    final highlightKey = balanced ? null : dom; // dominant mis en avant seulement si tranché
+    // En construction : archétype NEUTRE forcé (« PROFIL EN COURS ») — un dominant calculé sur
+    // 1–2 attributs mesurés serait trompeur. Pas de barre dominante mise en avant (highlightKey null).
+    final archLabel = _underConstruction
+        ? loc.archetypeInProgress
+        : (dom == null || balanced)
+            ? loc.archetypeHybrid
+            : _archetypeLabelFor(loc, dom);
+    final archColor = _underConstruction
+        ? HiColors.textTertiary
+        : (dom == null || balanced)
+            ? HiColors.attrHybrid
+            : HiColors.attribute(dom);
+    final highlightKey = (_underConstruction || balanced) ? null : dom; // dominant mis en avant seulement si tranché
 
     // a11y : un résumé unique de la carte (le visuel animé est décoratif → ExcludeSemantics).
     final cardName = widget.name.isEmpty ? loc.shareCardAthlete : widget.name;
-    final semanticsLabel = loc.shareCardA11y(cardName, idx.value, archLabel);
+    final semanticsLabel = _underConstruction
+        ? loc.shareCardA11yUnderConstruction(cardName, idx.value, _revealSessions, idx.radarCoverage)
+        : loc.shareCardA11y(cardName, idx.value, archLabel);
 
     return Semantics(
       label: semanticsLabel,
@@ -367,7 +407,7 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
           decoration: BoxDecoration(
             gradient: _borderGradient(skin, isElite),
             borderRadius: BorderRadius.circular(HiRadius.xl + _kBorder),
-            boxShadow: skin.legendary
+            boxShadow: _legendaryEffective
                 ? [BoxShadow(color: skin.frame.withValues(alpha: 0.30 * t), blurRadius: 34, spreadRadius: -4)]
                 : const [BoxShadow(color: Color(0x80000000), blurRadius: 24, offset: Offset(0, 12))],
           ),
@@ -423,19 +463,25 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
                       _socle(loc, skin, byAttr, archLabel, archColor, highlightKey, topPct, t),
                     ],
                   ),
-                  // z7 — liseré intérieur clair (double-trait premium).
+                  // z7 — liseré intérieur clair (double-trait premium). Atténué en construction
+                  // (blueprint scellé : le métal plein passe à 0.10 au lieu de 0.18).
                   Positioned.fill(
                     child: IgnorePointer(
                       child: DecoratedBox(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(HiRadius.xl),
-                          border: Border.all(color: skin.frame.withValues(alpha: 0.18), width: 1),
+                          border: Border.all(
+                              color: skin.frame.withValues(alpha: _underConstruction ? 0.10 : 0.18), width: 1),
                         ),
                       ),
                     ),
                   ),
-                  // z8 — sheen diagonal animé (tous rangs ; figé en export).
-                  if (!widget.exporting) _sheenLayer(idx.rank),
+                  // z8 — sheen diagonal animé (carte finale) OU scan blueprint vertical (construction).
+                  // Les deux sont décoratifs et figés en export.
+                  if (!widget.exporting)
+                    _underConstruction ? _scanLayer() : _sheenLayer(idx.rank),
+                  // z8 — ruban diagonal « EN CONSTRUCTION » (coin haut-droit), au-dessus de tout.
+                  if (_underConstruction) _constructionRibbon(loc),
                 ],
               ),
             ),
@@ -448,6 +494,11 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
   // ───────────────────────── BANDEAU (zone 1) ─────────────────────────
   Widget _bandeau(AppLocalizations loc, _Skin skin, IndexSummary idx, bool isElite, int shownOvr, double t) {
     final gradeProgress = (HiGrade.progress(idx.value) * t).clamp(0.0, 1.0);
+    final uc = _underConstruction;
+    // En construction : valeur 0 → « — » (jamais « ≈ 0 », dévalorisant), sinon « ≈ {ovr} ».
+    final ovrText = (uc && idx.value == 0) ? '—' : '$shownOvr';
+    // Couleur du grade : « provisoire » en warn tant qu'en construction.
+    final gradeColor = uc ? HiColors.warn : HiGrade.color(idx.value);
     return Stack(
       children: [
         // Bloc OVR (haut-gauche).
@@ -457,25 +508,58 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ShaderMask(
-                shaderCallback: (r) => (isElite
-                        ? SweepGradient(colors: skin.metal)
-                        : LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: skin.metal))
-                    .createShader(r),
-                child: Text(
-                  '$shownOvr',
-                  style: HiType.displayXL.copyWith(fontSize: 72, fontWeight: FontWeight.w700, height: 0.86, color: Colors.white),
-                ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  // Préfixe « ≈ » (statique, hors count-up) quand estimé.
+                  if (uc && idx.value != 0)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 6, right: 2),
+                      child: Text('≈',
+                          style: HiType.displayXL.copyWith(
+                              fontSize: 40, fontWeight: FontWeight.w700, height: 0.86, letterSpacing: -2, color: _inkSoft)),
+                    ),
+                  ShaderMask(
+                    shaderCallback: (r) => (isElite
+                            ? SweepGradient(colors: skin.metal)
+                            : LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: skin.metal))
+                        .createShader(r),
+                    child: Text(
+                      ovrText,
+                      style: HiType.displayXL.copyWith(fontSize: 72, fontWeight: FontWeight.w700, height: 0.86, color: Colors.white),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 2),
-              Text(loc.shareCardOvr,
-                  style: HiType.overline.copyWith(fontSize: 11, color: skin.frame.withValues(alpha: 0.80))),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(uc ? loc.shareCardOvrEstimated : loc.shareCardOvr,
+                      style: HiType.overline.copyWith(fontSize: 11, color: skin.frame.withValues(alpha: 0.80))),
+                  if (uc) ...[
+                    const SizedBox(width: 6),
+                    // Pastille « ESTIMÉ » (cohérente avec l'EstimationBlock : même warn).
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: HiColors.warn.withValues(alpha: 0.16),
+                        borderRadius: BorderRadius.circular(HiRadius.pill),
+                        border: Border.all(color: HiColors.warn.withValues(alpha: 0.40)),
+                      ),
+                      child: Text(loc.shareCardEstimatedBadge,
+                          style: HiType.overline.copyWith(fontSize: 8, letterSpacing: 1.5, color: HiColors.warn)),
+                    ),
+                  ],
+                ],
+              ),
               const SizedBox(height: 8),
-              // Grade + progression vers le palier suivant (la « tension »).
+              // Grade + progression vers le palier suivant (la « tension »). En construction :
+              // remplissage et libellé en warn (signale « provisoire » sans casser la lecture du palier).
               Row(
                 children: [
                   Text(HiGrade.label(idx.value),
-                      style: HiType.overline.copyWith(fontSize: 12, color: HiGrade.color(idx.value), letterSpacing: 1.5)),
+                      style: HiType.overline.copyWith(fontSize: 12, color: gradeColor, letterSpacing: 1.5)),
                   const SizedBox(width: 8),
                   SizedBox(
                     width: 96,
@@ -490,7 +574,9 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
                               height: 5,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(HiRadius.pill),
-                                gradient: LinearGradient(colors: [HiGrade.color(idx.value), HiGrade.nextColor(idx.value)]),
+                                gradient: uc
+                                    ? LinearGradient(colors: [HiColors.warn, HiColors.warn.withValues(alpha: 0.7)])
+                                    : LinearGradient(colors: [HiGrade.color(idx.value), HiGrade.nextColor(idx.value)]),
                               ),
                             ),
                           ),
@@ -503,15 +589,17 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
             ],
           ),
         ),
-        // Écusson de ligue (haut-droite).
-        Positioned(
-          right: _kPad,
-          top: 12,
-          child: Transform.scale(
-            scale: widget.exporting ? 1.0 : (0.6 + 0.4 * Curves.easeOutBack.transform(((_reveal.value - 0.2) / 0.3).clamp(0.0, 1.0))),
-            child: _leagueShield(loc),
+        // Écusson de ligue (haut-droite) — MASQUÉ en construction (ne pas promettre une
+        // appartenance ligue avant l'Index complet ; le ruban prend ce coin).
+        if (!uc)
+          Positioned(
+            right: _kPad,
+            top: 12,
+            child: Transform.scale(
+              scale: widget.exporting ? 1.0 : (0.6 + 0.4 * Curves.easeOutBack.transform(((_reveal.value - 0.2) / 0.3).clamp(0.0, 1.0))),
+              child: _leagueShield(loc),
+            ),
           ),
-        ),
       ],
     );
   }
@@ -546,6 +634,11 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
 
   // ───────────────────────── HÉROS (zone 2) ─────────────────────────
   Widget _heroScene(_Skin skin, IndexSummary idx, double t, double pulse) {
+    final loc = AppLocalizations.of(context);
+    final uc = _underConstruction;
+    // En construction : halo « rookie » (réduit) quel que soit le rang réel, sans pulse.
+    final haloRank = uc ? 'rookie' : idx.rank;
+    final haloAmount = uc ? t : t * pulse;
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -564,8 +657,8 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
             ),
           ),
         ),
-        // z4 — halo radial coloré par skin (pulse).
-        Center(child: IgnorePointer(child: _halo(idx.rank, skin, t * pulse))),
+        // z4 — halo radial coloré par skin (pulse). Réduit/neutre en construction.
+        Center(child: IgnorePointer(child: _halo(haloRank, skin, haloAmount))),
         // ombre portée sous l'avatar.
         Align(
           alignment: const Alignment(0, 0.72),
@@ -578,14 +671,61 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
             ),
           ),
         ),
-        // avatar héros.
+        // avatar héros (légèrement en retrait en construction : « pas encore révélé »).
         Align(
-          alignment: const Alignment(0, -0.08),
-          child: widget.avatar != null
-              ? HiAvatar(config: widget.avatar!, rank: idx.rank, size: 156)
-              : _fallbackAvatar(skin),
+          alignment: const Alignment(0, -0.18),
+          child: Opacity(
+            opacity: uc ? 0.92 : 1.0,
+            child: widget.avatar != null
+                ? HiAvatar(config: widget.avatar!, rank: idx.rank, size: 156)
+                : _fallbackAvatar(skin),
+          ),
         ),
+        // Accroche de complétion ON-card (jauge 6 points + phrase warn) — construction uniquement.
+        if (uc)
+          Align(
+            alignment: const Alignment(0, 0.86),
+            child: _completionHook(loc, idx),
+          ),
       ],
+    );
+  }
+
+  /// Jauge de révélation : 6 points (couverture) + phrase « plus que N séances pour révéler ta
+  /// vraie carte » (ou « confirme tes scores » si N==0 mais estimé). Jamais de formulation négative.
+  Widget _completionHook(AppLocalizations loc, IndexSummary idx) {
+    final n = _revealSessions;
+    final phrase = n >= 1 ? loc.shareCardRevealCta(n) : loc.shareCardRevealConfirm;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: _kPad),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(6, (i) {
+              final on = i < idx.radarCoverage;
+              return Container(
+                width: 7,
+                height: 7,
+                margin: const EdgeInsets.symmetric(horizontal: 3),
+                decoration: BoxDecoration(
+                  color: on ? HiColors.warn : HiColors.strokeStrong,
+                  shape: BoxShape.circle,
+                ),
+              );
+            }),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            phrase,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: HiType.label.copyWith(color: HiColors.warn, fontWeight: FontWeight.w800),
+          ),
+        ],
+      ),
     );
   }
 
@@ -713,9 +853,9 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(child: Column(children: left.map((k) => _statV2(skin, k, byAttr[k], k == highlightKey)).toList())),
+              Expanded(child: Column(children: left.map((k) => _statV2(skin, k, byAttr[k], k == highlightKey, _underConstruction && _attrSealed(byAttr[k]))).toList())),
               const SizedBox(width: 14),
-              Expanded(child: Column(children: right.map((k) => _statV2(skin, k, byAttr[k], k == highlightKey)).toList())),
+              Expanded(child: Column(children: right.map((k) => _statV2(skin, k, byAttr[k], k == highlightKey, _underConstruction && _attrSealed(byAttr[k]))).toList())),
             ],
           ),
           const SizedBox(height: 8),
@@ -756,13 +896,13 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
     );
   }
 
-  Widget _statV2(_Skin skin, String key, RadarAttribute? a, bool isDominant) {
+  Widget _statV2(_Skin skin, String key, RadarAttribute? a, bool isDominant, bool sealed) {
     final unlocked = a?.unlocked ?? false;
     final score = a?.score ?? 0;
     final provisional = a?.isEstimated ?? false;
     final attrColor = HiColors.attribute(key);
     final Color noteColor;
-    if (!unlocked) {
+    if (sealed || !unlocked) {
       noteColor = HiColors.attrLocked;
     } else if (score >= 80) {
       noteColor = HiColors.success;
@@ -778,7 +918,8 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
     final start = 0.35 + (_order[key] ?? 0) * 0.05;
     final localT = widget.exporting ? 1.0 : Curves.easeOutExpo.transform(((_reveal.value - start) / 0.30).clamp(0.0, 1.0));
     final shownScore = (score * localT).round();
-    final fill = (score / 100).clamp(0.0, 1.0) * localT;
+    // Scellé : track VIDE (jamais de valeur estimée en clair → « pas de fausse flatterie »).
+    final fill = sealed ? 0.0 : (score / 100).clamp(0.0, 1.0) * localT;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
       child: Row(
@@ -797,7 +938,11 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
                 style: HiType.overline.copyWith(
                     fontSize: 10,
                     letterSpacing: 1.0,
-                    color: isDominant ? _ink : _inkSoft,
+                    color: sealed
+                        ? HiColors.attrLocked
+                        : isDominant
+                            ? _ink
+                            : _inkSoft,
                     fontWeight: isDominant ? FontWeight.w800 : FontWeight.w700)),
           ),
           const SizedBox(width: 8),
@@ -814,6 +959,11 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
                       ),
                     ),
                   ),
+                  // Track tireté « emplacement vide à remplir » (scellé uniquement).
+                  if (sealed)
+                    Positioned.fill(
+                      child: IgnorePointer(child: CustomPaint(painter: _DashedTrackPainter(skin.frame.withValues(alpha: 0.18)))),
+                    ),
                   FractionallySizedBox(
                     alignment: Alignment.centerLeft,
                     widthFactor: unlocked ? fill : 0.0,
@@ -833,12 +983,18 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
           const SizedBox(width: 8),
           SizedBox(
             width: 24,
-            child: Opacity(
-              opacity: provisional ? 0.7 : 1,
-              child: Text(unlocked ? '$shownScore' : '—',
-                  textAlign: TextAlign.right,
-                  style: HiType.numericM.copyWith(fontSize: 16, color: noteColor)),
-            ),
+            child: sealed
+                // Cadenas (la tension du restant à débloquer) — jamais de score estimé en clair.
+                ? Align(
+                    alignment: Alignment.centerRight,
+                    child: Icon(Icons.lock_outline_rounded, size: 13, color: HiColors.attrLocked),
+                  )
+                : Opacity(
+                    opacity: provisional ? 0.7 : 1,
+                    child: Text(unlocked ? '$shownScore' : '—',
+                        textAlign: TextAlign.right,
+                        style: HiType.numericM.copyWith(fontSize: 16, color: noteColor)),
+                  ),
           ),
         ],
       ),
@@ -937,6 +1093,63 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
     );
   }
 
+  /// Scan « blueprint » : fine ligne horizontale lumineuse qui balaie la carte de haut en bas
+  /// en boucle (« hologramme en cours de matérialisation »). Remplace le sheen métal en
+  /// construction. Décoratif, figé en export ET en reduce-motion (le _sheen ne tourne pas).
+  Widget _scanLayer() {
+    return Positioned.fill(
+      child: IgnorePointer(
+        child: LayoutBuilder(
+          builder: (context, c) {
+            final h = c.maxHeight;
+            final dy = (-0.2 + 1.2 * _sheen.value) * h;
+            return Transform.translate(
+              offset: Offset(0, dy),
+              child: Container(
+                height: h * 0.18,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Colors.transparent, Colors.white.withValues(alpha: 0.10), Colors.transparent],
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  /// Ruban diagonal « EN CONSTRUCTION » dans le coin haut-droit (signature de l'état scellé).
+  Widget _constructionRibbon(AppLocalizations loc) {
+    return Positioned(
+      top: 18,
+      right: -36,
+      child: IgnorePointer(
+        child: Transform.rotate(
+          angle: math.pi / 4, // +45° (coin haut-droit)
+          child: Container(
+            width: 150,
+            height: 26,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(colors: [HiColors.warn, HiColors.warn.withValues(alpha: 0.85)]),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.85), width: 1),
+              boxShadow: [BoxShadow(color: HiColors.warn.withValues(alpha: 0.40), blurRadius: 8)],
+            ),
+            child: Text(
+              loc.shareCardUnderConstruction,
+              maxLines: 1,
+              style: HiType.overline.copyWith(fontSize: 9, letterSpacing: 1.5, color: Colors.white),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   /// Faux border-gradient métallique : clair → foncé → clair (reflet), ou sweep iridescent (élite).
   Gradient _borderGradient(_Skin skin, bool isElite) {
     if (isElite) {
@@ -981,6 +1194,28 @@ class _EngravePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_EngravePainter old) => old.color != color || old.opacity != opacity || old.cross != cross;
+}
+
+/// Tirets verticaux sur un track d'attribut scellé (« emplacement vide à remplir »). Web-safe.
+class _DashedTrackPainter extends CustomPainter {
+  final Color color;
+  _DashedTrackPainter(this.color);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 1;
+    const gap = 6.0;
+    final n = (size.width / gap).floor();
+    for (var i = 1; i < n; i++) {
+      final x = i * gap;
+      canvas.drawLine(Offset(x, 1), Offset(x, size.height - 1), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_DashedTrackPainter old) => old.color != color;
 }
 
 /// Bouclier de ligue (division) — dégradé vertical + bord blanc.

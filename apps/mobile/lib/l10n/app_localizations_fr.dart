@@ -1974,6 +1974,53 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
+  String get shareCardOvrEstimated => 'NIVEAU ESTIMÉ';
+
+  @override
+  String get shareCardEstimatedBadge => 'ESTIMÉ';
+
+  @override
+  String get shareCardUnderConstruction => 'EN CONSTRUCTION';
+
+  @override
+  String get archetypeInProgress => 'PROFIL EN COURS';
+
+  @override
+  String shareCardRevealCta(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n séances',
+      one: '1 séance',
+    );
+    return 'Plus que $_temp0 pour révéler ta vraie carte';
+  }
+
+  @override
+  String get shareCardRevealConfirm =>
+      'Confirme tes scores en séance pour figer ta carte';
+
+  @override
+  String get shareCardRevealedTitle => 'Ta carte est révélée !';
+
+  @override
+  String get shareCardRevealedSubtitle =>
+      'Ton vrai Athlete Index est débloqué.';
+
+  @override
+  String shareCardA11yUnderConstruction(
+      String name, int ovr, int n, int coverage) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n séances restantes pour révéler ta vraie carte.',
+      one: '1 séance restante pour révéler ta vraie carte.',
+      zero: 'Confirme tes scores pour la figer.',
+    );
+    return 'Carte de $name en construction. Niveau estimé $ovr. $_temp0 $coverage attributs sur 6 mesurés.';
+  }
+
+  @override
   String get leaderboardTitle => 'Ligue';
 
   @override

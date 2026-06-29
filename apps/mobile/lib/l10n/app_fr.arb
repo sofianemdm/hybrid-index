@@ -609,6 +609,28 @@
       "archetype": { "type": "Object" }
     }
   },
+  "shareCardOvrEstimated": "NIVEAU ESTIMÉ",
+  "shareCardEstimatedBadge": "ESTIMÉ",
+  "shareCardUnderConstruction": "EN CONSTRUCTION",
+  "archetypeInProgress": "PROFIL EN COURS",
+  "shareCardRevealCta": "Plus que {n, plural, one{1 séance} other{{n} séances}} pour révéler ta vraie carte",
+  "@shareCardRevealCta": {
+    "placeholders": {
+      "n": { "type": "int" }
+    }
+  },
+  "shareCardRevealConfirm": "Confirme tes scores en séance pour figer ta carte",
+  "shareCardRevealedTitle": "Ta carte est révélée !",
+  "shareCardRevealedSubtitle": "Ton vrai Athlete Index est débloqué.",
+  "shareCardA11yUnderConstruction": "Carte de {name} en construction. Niveau estimé {ovr}. {n, plural, =0{Confirme tes scores pour la figer.} one{1 séance restante pour révéler ta vraie carte.} other{{n} séances restantes pour révéler ta vraie carte.}} {coverage} attributs sur 6 mesurés.",
+  "@shareCardA11yUnderConstruction": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "ovr": { "type": "int" },
+      "n": { "type": "int" },
+      "coverage": { "type": "int" }
+    }
+  },
   "leaderboardTitle": "Ligue",
   "leaderboardWeeklyProgress": "Progression de la semaine (par effort)",
   "leaderboardMen": "Hommes",

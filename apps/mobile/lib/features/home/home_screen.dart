@@ -8,6 +8,8 @@ import '../../data/session.dart';
 import '../../data/ui_state.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
+import '../../theme/haptics.dart';
+import '../../widgets/celebration.dart';
 import '../../widgets/hi_avatar.dart';
 import '../../widgets/hi_button.dart';
 import '../../widgets/hi_card.dart';
@@ -40,6 +42,33 @@ class HomeScreen extends ConsumerWidget {
     final t = AppLocalizations.of(context);
     final profileAsync = ref.watch(myProfileProvider);
     final session = ref.watch(sessionProvider);
+
+    // Révélation : quand l'Index passe d'« en construction » (estimé/incomplet) à complet, on
+    // célèbre. La PlayerCard rejoue son _reveal toute seule (reconstruite avec le nouveau profil) ;
+    // ici on déclenche le moment de dopamine. Reduce-motion → SnackBar + haptique (pas de plein écran).
+    ref.listen<AsyncValue<Profile?>>(myProfileProvider, (prev, next) {
+      final before = prev?.value;
+      final after = next.value;
+      if (before == null || after == null) return;
+      final wasUnderConstruction = before.index.isEstimated || before.index.radarCoverage < 6;
+      final nowComplete = !(after.index.isEstimated || after.index.radarCoverage < 6);
+      if (!wasUnderConstruction || !nowComplete) return;
+      final reduce = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+      if (reduce) {
+        HiHaptics.success();
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t.shareCardRevealedTitle)));
+      } else {
+        Celebration.show(
+          context,
+          title: t.shareCardRevealedTitle,
+          subtitle: t.shareCardRevealedSubtitle,
+          value: '${after.index.value}',
+          icon: Icons.auto_awesome_rounded,
+          accent: HiGrade.color(after.index.value),
+          intensity: CelebrationIntensity.strong,
+        );
+      }
+    });
 
     return SafeArea(
       child: RefreshIndicator(
@@ -209,6 +238,9 @@ class HomeScreen extends ConsumerWidget {
                       sex: ref.watch(sessionProvider).sex,
                       avatar: ref.watch(avatarProvider).value,
                       badges: ref.watch(cardBadgesProvider).value ?? const [],
+                      // Accroche « plus que N séances » : même N que l'EstimationBlock (plan.sessions).
+                      // null pendant le chargement → la carte retombe sur 6 - radarCoverage.
+                      completionSessions: ref.watch(completionPlanProvider).asData?.value.sessions.length,
                     ),
                   ),
                 ),

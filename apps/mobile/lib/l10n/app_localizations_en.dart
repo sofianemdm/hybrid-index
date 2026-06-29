@@ -1961,6 +1961,52 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get shareCardOvrEstimated => 'ESTIMATED LEVEL';
+
+  @override
+  String get shareCardEstimatedBadge => 'ESTIMATED';
+
+  @override
+  String get shareCardUnderConstruction => 'IN PROGRESS';
+
+  @override
+  String get archetypeInProgress => 'PROFILE IN PROGRESS';
+
+  @override
+  String shareCardRevealCta(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n sessions',
+      one: '1 session',
+    );
+    return '$_temp0 left to reveal your real card';
+  }
+
+  @override
+  String get shareCardRevealConfirm => 'Log real sessions to lock in your card';
+
+  @override
+  String get shareCardRevealedTitle => 'Your card is revealed!';
+
+  @override
+  String get shareCardRevealedSubtitle =>
+      'Your real Athlete Index is unlocked.';
+
+  @override
+  String shareCardA11yUnderConstruction(
+      String name, int ovr, int n, int coverage) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n sessions left to reveal your real card.',
+      one: '1 session left to reveal your real card.',
+      zero: 'Log real sessions to lock it in.',
+    );
+    return '$name\'s card in progress. Estimated level $ovr. $_temp0 $coverage of 6 attributes measured.';
+  }
+
+  @override
   String get leaderboardTitle => 'League';
 
   @override

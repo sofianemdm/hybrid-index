@@ -3398,6 +3398,61 @@ abstract class AppLocalizations {
   /// **'{name}\'s card, Athlete Index {ovr}, archetype {archetype}'**
   String shareCardA11y(Object name, Object ovr, Object archetype);
 
+  /// No description provided for @shareCardOvrEstimated.
+  ///
+  /// In en, this message translates to:
+  /// **'ESTIMATED LEVEL'**
+  String get shareCardOvrEstimated;
+
+  /// No description provided for @shareCardEstimatedBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'ESTIMATED'**
+  String get shareCardEstimatedBadge;
+
+  /// No description provided for @shareCardUnderConstruction.
+  ///
+  /// In en, this message translates to:
+  /// **'IN PROGRESS'**
+  String get shareCardUnderConstruction;
+
+  /// No description provided for @archetypeInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'PROFILE IN PROGRESS'**
+  String get archetypeInProgress;
+
+  /// No description provided for @shareCardRevealCta.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, one{1 session} other{{n} sessions}} left to reveal your real card'**
+  String shareCardRevealCta(int n);
+
+  /// No description provided for @shareCardRevealConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Log real sessions to lock in your card'**
+  String get shareCardRevealConfirm;
+
+  /// No description provided for @shareCardRevealedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your card is revealed!'**
+  String get shareCardRevealedTitle;
+
+  /// No description provided for @shareCardRevealedSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your real Athlete Index is unlocked.'**
+  String get shareCardRevealedSubtitle;
+
+  /// No description provided for @shareCardA11yUnderConstruction.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}\'s card in progress. Estimated level {ovr}. {n, plural, =0{Log real sessions to lock it in.} one{1 session left to reveal your real card.} other{{n} sessions left to reveal your real card.}} {coverage} of 6 attributes measured.'**
+  String shareCardA11yUnderConstruction(
+      String name, int ovr, int n, int coverage);
+
   /// No description provided for @leaderboardTitle.
   ///
   /// In en, this message translates to:

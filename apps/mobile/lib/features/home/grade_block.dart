@@ -52,7 +52,7 @@ class EstimationBlock extends ConsumerWidget {
             child: ExcludeSemantics(
               child: Row(
                 children: [
-                  Icon(Icons.auto_graph, color: HiColors.warn, size: 18),
+                  Icon(Icons.construction_rounded, color: HiColors.warn, size: 18),
                   const SizedBox(width: HiSpace.sm),
                   Expanded(child: Text(title, style: HiType.label.copyWith(color: HiColors.warn, fontWeight: FontWeight.w800))),
                   ExcludeSemantics(child: _coverageDots(coverage)),
