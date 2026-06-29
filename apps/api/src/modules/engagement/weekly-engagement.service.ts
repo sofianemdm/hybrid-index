@@ -3,7 +3,7 @@ import { Cron } from "@nestjs/schedule";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { EngagementService } from "./engagement.service";
 import { PushService } from "./push.service";
-import { attributeLabel } from "./notifications.data";
+import { attributeLabel, type PushLocale } from "./notifications.data";
 
 /**
  * Cron hebdomadaire de ré-engagement (lundi matin) : pour chaque athlète ACTIF ayant déjà un Index,
@@ -82,7 +82,22 @@ export class WeeklyEngagementService {
       select: { attribute: true },
     });
     if (!stale) return;
-    // TODO(i18n) : libellé FR par défaut tant que le modèle ne porte pas de `locale` (cf. notifications.data).
-    await this.push.notifyStaleAttribute(userId, attributeLabel(stale.attribute));
+    // Libellé de l'attribut dans la langue du DESTINATAIRE (Profile.locale, repli FR) pour rester
+    // cohérent avec le titre/corps localisés côté PushService.
+    const locale = await this.recipientLocale(userId);
+    await this.push.notifyStaleAttribute(userId, attributeLabel(stale.attribute, locale));
+  }
+
+  /** Langue du destinataire (Profile.locale, repli FR ; tolère un profil absent / une erreur DB). */
+  private async recipientLocale(userId: string): Promise<PushLocale> {
+    try {
+      const profile = await this.prisma.profile.findUnique({
+        where: { userId },
+        select: { locale: true },
+      });
+      return profile?.locale === "en" ? "en" : "fr";
+    } catch {
+      return "fr";
+    }
   }
 }

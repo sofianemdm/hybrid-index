@@ -38,6 +38,7 @@ export class MeService {
       data: {
         ...(req.goal !== undefined ? { goal: req.goal } : {}),
         ...(req.equipmentPref !== undefined ? { equipmentPref: req.equipmentPref } : {}),
+        ...(req.locale !== undefined ? { locale: req.locale } : {}),
       },
     });
 

@@ -9,6 +9,23 @@ import '../features/messaging/conversations_screen.dart';
 import '../theme/tokens.dart';
 import 'api_client.dart';
 
+/// Handler de notification en ARRIÈRE-PLAN / app TUÉE (data-only).
+///
+/// DOIT être une fonction top-level (ou statique) annotée `@pragma('vm:entry-point')` : FCM
+/// l'exécute dans un isolate Dart séparé, sans le code d'`main()` ni le moindre contexte UI
+/// (pas de `BuildContext`, pas de navigator, pas de provider). On reste donc MINIMAL et SÛR :
+/// on ré-initialise Firebase (l'isolate est neuf) puis on se contente de tracer. Le routage
+/// réel se fera au tap via `onMessageOpenedApp` / `getInitialMessage` une fois l'app au premier plan.
+@pragma('vm:entry-point')
+Future<void> firebaseBgHandler(RemoteMessage message) async {
+  try {
+    await Firebase.initializeApp();
+    debugPrint('[push] bg message: type=${message.data['type']}');
+  } catch (e) {
+    debugPrint('[push] bg handler KO: $e');
+  }
+}
+
 /// Onglets de la coquille principale (HomeShell). Doit rester aligné avec l'ordre des onglets
 /// dans `features/home/home_shell.dart` (IndexedStack + barre de nav).
 class _Tab {
@@ -29,11 +46,15 @@ class _Tab {
 /// `message.data`. Chaque `type` mène à un écran. Tout type inconnu ou absent retombe sur l'Accueil
 /// (jamais de crash, jamais d'écran vide).
 class PushService {
-  PushService(this._api, {required this.goToTab});
+  PushService(this._api, {required this.goToTab, this.deviceLocale});
   final ApiClient _api;
 
   /// Bascule l'onglet actif de la coquille (branché sur `homeTabProvider` dans main.dart).
   final void Function(int tab) goToTab;
+
+  /// Langue courante de l'app ('fr' / 'en'), transmise au backend pour des push localisés
+  /// (`Profile.locale`). `null` = on ne touche pas à la langue côté serveur.
+  final String? deviceLocale;
 
   Future<void> init() async {
     // Garde-fou : inactif par défaut et toujours sur le web (préserve la version navigateur).
@@ -43,6 +64,9 @@ class PushService {
     }
     try {
       await Firebase.initializeApp(); // lit la config native (google-services.json)
+      // Handler des push reçus app en arrière-plan / tuée (data-only) : doit être branché AVANT
+      // toute réception. Fonction top-level @pragma('vm:entry-point') (isolate dédié, sans UI).
+      FirebaseMessaging.onBackgroundMessage(firebaseBgHandler);
       final messaging = FirebaseMessaging.instance;
       // Demande la permission (iOS l'exige ; Android 13+ aussi).
       final settings = await messaging.requestPermission();
@@ -51,6 +75,8 @@ class PushService {
         return;
       }
       await _registerToken(messaging);
+      // Transmet la langue du device au backend (push localisés FR/EN → Profile.locale).
+      await _syncLocale();
       // Le token peut changer (réinstallation, restauration) → on le ré-enregistre.
       messaging.onTokenRefresh.listen((t) {
         _api.registerPushToken(t).catchError((Object e) {
@@ -71,6 +97,18 @@ class PushService {
       await _api.registerPushToken(token);
     } catch (e) {
       debugPrint('[push] enregistrement token échoué: $e');
+    }
+  }
+
+  /// Pousse la langue courante de l'app vers `Profile.locale` (via PATCH /v1/me) afin que le
+  /// backend envoie le bon FR/EN. Tolérant : un échec réseau n'interrompt jamais l'init push.
+  Future<void> _syncLocale() async {
+    final loc = deviceLocale;
+    if (loc != 'fr' && loc != 'en') return;
+    try {
+      await _api.updateMe({'locale': loc});
+    } catch (e) {
+      debugPrint('[push] sync locale échouée: $e');
     }
   }
 

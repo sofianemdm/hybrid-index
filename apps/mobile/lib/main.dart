@@ -44,6 +44,14 @@ void main() {
   runApp(const ProviderScope(child: HybridIndexApp()));
 }
 
+/// Résout le code de langue ('fr' / 'en') à transmettre au backend pour les push localisés.
+/// Priorité : choix explicite de l'utilisateur ([chosen]) ; sinon langue du système. Tout ce qui
+/// n'est ni FR ni EN retombe sur 'fr' (seules langues supportées + repli serveur).
+String _resolveLocaleCode(Locale? chosen) {
+  final code = (chosen ?? WidgetsBinding.instance.platformDispatcher.locale).languageCode;
+  return code == 'en' ? 'en' : 'fr';
+}
+
 /// App HYBRID INDEX (iOS + Android, ici aussi Web pour la démo navigateur).
 /// Le design system « feel jeu » sombre est défini dans theme/ ; l'app n'appelle que l'`api`.
 class HybridIndexApp extends ConsumerStatefulWidget {
@@ -66,6 +74,7 @@ class _HybridIndexAppState extends ConsumerState<HybridIndexApp> with WidgetsBin
       () => PushService(
         ref.read(apiClientProvider),
         goToTab: (tab) => ref.read(homeTabProvider.notifier).state = tab,
+        deviceLocale: _resolveLocaleCode(ref.read(localeProvider)),
       ).init(),
     );
     Analytics.capture('app_open');

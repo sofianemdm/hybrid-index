@@ -11,9 +11,11 @@ export const UpdateMeRequest = z
   .object({
     goal: Goal.optional(),
     equipmentPref: EquipmentPref.optional(),
+    // Langue du device (push localisés FR/EN). Repli serveur = "fr".
+    locale: z.enum(["fr", "en"]).optional(),
   })
   .strict()
-  .refine((v) => v.goal !== undefined || v.equipmentPref !== undefined, {
+  .refine((v) => v.goal !== undefined || v.equipmentPref !== undefined || v.locale !== undefined, {
     message: "Aucun champ à mettre à jour.",
   });
 export type UpdateMeRequest = z.infer<typeof UpdateMeRequest>;

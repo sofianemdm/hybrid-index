@@ -194,38 +194,58 @@ export class PushService {
   }
 
   // --- Déclencheurs amicaux (copie centralisée FR/EN dans notifications.data, ton bienveillant) ---
-  //
-  // TODO(i18n) : la langue est figée à "fr" tant que le modèle Profile/User ne porte pas de `locale`.
-  // Dès qu'un champ `locale` existe, le résoudre par appelant et le passer en 2e argument de pushCopy.
 
-  /** Compose un PushMessage à partir de la copie centralisée (locale FR par défaut). */
+  /**
+   * Résout la langue du DESTINATAIRE (Profile.locale) pour servir la bonne variante de copie.
+   * Repli FR si le profil est absent ou la locale inconnue. No-op DB si push inactif (économie).
+   */
+  private async recipientLocale(userId: string): Promise<PushLocale> {
+    if (!this.enabled) return "fr";
+    try {
+      const profile = await this.prisma.profile.findUnique({
+        where: { userId },
+        select: { locale: true },
+      });
+      return profile?.locale === "en" ? "en" : "fr";
+    } catch {
+      return "fr"; // profil absent / erreur DB → repli FR (jamais d'échec d'envoi pour la langue)
+    }
+  }
+
+  /** Compose un PushMessage à partir de la copie centralisée, dans la langue voulue (repli FR). */
   private compose(type: string, params: Record<string, string | number> = {}, locale: PushLocale = "fr"): PushMessage {
     const { title, body } = pushCopy(type, locale, params);
     return { title, body, data: { type } };
   }
 
-  notifyRankOvertaken(userId: string): Promise<void> {
-    return this.sendToUser(userId, this.compose("rank-overtaken"));
+  async notifyRankOvertaken(userId: string): Promise<void> {
+    const locale = await this.recipientLocale(userId);
+    return this.sendToUser(userId, this.compose("rank-overtaken", {}, locale));
   }
 
-  notifyStaleAttribute(userId: string, attributeLabel: string): Promise<void> {
-    return this.sendToUser(userId, this.compose("stale-attribute", { attributeLabel }));
+  async notifyStaleAttribute(userId: string, attributeLabel: string): Promise<void> {
+    const locale = await this.recipientLocale(userId);
+    return this.sendToUser(userId, this.compose("stale-attribute", { attributeLabel }, locale));
   }
 
-  notifyNearRank(userId: string, points: number): Promise<void> {
-    return this.sendToUser(userId, this.compose("near-rank", { points }));
+  async notifyNearRank(userId: string, points: number): Promise<void> {
+    const locale = await this.recipientLocale(userId);
+    return this.sendToUser(userId, this.compose("near-rank", { points }, locale));
   }
 
-  notifyKudos(userId: string, count: number): Promise<void> {
-    return this.sendToUser(userId, this.compose("kudos", { count }));
+  async notifyKudos(userId: string, count: number): Promise<void> {
+    const locale = await this.recipientLocale(userId);
+    return this.sendToUser(userId, this.compose("kudos", { count }, locale));
   }
 
-  notifyWeeklyRecap(userId: string, deltaIndex: number, sessions: number): Promise<void> {
-    return this.sendToUser(userId, this.compose("weekly-recap", { deltaIndex, sessions }));
+  async notifyWeeklyRecap(userId: string, deltaIndex: number, sessions: number): Promise<void> {
+    const locale = await this.recipientLocale(userId);
+    return this.sendToUser(userId, this.compose("weekly-recap", { deltaIndex, sessions }, locale));
   }
 
   /** Nouveau message privé reçu. `senderName` = pseudo de l'expéditeur. */
-  notifyNewMessage(userId: string, senderName: string): Promise<void> {
-    return this.sendToUser(userId, this.compose("new-message", { senderName }));
+  async notifyNewMessage(userId: string, senderName: string): Promise<void> {
+    const locale = await this.recipientLocale(userId);
+    return this.sendToUser(userId, this.compose("new-message", { senderName }, locale));
   }
 }

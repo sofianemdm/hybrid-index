@@ -11,17 +11,21 @@ export interface NotificationTrigger {
   category: string;
 }
 
+/**
+ * Catalogue exposé à l'écran Réglages = STRICTEMENT les 6 push réellement émis (1 toggle = 1 vraie
+ * notification, piloté par le gating par clé `prefEnabled(prefs, key)`). On a retiré les déclencheurs
+ * « fantômes » (week-almost-complete, streak-protected, new-rank, badge-unlocked, index-improved,
+ * gentle-comeback, rest-week-respected, wod-overtaken) qui n'émettaient AUCUN push : ils donnaient à
+ * l'utilisateur des interrupteurs qui ne coupaient rien. Les `key` ci-dessous == les types de push
+ * (cf. PUSH_COPY) ⇒ opt-out et cooldown s'appliquent réellement. Titres/corps ALIGNÉS sur PUSH_COPY.
+ */
 export const NOTIFICATION_TRIGGERS: NotificationTrigger[] = [
-  { key: "week-almost-complete", trigger: "weekCount == weeklyGoal-1 && daysLeft >= 1", title: "Plus qu'un WOD", body: "Un seul entraînement et ta semaine est validée.", priority: "high", cooldown: "48h", category: "streak" },
-  { key: "streak-protected", trigger: "streak_evaluated && outcome == frozen", title: "Ta série est protégée", body: "On a utilisé un jeton de gel. Ta série continue, tranquille.", priority: "medium", cooldown: "0", category: "streak" },
-  { key: "new-rank", trigger: "rank_changed && newRank > oldRank", title: "Nouveau rang", body: "Ta progression paie. Continue sur ta lancée.", priority: "high", cooldown: "0", category: "progression" },
-  { key: "badge-unlocked", trigger: "badge_unlocked", title: "Badge débloqué", body: "Tu as débloqué un nouveau badge.", priority: "medium", cooldown: "0", category: "badges" },
-  { key: "index-improved", trigger: "index_recomputed && newIndex > oldIndex+5", title: "Ton Index grimpe", body: "Ton dernier effort a compté.", priority: "medium", cooldown: "24h", category: "progression" },
-  { key: "next-rank-close", trigger: "index_recomputed && pointsToNextRank <= NEXT_RANK_CLOSE_THRESHOLD", title: "Le prochain rang est tout proche", body: "Un bon WOD et tu y es.", priority: "medium", cooldown: "72h", category: "progression" },
-  { key: "gentle-comeback", trigger: "noWodForDays == 3 && !plannedRest", title: "Prêt à reprendre ?", body: "Quand tu veux, on est là. Même 10 minutes comptent.", priority: "low", cooldown: "7d", category: "reengagement" },
-  { key: "rest-week-respected", trigger: "streak_evaluated && outcome == rest", title: "Semaine de repos validée", body: "La récup fait partie du jeu. Ta série est intacte.", priority: "low", cooldown: "0", category: "streak" },
-  { key: "rank-overtaken", trigger: "leaguePosition > snapshotPosition", title: "On t'a dépassé au classement", body: "Reprends ta place — un bon WOD peut suffire.", priority: "medium", cooldown: "24h", category: "leaderboard" },
-  { key: "wod-overtaken", trigger: "followee_beats_my_wod", title: "Battu sur un de tes WODs", body: "Un athlète que tu suis a fait mieux. À toi de répondre.", priority: "medium", cooldown: "24h", category: "social" },
+  { key: "rank-overtaken", trigger: "leaguePosition > snapshotPosition", title: "On t'a doublé au classement", body: "Reprends ta place — un bon WOD peut suffire.", priority: "medium", cooldown: "24h", category: "leaderboard" },
+  { key: "near-rank", trigger: "index_recomputed && pointsToNextRank <= NEXT_RANK_CLOSE_THRESHOLD", title: "Le prochain palier est tout proche", body: "Un bon WOD et tu y es.", priority: "medium", cooldown: "72h", category: "progression" },
+  { key: "stale-attribute", trigger: "attribute_stale && unlocked", title: "Un de tes axes mérite un re-test", body: "Un attribut peut grimper. Quand tu veux.", priority: "low", cooldown: "7d", category: "progression" },
+  { key: "kudos", trigger: "session_kudos_received", title: "On a réagi à ta perf", body: "Des athlètes ont salué ta séance.", priority: "medium", cooldown: "12h", category: "social" },
+  { key: "weekly-recap", trigger: "weekly_cron && (sessions > 0 || deltaIndex > 0)", title: "Ta semaine en bref", body: "Ton récap de la semaine est prêt.", priority: "low", cooldown: "7d", category: "progression" },
+  { key: "new-message", trigger: "direct_message_received", title: "Nouveau message", body: "Ouvre la conversation pour répondre.", priority: "medium", cooldown: "0", category: "social" },
 ];
 
 /**
@@ -67,9 +71,8 @@ export function attributeLabel(attribute: string, locale: PushLocale = "fr"): st
  * push.service.ts). Chaque déclencheur fournit `title`/`body` en FR et EN ; `body` est une
  * fonction des paramètres (pluriels, nom, etc.). Ton bienveillant verrouillé, jamais punitif.
  *
- * TODO(i18n) : le modèle Profile/User ne porte pas encore de champ `locale`. Tant qu'il est absent,
- * on envoie systématiquement la variante FR (cf. `pushCopy(..., "fr")`). Dès qu'une `locale` existe,
- * la passer ici pour servir l'EN aux utilisateurs anglophones — aucune autre modif requise.
+ * La langue est résolue par destinataire via `Profile.locale` (cf. `PushService.recipientLocale`),
+ * passée en 2e argument de `pushCopy(...)`. Repli FR si la locale est absente ou inconnue.
  */
 export interface PushCopyEntry {
   title: string;
@@ -77,9 +80,10 @@ export interface PushCopyEntry {
 }
 
 const PUSH_COPY: Record<string, Record<PushLocale, PushCopyEntry>> = {
+  // Formulation UNIFIÉE avec le catalogue NOTIFICATION_TRIGGERS (« doublé » / « overtaken »).
   "rank-overtaken": {
     fr: { title: "On t'a doublé au classement", body: () => "Reprends ta place — un bon WOD peut suffire. 👊" },
-    en: { title: "You've been passed in the ranking", body: () => "Take your spot back — one good WOD can do it. 👊" },
+    en: { title: "You've been overtaken in the ranking", body: () => "Take your spot back — one good WOD can do it. 👊" },
   },
   "stale-attribute": {
     fr: { title: "Un de tes axes mérite un re-test", body: (p) => `Ton ${p.attributeLabel} peut grimper. Quand tu veux.` },

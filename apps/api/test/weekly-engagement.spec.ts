@@ -26,6 +26,8 @@ describe("WeeklyEngagementService — cron hebdo de ré-engagement", () => {
           .mockResolvedValueOnce({ attribute: "strength" })
           .mockResolvedValueOnce(null),
       },
+      // u1 est anglophone → le libellé d'attribut doit être en EN ("strength"), pas "force".
+      profile: { findUnique: jest.fn().mockResolvedValue({ locale: "en" }) },
     } as unknown as PrismaService;
 
     const engagement = {
@@ -44,9 +46,9 @@ describe("WeeklyEngagementService — cron hebdo de ré-engagement", () => {
     expect(res).toEqual({ processed: 2 });
     expect(push.notifyWeeklyRecap).toHaveBeenCalledTimes(2);
     expect(push.notifyWeeklyRecap).toHaveBeenCalledWith("u1", 4, 3);
-    // Seul u1 a un attribut stagnant.
+    // Seul u1 a un attribut stagnant ; libellé localisé EN (u1 est anglophone).
     expect(push.notifyStaleAttribute).toHaveBeenCalledTimes(1);
-    expect(push.notifyStaleAttribute).toHaveBeenCalledWith("u1", "force");
+    expect(push.notifyStaleAttribute).toHaveBeenCalledWith("u1", "strength");
   });
 
   it("runOnce : pas de récap « vide » (0 séance ET +0 pt) — on n'envoie rien d'inutile", async () => {
