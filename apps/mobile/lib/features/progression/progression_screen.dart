@@ -7,7 +7,6 @@ import '../../data/session.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/error_retry.dart';
 import '../../widgets/hi_skeleton.dart';
-import '../challenge/challenge_screen.dart';
 import '../endgame/endgame_screen.dart';
 import '../history/history_screen.dart';
 
@@ -75,7 +74,6 @@ class _ProgressionScreenState extends ConsumerState<ProgressionScreen> {
                   ),
                 ),
                 const SizedBox(height: HiSpace.md),
-                const ChallengeBanner(),
                 OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(
                     minimumSize: const Size.fromHeight(48),
