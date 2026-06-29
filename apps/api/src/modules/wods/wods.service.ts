@@ -401,7 +401,7 @@ export class WodsService {
       for_time: "Pour le temps",
       amrap: "AMRAP",
       emom: "EMOM",
-      chipper: "Chipper",
+      chipper: "Pour le temps",
       interval: "Intervalles",
       tabata: "Tabata",
       strength: "Force",

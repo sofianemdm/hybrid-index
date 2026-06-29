@@ -1274,12 +1274,6 @@ abstract class AppLocalizations {
   /// **'EMOM'**
   String get wodFmtEmom;
 
-  /// No description provided for @wodFmtChipper.
-  ///
-  /// In en, this message translates to:
-  /// **'Chipper'**
-  String get wodFmtChipper;
-
   /// No description provided for @wodFmtInterval.
   ///
   /// In en, this message translates to:

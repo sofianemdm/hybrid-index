@@ -524,9 +524,9 @@ export const WOD_PRESCRIPTIONS: Record<string, WodPrescription> = {
   league_hybrid_chipper: {
     scalable: false,
     summary:
-      "Semaine HYBRIDE — la finale du mois. Un chipper complet : course, gym, gainage, explosif, " +
+      "Semaine HYBRIDE — la finale du mois. Un enchaînement complet : course, gym, gainage, explosif, " +
       "une seule fois dans l'ordre. Le profil ÉQUILIBRÉ, bon partout sans trou, l'emporte.",
-    format: "Pour le temps (chipper) — time cap 15 min",
+    format: "Pour le temps — time cap 15 min",
     timeCapSec: 900,
     blocks: [
       { reps: "400 m", movement: "Course" },

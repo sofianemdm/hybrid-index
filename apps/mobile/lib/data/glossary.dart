@@ -20,8 +20,6 @@ const Map<String, String> kGlossary = {
       'tu récupères le temps restant de la minute.',
   'tabata': 'Format court et très intense : 8 cycles de 20 s d\'effort / 10 s de repos (4 min en '
       'tout) sur un même mouvement.',
-  'chipper': 'Une longue liste de mouvements à « grignoter » : on les enchaîne une seule fois, du '
-      'premier au dernier.',
   'intervalles': 'Alternance d\'efforts intenses et de récupérations (ex. 30 s vite / 30 s lent), '
       'répétée plusieurs fois.',
   'metcon': '« Metabolic Conditioning » : un circuit cardio-musculaire court et intense, typique du '

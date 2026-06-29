@@ -648,9 +648,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get wodFmtEmom => 'EMOM';
 
   @override
-  String get wodFmtChipper => 'Chipper';
-
-  @override
   String get wodFmtInterval => 'Intervals';
 
   @override

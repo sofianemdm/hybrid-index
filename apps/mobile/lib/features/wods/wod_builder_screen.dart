@@ -19,7 +19,7 @@ import 'wod_format.dart';
 // notation par allure/distance. La course se mesure via les WODs de course existants.
 // Ordre d'affichage des formats. Les libellés sont localisés via [_formatLabel] (i18n FR+EN) :
 // « Intervalles »/« Force » ne doivent plus s'afficher en français en locale EN.
-const _formatKeys = ['for_time', 'amrap', 'emom', 'chipper', 'interval', 'tabata', 'strength'];
+const _formatKeys = ['for_time', 'amrap', 'emom', 'interval', 'tabata', 'strength'];
 
 String _formatLabel(AppLocalizations t, String key) {
   switch (key) {
@@ -29,8 +29,6 @@ String _formatLabel(AppLocalizations t, String key) {
       return t.wodFmtAmrap;
     case 'emom':
       return t.wodFmtEmom;
-    case 'chipper':
-      return t.wodFmtChipper;
     case 'interval':
       return t.wodFmtInterval;
     case 'tabata':
@@ -418,7 +416,7 @@ class _WodBuilderScreenState extends ConsumerState<WodBuilderScreen> {
                     );
                   }).toList(),
                 ),
-                if (const ['for_time', 'chipper', 'interval'].contains(_type)) ...[
+                if (const ['for_time', 'interval'].contains(_type)) ...[
                   const SizedBox(height: HiSpace.md),
                   Row(children: [
                     Text(t.wodBuilderRoundsLabel, style: HiType.body.copyWith(color: HiColors.textSecondary)),
