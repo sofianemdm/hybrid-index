@@ -1,5 +1,6 @@
 import { BadRequestException, ConflictException, ForbiddenException, NotFoundException } from "@nestjs/common";
 import { CreateWodRequest } from "../src/modules/wods/create-wod.dto";
+import { EstimateWodRequest } from "../src/modules/wods/wod-estimate.dto";
 import { WodsService } from "../src/modules/wods/wods.service";
 
 /** Un payload de base valide ; chaque test n'écrase que le champ qu'il vérifie. */
@@ -44,6 +45,80 @@ describe("CreateWodRequest — bornes anti-abus", () => {
       blocks: [{ movementId: "deadlift", reps: 100_000, loadKg: 1_000 }],
     };
     expect(CreateWodRequest.safeParse(body).success).toBe(true);
+  });
+});
+
+describe("EstimateWodRequest — bornes anti-abus/DoS (endpoint PUBLIC /estimate)", () => {
+  /** Payload d'estimation valide ; chaque test n'écrase que le champ vérifié. */
+  const baseEstimate = (): unknown => ({
+    sex: "male",
+    scoreType: "time",
+    wodType: "for_time",
+    blocks: [{ movementId: "burpee", reps: 50 }],
+  });
+
+  it("accepte un payload raisonnable", () => {
+    expect(EstimateWodRequest.safeParse(baseEstimate()).success).toBe(true);
+  });
+
+  it("rejette des reps absurdes (> 100000)", () => {
+    const body = { ...(baseEstimate() as Record<string, unknown>), blocks: [{ movementId: "burpee", reps: 1_000_000 }] };
+    expect(EstimateWodRequest.safeParse(body).success).toBe(false);
+  });
+
+  it("rejette une charge absurde (> 1000 kg)", () => {
+    const body = { ...(baseEstimate() as Record<string, unknown>), blocks: [{ movementId: "deadlift", loadKg: 5_000 }] };
+    expect(EstimateWodRequest.safeParse(body).success).toBe(false);
+  });
+
+  it("rejette une distance absurde (> 1 000 000 m)", () => {
+    const body = { ...(baseEstimate() as Record<string, unknown>), blocks: [{ movementId: "run", distanceMeters: 5_000_000 }] };
+    expect(EstimateWodRequest.safeParse(body).success).toBe(false);
+  });
+
+  it("rejette des calories absurdes (> 100000)", () => {
+    const body = { ...(baseEstimate() as Record<string, unknown>), blocks: [{ movementId: "row", calories: 1_000_000 }] };
+    expect(EstimateWodRequest.safeParse(body).success).toBe(false);
+  });
+
+  it("rejette une durée de bloc absurde (> 24 h)", () => {
+    const body = { ...(baseEstimate() as Record<string, unknown>), blocks: [{ movementId: "plank", durationSec: 200_000 }] };
+    expect(EstimateWodRequest.safeParse(body).success).toBe(false);
+  });
+
+  it("rejette un nombre de tours absurde (> 100)", () => {
+    const body = { ...(baseEstimate() as Record<string, unknown>), rounds: 9_999 };
+    expect(EstimateWodRequest.safeParse(body).success).toBe(false);
+  });
+
+  it("rejette un timeCap absurde (> 24 h)", () => {
+    const body = { ...(baseEstimate() as Record<string, unknown>), timeCapSec: 200_000 };
+    expect(EstimateWodRequest.safeParse(body).success).toBe(false);
+  });
+
+  it("rejette un tableau de blocs géant (> 20)", () => {
+    const blocks = Array.from({ length: 21 }, () => ({ movementId: "burpee", reps: 10 }));
+    const body = { ...(baseEstimate() as Record<string, unknown>), blocks };
+    expect(EstimateWodRequest.safeParse(body).success).toBe(false);
+  });
+
+  it("accepte les valeurs limites exactes", () => {
+    const body = {
+      ...(baseEstimate() as Record<string, unknown>),
+      rounds: 100,
+      timeCapSec: 86_400,
+      blocks: [
+        {
+          movementId: "deadlift",
+          reps: 100_000,
+          loadKg: 1_000,
+          distanceMeters: 1_000_000,
+          calories: 100_000,
+          durationSec: 86_400,
+        },
+      ],
+    };
+    expect(EstimateWodRequest.safeParse(body).success).toBe(true);
   });
 });
 

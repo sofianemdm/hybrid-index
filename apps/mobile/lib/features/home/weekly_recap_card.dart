@@ -14,6 +14,16 @@ class WeeklyRecapCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
+    return MergeSemantics(
+      child: Semantics(
+        label: t.recapA11y(recap.sessions, recap.deltaIndex, recap.streakCurrent),
+        container: true,
+        child: ExcludeSemantics(child: _card(t)),
+      ),
+    );
+  }
+
+  Widget _card(AppLocalizations t) {
     return HiCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

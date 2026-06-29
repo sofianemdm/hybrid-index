@@ -47,11 +47,12 @@ export class SocialController {
   /** Recherche d'athlètes (filtres sexe / rang / nom). */
   @Get("explore")
   explore(
+    @CurrentUser() user: AuthenticatedUser,
     @Query("sex") sex?: string,
     @Query("rank") rank?: string,
     @Query("q") q?: string,
   ): Promise<unknown[]> {
-    return this.social.explore({ sex, rank, q });
+    return this.social.explore(user.userId, { sex, rank, q });
   }
 
   @Post("reactions")

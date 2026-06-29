@@ -1,9 +1,9 @@
-import { BadRequestException, Controller, Get, Query, UseGuards } from "@nestjs/common";
+import { BadRequestException, Controller, Get, Param, Post, Query, UseGuards } from "@nestjs/common";
 import { AttributeKey } from "@hybrid-index/contracts";
 import { CurrentUser } from "../auth/current-user.decorator";
 import { JwtAuthGuard, type AuthenticatedUser } from "../auth/jwt-auth.guard";
 import type { Session } from "./sessions.data";
-import { CoachService, type CoachResponse, type LibraryResponse } from "./coach.service";
+import { CoachService, type CoachResponse, type CompleteSessionResponse, type LibraryResponse } from "./coach.service";
 
 @Controller("v1/coach")
 @UseGuards(JwtAuthGuard)
@@ -50,5 +50,17 @@ export class CoachController {
   @Get("weekly")
   weekly(): { session: Session } {
     return this.coach.weekly();
+  }
+
+  /**
+   * Marque une séance guidée comme faite : persiste la complétion ET crédite la SÉRIE (sans créer
+   * de wodResult ni toucher l'Athlete Index). Idempotent par jour. 404 si la séance n'existe pas.
+   */
+  @Post("sessions/:id/complete")
+  complete(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("id") id: string,
+  ): Promise<CompleteSessionResponse> {
+    return this.coach.completeSession(user.userId, id);
   }
 }

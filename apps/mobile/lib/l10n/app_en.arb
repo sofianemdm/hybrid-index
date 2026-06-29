@@ -943,6 +943,42 @@
   "socialProofTopSuffix": " fittest humans",
   "socialProofAppPrefix": "Top ",
   "socialProofAppSuffix": " of HYBRID athletes",
+  "socialProofA11yHumanityApp": "Social proof. {humanity} {app}",
+  "@socialProofA11yHumanityApp": {
+    "placeholders": {
+      "humanity": { "type": "Object" },
+      "app": { "type": "Object" }
+    }
+  },
+  "socialProofA11yHumanity": "Social proof. {humanity}",
+  "@socialProofA11yHumanity": {
+    "placeholders": {
+      "humanity": { "type": "Object" }
+    }
+  },
+  "recapA11y": "Your week: {sessions, plural, one{{sessions} session} other{{sessions} sessions}}, {delta, plural, =0{no Index gain} one{plus {delta} Index} other{plus {delta} Index}}, {streak, plural, one{{streak} week streak} other{{streak} weeks streak}}.",
+  "@recapA11y": {
+    "placeholders": {
+      "sessions": { "type": "int" },
+      "delta": { "type": "int" },
+      "streak": { "type": "int" }
+    }
+  },
+  "gradeA11y": "{title}, based on {coverage}/6 attributes. {sessions, plural, =0{Keep logging sessions.} one{Complete {sessions} recommended session to reveal your real Index.} other{Complete {sessions} recommended sessions to reveal your real Index.}}",
+  "@gradeA11y": {
+    "placeholders": {
+      "title": { "type": "Object" },
+      "coverage": { "type": "int" },
+      "sessions": { "type": "int" }
+    }
+  },
+  "gradeSessionA11y": "Recommended session: {name}. Unlocks {covers}. Tap to open the details.",
+  "@gradeSessionA11y": {
+    "placeholders": {
+      "name": { "type": "Object" },
+      "covers": { "type": "Object" }
+    }
+  },
   "revealYourIndex": "YOUR ATHLETE INDEX",
   "revealDoProfilExpress": "Do the Express Profile",
   "revealEstimateTitle": "This is an estimate",
@@ -1193,6 +1229,9 @@
   "coachSessionDoneSubtitle": "Nice work. Keep your streak alive.",
   "coachSessionDoneToast": "Session “{name}” marked as done.",
   "@coachSessionDoneToast": { "placeholders": { "name": { "type": "String" } } },
+  "coachSessionStreakCredited": "Session “{name}” done — streak credited.",
+  "@coachSessionStreakCredited": { "placeholders": { "name": { "type": "String" } } },
+  "coachSessionSyncFailed": "Session saved locally. Couldn’t sync: your streak wasn’t updated. Try again when you’re back online.",
   "a11yHomePlayerCard": "{name}, Index {ovr}, rank {rank}. Tap to view your progress.",
   "@a11yHomePlayerCard": { "placeholders": { "name": { "type": "String" }, "ovr": { "type": "int" }, "rank": { "type": "String" } } },
   "a11yHomeCoachCta": "Get a training session from the coach",

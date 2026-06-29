@@ -1852,6 +1852,58 @@ class AppLocalizationsFr extends AppLocalizations {
   String get socialProofAppSuffix => ' des athlètes HYBRID';
 
   @override
+  String socialProofA11yHumanityApp(Object humanity, Object app) {
+    return 'Preuve sociale. $humanity $app';
+  }
+
+  @override
+  String socialProofA11yHumanity(Object humanity) {
+    return 'Preuve sociale. $humanity';
+  }
+
+  @override
+  String recapA11y(int sessions, int delta, int streak) {
+    String _temp0 = intl.Intl.pluralLogic(
+      sessions,
+      locale: localeName,
+      other: '$sessions séances',
+      one: '$sessions séance',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      delta,
+      locale: localeName,
+      other: 'plus $delta d\'Index',
+      one: 'plus $delta d\'Index',
+      zero: 'aucun gain d\'Index',
+    );
+    String _temp2 = intl.Intl.pluralLogic(
+      streak,
+      locale: localeName,
+      other: '$streak semaines de série',
+      one: '$streak semaine de série',
+    );
+    return 'Ta semaine : $_temp0, $_temp1, $_temp2.';
+  }
+
+  @override
+  String gradeA11y(Object title, int coverage, int sessions) {
+    String _temp0 = intl.Intl.pluralLogic(
+      sessions,
+      locale: localeName,
+      other:
+          'Complète $sessions séances recommandées pour révéler ton vrai Index.',
+      one: 'Complète $sessions séance recommandée pour révéler ton vrai Index.',
+      zero: 'Continue à logger des séances.',
+    );
+    return '$title, basé sur $coverage/6 attributs. $_temp0';
+  }
+
+  @override
+  String gradeSessionA11y(Object name, Object covers) {
+    return 'Séance recommandée : $name. Débloque $covers. Toucher pour ouvrir la fiche.';
+  }
+
+  @override
   String get revealYourIndex => 'TON ATHLETE INDEX';
 
   @override
@@ -2478,6 +2530,15 @@ class AppLocalizationsFr extends AppLocalizations {
   String coachSessionDoneToast(String name) {
     return 'Séance « $name » marquée comme faite.';
   }
+
+  @override
+  String coachSessionStreakCredited(String name) {
+    return 'Séance « $name » faite — série créditée.';
+  }
+
+  @override
+  String get coachSessionSyncFailed =>
+      'Séance enregistrée localement. Synchro impossible : ta série n\'a pas pu être mise à jour. Réessaie quand le réseau revient.';
 
   @override
   String a11yHomePlayerCard(String name, int ovr, String rank) {

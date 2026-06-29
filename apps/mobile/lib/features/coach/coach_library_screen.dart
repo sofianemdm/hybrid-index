@@ -273,13 +273,29 @@ class _CoachLibraryScreenState extends ConsumerState<CoachLibraryScreen> {
     }
   }
 
-  /// « Marquer comme faite » — VOIE CHOISIE : complétion côté client (feedback satisfaisant), SANS
-  /// routage vers la saisie de résultat. Raison : une [CoachSession] est une séance GUIDÉE clé en
-  /// main (GET /v1/coach/library), distincte des ÉPREUVES loguables (WodCatalogEntry) ; elle n'a
-  /// pas d'id de WOD ni de barème → router vers wod_result_entry serait fragile et hors-sujet. On
-  /// donne un retour léger (Celebration light = haptique + SnackBar de confirmation i18n).
+  /// « Marquer comme faite » — VOIE CHOISIE : complétion PERSISTÉE côté serveur (POST
+  /// /v1/coach/sessions/:id/complete), SANS routage vers la saisie de résultat. Raison : une
+  /// [CoachSession] est une séance GUIDÉE clé en main (GET /v1/coach/library), distincte des
+  /// ÉPREUVES loguables (WodCatalogEntry) ; elle n'a pas d'id de WOD ni de barème → l'API enregistre
+  /// la complétion et CRÉDITE LA SÉRIE sans toucher l'Athlete Index.
+  ///
+  /// L'appel réseau est BEST-EFFORT : on garde le feedback (Celebration + SnackBar) dans tous les
+  /// cas, mais on NE MENT PAS sur le crédit de série. Succès ⇒ message confirmant la série créditée ;
+  /// échec réseau ⇒ message honnête indiquant que la synchro (et donc la série) n'a pas abouti.
   Future<void> _markDone(CoachSession s) async {
     final t = AppLocalizations.of(context);
+    final api = ref.read(apiClientProvider);
+
+    // Persistance + crédit de série (best-effort : un échec réseau ne casse pas le feedback).
+    bool streakCredited = false;
+    try {
+      final res = await api.completeCoachSession(s.id);
+      streakCredited = res.streakCredited;
+    } catch (_) {
+      streakCredited = false;
+    }
+    if (!mounted) return;
+
     await Celebration.show(
       context,
       title: t.coachSessionDoneTitle,
@@ -289,9 +305,11 @@ class _CoachLibraryScreenState extends ConsumerState<CoachLibraryScreen> {
       intensity: CelebrationIntensity.light,
     );
     if (!mounted) return;
+    // Message honnête : on ne confirme la série créditée QUE si l'API a réussi.
+    final message = streakCredited ? t.coachSessionStreakCredited(s.name) : t.coachSessionSyncFailed;
     ScaffoldMessenger.of(context)
       ..clearSnackBars()
-      ..showSnackBar(SnackBar(content: Text(t.coachSessionDoneToast(s.name))));
+      ..showSnackBar(SnackBar(content: Text(message)));
   }
 
   Widget _meta(IconData icon, String text, Color color) => Row(

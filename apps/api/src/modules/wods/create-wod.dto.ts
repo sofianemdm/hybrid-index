@@ -3,13 +3,16 @@ import { ScoreType } from "@hybrid-index/contracts";
 
 // Bornes anti-abus : un humain ne dépasse jamais ces valeurs sur un bloc. Au-delà = saisie
 // erronée ou tentative de pollution (overflow d'affichage, scores aberrants). On rejette en 422.
-const MAX_REPS = 100_000;
-const MAX_LOAD_KG = 1_000; // record du monde épaule-jeté ≈ 264 kg → 1000 laisse une marge énorme
-const MAX_DISTANCE_M = 1_000_000; // 1000 km
-const MAX_CALORIES = 100_000;
-const MAX_DURATION_SEC = 86_400; // 24 h
-const MAX_TIME_CAP_SEC = 86_400; // 24 h
-const MAX_ROUNDS = 100;
+// Exportées pour être réutilisées à l'identique par EstimateWodRequest (wod-estimate.dto.ts),
+// afin que l'endpoint PUBLIC /estimate applique EXACTEMENT les mêmes bornes anti-abus.
+export const MAX_REPS = 100_000;
+export const MAX_LOAD_KG = 1_000; // record du monde épaule-jeté ≈ 264 kg → 1000 laisse une marge énorme
+export const MAX_DISTANCE_M = 1_000_000; // 1000 km
+export const MAX_CALORIES = 100_000;
+export const MAX_DURATION_SEC = 86_400; // 24 h
+export const MAX_TIME_CAP_SEC = 86_400; // 24 h
+export const MAX_ROUNDS = 100;
+export const MAX_BLOCKS = 20;
 
 const WodBlock = z.object({
   movementId: z.string().min(1).max(80),
@@ -30,7 +33,7 @@ export const CreateWodRequest = z.object({
   requiresEquipment: z.boolean(),
   timeCapSec: z.number().int().positive().max(MAX_TIME_CAP_SEC).optional(),
   rounds: z.number().int().positive().max(MAX_ROUNDS).optional(),
-  blocks: z.array(WodBlock).min(1).max(20),
+  blocks: z.array(WodBlock).min(1).max(MAX_BLOCKS),
 });
 export type CreateWodRequest = z.infer<typeof CreateWodRequest>;
 

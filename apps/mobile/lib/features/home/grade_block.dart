@@ -46,31 +46,42 @@ class EstimationBlock extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Icon(Icons.auto_graph, color: HiColors.warn, size: 18),
-              const SizedBox(width: HiSpace.sm),
-              Expanded(child: Text(title, style: HiType.label.copyWith(color: HiColors.warn, fontWeight: FontWeight.w800))),
-              _coverageDots(coverage),
-            ],
+          Semantics(
+            container: true,
+            label: t.gradeA11y(title, coverage, planAsync.asData?.value.sessions.length ?? 0),
+            child: ExcludeSemantics(
+              child: Row(
+                children: [
+                  Icon(Icons.auto_graph, color: HiColors.warn, size: 18),
+                  const SizedBox(width: HiSpace.sm),
+                  Expanded(child: Text(title, style: HiType.label.copyWith(color: HiColors.warn, fontWeight: FontWeight.w800))),
+                  ExcludeSemantics(child: _coverageDots(coverage)),
+                ],
+              ),
+            ),
           ),
           const SizedBox(height: 8),
           planAsync.when(
-            loading: () => Text(t.gradeEstimationLoading(coverage), style: HiType.caption.copyWith(color: HiColors.textSecondary)),
-            error: (_, __) => Text(
-              t.gradeEstimationError(coverage),
-              style: HiType.caption.copyWith(color: HiColors.textSecondary, height: 1.3),
+            loading: () => ExcludeSemantics(child: Text(t.gradeEstimationLoading(coverage), style: HiType.caption.copyWith(color: HiColors.textSecondary))),
+            error: (_, __) => ExcludeSemantics(
+              child: Text(
+                t.gradeEstimationError(coverage),
+                style: HiType.caption.copyWith(color: HiColors.textSecondary, height: 1.3),
+              ),
             ),
             data: (plan) {
               final n = plan.sessions.length;
               if (n == 0) {
-                return Text(t.gradeKeepLogging,
-                    style: HiType.caption.copyWith(color: HiColors.textSecondary));
+                return ExcludeSemantics(
+                  child: Text(t.gradeKeepLogging,
+                      style: HiType.caption.copyWith(color: HiColors.textSecondary)),
+                );
               }
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  RichText(
+                  ExcludeSemantics(
+                    child: RichText(
                     text: TextSpan(
                       style: HiType.caption.copyWith(color: HiColors.textSecondary, height: 1.3),
                       children: [
@@ -80,6 +91,7 @@ class EstimationBlock extends ConsumerWidget {
                         TextSpan(text: t.gradeCompleteSuffix),
                       ],
                     ),
+                  ),
                   ),
                   const SizedBox(height: 8),
                   ...plan.sessions.map((s) => _sessionRow(context, s)),
@@ -97,7 +109,10 @@ class EstimationBlock extends ConsumerWidget {
     final covers = s.covers.map((c) => HiLabels.attribute(c)).join(' · ');
     return Padding(
       padding: const EdgeInsets.only(bottom: 6),
-      child: Material(
+      child: Semantics(
+        button: true,
+        label: AppLocalizations.of(context).gradeSessionA11y(s.name, covers),
+        child: Material(
         color: HiColors.bgElevated,
         borderRadius: BorderRadius.circular(HiRadius.sm),
         child: InkWell(
@@ -105,7 +120,7 @@ class EstimationBlock extends ConsumerWidget {
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute(builder: (_) => WodDetailScreen(wodId: s.wodId, wodName: s.name)),
           ),
-          child: Padding(
+          child: ExcludeSemantics(child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
             child: Row(
               children: [
@@ -123,8 +138,9 @@ class EstimationBlock extends ConsumerWidget {
                 Icon(Icons.chevron_right, size: 18, color: HiColors.textTertiary),
               ],
             ),
-          ),
+          )),
         ),
+      ),
       ),
     );
   }

@@ -3242,6 +3242,36 @@ abstract class AppLocalizations {
   /// **' of HYBRID athletes'**
   String get socialProofAppSuffix;
 
+  /// No description provided for @socialProofA11yHumanityApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Social proof. {humanity} {app}'**
+  String socialProofA11yHumanityApp(Object humanity, Object app);
+
+  /// No description provided for @socialProofA11yHumanity.
+  ///
+  /// In en, this message translates to:
+  /// **'Social proof. {humanity}'**
+  String socialProofA11yHumanity(Object humanity);
+
+  /// No description provided for @recapA11y.
+  ///
+  /// In en, this message translates to:
+  /// **'Your week: {sessions, plural, one{{sessions} session} other{{sessions} sessions}}, {delta, plural, =0{no Index gain} one{plus {delta} Index} other{plus {delta} Index}}, {streak, plural, one{{streak} week streak} other{{streak} weeks streak}}.'**
+  String recapA11y(int sessions, int delta, int streak);
+
+  /// No description provided for @gradeA11y.
+  ///
+  /// In en, this message translates to:
+  /// **'{title}, based on {coverage}/6 attributes. {sessions, plural, =0{Keep logging sessions.} one{Complete {sessions} recommended session to reveal your real Index.} other{Complete {sessions} recommended sessions to reveal your real Index.}}'**
+  String gradeA11y(Object title, int coverage, int sessions);
+
+  /// No description provided for @gradeSessionA11y.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommended session: {name}. Unlocks {covers}. Tap to open the details.'**
+  String gradeSessionA11y(Object name, Object covers);
+
   /// No description provided for @revealYourIndex.
   ///
   /// In en, this message translates to:
@@ -4225,6 +4255,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Session “{name}” marked as done.'**
   String coachSessionDoneToast(String name);
+
+  /// No description provided for @coachSessionStreakCredited.
+  ///
+  /// In en, this message translates to:
+  /// **'Session “{name}” done — streak credited.'**
+  String coachSessionStreakCredited(String name);
+
+  /// No description provided for @coachSessionSyncFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Session saved locally. Couldn’t sync: your streak wasn’t updated. Try again when you’re back online.'**
+  String get coachSessionSyncFailed;
 
   /// No description provided for @a11yHomePlayerCard.
   ///

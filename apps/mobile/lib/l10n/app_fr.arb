@@ -540,6 +540,42 @@
   "socialProofTopSuffix": " des humains les plus en forme",
   "socialProofAppPrefix": "Top ",
   "socialProofAppSuffix": " des athlètes HYBRID",
+  "socialProofA11yHumanityApp": "Preuve sociale. {humanity} {app}",
+  "@socialProofA11yHumanityApp": {
+    "placeholders": {
+      "humanity": { "type": "Object" },
+      "app": { "type": "Object" }
+    }
+  },
+  "socialProofA11yHumanity": "Preuve sociale. {humanity}",
+  "@socialProofA11yHumanity": {
+    "placeholders": {
+      "humanity": { "type": "Object" }
+    }
+  },
+  "recapA11y": "Ta semaine : {sessions, plural, one{{sessions} séance} other{{sessions} séances}}, {delta, plural, =0{aucun gain d'Index} one{plus {delta} d'Index} other{plus {delta} d'Index}}, {streak, plural, one{{streak} semaine de série} other{{streak} semaines de série}}.",
+  "@recapA11y": {
+    "placeholders": {
+      "sessions": { "type": "int" },
+      "delta": { "type": "int" },
+      "streak": { "type": "int" }
+    }
+  },
+  "gradeA11y": "{title}, basé sur {coverage}/6 attributs. {sessions, plural, =0{Continue à logger des séances.} one{Complète {sessions} séance recommandée pour révéler ton vrai Index.} other{Complète {sessions} séances recommandées pour révéler ton vrai Index.}}",
+  "@gradeA11y": {
+    "placeholders": {
+      "title": { "type": "Object" },
+      "coverage": { "type": "int" },
+      "sessions": { "type": "int" }
+    }
+  },
+  "gradeSessionA11y": "Séance recommandée : {name}. Débloque {covers}. Toucher pour ouvrir la fiche.",
+  "@gradeSessionA11y": {
+    "placeholders": {
+      "name": { "type": "Object" },
+      "covers": { "type": "Object" }
+    }
+  },
   "revealYourIndex": "TON ATHLETE INDEX",
   "revealDoProfilExpress": "Faire le Profil Express",
   "revealEstimateTitle": "Ceci est une estimation",
@@ -752,6 +788,9 @@
   "coachSessionDoneSubtitle": "Beau travail. Garde ta série en vie.",
   "coachSessionDoneToast": "Séance « {name} » marquée comme faite.",
   "@coachSessionDoneToast": { "placeholders": { "name": { "type": "String" } } },
+  "coachSessionStreakCredited": "Séance « {name} » faite — série créditée.",
+  "@coachSessionStreakCredited": { "placeholders": { "name": { "type": "String" } } },
+  "coachSessionSyncFailed": "Séance enregistrée localement. Synchro impossible : ta série n'a pas pu être mise à jour. Réessaie quand le réseau revient.",
   "a11yHomePlayerCard": "{name}, Index {ovr}, rang {rank}. Touchez pour voir votre progression.",
   "@a11yHomePlayerCard": { "placeholders": { "name": { "type": "String" }, "ovr": { "type": "int" }, "rank": { "type": "String" } } },
   "a11yHomeCoachCta": "Obtenir une séance d'entraînement du coach",

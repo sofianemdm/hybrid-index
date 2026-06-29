@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable } from "@nestjs/common";
+import { BadRequestException, ConflictException, ForbiddenException, Injectable } from "@nestjs/common";
 import type { Sex } from "@prisma/client";
 import { ratingFromInternal } from "@hybrid-index/scoring-core";
 import { PrismaService } from "../../infra/prisma/prisma.service";
@@ -30,8 +30,19 @@ export class SocialService {
   // --- Follow ---
   async follow(me: string, target: string): Promise<{ following: true }> {
     if (me === target) throw new BadRequestException({ code: "VALIDATION_ERROR", message: "On ne se suit pas soi-même." });
-    const exists = await this.prisma.user.findFirst({ where: { id: target, status: "active" }, select: { id: true } });
+    const exists = await this.prisma.user.findFirst({
+      where: { id: target, status: "active" },
+      select: { id: true, profile: { select: { visibility: true } } },
+    });
     if (!exists) throw new BadRequestException({ code: "NOT_FOUND", message: "Athlète introuvable." });
+    // Sécurité : impossible de suivre quelqu'un avec qui il existe un blocage (dans un sens OU l'autre).
+    if (await this.moderation.isBlockedBetween(me, target)) {
+      throw new ForbiddenException({ code: "FORBIDDEN", message: "Action impossible avec cet utilisateur." });
+    }
+    // Respect de la visibilité : on ne suit pas un profil non public.
+    if (exists.profile && exists.profile.visibility !== "public") {
+      throw new ForbiddenException({ code: "FORBIDDEN", message: "Ce profil n'est pas public." });
+    }
     await this.prisma.follow.upsert({
       where: { followerId_followeeId: { followerId: me, followeeId: target } },
       create: { followerId: me, followeeId: target },
@@ -68,6 +79,10 @@ export class SocialService {
     const event = await this.prisma.feedEvent.findUnique({ where: { id: feedEventId }, select: { actorId: true } });
     if (!event) throw new BadRequestException({ code: "NOT_FOUND", message: "Événement introuvable." });
     if (event.actorId === me) throw new ConflictException({ code: "CONFLICT", message: "Pas d'auto-kudos." });
+    // Sécurité : pas de kudos vers/depuis un utilisateur bloqué (dans un sens OU l'autre).
+    if (await this.moderation.isBlockedBetween(me, event.actorId)) {
+      throw new ForbiddenException({ code: "FORBIDDEN", message: "Action impossible avec cet utilisateur." });
+    }
     // Un seul kudos par user par event : on efface tout (y compris d'anciens emojis multiples) puis on pose 👏.
     await this.prisma.reaction.deleteMany({ where: { fromUserId: me, feedEventId } });
     await this.prisma.reaction.create({ data: { fromUserId: me, feedEventId, emoji: KUDOS } });
@@ -89,11 +104,16 @@ export class SocialService {
   }
 
   // --- Recherche d'athlètes ---
-  async explore(filters: { sex?: string; rank?: string; q?: string }): Promise<unknown[]> {
+  async explore(me: string, filters: { sex?: string; rank?: string; q?: string }): Promise<unknown[]> {
+    // Sécurité : on exclut les utilisateurs avec qui il existe un blocage (dans un sens OU l'autre)
+    // ainsi que soi-même.
+    const blocked = await this.moderation.blockedIds(me);
+    const excludeIds = [me, ...blocked];
     const profiles = await this.prisma.profile.findMany({
       where: {
         visibility: "public",
         user: { is: { status: "active" } },
+        userId: { notIn: excludeIds },
         ...(filters.sex ? { sex: filters.sex as never } : {}),
         ...(filters.rank ? { rank: filters.rank as never } : {}),
         ...(filters.q ? { displayName: { contains: filters.q.slice(0, 50), mode: "insensitive" } } : {}),

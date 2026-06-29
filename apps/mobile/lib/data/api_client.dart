@@ -239,6 +239,14 @@ class ApiClient {
     return CoachSession.fromJson(j['session'] as Map<String, dynamic>);
   }
 
+  /// Marque une séance GUIDÉE comme faite : persiste la complétion ET crédite la SÉRIE côté serveur
+  /// (sans créer de WOD ni toucher l'Athlete Index). Idempotent par jour. Renvoie [streakCredited]
+  /// pour que l'UI ne mente PAS sur le crédit de série si le recalcul a échoué.
+  Future<({bool recorded, bool streakCredited})> completeCoachSession(String sessionId) async {
+    final j = await _send('POST', '/v1/coach/sessions/$sessionId/complete', {}) as Map<String, dynamic>;
+    return (recorded: j['recorded'] == true, streakCredited: j['streakCredited'] == true);
+  }
+
   Future<PublicProfile> publicProfile(String userId) async {
     final j = await _send('GET', '/v1/profiles/$userId') as Map<String, dynamic>;
     return PublicProfile.fromJson(j);

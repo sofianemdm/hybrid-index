@@ -192,6 +192,7 @@ model User {
   blocksReceived    Block[]            @relation("Blocked")
   pushTokens        PushToken[]
   notificationLogs  NotificationLog[]
+  coachCompletions  CoachSessionCompletion[]
 
   @@map("user")
   @@schema("app")
@@ -829,6 +830,28 @@ model Streak {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("streak")
+  @@schema("app")
+}
+
+// Complétion d'une SÉANCE GUIDÉE du coach (« Marquer comme faite » : biblio coach + fin du chrono
+// guidé). Trace légère, distincte d'un WodResult : une CoachSession n'a PAS de barème → elle ne
+// crée AUCUN wodResult, ne touche NI l'Athlete Index NI le radar NI la Ligue. Elle compte
+// UNIQUEMENT comme activité de la semaine pour la SÉRIE (streak). `sessionId` est l'id String d'une
+// séance curée (cf. sessions.data.ts), scalaire (pas de FK : ces séances ne vivent pas en base —
+// même pattern que ProgressWeekly/League pour éviter le churn). Idempotence raisonnable : au plus
+// une complétion par (user, session, jour) via `completedDay` (date UTC) — anti-spam.
+model CoachSessionCompletion {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  sessionId    String   @map("session_id")
+  completedAt  DateTime @default(now()) @map("completed_at") @db.Timestamptz(6)
+  completedDay DateTime @map("completed_day") @db.Date
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, sessionId, completedDay])
+  @@index([userId, completedAt(sort: Desc)])
+  @@map("coach_session_completion")
   @@schema("app")
 }
 

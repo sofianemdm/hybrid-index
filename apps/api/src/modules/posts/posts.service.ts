@@ -129,6 +129,10 @@ export class PostsService {
     const post = await this.prisma.post.findUnique({ where: { id: postId }, select: { authorId: true } });
     if (!post) throw new NotFoundException({ code: "NOT_FOUND", message: "Post introuvable." });
     if (post.authorId === me) throw new ConflictException({ code: "CONFLICT", message: "Pas d'auto-kudos." });
+    // Sécurité : pas de kudos vers/depuis un utilisateur bloqué (dans un sens OU l'autre).
+    if (await this.moderation.isBlockedBetween(me, post.authorId)) {
+      throw new ForbiddenException({ code: "FORBIDDEN", message: "Action impossible avec cet utilisateur." });
+    }
     await this.prisma.postReaction.upsert({
       where: { postId_fromUserId: { postId, fromUserId: me } },
       create: { postId, fromUserId: me, emoji: KUDOS },

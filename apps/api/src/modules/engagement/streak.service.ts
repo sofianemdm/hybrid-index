@@ -36,10 +36,23 @@ export class StreakService {
     return this.evaluateAndGet(userId);
   }
 
-  private async wodCountInWeek(userId: string, monday: Date): Promise<number> {
-    return this.prisma.wodResult.count({
-      where: { userId, performedAt: { gte: monday, lt: addWeeks(monday, 1) } },
-    });
+  /**
+   * Activités validant la série pour la semaine : WODs loggés (effort noté, alimente l'Index) ET
+   * séances guidées du coach « marquées comme faites » (CoachSessionCompletion : trace sans barème,
+   * NE touche PAS l'Index). Une journée où l'athlète fait une séance guidée compte donc comme une
+   * activité de la semaine au même titre qu'un WOD logué.
+   */
+  private async activityCountInWeek(userId: string, monday: Date): Promise<number> {
+    const nextMonday = addWeeks(monday, 1);
+    const [wods, coach] = await Promise.all([
+      this.prisma.wodResult.count({
+        where: { userId, performedAt: { gte: monday, lt: nextMonday } },
+      }),
+      this.prisma.coachSessionCompletion.count({
+        where: { userId, completedAt: { gte: monday, lt: nextMonday } },
+      }),
+    ]);
+    return wods + coach;
   }
 
   /** Évalue les semaines écoulées puis renvoie l'état courant. Idempotent. */
@@ -74,7 +87,7 @@ export class StreakService {
 
     let plannedRest = streak.plannedRest;
     while (pointer.getTime() < currentMonday.getTime()) {
-      const count = await this.wodCountInWeek(userId, pointer);
+      const count = await this.activityCountInWeek(userId, pointer);
       let outcome: string;
       if (plannedRest) {
         current += 1;
@@ -113,7 +126,7 @@ export class StreakService {
       },
     });
 
-    const thisWeekCount = await this.wodCountInWeek(userId, currentMonday);
+    const thisWeekCount = await this.activityCountInWeek(userId, currentMonday);
     return {
       current: persisted.current,
       best: persisted.best,

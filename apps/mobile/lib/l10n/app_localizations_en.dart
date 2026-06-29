@@ -1839,6 +1839,58 @@ class AppLocalizationsEn extends AppLocalizations {
   String get socialProofAppSuffix => ' of HYBRID athletes';
 
   @override
+  String socialProofA11yHumanityApp(Object humanity, Object app) {
+    return 'Social proof. $humanity $app';
+  }
+
+  @override
+  String socialProofA11yHumanity(Object humanity) {
+    return 'Social proof. $humanity';
+  }
+
+  @override
+  String recapA11y(int sessions, int delta, int streak) {
+    String _temp0 = intl.Intl.pluralLogic(
+      sessions,
+      locale: localeName,
+      other: '$sessions sessions',
+      one: '$sessions session',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      delta,
+      locale: localeName,
+      other: 'plus $delta Index',
+      one: 'plus $delta Index',
+      zero: 'no Index gain',
+    );
+    String _temp2 = intl.Intl.pluralLogic(
+      streak,
+      locale: localeName,
+      other: '$streak weeks streak',
+      one: '$streak week streak',
+    );
+    return 'Your week: $_temp0, $_temp1, $_temp2.';
+  }
+
+  @override
+  String gradeA11y(Object title, int coverage, int sessions) {
+    String _temp0 = intl.Intl.pluralLogic(
+      sessions,
+      locale: localeName,
+      other:
+          'Complete $sessions recommended sessions to reveal your real Index.',
+      one: 'Complete $sessions recommended session to reveal your real Index.',
+      zero: 'Keep logging sessions.',
+    );
+    return '$title, based on $coverage/6 attributes. $_temp0';
+  }
+
+  @override
+  String gradeSessionA11y(Object name, Object covers) {
+    return 'Recommended session: $name. Unlocks $covers. Tap to open the details.';
+  }
+
+  @override
   String get revealYourIndex => 'YOUR ATHLETE INDEX';
 
   @override
@@ -2462,6 +2514,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String coachSessionDoneToast(String name) {
     return 'Session “$name” marked as done.';
   }
+
+  @override
+  String coachSessionStreakCredited(String name) {
+    return 'Session “$name” done — streak credited.';
+  }
+
+  @override
+  String get coachSessionSyncFailed =>
+      'Session saved locally. Couldn’t sync: your streak wasn’t updated. Try again when you’re back online.';
 
   @override
   String a11yHomePlayerCard(String name, int ovr, String rank) {
