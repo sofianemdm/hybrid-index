@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../app.dart';
 import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../l10n/app_localizations.dart';
@@ -10,7 +9,6 @@ import '../../theme/haptics.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/hi_skeleton.dart';
 import '../../widgets/hi_avatar.dart';
-import '../home/rival_card.dart';
 import '../profile/public_profile_screen.dart';
 import '../wods/wod_detail_screen.dart';
 import 'league_reveal_sheet.dart';
@@ -146,7 +144,6 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
                     _wodCard(season.currentWeek!),
                     const SizedBox(height: HiSpace.md),
                   ],
-                  _rivalSection(season),
                   _sexSegmented(),
                   const SizedBox(height: HiSpace.md),
                   _standingsSection(),
@@ -156,39 +153,6 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
           ),
         ),
       ),
-    );
-  }
-
-  // RIVAL dans la Ligue — le rival amical (athlète juste au-dessus) vit AU-DESSUS du classement,
-  // conformément au cahier (le rival est le cœur de l'expérience Ligue). Même source que l'Accueil
-  // (myProfileProvider → Profile.rival / .leaguePosition) : aucune donnée dupliquée. Le widget
-  // RivalCard gère seul l'état « tu es n°1 » (rival null) et porte déjà sa propre a11y Semantics.
-  // Gating identique à l'Accueil : on n'affiche rien tant que l'athlète n'a pas de place en ligue.
-  Widget _rivalSection(LeagueSeason season) {
-    final t = AppLocalizations.of(context);
-    final profile = ref.watch(myProfileProvider).value;
-    if (profile == null || profile.leaguePosition == null) return const SizedBox.shrink();
-    final week = season.currentWeek;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(t.leagueRivalTitle, style: HiType.bodyStrong.copyWith(color: HiColors.textPrimary)),
-        const SizedBox(height: HiSpace.sm),
-        RivalCard(
-          rival: profile.rival,
-          leaguePosition: profile.leaguePosition,
-          // Déjà sur l'écran Ligue : un tap mène à l'action utile — refaire le WOD imposé pour
-          // grappiller des points et dépasser le rival. Pas de WOD en cours ⇒ simple feedback tactile.
-          onTap: () {
-            if (week != null) {
-              _doWeekWod(week);
-            } else {
-              HiHaptics.tap();
-            }
-          },
-        ),
-        const SizedBox(height: HiSpace.md),
-      ],
     );
   }
 
