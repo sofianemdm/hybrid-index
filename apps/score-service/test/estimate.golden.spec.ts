@@ -114,9 +114,10 @@ describe("score-service — golden estimation « pro » (e2e)", () => {
       const elite = await predict("helen", "male", profile(ELITE));
       const beginner = await predict("helen", "male", profile(BEGINNER));
       expect(elite.body.predictedRaw).toBeLessThan(beginner.body.predictedRaw);
-      // Bornes Helen H [390, 1320] s.
+      // Borné par le garde-fou population : bas ≥ hardMin (390) ; haut ≤ max(hardMax, q99). Après
+      // recalibrage salle (médiane 12:30, σ 0,30), q99 ≈ 1510 s élargit la borne haute > hardMax 1320.
       expect(elite.body.predictedRaw).toBeGreaterThanOrEqual(390);
-      expect(beginner.body.predictedRaw).toBeLessThanOrEqual(1320);
+      expect(beginner.body.predictedRaw).toBeLessThanOrEqual(1520);
     });
 
     it("Cindy (male, AMRAP 20') : score = VOLUME (reps), élite > débutant", async () => {
@@ -125,6 +126,70 @@ describe("score-service — golden estimation « pro » (e2e)", () => {
       expect(elite.body.scoreType).toBe("reps");
       expect(elite.body.predictedRaw).toBeGreaterThan(beginner.body.predictedRaw);
       expect(beginner.body.predictedRaw).toBeGreaterThan(0);
+    });
+  });
+
+  // ───────────────────────────────────────────────────────────────────────────────────────────
+  // BLUEPRINTS AJOUTÉS (audit prédiction des temps §3a) — ces WODs retombaient AVANT en SILENCE sur
+  // le modèle population. Désormais ils passent par le moteur per-mouvement (+ pénalité de charge) :
+  // jamais plus rapides que la référence élite (proReference, garde-fou « vrai tail »), bornés, et
+  // monotones par niveau.
+  // ───────────────────────────────────────────────────────────────────────────────────────────
+  describe("WODs jusque-là en repli silencieux — réalisme + monotonie", () => {
+    it("Le Chaos (chipper for time) : profil moyen JAMAIS plus rapide que le champion 7:10, débutant lent (>9 min)", async () => {
+      const soso = await predict("league_hybrid_chipper", "male", profile(SOSO));
+      const beginner = await predict("league_hybrid_chipper", "male", profile(BEGINNER));
+      expect(soso.body.scoreType).toBe("time");
+      expect(soso.body.predictedRaw).toBeGreaterThanOrEqual(430); // garde-fou vrai tail (champion 7:10)
+      expect(beginner.body.predictedRaw).toBeGreaterThan(540); // débutant > 9 min
+      expect(beginner.body.predictedRaw).toBeLessThanOrEqual(1200); // borné par le cap 15 min
+      expect(beginner.body.predictedRaw).toBeGreaterThan(soso.body.predictedRaw);
+    });
+
+    it("Murph (course + 600 reps gym) : temps LONG réaliste, force-limité, monotone et borné", async () => {
+      const soso = await predict("murph", "male", profile(SOSO));
+      const elite = await predict("murph", "male", profile(ELITE));
+      const beginner = await predict("murph", "male", profile(BEGINNER));
+      expect(soso.body.predictedRaw).toBeGreaterThanOrEqual(1850); // hardMin
+      expect(beginner.body.predictedRaw).toBeLessThanOrEqual(6000); // hardMax
+      expect(elite.body.predictedRaw).toBeLessThanOrEqual(soso.body.predictedRaw);
+      expect(soso.body.predictedRaw).toBeLessThan(beginner.body.predictedRaw);
+      // La FORCE compte : à power/ME figés, +force ⇒ Murph plus rapide (mur des 100 tractions).
+      const lowStr = await predict("murph", "male", profile({ strength: 350, power: 750, muscular_endurance: 800 }));
+      const highStr = await predict("murph", "male", profile({ strength: 900, power: 750, muscular_endurance: 800 }));
+      expect(highStr.body.predictedRaw).toBeLessThan(lowStr.body.predictedRaw);
+    });
+
+    it("Isabel (30 snatch 60 kg) : pénalité de CHARGE relative — élite plus rapide, tous bornés", async () => {
+      const elite = await predict("isabel", "male", profile(ELITE));
+      const soso = await predict("isabel", "male", profile(SOSO));
+      const beginner = await predict("isabel", "male", profile(BEGINNER));
+      for (const r of [elite, soso, beginner]) {
+        expect(r.body.predictedRaw).toBeGreaterThanOrEqual(45); // hardMin
+        expect(r.body.predictedRaw).toBeLessThanOrEqual(600); // hardMax (60 kg brutal sous-Rx)
+      }
+      expect(elite.body.predictedRaw).toBeLessThan(soso.body.predictedRaw);
+      expect(elite.body.predictedRaw).toBeLessThan(beginner.body.predictedRaw);
+    });
+
+    it("Le Moteur (AMRAP reps, course NON comptée) : score = reps, monotone, course exclue du volume", async () => {
+      const elite = await predict("league_engine_12", "male", profile(ELITE));
+      const beginner = await predict("league_engine_12", "male", profile(BEGINNER));
+      expect(elite.body.scoreType).toBe("reps");
+      // La course imposée (unscored) ne gonfle pas le volume → reps, pas des mètres (≤ proReference 215).
+      expect(elite.body.predictedRaw).toBeLessThanOrEqual(215);
+      expect(elite.body.predictedRaw).toBeGreaterThan(beginner.body.predictedRaw);
+      expect(beginner.body.predictedRaw).toBeGreaterThan(0);
+    });
+
+    it("HYROX solo : temps long borné, élite ≤ soso < débutant", async () => {
+      const soso = await predict("hyrox_solo", "male", profile(SOSO));
+      const elite = await predict("hyrox_solo", "male", profile(ELITE));
+      const beginner = await predict("hyrox_solo", "male", profile(BEGINNER));
+      expect(soso.body.predictedRaw).toBeGreaterThanOrEqual(3000); // hardMin
+      expect(beginner.body.predictedRaw).toBeLessThanOrEqual(9000); // hardMax
+      expect(elite.body.predictedRaw).toBeLessThanOrEqual(soso.body.predictedRaw);
+      expect(soso.body.predictedRaw).toBeLessThan(beginner.body.predictedRaw);
     });
   });
 });

@@ -12,13 +12,6 @@ import type { WodDefinition } from "./wod.types";
  * (pour reproduire le worked example A). Les autres log-normaux prennent R50 comme médiane.
  */
 
-const lnArithMean = (mean: number, sigmaLn: number): DistributionModel => ({
-  kind: "lognormal",
-  muLn: Math.log(mean) - sigmaLn ** 2 / 2,
-  sigmaLn,
-  dir: -1,
-});
-
 const normal = (mu: number, sigma: number): DistributionModel => ({ kind: "normal", mu, sigma, dir: 1 });
 
 const points = (nodes: Array<[number, number]>): DistributionModel => ({
@@ -42,8 +35,8 @@ export const WODS: ReadonlyArray<WodDefinition> = [
       { attribute: "muscular_endurance", estimated: false },
     ],
     bySex: {
-      male: { model: lognormalFromMedian(1020, 0.26), hardMin: 600, hardMax: 1800, proReference: 660 },
-      female: { model: lognormalFromMedian(1140, 0.26), hardMin: 660, hardMax: 1980, proReference: 750 },
+      male: { model: lognormalFromMedian(1080, 0.28), hardMin: 600, hardMax: 1800, proReference: 660 },
+      female: { model: lognormalFromMedian(1200, 0.28), hardMin: 660, hardMax: 1980, proReference: 750 },
     },
   },
   {
@@ -57,8 +50,8 @@ export const WODS: ReadonlyArray<WodDefinition> = [
       { attribute: "power", estimated: false },
     ],
     bySex: {
-      male: { model: lognormalFromMedian(390, 0.42), hardMin: 105, hardMax: 1500, proReference: 135 },
-      female: { model: lognormalFromMedian(450, 0.42), hardMin: 135, hardMax: 1800, proReference: 165 },
+      male: { model: lognormalFromMedian(660, 0.34), hardMin: 105, hardMax: 1500, proReference: 135 },
+      female: { model: lognormalFromMedian(780, 0.34), hardMin: 135, hardMax: 1800, proReference: 165 },
     },
   },
   {
@@ -72,8 +65,8 @@ export const WODS: ReadonlyArray<WodDefinition> = [
       { attribute: "strength", estimated: false },
     ],
     bySex: {
-      male: { model: lnArithMean(252, 0.45), hardMin: 55, hardMax: 1200, proReference: 90 },
-      female: { model: lnArithMean(290, 0.42), hardMin: 80, hardMax: 1500, proReference: 120 },
+      male: { model: lognormalFromMedian(360, 0.36), hardMin: 55, hardMax: 1200, proReference: 90 },
+      female: { model: lognormalFromMedian(420, 0.36), hardMin: 80, hardMax: 1500, proReference: 120 },
     },
   },
   {
@@ -91,11 +84,11 @@ export const WODS: ReadonlyArray<WodDefinition> = [
     bySex: {
       male: {
         model: points([
-          [0.1, 780],
-          [0.25, 615],
-          [0.5, 540],
-          [0.75, 450],
-          [0.9, 375],
+          [0.1, 870],
+          [0.25, 660],
+          [0.5, 570],
+          [0.75, 465],
+          [0.9, 390],
           [0.99, 315],
         ]),
         hardMin: 270,
@@ -104,11 +97,11 @@ export const WODS: ReadonlyArray<WodDefinition> = [
       },
       female: {
         model: points([
-          [0.1, 900],
-          [0.25, 705],
-          [0.5, 615],
-          [0.75, 510],
-          [0.9, 435],
+          [0.1, 990],
+          [0.25, 750],
+          [0.5, 650],
+          [0.75, 535],
+          [0.9, 445],
           [0.99, 360],
         ]),
         hardMin: 315,
@@ -141,8 +134,8 @@ export const WODS: ReadonlyArray<WodDefinition> = [
       { attribute: "hybrid", estimated: false },
     ],
     bySex: {
-      male: { model: lognormalFromMedian(640, 0.29), hardMin: 390, hardMax: 1320, proReference: 433 },
-      female: { model: lognormalFromMedian(720, 0.29), hardMin: 450, hardMax: 1500, proReference: 510 },
+      male: { model: lognormalFromMedian(750, 0.30), hardMin: 390, hardMax: 1320, proReference: 433 },
+      female: { model: lognormalFromMedian(840, 0.30), hardMin: 450, hardMax: 1500, proReference: 510 },
     },
   },
   {
@@ -158,11 +151,11 @@ export const WODS: ReadonlyArray<WodDefinition> = [
     bySex: {
       male: {
         model: points([
-          [0.1, 900],
-          [0.25, 720],
-          [0.5, 600],
-          [0.75, 480],
-          [0.9, 390],
+          [0.1, 1080],
+          [0.25, 840],
+          [0.5, 690],
+          [0.75, 540],
+          [0.9, 420],
           [0.99, 300],
         ]),
         hardMin: 240,
@@ -171,11 +164,11 @@ export const WODS: ReadonlyArray<WodDefinition> = [
       },
       female: {
         model: points([
-          [0.1, 1050],
-          [0.25, 840],
-          [0.5, 720],
-          [0.75, 570],
-          [0.9, 465],
+          [0.1, 1230],
+          [0.25, 990],
+          [0.5, 825],
+          [0.75, 645],
+          [0.9, 510],
           [0.99, 360],
         ]),
         hardMin: 270,
@@ -257,11 +250,11 @@ export const WODS: ReadonlyArray<WodDefinition> = [
     bySex: {
       male: {
         model: points([
-          [0.1, 960],
-          [0.25, 765],
-          [0.5, 630],
-          [0.75, 510],
-          [0.9, 420],
+          [0.1, 1140],
+          [0.25, 885],
+          [0.5, 720],
+          [0.75, 570],
+          [0.9, 450],
           [0.99, 345],
         ]),
         hardMin: 270,
@@ -270,11 +263,11 @@ export const WODS: ReadonlyArray<WodDefinition> = [
       },
       female: {
         model: points([
-          [0.1, 1080],
-          [0.25, 855],
-          [0.5, 720],
-          [0.75, 585],
-          [0.9, 480],
+          [0.1, 1260],
+          [0.25, 990],
+          [0.5, 828],
+          [0.75, 660],
+          [0.9, 525],
           [0.99, 390],
         ]),
         hardMin: 300,
@@ -404,8 +397,8 @@ export const WODS: ReadonlyArray<WodDefinition> = [
       { attribute: "power", estimated: false },
     ],
     bySex: {
-      male: { model: lognormalFromMedian(660, 0.31), hardMin: 330, hardMax: 1500, proReference: 360 },
-      female: { model: lognormalFromMedian(750, 0.31), hardMin: 360, hardMax: 1680, proReference: 420 },
+      male: { model: lognormalFromMedian(750, 0.31), hardMin: 330, hardMax: 1500, proReference: 360 },
+      female: { model: lognormalFromMedian(840, 0.31), hardMin: 360, hardMax: 1680, proReference: 420 },
     },
   },
   {

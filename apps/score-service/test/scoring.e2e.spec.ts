@@ -139,7 +139,7 @@ describe("score-service — calcul (e2e)", () => {
   });
 
   describe("POST /v1/score/profile (efforts bruts → radar + Index)", () => {
-    it("worked example A : Homme 'Partout', 3 efforts → ~553 (OR) après recalibrage 28/06", async () => {
+    it("worked example A : Homme 'Partout', 3 efforts → ~871 après recalibrage salle 30/06 (Grace 4:30 ≈ P0,79)", async () => {
       const res = await request(app.getHttpServer())
         .post("/v1/score/profile")
         .send({
@@ -152,8 +152,11 @@ describe("score-service — calcul (e2e)", () => {
           ],
         })
         .expect(201);
-      expect(res.body.index.value).toBeGreaterThanOrEqual(545);
-      expect(res.body.index.value).toBeLessThanOrEqual(562);
+      // Recalibrage « réalité de salle » (audit prédiction des temps §3b) : Grace 4:30 passe de
+      // ~P50 à ~P0,79 (médiane salle 6:00), donc strength/power montent (~855) et l'Index grimpe.
+      // C'est la NOTATION recalibrée assumée (l'ancienne, calée compétition, était trop sévère).
+      expect(res.body.index.value).toBeGreaterThanOrEqual(855);
+      expect(res.body.index.value).toBeLessThanOrEqual(885);
       expect(res.body.index.radarCoverage).toBe(4);
       expect(res.body.index.isProvisional).toBe(false);
       const strength = res.body.radar.find((a: { attribute: string }) => a.attribute === "strength");

@@ -66,21 +66,21 @@ describe("api — anti-triche resultats (e2e reel)", () => {
     await request(api.getHttpServer())
       .post("/v1/results")
       .set("authorization", `Bearer ${token}`)
-      .send({ wodId: "fran", scoreType: "time", rawResult: 360 }) // ~6:00, honnete
+      .send({ wodId: "fran", scoreType: "time", rawResult: 660 }) // ~11:00, mid-pack honnete (P50 du modele recalibre)
       .expect(201);
     const row = await prisma.wodResult.findFirst({ where: { userId, wodId: "fran" }, orderBy: { createdAt: "desc" } });
     expect(row?.review).toBe("ok");
   });
 
   it("saut > +30 % du sous-score vs 7j -> pending_review (exclu du classement)", async () => {
-    // Fran ~2:00 (120s) = quasi-champion : sous-score tres superieur a celui d'un 6:00 -> > +30 %.
+    // Fran ~2:10 (130s) = quasi-champion (sub ~1000) vs le 11:00 mid-pack (sub ~433) -> saut > +30 %.
     await request(api.getHttpServer())
       .post("/v1/results")
       .set("authorization", `Bearer ${token}`)
-      .send({ wodId: "fran", scoreType: "time", rawResult: 120 })
+      .send({ wodId: "fran", scoreType: "time", rawResult: 130 })
       .expect(201);
     const flagged = await prisma.wodResult.findFirst({
-      where: { userId, wodId: "fran", rawResult: 120 },
+      where: { userId, wodId: "fran", rawResult: 130 },
       orderBy: { createdAt: "desc" },
     });
     expect(flagged?.review).toBe("pending_review");
@@ -91,8 +91,8 @@ describe("api — anti-triche resultats (e2e reel)", () => {
       .set("authorization", `Bearer ${token}`)
       .expect(200);
     const mine = (lb.body.entries as Array<{ isMe: boolean; rawResult: number }>).find((e) => e.isMe);
-    // Si je suis present, c'est avec mon effort honnete (360), jamais le flagge (120).
-    if (mine) expect(mine.rawResult).not.toBe(120);
+    // Si je suis present, c'est avec mon effort honnete (660), jamais le flagge (130).
+    if (mine) expect(mine.rawResult).not.toBe(130);
   });
 
   it("performedAt fourni par le client est ignore (heure serveur)", async () => {

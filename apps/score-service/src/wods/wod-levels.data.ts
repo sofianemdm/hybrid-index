@@ -12,16 +12,16 @@ export interface WodLevels {
 }
 
 export const WOD_LEVELS: Record<string, { male: WodLevels; female: WodLevels }> = {
-  hyrox_sprint: { male: { champion: 660, intermediate: 1020, occasional: 1380 }, female: { champion: 750, intermediate: 1140, occasional: 1560 } },
-  fran: { male: { champion: 113, intermediate: 390, occasional: 660 }, female: { champion: 135, intermediate: 450, occasional: 780 } },
-  grace: { male: { champion: 68, intermediate: 230, occasional: 400 }, female: { champion: 85, intermediate: 268, occasional: 460 } },
-  jackie: { male: { champion: 300, intermediate: 540, occasional: 720 }, female: { champion: 340, intermediate: 615, occasional: 840 } },
+  hyrox_sprint: { male: { champion: 660, intermediate: 1080, occasional: 1500 }, female: { champion: 750, intermediate: 1200, occasional: 1680 } },
+  fran: { male: { champion: 113, intermediate: 660, occasional: 1080 }, female: { champion: 135, intermediate: 780, occasional: 1260 } },
+  grace: { male: { champion: 68, intermediate: 360, occasional: 600 }, female: { champion: 85, intermediate: 420, occasional: 660 } },
+  jackie: { male: { champion: 300, intermediate: 570, occasional: 840 }, female: { champion: 340, intermediate: 650, occasional: 960 } },
   row_2k: { male: { champion: 336, intermediate: 450, occasional: 570 }, female: { champion: 381, intermediate: 510, occasional: 648 } },
-  helen: { male: { champion: 390, intermediate: 640, occasional: 900 }, female: { champion: 450, intermediate: 720, occasional: 1020 } },
-  karen: { male: { champion: 300, intermediate: 600, occasional: 840 }, female: { champion: 360, intermediate: 720, occasional: 990 } },
+  helen: { male: { champion: 390, intermediate: 750, occasional: 1080 }, female: { champion: 450, intermediate: 840, occasional: 1200 } },
+  karen: { male: { champion: 300, intermediate: 690, occasional: 1020 }, female: { champion: 360, intermediate: 825, occasional: 1170 } },
   // Cindy = AMRAP : score en TOURS. Monotonie reps : champion > intermédiaire > occasionnel.
   cindy: { male: { champion: 27, intermediate: 12, occasional: 6 }, female: { champion: 23, intermediate: 10, occasional: 5 } },
-  benchmark_zero: { male: { champion: 345, intermediate: 630, occasional: 900 }, female: { champion: 390, intermediate: 720, occasional: 1020 } },
+  benchmark_zero: { male: { champion: 345, intermediate: 720, occasional: 1080 }, female: { champion: 390, intermediate: 828, occasional: 1170 } },
   run_5k: { male: { champion: 1020, intermediate: 1800, occasional: 2520 }, female: { champion: 1170, intermediate: 2040, occasional: 2820 } },
   run_3k: { male: { champion: 600, intermediate: 990, occasional: 1560 }, female: { champion: 690, intermediate: 1140, occasional: 1770 } },
   profil_express: { male: { champion: 205, intermediate: 400, occasional: 600 }, female: { champion: 232, intermediate: 470, occasional: 740 } },
@@ -39,7 +39,7 @@ export const WOD_LEVELS: Record<string, { male: WodLevels; female: WodLevels }> 
   league_grind_squats: { male: { champion: 540, intermediate: 320, occasional: 160 }, female: { champion: 415, intermediate: 235, occasional: 120 } }, // reps
   league_power_amrap: { male: { champion: 330, intermediate: 170, occasional: 95 }, female: { champion: 200, intermediate: 105, occasional: 58 } }, // reps
   league_hybrid_chipper: { male: { champion: 430, intermediate: 720, occasional: 1020 }, female: { champion: 470, intermediate: 790, occasional: 1080 } }, // s (cap 15 min)
-  ergo_skill: { male: { champion: 360, intermediate: 660, occasional: 960 }, female: { champion: 420, intermediate: 750, occasional: 1080 } },
+  ergo_skill: { male: { champion: 360, intermediate: 750, occasional: 1080 }, female: { champion: 420, intermediate: 840, occasional: 1200 } },
   // Épreuves « Autre » : intermédiaire = finisher médian réel (loisir), occasionnel = débutant lent.
   hyrox_solo: { male: { champion: 3119, intermediate: 5700, occasional: 7800 }, female: { champion: 3265, intermediate: 6300, occasional: 8700 } },
   isabel: { male: { champion: 55, intermediate: 165, occasional: 290 }, female: { champion: 70, intermediate: 210, occasional: 360 } },

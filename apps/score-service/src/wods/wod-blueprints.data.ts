@@ -30,6 +30,12 @@ export interface WodBlueprintBlock {
   repsPerRound: number[];
   /** Charge Rx ABSOLUE par sexe (kg). Absente ⇒ poids de corps (loadFactor du mouvement). */
   loadKg?: { male: number; female: number };
+  /**
+   * Bloc compté au TEMPS du tour mais PAS dans le VOLUME scoré (AMRAP « course imposée + reps »
+   * où seules les reps comptent — ex. Le Moteur : 400 m course non scorée). Sans effet sur un WOD
+   * « for time » (le score y EST le temps). Défaut : compté.
+   */
+  unscored?: boolean;
 }
 export interface WodBlueprint {
   /** Blocs dans l'ordre d'exécution. `rounds` implicite = longueur de `repsPerRound`. */
@@ -136,6 +142,108 @@ export const WOD_BLUEPRINTS: Record<string, WodBlueprint> = {
       { movementId: "burpee", repsPerRound: [21, 15, 9] },
       { movementId: "push_up", repsPerRound: [21, 15, 9] },
       { movementId: "air_squat", repsPerRound: [42, 30, 18] },
+    ],
+  },
+
+  // ───────── Épreuves « Autre » loguables (jusqu'ici en repli population silencieux) ─────────
+
+  // Le Chaos — chipper POUR LE TEMPS (cap 15 min) : 400 m + 40 air squats + 30 sit-ups + 20 burpees
+  // + 10 wall walks + 400 m. Un seul « tour » (chaque bloc = 1 passage). Le profil hybride moyen le
+  // boucle plus lentement que le champion 7m10 (cohérent terrain), le débutant tape le cap (clamp).
+  league_hybrid_chipper: {
+    blocks: [
+      { movementId: "run", repsPerRound: [400] },
+      { movementId: "air_squat", repsPerRound: [40] },
+      { movementId: "sit_up", repsPerRound: [30] },
+      { movementId: "burpee", repsPerRound: [20] },
+      { movementId: "wall_walk", repsPerRound: [10] },
+      { movementId: "run", repsPerRound: [400] },
+    ],
+  },
+
+  // Murph — 1600 m + 100 tractions + 200 pompes + 300 air squats + 1600 m. Le gilet lesté (9/6 kg)
+  // n'est PAS modélisé en `loadKg` (table 1RM = barre uniquement ; pull/push/air squat absents) : la
+  // lenteur réaliste vient de la FORCE faible (cadence pull-up basse, maxSet) sur les 100 tractions
+  // strictes. La FORCE entre via `m.attributes` du pull-up (50 % strength), même hors targetAttributes.
+  murph: {
+    blocks: [
+      { movementId: "run", repsPerRound: [1600] },
+      { movementId: "pull_up", repsPerRound: [100] },
+      { movementId: "push_up", repsPerRound: [200] },
+      { movementId: "air_squat", repsPerRound: [300] },
+      { movementId: "run", repsPerRound: [1600] },
+    ],
+  },
+
+  // Isabel — 30 arrachés (snatch) 60/40 kg, un seul « tour » de 30. La pénalité de charge RELATIVE
+  // (1RM snatch estimé via la force) DOIT jouer : un snatch 60 kg près du 1RM effondre la cadence.
+  isabel: {
+    blocks: [{ movementId: "snatch", repsPerRound: [30], loadKg: { male: 60, female: 40 } }],
+  },
+
+  // La Flèche — échelle de sprint 100-200-300-400-300-200-100 m (1600 m). La récup imposée
+  // (30/45/60 s) NE COMPTE PAS dans le score (cf. scoringNote) → on ne modélise QUE le temps couru
+  // cumulé. Un seul « tour » : segments ≤200 m en `sprint` (vitesse), ≥300 m en `run` (moteur).
+  league_sprint_ladder: {
+    blocks: [
+      { movementId: "sprint", repsPerRound: [100] },
+      { movementId: "sprint", repsPerRound: [200] },
+      { movementId: "run", repsPerRound: [300] },
+      { movementId: "run", repsPerRound: [400] },
+      { movementId: "run", repsPerRound: [300] },
+      { movementId: "sprint", repsPerRound: [200] },
+      { movementId: "sprint", repsPerRound: [100] },
+    ],
+  },
+
+  // Le Moteur — AMRAP 12 min : 400 m course (NON comptée) + 20 air squats + 15 burpees. Score = reps
+  // (air squats + burpees). La course prend du TEMPS (donc limite le nb de tours) mais le bloc est
+  // `unscored` → elle ne gonfle pas le volume de reps prédit.
+  league_engine_12: {
+    blocks: [
+      { movementId: "run", repsPerRound: [400], unscored: true },
+      { movementId: "air_squat", repsPerRound: [20] },
+      { movementId: "burpee", repsPerRound: [15] },
+    ],
+    amrap: { timeCapSec: 720, scoreUnit: "reps" },
+  },
+
+  // Le Pilier — AMRAP 12 min : 40 fentes + 30 air squats + 20 sit-ups + 16 pistols. Score = reps
+  // totales. Les pistols (lents) bornent le débit.
+  league_grind_squats: {
+    blocks: [
+      { movementId: "lunge", repsPerRound: [40] },
+      { movementId: "air_squat", repsPerRound: [30] },
+      { movementId: "sit_up", repsPerRound: [20] },
+      { movementId: "pistol_squat", repsPerRound: [16] },
+    ],
+    amrap: { timeCapSec: 720, scoreUnit: "reps" },
+  },
+
+  // La Détente — AMRAP 12 min : 30 squat jumps + 25 burpee broad jumps. Score = reps totales,
+  // 100 % explosif (forte dégradation).
+  league_power_amrap: {
+    blocks: [
+      { movementId: "squat_jump", repsPerRound: [30] },
+      { movementId: "burpee_broad_jump", repsPerRound: [25] },
+    ],
+    amrap: { timeCapSec: 720, scoreUnit: "reps" },
+  },
+
+  // HYROX solo — 8×(1000 m course + 1 station), agrégé en un « tour » multi-blocs (pour le temps).
+  // Mapping : SkiErg 1000 m ≈ 70 cal (ski_erg_cal) ; Sled Push 50 m + Sled Pull 50 m ≈ 100 m de
+  // push-équiv (sled_push) ; Burpee Broad Jump 80 m ; Row 1000 m ; Farmers Carry 200 m ; Sandbag
+  // Lunges 100 m (lunge_m) ; 100 Wall balls (9/6). Tous les movementId existent.
+  hyrox_solo: {
+    blocks: [
+      { movementId: "run", repsPerRound: [8000] },
+      { movementId: "ski_erg_cal", repsPerRound: [70] },
+      { movementId: "sled_push", repsPerRound: [100] },
+      { movementId: "burpee_broad_jump_m", repsPerRound: [80] },
+      { movementId: "row", repsPerRound: [1000] },
+      { movementId: "farmers_carry", repsPerRound: [200] },
+      { movementId: "lunge_m", repsPerRound: [100] },
+      { movementId: "wall_ball", repsPerRound: [100], loadKg: { male: 9, female: 6 } },
     ],
   },
 };

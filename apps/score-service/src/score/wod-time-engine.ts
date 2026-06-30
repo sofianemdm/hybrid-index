@@ -27,6 +27,13 @@ export interface ResolvedBlock {
   amount: number;
   /** Charge externe en kg (mouvements chargés). Absente ⇒ pas de pénalité de charge. */
   loadKg?: number;
+  /**
+   * Bloc « non compté » dans le SCORE (mais compté dans le TEMPS du tour) : ex. la course imposée
+   * d'un AMRAP « course + reps » où seules les reps sont scorées (Le Moteur). Le bloc prend du temps
+   * (`roundTimeSec`) mais n'entre PAS dans le `workPerRound` (volume scoré). Sans effet sur les WODs
+   * « for time » (où le score EST le temps). Défaut : compté.
+   */
+  unscored?: boolean;
 }
 
 /** Poids de corps de réf par sexe (kg) — sert au 1RM estimé et à la charge Rx de réf. */
@@ -262,8 +269,10 @@ export function estimateRound(blocks: ResolvedBlock[], sex: Sex, pace: PaceMode,
     }
     roundTime += cost;
     lineCosts.push({ attrs: m.attributes, cost });
-    // Travail natif du tour : agrège reps + cal + sec + mètres (ordre d'origine préservé).
-    workPerRound += block.amount;
+    // Travail natif du tour : agrège reps + cal + sec + mètres (ordre d'origine préservé). Un bloc
+    // `unscored` (course imposée d'un AMRAP scoré en reps) prend du TEMPS mais n'entre PAS dans le
+    // volume scoré → sinon le 400 m gonflerait les « reps » prédites (Le Moteur).
+    if (!block.unscored) workPerRound += block.amount;
   }
   roundTime += Math.max(0, blocks.length - 1) * TRANSITION_SEC; // transitions entre blocs
   return { roundTimeSec: roundTime, workPerRound, lineCosts };
@@ -305,6 +314,8 @@ export interface ResolvedBlueprintBlock {
   /** Reps (ou mètres/cal selon l'unité) par tour. La longueur fixe le nombre de tours. */
   repsPerRound: number[];
   loadKg?: number;
+  /** Bloc compté au TEMPS mais PAS au volume scoré (course imposée d'un AMRAP reps, cf. Le Moteur). */
+  unscored?: boolean;
 }
 
 /**
@@ -329,7 +340,7 @@ export function estimateBlueprintTime(blocks: ResolvedBlueprintBlock[], sex: Sex
     // Blocs présents à ce tour (un mouvement peut avoir moins de tours que le max → ignoré au-delà).
     const roundBlocks: ResolvedBlock[] = blocks
       .filter((b) => i < b.repsPerRound.length)
-      .map((b) => ({ movement: b.movement, amount: b.repsPerRound[i], loadKg: b.loadKg }));
+      .map((b) => ({ movement: b.movement, amount: b.repsPerRound[i], loadKg: b.loadKg, unscored: b.unscored }));
     const { roundTimeSec } = estimateRound(roundBlocks, sex, pace);
     total += roundTimeSec * (1 + ATHLETE_ROUND_DECAY * i);
   }
@@ -350,7 +361,7 @@ export function estimateBlueprintVolume(
   scoreUnit: "rounds" | "reps" = "reps",
 ): number {
   if (blocks.length === 0) return 1;
-  const roundBlocks: ResolvedBlock[] = blocks.map((b) => ({ movement: b.movement, amount: b.repsPerRound[0], loadKg: b.loadKg }));
+  const roundBlocks: ResolvedBlock[] = blocks.map((b) => ({ movement: b.movement, amount: b.repsPerRound[0], loadKg: b.loadKg, unscored: b.unscored }));
   const { roundTimeSec, workPerRound } = estimateRound(roundBlocks, sex, { kind: "athlete", scores });
   if (scoreUnit === "rounds") {
     return Math.max(1, Math.round(timeCapSec / Math.max(roundTimeSec, 1)));

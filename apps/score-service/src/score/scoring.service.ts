@@ -568,8 +568,15 @@ export class ScoringService {
         // bornes sont dir-agnostiques : on prend les extrêmes des deux quantiles + hardMin/hardMax.
         const q1 = quantile(0.01, ref.model);
         const q99 = quantile(0.99, ref.model);
-        const lo = Math.min(ref.hardMin, ref.hardMax, q1, q99);
-        const hi = Math.max(ref.hardMin, ref.hardMax, q1, q99);
+        let lo = Math.min(ref.hardMin, ref.hardMax, q1, q99);
+        let hi = Math.max(ref.hardMin, ref.hardMax, q1, q99);
+        // GARDE-FOU « VRAI TAIL » : aucune prédiction ne doit BATTRE la référence élite (proReference
+        // = le tail extraterrestre, INCHANGÉ par la recalibration). Pour un score `time`/`load`-temps
+        // (dir -1, plus bas = mieux) on plancher le bas à proReference ; pour `reps`/`load`-charge
+        // (dir +1, plus haut = mieux) on plafonne le haut. Évite l'incohérence « athlète moyen plus
+        // rapide que le champion » (ex. Le Chaos pour un profil à fort moteur).
+        if (ref.model.dir === -1) lo = Math.max(lo, ref.proReference);
+        else hi = Math.min(hi, ref.proReference);
         const bounded = Math.min(hi, Math.max(lo, estimate));
         // INC. 3 — FOURCHETTE (B.6). On enveloppe le mid d'une fourchette dont la largeur dépend de
         // la CONFIANCE (couverture des attributs estimés × nb de blocs chargés = source d'erreur).
@@ -616,7 +623,7 @@ export class ScoringService {
       const movement = MOVEMENTS_BY_ID.get(b.movementId);
       if (!movement) return null; // garde-fou : repli sur la population si un mouvement manque
       // Reps PAR TOUR conservées (le moteur coûte tour par tour : reps variables type 21-15-9).
-      blocks.push({ movement, repsPerRound: b.repsPerRound, loadKg: b.loadKg ? b.loadKg[sex] : undefined });
+      blocks.push({ movement, repsPerRound: b.repsPerRound, loadKg: b.loadKg ? b.loadKg[sex] : undefined, unscored: b.unscored });
     }
     return { blocks, blueprint };
   }
