@@ -16,9 +16,10 @@ function makePrismaMock() {
   return {
     feedEvent: { findUnique: jest.fn(), findMany: jest.fn() },
     reaction: { deleteMany: jest.fn(), create: jest.fn(), count: jest.fn() },
-    postReaction: { upsert: jest.fn(), deleteMany: jest.fn(), count: jest.fn() },
-    post: { findUnique: jest.fn(), update: jest.fn(), findMany: jest.fn(), delete: jest.fn() },
+    postReaction: { upsert: jest.fn(), deleteMany: jest.fn(), count: jest.fn(), findUnique: jest.fn(), findMany: jest.fn().mockResolvedValue([]) },
+    post: { create: jest.fn(), findUnique: jest.fn(), update: jest.fn(), findMany: jest.fn(), delete: jest.fn() },
     comment: { create: jest.fn(), findUnique: jest.fn(), findMany: jest.fn(), update: jest.fn(), delete: jest.fn() },
+    commentReaction: { upsert: jest.fn(), deleteMany: jest.fn(), count: jest.fn(), findUnique: jest.fn(), findMany: jest.fn().mockResolvedValue([]) },
     report: { upsert: jest.fn(), count: jest.fn(), findMany: jest.fn() },
     follow: { findMany: jest.fn(), upsert: jest.fn() },
     profile: { findUnique: jest.fn(), findMany: jest.fn() },
@@ -26,6 +27,14 @@ function makePrismaMock() {
     user: { findFirst: jest.fn() },
   } as Record<string, Record<string, AnyFn>>;
 }
+
+/** Redis simulé : `rateLimit` renvoie 1 (sous le quota) → ne bloque jamais en test unitaire. */
+function makeRedisMock(): { rateLimit: AnyFn } {
+  return { rateLimit: jest.fn().mockResolvedValue(1) };
+}
+const noPush = { notifyPostKudos: jest.fn(), notifyCommentKudos: jest.fn(), notifyComment: jest.fn(), notifyCommentReply: jest.fn(), notifyMention: jest.fn() };
+/** MentionsService simulé : aucune mention résolue (LOT 5 testé séparément). */
+const noMentions = { resolve: jest.fn().mockResolvedValue([]), resolveBatch: jest.fn().mockResolvedValue(new Map()), notify: jest.fn().mockResolvedValue(undefined) };
 
 describe("Kudos unifié — événements de feed (SocialService)", () => {
   it("react() : efface toute réaction précédente puis pose UN 👏 ; renvoie le compteur + iKudo=true", async () => {
@@ -72,7 +81,7 @@ describe("Kudos unifié — posts (PostsService)", () => {
     prisma.postReaction.count.mockResolvedValue(5);
     prisma.post.update.mockResolvedValue({});
     const moderation = { isBlockedBetween: jest.fn().mockResolvedValue(false) };
-    const svc = new PostsService(prisma as never, moderation as never);
+    const svc = new PostsService(prisma as never, moderation as never, noPush as never, makeRedisMock() as never, noMentions as never);
 
     const res = await svc.react("me", "post-1");
 
@@ -85,6 +94,9 @@ describe("Kudos unifié — posts (PostsService)", () => {
   it("forFeed() : d'anciennes réactions multi-emoji comptent chacune pour 1 kudos ; iKudo si l'une est de moi", async () => {
     const prisma = makePrismaMock();
     const moderation = { reportedPostIds: jest.fn().mockResolvedValue([]) };
+    // LOT 6 : le feed lit désormais `_count.reactions` (dé-doublonnage via la clé @@unique) et
+    // résout `iKudo` par UNE requête ciblée `postReaction.findMany`, au lieu de charger toutes les
+    // réactions de chaque post pour les dé-doublonner en mémoire.
     prisma.post.findMany.mockResolvedValue([
       {
         id: "p1",
@@ -94,19 +106,22 @@ describe("Kudos unifié — posts (PostsService)", () => {
         authorId: "u2",
         createdAt: new Date("2026-06-28T10:00:00Z"),
         author: { profile: { displayName: "Léa", rank: "gold" }, hybridIndex: { value: 800 }, avatar: null },
-        reactions: [
-          { emoji: "❤️", fromUserId: "me" },
-          { emoji: "🔥", fromUserId: "x" },
-        ],
+        _count: { reactions: 2, comments: 0 },
       },
     ]);
-    const svc = new PostsService(prisma as never, moderation as never);
+    prisma.postReaction.findMany.mockResolvedValue([{ postId: "p1" }]); // j'ai applaudi p1
+    const svc = new PostsService(prisma as never, moderation as never, noPush as never, makeRedisMock() as never, noMentions as never);
 
     const items = await svc.forFeed(["u2"], "me", 60);
 
     expect(items).toHaveLength(1);
     expect(items[0].kudosCount).toBe(2);
     expect(items[0].iKudo).toBe(true);
+    // `iKudo` résolu par UNE requête bornée aux posts de la page (pas de chargement des réactions).
+    expect(prisma.postReaction.findMany).toHaveBeenCalledWith({
+      where: { postId: { in: ["p1"] }, fromUserId: "me" },
+      select: { postId: true },
+    });
     // Compat : la map `reactions` n'expose plus que le kudos unifié.
     expect(items[0].reactions).toEqual({ "👏": 2 });
   });
@@ -115,7 +130,7 @@ describe("Kudos unifié — posts (PostsService)", () => {
     const prisma = makePrismaMock();
     const moderation = { reportedPostIds: jest.fn().mockResolvedValue(["p-reported"]) };
     prisma.post.findMany.mockResolvedValue([]);
-    const svc = new PostsService(prisma as never, moderation as never);
+    const svc = new PostsService(prisma as never, moderation as never, noPush as never, makeRedisMock() as never, noMentions as never);
 
     await svc.forFeed(["u2"], "me", 60);
 
@@ -245,7 +260,7 @@ describe("Blocage — actions d'engagement (P0 sécurité)", () => {
     const prisma = makePrismaMock();
     prisma.post.findUnique.mockResolvedValue({ authorId: "author" });
     const moderation = { isBlockedBetween: jest.fn().mockResolvedValue(true) };
-    const svc = new PostsService(prisma as never, moderation as never);
+    const svc = new PostsService(prisma as never, moderation as never, noPush as never, makeRedisMock() as never, noMentions as never);
 
     await expect(svc.react("me", "post-1")).rejects.toThrow();
     expect(moderation.isBlockedBetween).toHaveBeenCalledWith("me", "author");
@@ -286,11 +301,11 @@ describe("Commentaires (CommentsService)", () => {
     prisma.comment.create.mockResolvedValue(commentRow({ author: { profile: { displayName: "Léa", rank: "gold" }, avatar: null }, authorId: "me" }));
     const moderation = { isBlockedBetween: jest.fn().mockResolvedValue(false), isCleanName: jest.fn().mockReturnValue(true) };
     const push = { notifyComment: jest.fn().mockResolvedValue(undefined) };
-    const svc = new CommentsService(prisma as never, moderation as never, push as never);
+    const svc = new CommentsService(prisma as never, moderation as never, push as never, makeRedisMock() as never, noMentions as never);
 
     const res = await svc.create("me", "p1", "  Bien joué !  ");
 
-    expect(prisma.comment.create.mock.calls[0][0].data).toEqual({ postId: "p1", authorId: "me", body: "Bien joué !" });
+    expect(prisma.comment.create.mock.calls[0][0].data).toEqual({ postId: "p1", authorId: "me", body: "Bien joué !", parentId: null });
     expect(push.notifyComment).toHaveBeenCalledWith("author", "Léa");
     expect(res.body).toBe("Bien joué !");
     expect(res.author.isMe).toBe(true);
@@ -302,7 +317,7 @@ describe("Commentaires (CommentsService)", () => {
     prisma.comment.create.mockResolvedValue(commentRow());
     const moderation = { isBlockedBetween: jest.fn().mockResolvedValue(false), isCleanName: jest.fn().mockReturnValue(true) };
     const push = { notifyComment: jest.fn() };
-    const svc = new CommentsService(prisma as never, moderation as never, push as never);
+    const svc = new CommentsService(prisma as never, moderation as never, push as never, makeRedisMock() as never, noMentions as never);
 
     await svc.create("me", "p1", "mon propre post");
     expect(push.notifyComment).not.toHaveBeenCalled();
@@ -311,7 +326,7 @@ describe("Commentaires (CommentsService)", () => {
   it("create() : refuse un corps vide", async () => {
     const prisma = makePrismaMock();
     const moderation = { isBlockedBetween: jest.fn(), isCleanName: jest.fn().mockReturnValue(true) };
-    const svc = new CommentsService(prisma as never, moderation as never, {} as never);
+    const svc = new CommentsService(prisma as never, moderation as never, {} as never, makeRedisMock() as never, noMentions as never);
     await expect(svc.create("me", "p1", "   ")).rejects.toThrow();
     expect(prisma.comment.create).not.toHaveBeenCalled();
   });
@@ -320,7 +335,7 @@ describe("Commentaires (CommentsService)", () => {
     const prisma = makePrismaMock();
     prisma.post.findUnique.mockResolvedValue({ id: "p1", authorId: "author", status: "visible" });
     const moderation = { isBlockedBetween: jest.fn().mockResolvedValue(false), isCleanName: jest.fn().mockReturnValue(false) };
-    const svc = new CommentsService(prisma as never, moderation as never, {} as never);
+    const svc = new CommentsService(prisma as never, moderation as never, {} as never, makeRedisMock() as never, noMentions as never);
     await expect(svc.create("me", "p1", "insulte")).rejects.toThrow();
     expect(prisma.comment.create).not.toHaveBeenCalled();
   });
@@ -329,7 +344,7 @@ describe("Commentaires (CommentsService)", () => {
     const prisma = makePrismaMock();
     prisma.post.findUnique.mockResolvedValue({ id: "p1", authorId: "author", status: "visible" });
     const moderation = { isBlockedBetween: jest.fn().mockResolvedValue(true), isCleanName: jest.fn().mockReturnValue(true) };
-    const svc = new CommentsService(prisma as never, moderation as never, {} as never);
+    const svc = new CommentsService(prisma as never, moderation as never, {} as never, makeRedisMock() as never, noMentions as never);
     await expect(svc.create("me", "p1", "salut")).rejects.toThrow();
     expect(prisma.comment.create).not.toHaveBeenCalled();
   });
@@ -338,7 +353,7 @@ describe("Commentaires (CommentsService)", () => {
     const prisma = makePrismaMock();
     prisma.comment.findMany.mockResolvedValue([commentRow()]);
     const moderation = { blockedIds: jest.fn().mockResolvedValue(["blk"]) };
-    const svc = new CommentsService(prisma as never, moderation as never, {} as never);
+    const svc = new CommentsService(prisma as never, moderation as never, {} as never, makeRedisMock() as never, noMentions as never);
 
     const out = await svc.list("me", "p1");
 
@@ -353,7 +368,7 @@ describe("Commentaires (CommentsService)", () => {
     const prisma = makePrismaMock();
     prisma.comment.findUnique.mockResolvedValue({ authorId: "me", post: { authorId: "other" } });
     prisma.comment.delete.mockResolvedValue({});
-    const svc = new CommentsService(prisma as never, {} as never, {} as never);
+    const svc = new CommentsService(prisma as never, {} as never, {} as never, makeRedisMock() as never, noMentions as never);
     await expect(svc.delete("me", "c1")).resolves.toEqual({ removed: true });
   });
 
@@ -361,14 +376,14 @@ describe("Commentaires (CommentsService)", () => {
     const prisma = makePrismaMock();
     prisma.comment.findUnique.mockResolvedValue({ authorId: "other", post: { authorId: "me" } });
     prisma.comment.delete.mockResolvedValue({});
-    const svc = new CommentsService(prisma as never, {} as never, {} as never);
+    const svc = new CommentsService(prisma as never, {} as never, {} as never, makeRedisMock() as never, noMentions as never);
     await expect(svc.delete("me", "c1")).resolves.toEqual({ removed: true });
   });
 
   it("delete() : refusé à un tiers (ni auteur du commentaire ni du post)", async () => {
     const prisma = makePrismaMock();
     prisma.comment.findUnique.mockResolvedValue({ authorId: "other", post: { authorId: "poster" } });
-    const svc = new CommentsService(prisma as never, {} as never, {} as never);
+    const svc = new CommentsService(prisma as never, {} as never, {} as never, makeRedisMock() as never, noMentions as never);
     await expect(svc.delete("me", "c1")).rejects.toThrow();
     expect(prisma.comment.delete).not.toHaveBeenCalled();
   });
@@ -455,5 +470,225 @@ describe("Follow — plus de gate de visibilité (cahier : tout est public)", ()
     // Le select ne demande plus la visibilité du profil.
     const selectArg = prisma.user.findFirst.mock.calls[0][0].select;
     expect(selectArg.profile).toBeUndefined();
+  });
+});
+
+describe("LOT 0.1 — notif au LIKE d'un POST (passage 0→1)", () => {
+  function makeSvc(prisma: Record<string, Record<string, AnyFn>>, push: Record<string, AnyFn>) {
+    const moderation = { isBlockedBetween: jest.fn().mockResolvedValue(false) };
+    return new PostsService(prisma as never, moderation as never, push as never, makeRedisMock() as never, noMentions as never);
+  }
+
+  it("react() : notifie l'AUTEUR du post au PREMIER kudos de ce user (0→1)", async () => {
+    const prisma = makePrismaMock();
+    prisma.post.findUnique.mockResolvedValue({ authorId: "author" });
+    prisma.postReaction.findUnique.mockResolvedValue(null); // pas encore liké → 0→1
+    prisma.postReaction.upsert.mockResolvedValue({});
+    prisma.postReaction.count.mockResolvedValue(1);
+    prisma.post.update.mockResolvedValue({});
+    const push = { notifyPostKudos: jest.fn().mockResolvedValue(undefined) };
+
+    const res = await makeSvc(prisma, push).react("me", "post-1");
+
+    expect(push.notifyPostKudos).toHaveBeenCalledWith("author", 1);
+    expect(res).toEqual({ kudosCount: 1, iKudo: true });
+  });
+
+  it("react() : NE notifie PAS lors d'un re-like (le user avait déjà applaudi)", async () => {
+    const prisma = makePrismaMock();
+    prisma.post.findUnique.mockResolvedValue({ authorId: "author" });
+    prisma.postReaction.findUnique.mockResolvedValue({ id: "existing" }); // déjà liké
+    prisma.postReaction.upsert.mockResolvedValue({});
+    prisma.postReaction.count.mockResolvedValue(3);
+    prisma.post.update.mockResolvedValue({});
+    const push = { notifyPostKudos: jest.fn() };
+
+    await makeSvc(prisma, push).react("me", "post-1");
+
+    expect(push.notifyPostKudos).not.toHaveBeenCalled();
+  });
+
+  it("react() : un push KO ne fait jamais échouer le kudos (best-effort)", async () => {
+    const prisma = makePrismaMock();
+    prisma.post.findUnique.mockResolvedValue({ authorId: "author" });
+    prisma.postReaction.findUnique.mockResolvedValue(null);
+    prisma.postReaction.upsert.mockResolvedValue({});
+    prisma.postReaction.count.mockResolvedValue(1);
+    prisma.post.update.mockResolvedValue({});
+    const push = { notifyPostKudos: jest.fn().mockRejectedValue(new Error("FCM down")) };
+
+    await expect(makeSvc(prisma, push).react("me", "post-1")).resolves.toEqual({ kudosCount: 1, iKudo: true });
+  });
+});
+
+describe("LOT 1 — LIKER un COMMENTAIRE (CommentsService)", () => {
+  function makeSvc(
+    prisma: Record<string, Record<string, AnyFn>>,
+    over: { blocked?: boolean; push?: Record<string, AnyFn> } = {},
+  ) {
+    const moderation = { isBlockedBetween: jest.fn().mockResolvedValue(over.blocked ?? false) };
+    const push = over.push ?? { notifyCommentKudos: jest.fn().mockResolvedValue(undefined) };
+    return { svc: new CommentsService(prisma as never, moderation as never, push as never, makeRedisMock() as never, noMentions as never), push };
+  }
+
+  it("react() : upsert idempotent + sync du compteur ; notifie l'auteur au passage 0→1", async () => {
+    const prisma = makePrismaMock();
+    prisma.comment.findUnique.mockResolvedValue({ id: "c1", authorId: "author", hidden: false });
+    prisma.commentReaction.findUnique.mockResolvedValue(null); // 0→1
+    prisma.commentReaction.upsert.mockResolvedValue({});
+    prisma.commentReaction.count.mockResolvedValue(1);
+    prisma.comment.update.mockResolvedValue({});
+    const { svc, push } = makeSvc(prisma);
+
+    const res = await svc.react("me", "c1");
+
+    const upsertArg = prisma.commentReaction.upsert.mock.calls[0][0];
+    expect(upsertArg.where).toEqual({ commentId_fromUserId: { commentId: "c1", fromUserId: "me" } });
+    expect(upsertArg.create).toEqual({ commentId: "c1", fromUserId: "me" });
+    expect(prisma.comment.update).toHaveBeenCalledWith({ where: { id: "c1" }, data: { reactionCount: 1 } });
+    expect(push.notifyCommentKudos).toHaveBeenCalledWith("author", 1);
+    expect(res).toEqual({ kudosCount: 1, iKudo: true });
+  });
+
+  it("react() : re-like → PAS de nouvelle notif (déjà applaudi)", async () => {
+    const prisma = makePrismaMock();
+    prisma.comment.findUnique.mockResolvedValue({ id: "c1", authorId: "author", hidden: false });
+    prisma.commentReaction.findUnique.mockResolvedValue({ id: "existing" });
+    prisma.commentReaction.upsert.mockResolvedValue({});
+    prisma.commentReaction.count.mockResolvedValue(4);
+    prisma.comment.update.mockResolvedValue({});
+    const { svc, push } = makeSvc(prisma);
+
+    await svc.react("me", "c1");
+    expect(push.notifyCommentKudos).not.toHaveBeenCalled();
+  });
+
+  it("react() : commentaire introuvable OU masqué → NOT_FOUND", async () => {
+    const prisma = makePrismaMock();
+    prisma.comment.findUnique.mockResolvedValue(null);
+    await expect(makeSvc(prisma).svc.react("me", "c1")).rejects.toThrow();
+    prisma.comment.findUnique.mockResolvedValue({ id: "c1", authorId: "author", hidden: true });
+    await expect(makeSvc(prisma).svc.react("me", "c1")).rejects.toThrow();
+    expect(prisma.commentReaction.upsert).not.toHaveBeenCalled();
+  });
+
+  it("react() : anti auto-kudos (auteur du commentaire == moi) → CONFLICT", async () => {
+    const prisma = makePrismaMock();
+    prisma.comment.findUnique.mockResolvedValue({ id: "c1", authorId: "me", hidden: false });
+    await expect(makeSvc(prisma).svc.react("me", "c1")).rejects.toThrow();
+    expect(prisma.commentReaction.upsert).not.toHaveBeenCalled();
+  });
+
+  it("react() : refuse le kudos vers/depuis un utilisateur bloqué", async () => {
+    const prisma = makePrismaMock();
+    prisma.comment.findUnique.mockResolvedValue({ id: "c1", authorId: "author", hidden: false });
+    await expect(makeSvc(prisma, { blocked: true }).svc.react("me", "c1")).rejects.toThrow();
+    expect(prisma.commentReaction.upsert).not.toHaveBeenCalled();
+  });
+
+  it("unreact() : supprime mon kudos et renvoie le compteur restant + iKudo=false", async () => {
+    const prisma = makePrismaMock();
+    prisma.commentReaction.deleteMany.mockResolvedValue({ count: 1 });
+    prisma.commentReaction.count.mockResolvedValue(2);
+    prisma.comment.update.mockResolvedValue({});
+    const res = await makeSvc(prisma).svc.unreact("me", "c1");
+    expect(prisma.commentReaction.deleteMany).toHaveBeenCalledWith({ where: { commentId: "c1", fromUserId: "me" } });
+    expect(res).toEqual({ kudosCount: 2, iKudo: false });
+  });
+
+  it("list() : hydrate kudosCount (reactionCount) + iKudo via UNE requête ciblée", async () => {
+    const prisma = makePrismaMock();
+    prisma.comment.findMany.mockResolvedValue([
+      { id: "c1", postId: "p1", body: "Bravo", authorId: "u2", createdAt: new Date("2026-06-30T10:00:00Z"), reactionCount: 3, author: { profile: { displayName: "Léa", rank: "gold" }, avatar: null } },
+      { id: "c2", postId: "p1", body: "Top", authorId: "u3", createdAt: new Date("2026-06-30T10:01:00Z"), reactionCount: 0, author: { profile: { displayName: "Max", rank: "silver" }, avatar: null } },
+    ]);
+    prisma.commentReaction.findMany.mockResolvedValue([{ commentId: "c1" }]); // j'ai liké c1 seulement
+    const moderation = { blockedIds: jest.fn().mockResolvedValue([]) };
+    const svc = new CommentsService(prisma as never, moderation as never, {} as never, makeRedisMock() as never, noMentions as never);
+
+    const out = await svc.list("me", "p1");
+
+    expect(prisma.commentReaction.findMany).toHaveBeenCalledWith({
+      where: { commentId: { in: ["c1", "c2"] }, fromUserId: "me" },
+      select: { commentId: true },
+    });
+    expect(out.items[0]).toMatchObject({ id: "c1", kudosCount: 3, iKudo: true });
+    expect(out.items[1]).toMatchObject({ id: "c2", kudosCount: 0, iKudo: false });
+  });
+
+  it("create() : un commentaire neuf renvoie kudosCount=0 / iKudo=false", async () => {
+    const prisma = makePrismaMock();
+    prisma.post.findUnique.mockResolvedValue({ id: "p1", authorId: "author", status: "visible" });
+    prisma.comment.create.mockResolvedValue({ id: "c1", postId: "p1", body: "Salut", authorId: "me", createdAt: new Date(), author: { profile: { displayName: "Moi", rank: "gold" }, avatar: null } });
+    const moderation = { isBlockedBetween: jest.fn().mockResolvedValue(false), isCleanName: jest.fn().mockReturnValue(true) };
+    const push = { notifyComment: jest.fn().mockResolvedValue(undefined) };
+    const svc = new CommentsService(prisma as never, moderation as never, push as never, makeRedisMock() as never, noMentions as never);
+
+    const res = await svc.create("me", "p1", "Salut");
+    expect(res.kudosCount).toBe(0);
+    expect(res.iKudo).toBe(false);
+  });
+});
+
+describe("LOT 0.2 — rate-limit applicatif (anti-spam)", () => {
+  it("create post : 429 quand le quota Redis est dépassé (count > limit)", async () => {
+    const prisma = makePrismaMock();
+    const moderation = { isBlockedBetween: jest.fn(), isCleanName: jest.fn().mockReturnValue(true) };
+    const redis = { rateLimit: jest.fn().mockResolvedValue(999) }; // au-dessus du quota
+    const svc = new PostsService(prisma as never, moderation as never, noPush as never, redis as never, noMentions as never);
+
+    await expect(svc.create("me", { kind: "text", body: "spam" })).rejects.toMatchObject({ status: 429 });
+    expect(prisma.post.create).not.toHaveBeenCalled();
+  });
+
+  it("create comment : 429 quand le quota Redis est dépassé", async () => {
+    const prisma = makePrismaMock();
+    const moderation = { isBlockedBetween: jest.fn(), isCleanName: jest.fn().mockReturnValue(true) };
+    const redis = { rateLimit: jest.fn().mockResolvedValue(999) };
+    const svc = new CommentsService(prisma as never, moderation as never, noPush as never, redis as never, noMentions as never);
+
+    await expect(svc.create("me", "p1", "spam")).rejects.toMatchObject({ status: 429 });
+    expect(prisma.comment.create).not.toHaveBeenCalled();
+  });
+
+  it("react comment : 429 quand le quota Redis est dépassé (avant toute écriture)", async () => {
+    const prisma = makePrismaMock();
+    const moderation = { isBlockedBetween: jest.fn().mockResolvedValue(false) };
+    const redis = { rateLimit: jest.fn().mockResolvedValue(999) };
+    const svc = new CommentsService(prisma as never, moderation as never, noPush as never, redis as never, noMentions as never);
+
+    await expect(svc.react("me", "c1")).rejects.toMatchObject({ status: 429 });
+    expect(prisma.commentReaction.upsert).not.toHaveBeenCalled();
+  });
+
+  it("fail-open : Redis indisponible (rateLimit → null) ne bloque PAS l'action", async () => {
+    const prisma = makePrismaMock();
+    prisma.post.findUnique.mockResolvedValue({ authorId: "author" });
+    prisma.postReaction.findUnique.mockResolvedValue(null);
+    prisma.postReaction.upsert.mockResolvedValue({});
+    prisma.postReaction.count.mockResolvedValue(1);
+    prisma.post.update.mockResolvedValue({});
+    const moderation = { isBlockedBetween: jest.fn().mockResolvedValue(false) };
+    const redis = { rateLimit: jest.fn().mockResolvedValue(null) }; // panne → fail-open
+    const svc = new PostsService(prisma as never, moderation as never, noPush as never, redis as never, noMentions as never);
+
+    await expect(svc.react("me", "post-1")).resolves.toEqual({ kudosCount: 1, iKudo: true });
+  });
+});
+
+describe("LOT 6 — filtre lexical isCleanName renforcé (ModerationService)", () => {
+  const svc = new ModerationService({} as never);
+
+  it("laisse passer un usage normal (mots anodins contenant une sous-chaîne sensible)", () => {
+    expect(svc.isCleanName("assistant coach")).toBe(true);
+    expect(svc.isCleanName("Belle séance, bien joué !")).toBe(true);
+    expect(svc.isCleanName("Scunthorpe United")).toBe(true);
+  });
+
+  it("bloque les insultes/slurs explicites, insensible à la casse et aux accents", () => {
+    expect(svc.isCleanName("salope")).toBe(false);
+    expect(svc.isCleanName("SaLoPe !!")).toBe(false);
+    expect(svc.isCleanName("espèce de CONNARD")).toBe(false);
+    expect(svc.isCleanName("négre")).toBe(false); // accent normalisé
   });
 });

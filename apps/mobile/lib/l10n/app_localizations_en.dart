@@ -335,6 +335,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonDelete => 'Delete';
 
   @override
+  String get commonSeeMore => 'See more';
+
+  @override
   String get settingsTitle => 'Settings';
 
   @override
@@ -856,6 +859,106 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commentDeleted => 'Comment deleted.';
 
   @override
+  String get commentKudosTooltip => 'Kudos';
+
+  @override
+  String get commentReply => 'Reply';
+
+  @override
+  String commentReplyHint(String name) {
+    return 'Reply to $name…';
+  }
+
+  @override
+  String commentRepliesShow(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count replies',
+      one: 'reply',
+    );
+    return 'Show $_temp0';
+  }
+
+  @override
+  String get commentRepliesHide => 'Hide replies';
+
+  @override
+  String a11yCommentKudos(int count) {
+    return 'Kudos, $count claps';
+  }
+
+  @override
+  String a11yMention(String name) {
+    return 'Mention of $name, open profile';
+  }
+
+  @override
+  String get profileWallTitle => 'Posts';
+
+  @override
+  String get profileWallEmpty => 'This athlete hasn\'t posted anything yet.';
+
+  @override
+  String get profileWallEmptyMine =>
+      'You haven\'t posted anything yet. Share a result or a message from Community.';
+
+  @override
+  String get composerMentionHint => 'Mention someone with @';
+
+  @override
+  String get notifPostKudos => 'Your post got kudos 👏';
+
+  @override
+  String notifPostKudosBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count people gave',
+      one: '1 person gave',
+    );
+    return '$_temp0 kudos to your post.';
+  }
+
+  @override
+  String get notifComment => 'New comment';
+
+  @override
+  String notifCommentBody(String name) {
+    return '$name commented on your post.';
+  }
+
+  @override
+  String get notifCommentKudos => 'Your comment got kudos 👏';
+
+  @override
+  String notifCommentKudosBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count people gave',
+      one: '1 person gave',
+    );
+    return '$_temp0 kudos to your comment.';
+  }
+
+  @override
+  String get notifReply => 'New reply';
+
+  @override
+  String notifReplyBody(String name) {
+    return '$name replied to your comment.';
+  }
+
+  @override
+  String get notifMention => 'You were mentioned';
+
+  @override
+  String notifMentionBody(String name) {
+    return '$name mentioned you.';
+  }
+
+  @override
   String get timeAgoNow => 'just now';
 
   @override
@@ -996,6 +1099,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chatStatusRead => 'Read';
+
+  @override
+  String chatTyping(String name) {
+    return '$name is typing…';
+  }
 
   @override
   String get chatViewProfile => 'View profile';

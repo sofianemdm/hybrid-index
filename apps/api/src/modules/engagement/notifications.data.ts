@@ -27,6 +27,10 @@ export const NOTIFICATION_TRIGGERS: NotificationTrigger[] = [
   { key: "weekly-recap", trigger: "weekly_cron && (sessions > 0 || deltaIndex > 0)", title: "Ta semaine en bref", body: "Ton récap de la semaine est prêt.", priority: "low", cooldown: "7d", category: "progression" },
   { key: "new-message", trigger: "direct_message_received", title: "Nouveau message", body: "Ouvre la conversation pour répondre.", priority: "medium", cooldown: "0", category: "social" },
   { key: "comment", trigger: "post_comment_received", title: "Nouveau commentaire", body: "Un athlète a commenté ton post.", priority: "medium", cooldown: "0", category: "social" },
+  { key: "post-kudos", trigger: "post_kudos_received", title: "On a applaudi ton post", body: "Un athlète a salué ce que tu as partagé.", priority: "medium", cooldown: "12h", category: "social" },
+  { key: "comment-kudos", trigger: "comment_kudos_received", title: "On a applaudi ton commentaire", body: "Un athlète a aimé ce que tu as écrit.", priority: "low", cooldown: "12h", category: "social" },
+  { key: "comment-reply", trigger: "comment_reply_received", title: "On a répondu à ton commentaire", body: "Un athlète a réagi à ce que tu as écrit.", priority: "medium", cooldown: "0", category: "social" },
+  { key: "mention", trigger: "mentioned_in_post_or_comment", title: "On t'a mentionné", body: "Un athlète t'a cité dans la communauté.", priority: "medium", cooldown: "0", category: "social" },
 ];
 
 /**
@@ -109,6 +113,22 @@ const PUSH_COPY: Record<string, Record<PushLocale, PushCopyEntry>> = {
   comment: {
     fr: { title: "Nouveau commentaire", body: (p) => `${p.authorName} a commenté ton post. 💬` },
     en: { title: "New comment", body: (p) => `${p.authorName} commented on your post. 💬` },
+  },
+  "post-kudos": {
+    fr: { title: "On a applaudi ton post", body: (p) => `${p.count} athlète${Number(p.count) > 1 ? "s ont" : " a"} salué ton post. 👏` },
+    en: { title: "Someone clapped for your post", body: (p) => `${p.count} athlete${Number(p.count) > 1 ? "s" : ""} cheered your post. 👏` },
+  },
+  "comment-kudos": {
+    fr: { title: "On a applaudi ton commentaire", body: (p) => `${p.count} athlète${Number(p.count) > 1 ? "s ont" : " a"} aimé ton commentaire. 👏` },
+    en: { title: "Someone clapped for your comment", body: (p) => `${p.count} athlete${Number(p.count) > 1 ? "s" : ""} liked your comment. 👏` },
+  },
+  "comment-reply": {
+    fr: { title: "On a répondu à ton commentaire", body: (p) => `${p.authorName} a répondu à ton commentaire. 💬` },
+    en: { title: "Someone replied to your comment", body: (p) => `${p.authorName} replied to your comment. 💬` },
+  },
+  mention: {
+    fr: { title: "On t'a mentionné", body: (p) => `${p.authorName} t'a cité. 👀` },
+    en: { title: "You were mentioned", body: (p) => `${p.authorName} mentioned you. 👀` },
   },
 };
 

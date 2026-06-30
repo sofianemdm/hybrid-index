@@ -2,7 +2,12 @@ import { BadRequestException, ConflictException, ForbiddenException, Injectable,
 import { ratingFromInternal } from "@hybrid-index/scoring-core";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { ModerationService } from "../moderation/moderation.service";
+import { PushService } from "../engagement/push.service";
+import { RedisService } from "../../infra/redis/redis.service";
+import { enforceUserRateLimit } from "../../common/rate-limit.util";
 import { serializeAvatar, type AvatarView } from "../../common/avatar.serializer";
+import { MentionsService } from "./mentions.service";
+import type { ResolvedMention } from "../../common/mentions.util";
 
 /** Sous-score interne /1000 → note d'affichage /100 (null si absent). */
 const ovrSub = (v: number | null | undefined): number | null =>
@@ -11,6 +16,10 @@ const ovrSub = (v: number | null | undefined): number | null =>
 /** Kudos unifié façon Strava : un seul applaudissement par (item, utilisateur), toggle on/off. */
 const KUDOS = "👏";
 const MAX_BODY = 500;
+
+/** Anti-spam (par utilisateur, fenêtre glissante Redis). Fail-open si Redis indisponible. */
+const RL_POST_CREATE = { action: "post:create", limit: 8, windowSec: 60 };
+const RL_POST_REACT = { action: "post:react", limit: 30, windowSec: 60 };
 
 export interface CreatePostInput {
   kind: "text" | "perf_share";
@@ -35,6 +44,8 @@ export interface FeedPostItem {
   reactions: Record<string, number>;
   /** @deprecated conservé pour compat. */
   myReactions: string[];
+  /** LOT 5 — mentions @pseudo résolues (rend les @ cliquables côté client). Vide si aucune. */
+  mentions: ResolvedMention[];
 }
 
 /** Posts authored par les utilisateurs (texte ou partage de perf). Photos NON gérées pour l'instant. */
@@ -43,9 +54,13 @@ export class PostsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly moderation: ModerationService,
+    private readonly push: PushService,
+    private readonly redis: RedisService,
+    private readonly mentions: MentionsService,
   ) {}
 
   async create(me: string, input: CreatePostInput): Promise<FeedPostItem> {
+    await enforceUserRateLimit(this.redis, RL_POST_CREATE.action, me, RL_POST_CREATE.limit, RL_POST_CREATE.windowSec);
     const body = input.body?.trim();
     if (input.kind === "text") {
       if (!body) throw new BadRequestException({ code: "VALIDATION_ERROR", message: "Le message ne peut pas être vide." });
@@ -97,6 +112,13 @@ export class PostsService {
       },
     });
 
+    // LOT 5 — mentions @pseudo : résolution (hors auto-mention / bloqués) + push best-effort.
+    const authorName = post.author.profile?.displayName ?? "Un athlète";
+    const mentions = await this.mentions.resolve(me, post.body).catch(() => [] as ResolvedMention[]);
+    if (mentions.length > 0) {
+      void this.mentions.notify(mentions, authorName).catch(() => undefined);
+    }
+
     return {
       id: post.id,
       source: "post",
@@ -116,6 +138,7 @@ export class PostsService {
       commentCount: 0,
       reactions: {},
       myReactions: [],
+      mentions,
     };
   }
 
@@ -129,6 +152,7 @@ export class PostsService {
 
   /** Applaudir un post (kudos unifié). L'emoji est toujours normalisé sur 👏 : un seul kudos par (post, user). */
   async react(me: string, postId: string): Promise<{ kudosCount: number; iKudo: true }> {
+    await enforceUserRateLimit(this.redis, RL_POST_REACT.action, me, RL_POST_REACT.limit, RL_POST_REACT.windowSec);
     const post = await this.prisma.post.findUnique({ where: { id: postId }, select: { authorId: true } });
     if (!post) throw new NotFoundException({ code: "NOT_FOUND", message: "Post introuvable." });
     if (post.authorId === me) throw new ConflictException({ code: "CONFLICT", message: "Pas d'auto-kudos." });
@@ -136,12 +160,27 @@ export class PostsService {
     if (await this.moderation.isBlockedBetween(me, post.authorId)) {
       throw new ForbiddenException({ code: "FORBIDDEN", message: "Action impossible avec cet utilisateur." });
     }
+    // Passage 0→1 pour CE user : on note s'il applaudissait déjà AVANT l'upsert, pour ne notifier
+    // l'auteur qu'à un kudos RÉELLEMENT nouveau (pas à chaque re-like idempotent).
+    const already = await this.prisma.postReaction.findUnique({
+      where: { postId_fromUserId: { postId, fromUserId: me } },
+      select: { id: true },
+    });
     await this.prisma.postReaction.upsert({
       where: { postId_fromUserId: { postId, fromUserId: me } },
       create: { postId, fromUserId: me, emoji: KUDOS },
       update: { emoji: KUDOS },
     });
     const kudosCount = await this.syncCount(postId);
+    // Ré-engagement : on prévient l'AUTEUR du post UNIQUEMENT au premier kudos de ce user (jamais
+    // en auto-kudos — déjà bloqué plus haut). Best-effort : un push KO n'échoue jamais le kudos.
+    if (!already) {
+      try {
+        await this.push.notifyPostKudos(post.authorId, kudosCount);
+      } catch {
+        // silencieux (gating/no-op géré dans PushService)
+      }
+    }
     return { kudosCount, iKudo: true };
   }
 
@@ -168,6 +207,30 @@ export class PostsService {
   }
 
   /**
+   * LOT 3 — « Mur » d'un athlète : posts PUBLICS et visibles d'UN auteur, paginés par curseur
+   * (createdAt desc). Respecte le blocage BIDIRECTIONNEL (si `me` et `authorId` sont bloqués dans
+   * un sens OU l'autre → mur vide) et l'auto-masquage / mes signalements (via `queryFeedPosts`).
+   * Réutilise la sérialisation commune du feed (pas de divergence). `take` borné [1..50].
+   */
+  async forProfile(
+    authorId: string,
+    me: string,
+    take: number,
+    cursor?: string,
+  ): Promise<{ items: FeedPostItem[]; nextCursor: string | null }> {
+    const safeTake = Math.max(1, Math.min(take || 20, 50));
+    // Blocage bidirectionnel : on ne dévoile jamais le mur d'un utilisateur bloqué (ou qui me bloque).
+    if (me !== authorId && (await this.moderation.isBlockedBetween(me, authorId))) {
+      return { items: [], nextCursor: null };
+    }
+    // On lit `safeTake + 1` pour savoir s'il reste une page (curseur = id du dernier élément rendu).
+    const rows = await this.queryFeedPosts({ authorId }, me, safeTake + 1, cursor);
+    const hasMore = rows.length > safeTake;
+    const items = hasMore ? rows.slice(0, safeTake) : rows;
+    return { items, nextCursor: hasMore ? items[items.length - 1].id : null };
+  }
+
+  /**
    * Feed GLOBAL : posts PUBLICS de TOUS les utilisateurs actifs, en excluant les auteurs bloqués
    * (dans un sens OU l'autre) — `blockedIds` est fourni par l'appelant (SocialService).
    * Soi-même n'est PAS exclu (mes posts apparaissent aussi dans le fil global).
@@ -183,11 +246,13 @@ export class PostsService {
     );
   }
 
-  /** Cœur commun des feeds (following / global) : applique status/visibility + exclusion de MES signalements. */
+  /** Cœur commun des feeds (following / global / mur de profil) : applique status/visibility +
+   *  exclusion de MES signalements. `cursor` (optionnel) = id du dernier post vu (pagination desc). */
   private async queryFeedPosts(
     extraWhere: Record<string, unknown>,
     me: string,
     take: number,
+    cursor?: string,
   ): Promise<FeedPostItem[]> {
     const reportedIds = await this.moderation.reportedPostIds(me);
     const posts = await this.prisma.post.findMany({
@@ -199,6 +264,7 @@ export class PostsService {
       },
       orderBy: { createdAt: "desc" },
       take,
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
       include: {
         author: {
           include: {
@@ -207,10 +273,23 @@ export class PostsService {
             avatar: true,
           },
         },
-        reactions: { select: { emoji: true, fromUserId: true } },
-        _count: { select: { comments: { where: { hidden: false } } } },
+        // Dette lecture (LOT 6) : on ne charge PLUS toutes les réactions de chaque post pour les
+        // dé-doublonner en mémoire. La clé @@unique([postId, fromUserId]) garantit un kudos par
+        // user → `_count` donne directement le compteur. `iKudo` est résolu par UNE requête ciblée.
+        _count: { select: { reactions: true, comments: { where: { hidden: false } } } },
       },
     });
+
+    // « Ai-je applaudi ? » en UNE requête bornée aux posts de la page (au lieu de charger toutes
+    // les réactions de chaque post). Set d'appartenance → O(1) par post.
+    const postIds = posts.map((p) => p.id);
+    const myKudos = postIds.length
+      ? await this.prisma.postReaction.findMany({
+          where: { postId: { in: postIds }, fromUserId: me },
+          select: { postId: true },
+        })
+      : [];
+    const iKudoSet = new Set(myKudos.map((r) => r.postId));
 
     // Hydrate les perf_share avec les infos de séance.
     const resultIds = posts.map((p) => p.wodResultId).filter((x): x is string => !!x);
@@ -222,10 +301,16 @@ export class PostsService {
       : [];
     const byId = new Map(results.map((r) => [r.id, r]));
 
+    // LOT 5 — mentions @pseudo résolues pour CETTE page (1 requête profils, pas de N+1) afin de
+    // rendre les @ cliquables côté client. Best-effort : un échec ⇒ aucune mention (pas de crash).
+    const mentionsByPost = await this.mentions
+      .resolveBatch(posts.map((p) => ({ id: p.id, body: p.body })))
+      .catch(() => new Map<string, ResolvedMention[]>());
+
     return posts.map((p) => {
-      // Kudos unifié : chaque réaction (y compris d'anciens emojis multiples) compte pour 1 kudos.
-      const kudosCount = p.reactions.length;
-      const iKudo = p.reactions.some((r) => r.fromUserId === me);
+      // Kudos unifié : un seul applaudissement par user (clé unique) → `_count` EST le compteur.
+      const kudosCount = p._count?.reactions ?? 0;
+      const iKudo = iKudoSet.has(p.id);
       const reactions: Record<string, number> = kudosCount > 0 ? { [KUDOS]: kudosCount } : {};
       const payload: Record<string, unknown> = { body: p.body };
       if (p.kind === "perf_share" && p.wodResultId) {
@@ -257,6 +342,7 @@ export class PostsService {
         commentCount: p._count?.comments ?? 0,
         reactions,
         myReactions: iKudo ? [KUDOS] : [],
+        mentions: mentionsByPost.get(p.id) ?? [],
       };
     });
   }

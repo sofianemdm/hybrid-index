@@ -70,6 +70,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
   bool _hasMore = false;
   String? _nextBefore;
   bool _loadingMore = false;
+  // Indicateur de saisie de l'autre (éphémère, non persisté). Affiché tant que des signaux
+  // arrivent ; éteint par [_typingOff] après ~3 s sans nouveau signal.
+  bool _otherTyping = false;
+  Timer? _typingOff;
+  // Débounce du canal MONTANT : on n'émet « typing » qu'au plus une fois toutes les ~2 s tant que
+  // l'utilisateur tape (évite d'inonder le WS à chaque touche).
+  DateTime? _lastTypingSent;
 
   @override
   void initState() {
@@ -79,10 +86,22 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
     _scroll.addListener(_onScroll);
     _load();
     _startPolling();
-    // Temps réel : un DM sur LA conversation ouverte déclenche un poll immédiat (les messages
-    // d'autres conversations sont ignorés ici). Repli : le polling ralenti ci-dessous.
+    // Temps réel (on ne réagit qu'aux events de LA conversation ouverte ; les autres sont ignorés) :
+    // - DmReceived : nouveau message → poll immédiat (repli : polling ralenti ci-dessous).
+    // - ReadReceipt : le destinataire a lu → mes bulles passent « Envoyé » → « Lu » sans attendre.
+    // - TypingSignal : l'autre écrit → on affiche l'indicateur, éteint après ~3 s sans signal.
     _rtSub = ref.read(realtimeServiceProvider).events.listen((e) {
-      if (e is DmReceived && e.conversationId == _convId) _pollMessages();
+      if (_convId == null) return;
+      switch (e) {
+        case DmReceived(:final conversationId) when conversationId == _convId:
+          _pollMessages();
+        case ReadReceipt(:final conversationId) when conversationId == _convId:
+          _markAllMineRead();
+        case TypingSignal(:final conversationId) when conversationId == _convId:
+          _onOtherTyping();
+        default:
+          break;
+      }
     });
   }
 
@@ -90,6 +109,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _poll?.cancel();
+    _typingOff?.cancel();
     _rtSub?.cancel();
     _input.dispose();
     _scroll.removeListener(_onScroll);
@@ -153,6 +173,45 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
       if (next[i].id != _messages[i].id || next[i].readAt != _messages[i].readAt) return true;
     }
     return false;
+  }
+
+  /// Lecture temps réel : à réception d'un `ReadReceipt`, on marque localement comme lus TOUS mes
+  /// messages encore non lus (le serveur a posé leur `readAt` à l'ouverture par l'autre). Évite
+  /// d'attendre le poll et fonctionne même si l'utilisateur n'est pas en bas du fil (le poll, lui,
+  /// ne rafraîchit que près du bas). No-op si rien à changer (pas de setState inutile).
+  void _markAllMineRead() {
+    final now = DateTime.now().toIso8601String();
+    var changed = false;
+    final updated = _messages.map((m) {
+      if (m.isMine && !m.isRead) {
+        changed = true;
+        return m.copyWith(readAt: now);
+      }
+      return m;
+    }).toList();
+    if (changed && mounted) setState(() => _messages = updated);
+  }
+
+  /// Affiche l'indicateur « l'autre écrit » et (ré)arme l'extinction à ~3 s sans nouveau signal.
+  void _onOtherTyping() {
+    if (!mounted) return;
+    if (!_otherTyping) setState(() => _otherTyping = true);
+    _typingOff?.cancel();
+    _typingOff = Timer(const Duration(seconds: 3), () {
+      if (mounted) setState(() => _otherTyping = false);
+    });
+  }
+
+  /// Canal MONTANT débounce : signale ma saisie au serveur au plus une fois toutes les ~2 s tant
+  /// que je tape (le serveur relaie à l'autre). N'émet rien si le champ est vide.
+  void _onInputChanged(String value) {
+    if (value.trim().isEmpty) return;
+    final now = DateTime.now();
+    if (_lastTypingSent != null && now.difference(_lastTypingSent!) < const Duration(seconds: 2)) {
+      return;
+    }
+    _lastTypingSent = now;
+    if (_convId != null) ref.read(realtimeServiceProvider).sendTyping(_convId!);
   }
 
   Future<void> _load() async {
@@ -396,6 +455,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
         child: Column(
           children: [
             Expanded(child: _body()),
+            _typingIndicator(),
             _composer(),
           ],
         ),
@@ -604,6 +664,28 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
     );
   }
 
+  /// Ligne « X est en train d'écrire… » (éphémère). Réserve sa hauteur en permanence pour éviter
+  /// que le composer ne saute quand l'indicateur apparaît/disparaît.
+  Widget _typingIndicator() {
+    final t = AppLocalizations.of(context);
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 150),
+      child: _otherTyping
+          ? Padding(
+              key: const ValueKey('typing'),
+              padding: const EdgeInsets.only(left: HiSpace.lg, right: HiSpace.lg, bottom: 4),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  t.chatTyping(widget.otherName),
+                  style: HiType.caption.copyWith(color: HiColors.textTertiary, fontStyle: FontStyle.italic),
+                ),
+              ),
+            )
+          : const SizedBox(key: ValueKey('no-typing'), height: 0, width: double.infinity),
+    );
+  }
+
   Widget _composer() {
     return Container(
       padding: const EdgeInsets.fromLTRB(HiSpace.md, 8, HiSpace.md, 12),
@@ -631,6 +713,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
                 maxLines: 4,
                 maxLength: 2000,
                 decoration: InputDecoration(hintText: AppLocalizations.of(context).chatHint, counterText: ''),
+                onChanged: _onInputChanged,
                 onSubmitted: (_) => _send(),
               ),
             ),

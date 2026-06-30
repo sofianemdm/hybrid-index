@@ -136,4 +136,117 @@ describe("api — commentaires de posts (e2e réel)", () => {
     expect(row?.hidden).toBe(true);
     expect(row?.reportCount).toBe(3);
   });
+
+  it("POST/DELETE /v1/comments/:id/reactions : like/unlike + kudosCount/iKudo dans le listing", async () => {
+    const created = await request(api.getHttpServer()).post(`/v1/posts/${postId}/comments`).set(auth(author)).send({ body: "à applaudir" }).expect(201);
+    const commentId = created.body.id;
+    expect(created.body.kudosCount).toBe(0);
+    expect(created.body.iKudo).toBe(false);
+
+    // alice applaudit le commentaire de author.
+    const liked = await request(api.getHttpServer()).post(`/v1/comments/${commentId}/reactions`).set(auth(alice)).expect(201);
+    expect(liked.body).toEqual({ kudosCount: 1, iKudo: true });
+
+    // Idempotent : re-like → toujours 1.
+    const reliked = await request(api.getHttpServer()).post(`/v1/comments/${commentId}/reactions`).set(auth(alice)).expect(201);
+    expect(reliked.body.kudosCount).toBe(1);
+
+    // Le listing vu par alice expose kudosCount=1 et iKudo=true sur ce commentaire.
+    const listed = await request(api.getHttpServer()).get(`/v1/posts/${postId}/comments`).set(auth(alice)).expect(200);
+    const mine = (listed.body.items as Array<Record<string, unknown>>).find((c) => c.id === commentId);
+    expect(mine?.kudosCount).toBe(1);
+    expect(mine?.iKudo).toBe(true);
+
+    // Un autre user (bob) voit kudosCount=1 mais iKudo=false (il n'a pas liké).
+    const bobView = await request(api.getHttpServer()).get(`/v1/posts/${postId}/comments`).set(auth(bob)).expect(200);
+    const fromBob = (bobView.body.items as Array<Record<string, unknown>>).find((c) => c.id === commentId);
+    expect(fromBob?.kudosCount).toBe(1);
+    expect(fromBob?.iKudo).toBe(false);
+
+    // unlike → 0.
+    const unliked = await request(api.getHttpServer()).delete(`/v1/comments/${commentId}/reactions`).set(auth(alice)).expect(200);
+    expect(unliked.body).toEqual({ kudosCount: 0, iKudo: false });
+  });
+
+  it("POST /v1/comments/:id/reactions : anti auto-kudos (auteur du commentaire) → 409", async () => {
+    const created = await request(api.getHttpServer()).post(`/v1/posts/${postId}/comments`).set(auth(alice)).send({ body: "mon commentaire" }).expect(201);
+    await request(api.getHttpServer()).post(`/v1/comments/${created.body.id}/reactions`).set(auth(alice)).expect(409);
+  });
+
+  it("POST /v1/comments/:id/reactions : commentaire introuvable → 404", async () => {
+    await request(api.getHttpServer())
+      .post(`/v1/comments/00000000-0000-0000-0000-000000000000/reactions`)
+      .set(auth(bob))
+      .expect(404);
+  });
+
+  // ── LOT 3 — mur de profil ─────────────────────────────────────────────────
+  it("GET /v1/users/:id/posts : renvoie le mur (posts publics) avec { items, nextCursor }", async () => {
+    const res = await request(api.getHttpServer()).get(`/v1/users/${author.userId}/posts`).set(auth(alice)).expect(200);
+    expect(Array.isArray(res.body.items)).toBe(true);
+    expect(res.body.items.some((p: { id: string }) => p.id === postId)).toBe(true);
+    expect(res.body).toHaveProperty("nextCursor");
+  });
+
+  it("GET /v1/users/:id/posts : blocage bidirectionnel → mur vide", async () => {
+    // author bloque dave → le mur de author est vide pour dave (et inversement).
+    await request(api.getHttpServer()).post(`/v1/users/${dave.userId}/block`).set(auth(author)).expect(201);
+    const res = await request(api.getHttpServer()).get(`/v1/users/${author.userId}/posts`).set(auth(dave)).expect(200);
+    expect(res.body.items).toHaveLength(0);
+    await request(api.getHttpServer()).delete(`/v1/users/${dave.userId}/block`).set(auth(author)).expect(200);
+  });
+
+  // ── LOT 4 — réponses / threads (1 niveau) ─────────────────────────────────
+  it("réponse à une racine : imbriquée sous le parent + replyCount, refus du niveau 2", async () => {
+    const root = await request(api.getHttpServer()).post(`/v1/posts/${postId}/comments`).set(auth(alice)).send({ body: "commentaire racine" }).expect(201);
+    expect(root.body.parentId).toBeNull();
+
+    const reply = await request(api.getHttpServer())
+      .post(`/v1/posts/${postId}/comments`)
+      .set(auth(bob))
+      .send({ body: "ma réponse", parentId: root.body.id })
+      .expect(201);
+    expect(reply.body.parentId).toBe(root.body.id);
+
+    // Le listing imbrique la réponse sous la racine + expose replyCount.
+    const listed = await request(api.getHttpServer()).get(`/v1/posts/${postId}/comments`).set(auth(author)).expect(200);
+    const rootItem = (listed.body.items as Array<Record<string, unknown>>).find((c) => c.id === root.body.id);
+    expect(rootItem?.replyCount).toBe(1);
+    expect((rootItem?.replies as Array<{ id: string }>).some((r) => r.id === reply.body.id)).toBe(true);
+    // La réponse n'apparaît PAS comme commentaire de premier niveau.
+    expect((listed.body.items as Array<{ id: string }>).some((c) => c.id === reply.body.id)).toBe(false);
+
+    // Répondre à une RÉPONSE (niveau 2) est refusé.
+    await request(api.getHttpServer())
+      .post(`/v1/posts/${postId}/comments`)
+      .set(auth(carol))
+      .send({ body: "niveau 2 interdit", parentId: reply.body.id })
+      .expect(400);
+  });
+
+  // ── LOT 5 — mentions @pseudo ──────────────────────────────────────────────
+  it("mentions : @pseudo résolu et exposé dans la réponse (post ET commentaire)", async () => {
+    const post = await request(api.getHttpServer())
+      .post("/v1/posts")
+      .set(auth(alice))
+      .send({ kind: "text", body: `Hello @${bob.displayName} !` })
+      .expect(201);
+    expect((post.body.mentions as Array<{ userId: string }>).some((m) => m.userId === bob.userId)).toBe(true);
+
+    const cmt = await request(api.getHttpServer())
+      .post(`/v1/posts/${postId}/comments`)
+      .set(auth(alice))
+      .send({ body: `cc @${carol.displayName}` })
+      .expect(201);
+    expect((cmt.body.mentions as Array<{ userId: string; pseudo: string }>).some((m) => m.userId === carol.userId)).toBe(true);
+  });
+
+  it("mentions : pas d'auto-mention (se citer soi-même ne se résout pas en mention)", async () => {
+    const post = await request(api.getHttpServer())
+      .post("/v1/posts")
+      .set(auth(alice))
+      .send({ kind: "text", body: `moi-même @${alice.displayName}` })
+      .expect(201);
+    expect((post.body.mentions as Array<{ userId: string }>).some((m) => m.userId === alice.userId)).toBe(false);
+  });
 });

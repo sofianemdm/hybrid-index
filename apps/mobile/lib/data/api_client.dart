@@ -358,6 +358,13 @@ class ApiClient {
     return j.map((e) => FeedActivity.fromJson(e as Map<String, dynamic>)).toList();
   }
 
+  /// « Mur » d'un athlète : ses posts (paginés par curseur). Respecte blocage/visibilité côté back.
+  Future<PostPage> userPosts(String userId, {String? cursor}) async {
+    final q = cursor == null || cursor.isEmpty ? '' : '?cursor=${Uri.encodeQueryComponent(cursor)}';
+    final j = await _send('GET', '/v1/users/$userId/posts$q') as Map<String, dynamic>;
+    return PostPage.fromJson(j);
+  }
+
   /// Fil « Découvrir » : top de la ligue (même sexe) à suivre (repli explicite).
   Future<List<FeedActivity>> discover() async {
     final j = await _send('GET', '/v1/social/discover') as List<dynamic>;
@@ -400,10 +407,26 @@ class ApiClient {
     return CommentPage.fromJson(j);
   }
 
-  /// Poste un commentaire sous [postId] → renvoie le commentaire créé.
-  Future<Comment> createComment(String postId, String body) async {
-    final j = await _send('POST', '/v1/posts/$postId/comments', {'body': body}) as Map<String, dynamic>;
+  /// Poste un commentaire sous [postId] → renvoie le commentaire créé. [parentId] non nul =
+  /// réponse (thread 1 niveau) sous le commentaire racine `parentId`.
+  Future<Comment> createComment(String postId, String body, {String? parentId}) async {
+    final j = await _send('POST', '/v1/posts/$postId/comments', {
+      'body': body,
+      if (parentId != null) 'parentId': parentId,
+    }) as Map<String, dynamic>;
     return Comment.fromJson(j);
+  }
+
+  /// Applaudir (👏) un commentaire → renvoie `(kudosCount, iKudo)` recalculés côté serveur.
+  Future<(int, bool)> reactComment(String commentId) async {
+    final j = await _send('POST', '/v1/comments/$commentId/reactions', {}) as Map<String, dynamic>;
+    return ((j['kudosCount'] as num?)?.toInt() ?? 0, j['iKudo'] as bool? ?? true);
+  }
+
+  /// Retirer son applaudissement d'un commentaire (toggle off, idempotent).
+  Future<(int, bool)> unreactComment(String commentId) async {
+    final j = await _send('DELETE', '/v1/comments/$commentId/reactions') as Map<String, dynamic>;
+    return ((j['kudosCount'] as num?)?.toInt() ?? 0, j['iKudo'] as bool? ?? false);
   }
 
   Future<void> deleteComment(String id) async => _send('DELETE', '/v1/comments/$id');

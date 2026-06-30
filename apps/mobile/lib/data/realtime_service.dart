@@ -21,6 +21,20 @@ class DmReceived extends RealtimeEvent {
   const DmReceived(this.conversationId);
 }
 
+/// Le destinataire a OUVERT [conversationId] et marqué mes messages comme lus : mon fil passe
+/// « Envoyé » → « Lu » instantanément (sans attendre le poll). Reçu par l'EXPÉDITEUR.
+class ReadReceipt extends RealtimeEvent {
+  final String conversationId;
+  const ReadReceipt(this.conversationId);
+}
+
+/// L'autre participant est en train d'écrire dans [conversationId] (signal éphémère, non persisté).
+/// Le chat affiche « X est en train d'écrire… » puis l'éteint après quelques secondes sans signal.
+class TypingSignal extends RealtimeEvent {
+  final String conversationId;
+  const TypingSignal(this.conversationId);
+}
+
 /// Code de fermeture applicatif renvoyé par le serveur quand l'auth échoue (token absent/invalide/
 /// expiré/compte non actif). On NE retente PAS dans ce cas : la session est invalide, pas le réseau.
 const int _kAuthFailedCloseCode = 4401;
@@ -124,12 +138,30 @@ class RealtimeService {
       return; // trame non-JSON : ignorée
     }
     final type = json['type'];
-    // Champ `type` discriminant : on IGNORE tout type inconnu (évolutions read/typing sans casse).
-    if (type == 'dm') {
-      final id = json['conversationId'];
-      if (id is String && id.isNotEmpty && !_controller.isClosed) {
+    final id = json['conversationId'];
+    if (id is! String || id.isEmpty || _controller.isClosed) return;
+    // Champ `type` discriminant : on IGNORE tout type inconnu (évolutions sans casse).
+    switch (type) {
+      case 'dm':
         _controller.add(DmReceived(id));
-      }
+      case 'read':
+        _controller.add(ReadReceipt(id));
+      case 'typing':
+        _controller.add(TypingSignal(id));
+    }
+  }
+
+  /// Canal MONTANT (client → serveur) : signale au serveur que je suis en train d'écrire dans
+  /// [conversationId]. Le serveur valide ma participation et relaie à l'autre (éphémère). No-op
+  /// silencieux si le WS n'est pas ouvert (le repli polling ne porte PAS la saisie : c'est un bonus
+  /// purement temps réel). À appeler en DEBOUNCE côté UI (cf. chat_screen), jamais à chaque touche.
+  void sendTyping(String conversationId) {
+    final channel = _channel;
+    if (!_connected || channel == null || conversationId.isEmpty) return;
+    try {
+      channel.sink.add(jsonEncode({'type': 'typing', 'conversationId': conversationId}));
+    } catch (_) {
+      // best-effort : socket en cours de fermeture → on ignore.
     }
   }
 

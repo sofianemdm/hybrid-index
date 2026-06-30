@@ -698,6 +698,12 @@ abstract class AppLocalizations {
   /// **'Delete'**
   String get commonDelete;
 
+  /// No description provided for @commonSeeMore.
+  ///
+  /// In en, this message translates to:
+  /// **'See more'**
+  String get commonSeeMore;
+
   /// No description provided for @settingsTitle.
   ///
   /// In en, this message translates to:
@@ -1670,6 +1676,132 @@ abstract class AppLocalizations {
   /// **'Comment deleted.'**
   String get commentDeleted;
 
+  /// No description provided for @commentKudosTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Kudos'**
+  String get commentKudosTooltip;
+
+  /// No description provided for @commentReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Reply'**
+  String get commentReply;
+
+  /// No description provided for @commentReplyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Reply to {name}…'**
+  String commentReplyHint(String name);
+
+  /// No description provided for @commentRepliesShow.
+  ///
+  /// In en, this message translates to:
+  /// **'Show {count, plural, one{reply} other{{count} replies}}'**
+  String commentRepliesShow(int count);
+
+  /// No description provided for @commentRepliesHide.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide replies'**
+  String get commentRepliesHide;
+
+  /// No description provided for @a11yCommentKudos.
+  ///
+  /// In en, this message translates to:
+  /// **'Kudos, {count} claps'**
+  String a11yCommentKudos(int count);
+
+  /// No description provided for @a11yMention.
+  ///
+  /// In en, this message translates to:
+  /// **'Mention of {name}, open profile'**
+  String a11yMention(String name);
+
+  /// No description provided for @profileWallTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Posts'**
+  String get profileWallTitle;
+
+  /// No description provided for @profileWallEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'This athlete hasn\'t posted anything yet.'**
+  String get profileWallEmpty;
+
+  /// No description provided for @profileWallEmptyMine.
+  ///
+  /// In en, this message translates to:
+  /// **'You haven\'t posted anything yet. Share a result or a message from Community.'**
+  String get profileWallEmptyMine;
+
+  /// No description provided for @composerMentionHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Mention someone with @'**
+  String get composerMentionHint;
+
+  /// No description provided for @notifPostKudos.
+  ///
+  /// In en, this message translates to:
+  /// **'Your post got kudos 👏'**
+  String get notifPostKudos;
+
+  /// No description provided for @notifPostKudosBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1 person gave} other{{count} people gave}} kudos to your post.'**
+  String notifPostKudosBody(int count);
+
+  /// No description provided for @notifComment.
+  ///
+  /// In en, this message translates to:
+  /// **'New comment'**
+  String get notifComment;
+
+  /// No description provided for @notifCommentBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} commented on your post.'**
+  String notifCommentBody(String name);
+
+  /// No description provided for @notifCommentKudos.
+  ///
+  /// In en, this message translates to:
+  /// **'Your comment got kudos 👏'**
+  String get notifCommentKudos;
+
+  /// No description provided for @notifCommentKudosBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1 person gave} other{{count} people gave}} kudos to your comment.'**
+  String notifCommentKudosBody(int count);
+
+  /// No description provided for @notifReply.
+  ///
+  /// In en, this message translates to:
+  /// **'New reply'**
+  String get notifReply;
+
+  /// No description provided for @notifReplyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} replied to your comment.'**
+  String notifReplyBody(String name);
+
+  /// No description provided for @notifMention.
+  ///
+  /// In en, this message translates to:
+  /// **'You were mentioned'**
+  String get notifMention;
+
+  /// No description provided for @notifMentionBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} mentioned you.'**
+  String notifMentionBody(String name);
+
   /// No description provided for @timeAgoNow.
   ///
   /// In en, this message translates to:
@@ -1909,6 +2041,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Read'**
   String get chatStatusRead;
+
+  /// No description provided for @chatTyping.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is typing…'**
+  String chatTyping(String name);
 
   /// No description provided for @chatViewProfile.
   ///

@@ -6,6 +6,8 @@ import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
+import '../community/comments_sheet.dart';
+import '../community/feed_post_card.dart';
 import '../messaging/chat_screen.dart';
 import '../../theme/cosmetics.dart';
 import '../../widgets/error_retry.dart';
@@ -336,6 +338,9 @@ class PublicProfileScreen extends ConsumerWidget {
                         ),
                       ),
                     ),
+                    const SizedBox(height: HiSpace.lg),
+                    // « Mur » de l'athlète : ses publications (réutilise la carte du fil Communauté).
+                    _ProfileWall(userId: p.userId, isMe: p.isMe),
                   ],
                 ),
               ),
@@ -374,6 +379,150 @@ class PublicProfileScreen extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// « Mur » d'un athlète : la liste de SES publications, sous son profil. Réutilise la carte de post
+/// partagée (FeedPostCard) — donc le même rendu, le même toggle kudos optimiste et l'ouverture des
+/// commentaires que le fil Communauté, sans dupliquer cette logique.
+///
+/// Comme le mur vit DANS le SingleChildScrollView du profil, on ne fait PAS de scroll interne : on
+/// affiche les posts en colonne (shrinkWrap) et on pagine via un bouton « Voir plus » explicite.
+class _ProfileWall extends ConsumerStatefulWidget {
+  const _ProfileWall({required this.userId, required this.isMe});
+  final String userId;
+  final bool isMe;
+
+  @override
+  ConsumerState<_ProfileWall> createState() => _ProfileWallState();
+}
+
+class _ProfileWallState extends ConsumerState<_ProfileWall> {
+  final List<FeedActivity> _items = [];
+  bool _loading = true;
+  bool _loadingMore = false;
+  bool _hasError = false;
+  String? _cursor;
+  bool _hasMore = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFirst();
+  }
+
+  Future<void> _loadFirst() async {
+    setState(() {
+      _loading = true;
+      _hasError = false;
+    });
+    try {
+      final page = await ref.read(apiClientProvider).userPosts(widget.userId);
+      if (!mounted) return;
+      setState(() {
+        _items
+          ..clear()
+          ..addAll(page.items);
+        _cursor = page.nextCursor;
+        _hasMore = page.nextCursor != null;
+        _loading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _hasError = true;
+      });
+    }
+  }
+
+  Future<void> _loadMore() async {
+    if (_cursor == null || _loadingMore) return;
+    setState(() => _loadingMore = true);
+    try {
+      final page = await ref.read(apiClientProvider).userPosts(widget.userId, cursor: _cursor);
+      if (!mounted) return;
+      setState(() {
+        _items.addAll(page.items);
+        _cursor = page.nextCursor;
+        _hasMore = page.nextCursor != null;
+        _loadingMore = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _loadingMore = false);
+    }
+  }
+
+  /// Appel réseau du kudos (le toggle optimiste apply/rollback est dans FeedPostCard).
+  Future<bool> _kudosNetwork(FeedActivity a, bool wantOn) async {
+    try {
+      final api = ref.read(apiClientProvider);
+      if (wantOn) {
+        await api.react(a.id, isPost: a.isPost);
+      } else {
+        await api.unreact(a.id, isPost: a.isPost);
+      }
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<void> _openComments(FeedActivity a) async {
+    final delta = await showCommentsSheet(context, post: a);
+    if (delta != 0 && mounted) {
+      setState(() => a.commentCount = (a.commentCount + delta).clamp(0, 1 << 30));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(t.profileWallTitle, style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
+        const SizedBox(height: HiSpace.sm),
+        if (_loading)
+          const Column(children: [
+            HiSkeleton(height: 96, radius: HiRadius.lg),
+            SizedBox(height: HiSpace.sm),
+            HiSkeleton(height: 96, radius: HiRadius.lg),
+          ])
+        else if (_hasError)
+          ErrorRetry(onRetry: _loadFirst)
+        else if (_items.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: HiSpace.lg),
+            child: Center(
+              child: Text(widget.isMe ? t.profileWallEmptyMine : t.profileWallEmpty,
+                  textAlign: TextAlign.center, style: HiType.body.copyWith(color: HiColors.textTertiary)),
+            ),
+          )
+        else ...[
+          for (final a in _items)
+            FeedPostCard(
+              key: ValueKey(a.id),
+              activity: a,
+              onToggleKudos: _kudosNetwork,
+              onOpenComments: a.isPost ? _openComments : null,
+            ),
+          if (_hasMore)
+            Center(
+              child: _loadingMore
+                  ? const Padding(
+                      padding: EdgeInsets.all(HiSpace.md),
+                      child: SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2)),
+                    )
+                  : TextButton(
+                      onPressed: _loadMore,
+                      child: Text(t.commonSeeMore, style: TextStyle(color: HiColors.brandPrimary)),
+                    ),
+            ),
+        ],
+      ],
     );
   }
 }

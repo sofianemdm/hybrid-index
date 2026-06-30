@@ -254,4 +254,28 @@ export class PushService {
     const locale = await this.recipientLocale(userId);
     return this.sendToUser(userId, this.compose("comment", { authorName }, locale));
   }
+
+  /** On a applaudi (👏) le POST de `userId`. `count` = nombre total de kudos sur le post. */
+  async notifyPostKudos(userId: string, count: number): Promise<void> {
+    const locale = await this.recipientLocale(userId);
+    return this.sendToUser(userId, this.compose("post-kudos", { count }, locale));
+  }
+
+  /** On a applaudi (👏) le COMMENTAIRE de `userId`. `count` = nombre total de kudos sur le commentaire. */
+  async notifyCommentKudos(userId: string, count: number): Promise<void> {
+    const locale = await this.recipientLocale(userId);
+    return this.sendToUser(userId, this.compose("comment-kudos", { count }, locale));
+  }
+
+  /** Réponse au commentaire de `userId` (thread). `authorName` = pseudo de l'auteur de la réponse. */
+  async notifyCommentReply(userId: string, authorName: string): Promise<void> {
+    const locale = await this.recipientLocale(userId);
+    return this.sendToUser(userId, this.compose("comment-reply", { authorName }, locale));
+  }
+
+  /** `userId` a été mentionné (@pseudo) dans un post ou un commentaire. `authorName` = l'auteur. */
+  async notifyMention(userId: string, authorName: string): Promise<void> {
+    const locale = await this.recipientLocale(userId);
+    return this.sendToUser(userId, this.compose("mention", { authorName }, locale));
+  }
 }

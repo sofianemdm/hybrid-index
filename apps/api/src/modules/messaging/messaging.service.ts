@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException, type OnModuleInit } from "@nestjs/common";
 import { dmAgeAllowed } from "@hybrid-index/contracts";
 import { ratingFromInternal } from "@hybrid-index/scoring-core";
 import { PrismaService } from "../../infra/prisma/prisma.service";
@@ -24,13 +24,25 @@ export interface DmEligibility {
  * et UNIQUEMENT dans la même tranche d'âge (séparation stricte mineurs/adultes — voir contracts).
  */
 @Injectable()
-export class MessagingService {
+export class MessagingService implements OnModuleInit {
   constructor(
     private readonly prisma: PrismaService,
     private readonly moderation: ModerationService,
     private readonly push: PushService,
     private readonly realtime: RealtimeService,
   ) {}
+
+  /**
+   * Branche le canal montant « saisie » : le gateway WS reçoit `{type:'typing'}`, délègue à
+   * `RealtimeService.handleClientTyping`, qui appelle ce handler — lequel valide la participation
+   * (accès Prisma ici) et relaie à l'autre. Découplage de module : le gateway n'importe pas la
+   * messagerie.
+   */
+  onModuleInit(): void {
+    this.realtime.setTypingHandler(async (userId, conversationId) => {
+      await this.relayTyping(userId, conversationId);
+    });
+  }
 
   /** Couple canonique (ordre stable) pour une conversation 1‑à‑1. */
   private pair(a: string, b: string): { userAId: string; userBId: string } {
@@ -215,10 +227,20 @@ export class MessagingService {
 
     // Marquer « lu » uniquement sur la page la plus récente (chargement / poll), pas en remontant.
     if (!opts?.before) {
-      await this.prisma.message.updateMany({
+      const marked = await this.prisma.message.updateMany({
         where: { conversationId, senderId: { not: me }, readAt: null },
         data: { readAt: new Date() },
       });
+      // Lecture temps réel : si on vient RÉELLEMENT de marquer des messages comme lus, on prévient
+      // l'EXPÉDITEUR (l'autre participant) pour que son fil passe « Envoyé » → « Lu » sans attendre
+      // le poll. Best-effort, jamais bloquant (le `readAt` est déjà persisté, le WS est un bonus).
+      if (marked.count > 0) {
+        try {
+          this.realtime.emitToUser(otherId, { type: "read", conversationId });
+        } catch {
+          // best-effort : l'accusé de lecture est en base, le temps réel n'est qu'une accélération.
+        }
+      }
     }
 
     return {
@@ -244,5 +266,33 @@ export class MessagingService {
         isMine: m.senderId === me,
       })),
     };
+  }
+
+  /**
+   * Indicateur de saisie (Lot 7.2) : relaie un signal « X est en train d'écrire » à l'AUTRE
+   * participant de la conversation. Éphémère — AUCUNE persistance, aucune notif push.
+   *
+   * Sécurité : on VALIDE que l'émetteur participe bien à la conversation (sinon on ne relaie rien,
+   * pas d'erreur dure : le canal montant est best-effort, on ignore silencieusement les abus). Un
+   * blocage entre les deux comptes coupe aussi le signal (cohérent avec l'impossibilité d'écrire).
+   *
+   * @returns l'id du destinataire si le signal a été relayé, sinon `null` (non-participant/bloqué).
+   */
+  async relayTyping(me: string, conversationId: string): Promise<string | null> {
+    const conv = await this.prisma.conversation.findUnique({
+      where: { id: conversationId },
+      select: { userAId: true, userBId: true },
+    });
+    if (!conv) return null;
+    if (conv.userAId !== me && conv.userBId !== me) return null; // émetteur non participant → ignore
+    const otherId = conv.userAId === me ? conv.userBId : conv.userAId;
+    // Un blocage (dans un sens ou l'autre) coupe le signal de saisie comme il coupe l'envoi.
+    if (await this.moderation.isBlockedBetween(me, otherId)) return null;
+    try {
+      this.realtime.emitToUser(otherId, { type: "typing", conversationId });
+    } catch {
+      // best-effort : la saisie est un pur bonus d'UX, jamais bloquante.
+    }
+    return otherId;
   }
 }

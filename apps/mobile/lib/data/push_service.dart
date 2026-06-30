@@ -183,6 +183,14 @@ class PushService {
         goToTab(_Tab.community);
         _push((_) => const ConversationsScreen());
       case 'kudos':
+      // Notifications sociales (likes/commentaires/réponses/mentions de posts & commentaires) :
+      // toutes mènent à l'onglet Communauté. Le payload FCM ne porte que `type` (pas d'id de post/
+      // commentaire), donc on ne peut pas deep-linker plus fin pour l'instant — voir compte-rendu.
+      case 'post-kudos':
+      case 'comment':
+      case 'comment-kudos':
+      case 'comment-reply':
+      case 'mention':
         goToTab(_Tab.community);
       case 'rank-overtaken':
       case 'near-rank':
@@ -219,6 +227,16 @@ class PushService {
         return 'Nouveau message';
       case 'kudos':
         return 'On a réagi à ta perf';
+      case 'post-kudos':
+        return 'On a applaudi ta publication';
+      case 'comment':
+        return 'Nouveau commentaire';
+      case 'comment-kudos':
+        return 'On a applaudi ton commentaire';
+      case 'comment-reply':
+        return 'Nouvelle réponse';
+      case 'mention':
+        return 'On t’a mentionné';
       case 'rank-overtaken':
         return 'On t’a doublé au classement';
       case 'near-rank':

@@ -8,6 +8,7 @@ import '../../theme/tokens.dart';
 import '../../widgets/hi_skeleton.dart';
 import '../../widgets/hi_button.dart';
 import '../wods/wod_format.dart';
+import 'mention_suggestions.dart';
 
 /// Composer un post : message texte OU partage d'une perf (résultat de séance).
 /// Pas de photo pour l'instant (livré sans, branché plus tard).
@@ -24,6 +25,23 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
   MyResult? _selected;
   List<MyResult>? _results;
   bool _busy = false;
+
+  /// Vivier de pseudos pour l'autocomplétion @ (les athlètes que je suis). Chargé une fois,
+  /// best-effort : un échec réseau désactive simplement l'autocomplete (la saisie libre reste OK).
+  List<AthleteSummary> _mentionPool = const [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMentionPool();
+  }
+
+  Future<void> _loadMentionPool() async {
+    try {
+      final f = await ref.read(apiClientProvider).following();
+      if (mounted) setState(() => _mentionPool = f);
+    } catch (_) {/* autocomplete indisponible : saisie libre + rendu cliquable conservés */}
+  }
 
   @override
   void dispose() {
@@ -85,12 +103,19 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
               Text(t.composerCaptionLabel, style: HiType.caption.copyWith(color: HiColors.textSecondary)),
               const SizedBox(height: 6),
             ],
+            // Autocomplétion @ : suggestions au-dessus du champ quand on tape `@pseudo`.
+            MentionSuggestionStrip(
+              controller: _body,
+              candidates: mentionCandidates(_body, _mentionPool),
+            ),
             TextField(
               controller: _body,
               maxLines: _perfMode ? 2 : 6,
               maxLength: 500,
+              onChanged: (_) => setState(() {}),
               decoration: InputDecoration(
                 hintText: _perfMode ? t.composerHintPerf : t.composerHintText,
+                helperText: t.composerMentionHint,
                 alignLabelWithHint: true,
               ),
             ),

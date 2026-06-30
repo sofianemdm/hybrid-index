@@ -49,6 +49,19 @@ export class SocialController {
     return this.social.discover(user.userId);
   }
 
+  /**
+   * « Mur » d'un athlète (LOT 3) : ses posts PUBLICS, paginés par curseur. Respecte le blocage
+   * bidirectionnel + la visibilité. `?cursor=<id>` pour la page suivante. Réponse `{ items, nextCursor }`.
+   */
+  @Get("users/:id/posts")
+  userPosts(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("id") authorId: string,
+    @Query("cursor") cursor?: string,
+  ): Promise<unknown> {
+    return this.social.userPosts(user.userId, authorId, cursor);
+  }
+
   /** Recherche d'athlètes (filtres sexe / rang / nom). */
   @Get("explore")
   explore(

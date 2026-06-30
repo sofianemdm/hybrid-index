@@ -1122,6 +1122,9 @@ class FeedActivity {
 
   /// Carte « Découvrir » (athlète suggéré) → bouton « Suivre » direct.
   final bool canFollow;
+
+  /// Mentions @pseudo résolues dans le corps du post (cliquables → profil). Vide si aucune.
+  final List<Mention> mentions;
   FeedActivity({
     required this.id,
     required this.type,
@@ -1138,6 +1141,7 @@ class FeedActivity {
     required bool iKudo,
     this.commentCount = 0,
     this.canFollow = false,
+    this.mentions = const <Mention>[],
   })  : kudos = kudosCount,
         hasKudoed = iKudo;
 
@@ -1169,14 +1173,53 @@ class FeedActivity {
       iKudo: iKudo,
       commentCount: (j['commentCount'] as num?)?.toInt() ?? 0,
       canFollow: j['canFollow'] as bool? ?? false,
+      mentions: Mention.listFrom(j['mentions']),
     );
   }
 }
 
+/// Page de posts d'un athlète (« mur » du profil). Mapping de `{ items, nextCursor }`.
+class PostPage {
+  final List<FeedActivity> items;
+  final String? nextCursor;
+  const PostPage({required this.items, required this.nextCursor});
+  factory PostPage.fromJson(Map<String, dynamic> j) => PostPage(
+        items: ((j['items'] as List?) ?? const [])
+            .map((e) => FeedActivity.fromJson((e as Map).cast<String, dynamic>()))
+            .toList(),
+        nextCursor: j['nextCursor'] as String?,
+      );
+}
+
+/// Mention @pseudo résolue par le back (rend les `@` cliquables). `offset`/`length` repèrent
+/// le token `@pseudo` dans le `body` ; `userId`/`pseudo` sont la cible canonique (→ profil).
+class Mention {
+  final String pseudo;
+  final String userId;
+  final int offset;
+  final int length;
+  const Mention({required this.pseudo, required this.userId, required this.offset, required this.length});
+
+  factory Mention.fromJson(Map<String, dynamic> j) => Mention(
+        pseudo: j['pseudo'] as String? ?? '',
+        userId: j['userId'] as String? ?? '',
+        offset: (j['offset'] as num?)?.toInt() ?? 0,
+        length: (j['length'] as num?)?.toInt() ?? 0,
+      );
+
+  static List<Mention> listFrom(dynamic raw) => ((raw as List?) ?? const [])
+      .map((e) => Mention.fromJson((e as Map).cast<String, dynamic>()))
+      .toList();
+}
+
 /// Commentaire sous un post du feed (mini réseau social). Mapping de `CommentItem` (API).
+/// Porte ses kudos (👏), ses réponses imbriquées (1 niveau) et ses mentions cliquables.
 class Comment {
   final String id;
   final String postId;
+
+  /// `null` = commentaire racine ; sinon id du commentaire parent (réponse de niveau 1).
+  final String? parentId;
   final String body;
   final DateTime? createdAt;
   final String authorUserId;
@@ -1184,9 +1227,23 @@ class Comment {
   final String authorRank;
   final AvatarConfig? authorAvatar;
   final bool isMe;
-  const Comment({
+
+  /// Kudos 👏 du commentaire. Mutables → toggle optimiste (apply/rollback) sans refetch.
+  int kudos;
+  bool hasKudoed;
+
+  /// Réponses imbriquées (1 niveau) + compteur total côté serveur. `replies` est mutable
+  /// (ajout optimiste d'une réponse) ; `replyCount` suit le total connu du serveur.
+  final List<Comment> replies;
+  int replyCount;
+
+  /// Mentions @pseudo résolues dans le `body` (cliquables → profil). Vide si aucune.
+  final List<Mention> mentions;
+
+  Comment({
     required this.id,
     required this.postId,
+    required this.parentId,
     required this.body,
     required this.createdAt,
     required this.authorUserId,
@@ -1194,13 +1251,23 @@ class Comment {
     required this.authorRank,
     required this.authorAvatar,
     required this.isMe,
-  });
+    required int kudosCount,
+    required bool iKudo,
+    required this.replyCount,
+    List<Comment>? replies,
+    List<Mention>? mentions,
+  })  : kudos = kudosCount,
+        hasKudoed = iKudo,
+        replies = replies ?? <Comment>[],
+        mentions = mentions ?? const <Mention>[];
+
   factory Comment.fromJson(Map<String, dynamic> j) {
     final author = (j['author'] as Map?)?.cast<String, dynamic>() ?? const {};
     final created = j['createdAt'] as String?;
     return Comment(
       id: j['id'] as String,
       postId: j['postId'] as String? ?? '',
+      parentId: j['parentId'] as String?,
       body: j['body'] as String? ?? '',
       createdAt: created == null ? null : DateTime.tryParse(created),
       authorUserId: author['userId'] as String? ?? '',
@@ -1209,6 +1276,13 @@ class Comment {
       authorAvatar:
           author['avatar'] == null ? null : AvatarConfig.fromJson((author['avatar'] as Map).cast<String, dynamic>()),
       isMe: author['isMe'] as bool? ?? false,
+      kudosCount: (j['kudosCount'] as num?)?.toInt() ?? 0,
+      iKudo: j['iKudo'] as bool? ?? false,
+      replyCount: (j['replyCount'] as num?)?.toInt() ?? 0,
+      replies: ((j['replies'] as List?) ?? const [])
+          .map((e) => Comment.fromJson((e as Map).cast<String, dynamic>()))
+          .toList(),
+      mentions: Mention.listFrom(j['mentions']),
     );
   }
 }

@@ -2,8 +2,42 @@ import { BadRequestException, Injectable, NotFoundException } from "@nestjs/comm
 import type { ReportReason, ReportTargetType } from "@prisma/client";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 
-/** Liste minimale de termes interdits pour la modération de noms (clubs, etc.). À enrichir. */
-const BANNED_WORDS = ["fuck", "shit", "salope", "connard", "nigger", "pute", "bitch", "nazi"];
+/**
+ * Liste de termes interdits (modération lexicale des noms/posts/commentaires). Volontairement
+ * sobre : on cible les insultes/slurs explicites, PAS les mots anodins qui en contiennent un autre
+ * (cf. `isCleanName` qui borne par limites de mots pour éviter le « problème de Scunthorpe »).
+ */
+const BANNED_WORDS = [
+  // FR
+  "salope", "connard", "connasse", "enculé", "encule", "pute", "putain", "pd", "tapette", "negre", "bougnoule", "youpin",
+  // EN
+  "fuck", "shit", "bitch", "asshole", "cunt", "nigger", "nigga", "faggot", "fag", "retard", "whore", "slut",
+  // Haine (toutes langues)
+  "nazi", "hitler",
+];
+
+/** Normalise pour la comparaison lexicale : minuscules + suppression des accents/diacritiques. */
+function normalizeForMatch(s: string): string {
+  return s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, ""); // retire les diacritiques (é→e, ç→c, …)
+}
+
+/** Échappe un terme pour l'insérer littéralement dans une RegExp. */
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * Détecteur de termes interdits, par LIMITES de mots (et non par simple `includes`), afin de ne
+ * PAS bloquer un usage légitime qui contient par hasard une sous-chaîne (« assistant » ≠ « ass »,
+ * « Scunthorpe »…). Précompilé une fois ; insensible aux accents/casse (via normalizeForMatch).
+ */
+const BANNED_REGEX = new RegExp(
+  `(?:^|[^a-z0-9])(?:${BANNED_WORDS.map((w) => escapeRegExp(normalizeForMatch(w))).join("|")})(?:[^a-z0-9]|$)`,
+  "i",
+);
 
 /** Seuil d'auto-masquage : un post signalé par ce nombre de rapporteurs DISTINCTS passe en `hidden`. */
 const AUTOHIDE_REPORTS = 3;
@@ -92,9 +126,12 @@ export class ModerationService {
     return rows.map((r) => r.targetId);
   }
 
-  /** Filtre lexical synchrone des noms (clubs/pseudos). */
+  /**
+   * Filtre lexical synchrone (noms de clubs/pseudos, corps de posts/commentaires). Normalise les
+   * accents et la casse, puis détecte les termes interdits par LIMITES de mots — un mot anodin qui
+   * contient une sous-chaîne sensible (« assistant », « Scunthorpe ») reste autorisé.
+   */
   isCleanName(name: string): boolean {
-    const lower = name.toLowerCase();
-    return !BANNED_WORDS.some((w) => lower.includes(w));
+    return !BANNED_REGEX.test(normalizeForMatch(name));
   }
 }

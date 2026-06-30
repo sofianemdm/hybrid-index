@@ -105,8 +105,35 @@ export class RealtimeGateway implements OnGatewayInit, OnGatewayConnection, OnGa
     client.on("pong", () => {
       client.isAlive = true;
     });
+    // 5) Canal MONTANT (client → serveur) : pour l'instant uniquement l'indicateur de saisie
+    //    `{ type:'typing', conversationId }`. On délègue au RealtimeService (qui validera la
+    //    participation via la messagerie). Tout autre type / trame invalide est IGNORÉ sans bruit
+    //    (best-effort, jamais lançant — une trame cliente ne doit pas pouvoir crasher le gateway).
+    client.on("message", (data: unknown) => {
+      this.handleClientFrame(client, data);
+    });
     this.realtime.register(userId, client);
     this.logger.log(`WS connecté (user ${userId})`); // jamais l'URL/token, seulement l'userId validé.
+  }
+
+  /**
+   * Traite une trame montante. Sécurité : l'`userId` provient du HANDSHAKE validé (jamais du
+   * payload — un client ne peut pas usurper un autre émetteur). Seul `typing` est accepté ; la
+   * validation « émetteur participe à la conversation » est faite côté messagerie.
+   */
+  private handleClientFrame(client: TrackedSocket, data: unknown): void {
+    if (!client.userId) return;
+    try {
+      const text = typeof data === "string" ? data : data instanceof Buffer ? data.toString("utf8") : String(data);
+      if (!text || text.length > 1024) return; // trame anormalement grosse → ignorée (anti-abus léger)
+      const parsed = JSON.parse(text) as { type?: unknown; conversationId?: unknown };
+      if (parsed?.type === "typing" && typeof parsed.conversationId === "string" && parsed.conversationId) {
+        this.realtime.handleClientTyping(client.userId, parsed.conversationId);
+      }
+      // Tout autre `type` (ou trame non conforme) est silencieusement ignoré (évolutions sans casse).
+    } catch {
+      // Trame non-JSON / illisible : on ignore (le canal montant est best-effort).
+    }
   }
 
   handleDisconnect(client: TrackedSocket): void {

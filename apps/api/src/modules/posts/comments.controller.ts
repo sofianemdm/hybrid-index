@@ -6,7 +6,11 @@ import { JwtAuthGuard, type AuthenticatedUser } from "../auth/jwt-auth.guard";
 import { ModerationService } from "../moderation/moderation.service";
 import { CommentsService } from "./comments.service";
 
-const CreateComment = z.object({ body: z.string().min(1).max(500) });
+const CreateComment = z.object({
+  body: z.string().min(1).max(500),
+  // LOT 4 — réponse à un commentaire RACINE du même post (threads 1 seul niveau). Absent = racine.
+  parentId: z.string().uuid().optional(),
+});
 
 const ReportBody = z.object({
   reason: z.enum(["spam", "harassment", "inappropriate", "cheating", "other"]),
@@ -28,7 +32,7 @@ export class CommentsController {
     @Param("id") postId: string,
     @Body(new ZodValidationPipe(CreateComment)) body: z.infer<typeof CreateComment>,
   ): Promise<unknown> {
-    return this.comments.create(user.userId, postId, body.body);
+    return this.comments.create(user.userId, postId, body.body, body.parentId);
   }
 
   /** Lister les commentaires d'un post (paginé par curseur, hors masqués/bloqués). */
@@ -45,6 +49,18 @@ export class CommentsController {
   @Delete("comments/:id")
   remove(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string): Promise<unknown> {
     return this.comments.delete(user.userId, id);
+  }
+
+  /** Applaudir un commentaire (kudos unifié 👏). Idempotent ; anti auto-kudos ; respect du blocage. */
+  @Post("comments/:id/reactions")
+  react(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string): Promise<unknown> {
+    return this.comments.react(user.userId, id);
+  }
+
+  /** Retirer son kudos d'un commentaire (toggle off). */
+  @Delete("comments/:id/reactions")
+  unreact(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string): Promise<unknown> {
+    return this.comments.unreact(user.userId, id);
   }
 
   /** Signaler un commentaire (réutilise la modération générique + auto-masquage). */

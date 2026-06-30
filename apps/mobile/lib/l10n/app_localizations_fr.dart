@@ -337,6 +337,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get commonDelete => 'Supprimer';
 
   @override
+  String get commonSeeMore => 'Voir plus';
+
+  @override
   String get settingsTitle => 'Paramètres';
 
   @override
@@ -863,6 +866,106 @@ class AppLocalizationsFr extends AppLocalizations {
   String get commentDeleted => 'Commentaire supprimé.';
 
   @override
+  String get commentKudosTooltip => 'Bravo';
+
+  @override
+  String get commentReply => 'Répondre';
+
+  @override
+  String commentReplyHint(String name) {
+    return 'Répondre à $name…';
+  }
+
+  @override
+  String commentRepliesShow(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'les $count réponses',
+      one: 'la réponse',
+    );
+    return 'Voir $_temp0';
+  }
+
+  @override
+  String get commentRepliesHide => 'Masquer les réponses';
+
+  @override
+  String a11yCommentKudos(int count) {
+    return 'Bravo, $count applaudissements';
+  }
+
+  @override
+  String a11yMention(String name) {
+    return 'Mention de $name, ouvrir le profil';
+  }
+
+  @override
+  String get profileWallTitle => 'Publications';
+
+  @override
+  String get profileWallEmpty => 'Cet athlète n\'a encore rien publié.';
+
+  @override
+  String get profileWallEmptyMine =>
+      'Tu n\'as encore rien publié. Partage une perf ou un message depuis la Communauté.';
+
+  @override
+  String get composerMentionHint => 'Mentionne quelqu\'un avec @';
+
+  @override
+  String get notifPostKudos => 'On a applaudi ta publication 👏';
+
+  @override
+  String notifPostKudosBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count personnes ont applaudi',
+      one: '1 personne a applaudi',
+    );
+    return '$_temp0 ta publication.';
+  }
+
+  @override
+  String get notifComment => 'Nouveau commentaire';
+
+  @override
+  String notifCommentBody(String name) {
+    return '$name a commenté ta publication.';
+  }
+
+  @override
+  String get notifCommentKudos => 'On a applaudi ton commentaire 👏';
+
+  @override
+  String notifCommentKudosBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count personnes ont applaudi',
+      one: '1 personne a applaudi',
+    );
+    return '$_temp0 ton commentaire.';
+  }
+
+  @override
+  String get notifReply => 'Nouvelle réponse';
+
+  @override
+  String notifReplyBody(String name) {
+    return '$name a répondu à ton commentaire.';
+  }
+
+  @override
+  String get notifMention => 'On t\'a mentionné';
+
+  @override
+  String notifMentionBody(String name) {
+    return '$name t\'a mentionné.';
+  }
+
+  @override
   String get timeAgoNow => 'à l\'instant';
 
   @override
@@ -1003,6 +1106,11 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get chatStatusRead => 'Lu';
+
+  @override
+  String chatTyping(String name) {
+    return '$name est en train d\'écrire…';
+  }
 
   @override
   String get chatViewProfile => 'Voir le profil';

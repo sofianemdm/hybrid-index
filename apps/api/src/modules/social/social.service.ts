@@ -104,6 +104,15 @@ export class SocialService {
     return { kudosCount, iKudo: false };
   }
 
+  /**
+   * LOT 3 — « Mur » d'un athlète : ses posts PUBLICS paginés par curseur. Délègue à
+   * `PostsService.forProfile` (réutilise la sérialisation du feed → pas de divergence). Le blocage
+   * bidirectionnel et la visibilité sont appliqués côté PostsService.
+   */
+  async userPosts(me: string, authorId: string, cursor?: string): Promise<{ items: unknown[]; nextCursor: string | null }> {
+    return this.posts.forProfile(authorId, me, FEED_LIMIT, cursor);
+  }
+
   // --- Recherche d'athlètes ---
   async explore(me: string, filters: { sex?: string; rank?: string; q?: string }): Promise<unknown[]> {
     // Sécurité : on exclut les utilisateurs avec qui il existe un blocage (dans un sens OU l'autre)
@@ -206,6 +215,7 @@ export class SocialService {
         commentCount: 0, // les événements auto ne portent pas de commentaires (posts seulement)
         reactions,
         myReactions: iKudo ? [KUDOS] : [],
+        mentions: [], // les événements auto ne portent pas de mentions (posts/commentaires seulement)
       };
     });
 

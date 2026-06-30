@@ -10,9 +10,16 @@ export interface RealtimeSocket {
 /** OPEN au sens de l'API WebSocket (`WebSocket.OPEN === 1`). */
 const WS_OPEN = 1;
 
-/** Événement poussé au client. Champ `type` discriminant pour évolutions sans casse (read/typing…). */
+/**
+ * Événement poussé au client. Champ `type` discriminant pour évolutions sans casse :
+ * - `dm`     : un message vient d'être enregistré dans la conversation → le client refetch (REST).
+ * - `read`   : le destinataire a OUVERT la conversation et marqué les messages lus → l'EXPÉDITEUR
+ *              fait passer son fil « Envoyé » → « Lu » sans attendre le poll.
+ * - `typing` : l'autre participant est en train d'écrire (éphémère, AUCUNE persistance ; le client
+ *              affiche un indicateur qui s'éteint tout seul après quelques secondes sans signal).
+ */
 export interface RealtimeEvent {
-  type: "dm";
+  type: "dm" | "read" | "typing";
   conversationId: string;
 }
 
@@ -21,10 +28,42 @@ export interface RealtimeEvent {
  * Mono-instance : le registre est local au process (suffisant tant que l'API tourne en une instance ;
  * le passage multi-instance se fera via Redis Pub/Sub — le contrat d'`emitToUser` ne changera pas).
  */
+/**
+ * Handler du canal MONTANT « saisie » (client → serveur). Implémenté par la messagerie (qui a accès
+ * à Prisma pour valider la participation) et branché ici à l'init pour éviter une dépendance de
+ * module circulaire (MessagingModule → RealtimeModule). Best-effort : toute erreur est avalée.
+ */
+export type TypingHandler = (userId: string, conversationId: string) => void | Promise<void>;
+
 @Injectable()
 export class RealtimeService {
   private readonly logger = new Logger(RealtimeService.name);
   private readonly sockets = new Map<string, Set<RealtimeSocket>>();
+  private typingHandler?: TypingHandler;
+
+  /**
+   * Branche le handler de saisie montant (appelé une fois à l'init par la messagerie). On évite
+   * ainsi que le gateway dépende de la messagerie (couplage de modules) : il délègue ici.
+   */
+  setTypingHandler(handler: TypingHandler): void {
+    this.typingHandler = handler;
+  }
+
+  /**
+   * Reçoit un signal de saisie d'un client authentifié (`userId` validé au handshake) et le délègue
+   * au handler branché par la messagerie (validation de participation + relais à l'autre). No-op si
+   * aucun handler n'est branché ou si `conversationId` est absent. JAMAIS bloquant / lançant.
+   */
+  handleClientTyping(userId: string, conversationId: string): void {
+    if (!this.typingHandler || !conversationId) return;
+    try {
+      void Promise.resolve(this.typingHandler(userId, conversationId)).catch((err) => {
+        this.logger.debug(`handleClientTyping: relais échoué (${(err as Error).message})`);
+      });
+    } catch (err) {
+      this.logger.debug(`handleClientTyping: relais échoué (${(err as Error).message})`);
+    }
+  }
 
   /** Enregistre une socket pour un utilisateur (après validation du token). */
   register(userId: string, socket: RealtimeSocket): void {

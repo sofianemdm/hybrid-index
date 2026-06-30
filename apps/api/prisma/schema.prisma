@@ -171,26 +171,27 @@ model User {
   hybridIndex       HybridIndex?
   attributeScores   AttributeScore[]
   wodResults        WodResult[]
-  wodsCreated       Wod[]              @relation("WodCreator")
-  feedEvents        FeedEvent[]        @relation("FeedActor")
-  reactions         Reaction[]         @relation("ReactionAuthor")
+  wodsCreated       Wod[]                    @relation("WodCreator")
+  feedEvents        FeedEvent[]              @relation("FeedActor")
+  reactions         Reaction[]               @relation("ReactionAuthor")
   streak            Streak?
   notificationPrefs NotificationPrefs?
   userBadges        UserBadge[]
-  following         Follow[]           @relation("Follower")
-  followers         Follow[]           @relation("Followee")
+  following         Follow[]                 @relation("Follower")
+  followers         Follow[]                 @relation("Followee")
   progressEvents    ProgressEvent[]
-  posts             Post[]             @relation("PostAuthor")
-  postReactions     PostReaction[]     @relation("PostReactionAuthor")
-  comments          Comment[]          @relation("CommentAuthor")
-  reports           Report[]           @relation("Reporter")
-  clubsOwned        Club[]             @relation("ClubOwner")
+  posts             Post[]                   @relation("PostAuthor")
+  postReactions     PostReaction[]           @relation("PostReactionAuthor")
+  comments          Comment[]                @relation("CommentAuthor")
+  commentReactions  CommentReaction[]        @relation("CommentReactionAuthor")
+  reports           Report[]                 @relation("Reporter")
+  clubsOwned        Club[]                   @relation("ClubOwner")
   clubMemberships   ClubMember[]
-  conversationsA    Conversation[]     @relation("ConvUserA")
-  conversationsB    Conversation[]     @relation("ConvUserB")
-  messages          Message[]          @relation("MessageSender")
-  blocksMade        Block[]            @relation("Blocker")
-  blocksReceived    Block[]            @relation("Blocked")
+  conversationsA    Conversation[]           @relation("ConvUserA")
+  conversationsB    Conversation[]           @relation("ConvUserB")
+  messages          Message[]                @relation("MessageSender")
+  blocksMade        Block[]                  @relation("Blocker")
+  blocksReceived    Block[]                  @relation("Blocked")
   pushTokens        PushToken[]
   notificationLogs  NotificationLog[]
   coachCompletions  CoachSessionCompletion[]
@@ -356,20 +357,48 @@ model Post {
 // (seuil de signalements distincts) ou masqué manuellement. Supprimable par l'auteur du commentaire
 // OU par l'auteur du post. Cascade à la suppression du post ou de l'auteur.
 model Comment {
-  id          String   @id @default(uuid()) @db.Uuid
-  postId      String   @map("post_id") @db.Uuid
-  authorId    String   @map("author_id") @db.Uuid
-  body        String   @db.VarChar(500)
-  hidden      Boolean  @default(false)
-  reportCount Int      @default(0) @map("report_count")
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  id            String   @id @default(uuid()) @db.Uuid
+  postId        String   @map("post_id") @db.Uuid
+  authorId      String   @map("author_id") @db.Uuid
+  // Réponse à un commentaire RACINE du même post (threads 1 seul niveau : une réponse ne peut pas
+  // être répondue). null = commentaire racine. Cascade à la suppression du parent.
+  parentId      String?  @map("parent_id") @db.Uuid
+  body          String   @db.VarChar(500)
+  hidden        Boolean  @default(false)
+  reactionCount Int      @default(0) @map("reaction_count")
+  // Compteur dénormalisé de réponses directes (n'a de sens que sur un commentaire racine).
+  replyCount    Int      @default(0) @map("reply_count")
+  reportCount   Int      @default(0) @map("report_count")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
-  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
-  author User @relation("CommentAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  post      Post              @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author    User              @relation("CommentAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  parent    Comment?          @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   Comment[]         @relation("CommentReplies")
+  reactions CommentReaction[]
 
   @@index([postId, createdAt])
   @@index([authorId])
+  @@index([parentId])
   @@map("comment")
+  @@schema("app")
+}
+
+// Kudos (👏) sous un commentaire (mini réseau social). Un seul applaudissement par (commentaire,
+// utilisateur) — toggle on/off. Même pattern que PostReaction. Cascade à la suppression du
+// commentaire ou de l'auteur.
+model CommentReaction {
+  id         String   @id @default(uuid()) @db.Uuid
+  commentId  String   @map("comment_id") @db.Uuid
+  fromUserId String   @map("from_user_id") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  comment  Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  fromUser User    @relation("CommentReactionAuthor", fields: [fromUserId], references: [id], onDelete: Cascade)
+
+  @@unique([commentId, fromUserId])
+  @@index([commentId])
+  @@map("comment_reaction")
   @@schema("app")
 }
 

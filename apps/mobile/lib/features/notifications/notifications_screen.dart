@@ -297,6 +297,18 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen>
       case 'wod-overtaken':
         final c = item.intParam('count', 1);
         return (t.feedWodOvertakenTitle(c), t.feedWodOvertakenBody);
+      // Notifications sociales (si le back les expose un jour dans le feed in-app ; sinon délivrées
+      // en push uniquement — cf. push_service.dart). On résout titre + corps localisés FR/EN.
+      case 'post-kudos':
+        return (t.notifPostKudos, t.notifPostKudosBody(item.intParam('count', 1)));
+      case 'comment':
+        return (t.notifComment, t.notifCommentBody(item.strParam('name')));
+      case 'comment-kudos':
+        return (t.notifCommentKudos, t.notifCommentKudosBody(item.intParam('count', 1)));
+      case 'comment-reply':
+        return (t.notifReply, t.notifReplyBody(item.strParam('name')));
+      case 'mention':
+        return (t.notifMention, t.notifMentionBody(item.strParam('name')));
       default:
         // Compat : item hérité avec phrases en dur, ou clé inconnue → on affiche ce qu'on a.
         return (item.title ?? item.key, item.body ?? '');
@@ -362,6 +374,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen>
       case 'league':
       case 'leaderboard':
         return 3;
+      case 'community':
+        return 2; // fil d'actualité (likes / commentaires / réponses / mentions)
       default:
         return null;
     }
