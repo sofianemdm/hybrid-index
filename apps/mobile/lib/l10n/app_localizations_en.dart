@@ -112,6 +112,16 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your move: go all out and beat this estimate 🔥';
 
   @override
+  String get wodPredictionConfidenceHigh => 'Reliable estimate';
+
+  @override
+  String get wodPredictionConfidenceMedium => 'Rough estimate';
+
+  @override
+  String get wodPredictionConfidenceLow =>
+      'Wide estimate — do a few more sessions to refine it';
+
+  @override
   String get homeBetaBanner => 'Beta version — found a bug? Tap to learn more';
 
   @override
@@ -486,6 +496,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get wodDetailYou => 'You: ';
+
+  @override
+  String wodDetailLevelEstimate(String estimate) {
+    return 'level estimate: $estimate';
+  }
+
+  @override
+  String get wodDetailAboveLevel => 'you\'re beating your estimated level 🔥';
+
+  @override
+  String get wodDetailBelowLevel => 'room to push harder';
 
   @override
   String wodDetailPoints(int n) {

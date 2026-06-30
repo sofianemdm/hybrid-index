@@ -31,6 +31,23 @@ String wodUnitLabel(String? wodId, String scoreType, {String roundsLabel = 'tour
   }
 }
 
+/// Verdict comparatif entre le RÉSULTAT RÉEL de l'athlète et l'estimation « niveau » sur un WOD.
+/// Décision PURE (sans i18n) consommée par la fiche WOD : la couche UI mappe ensuite vers les
+/// libellés localisés. NE participe EN RIEN à la notation — c'est de l'affichage uniquement.
+///
+/// Règles (cf. plan §A) :
+/// - `null` si une des valeurs manque, si l'estimation est ≤ 0, ou si l'écart relatif ≤ [threshold]
+///   (par défaut 8 %) → on n'affiche pas de bruit pour un écart négligeable.
+/// - Sens-conscient : pour un `time`, plus court = mieux ; pour reps/load/distance, plus haut = mieux.
+///   `true` => l'athlète DÉPASSE son niveau estimé ; `false` => il a de la marge pour progresser.
+bool? wodBeatsEstimate(num? myBestRaw, num? estimateRaw, String scoreType, {double threshold = 0.08}) {
+  if (myBestRaw == null || estimateRaw == null || estimateRaw <= 0) return null;
+  final rel = (myBestRaw - estimateRaw).abs() / estimateRaw;
+  if (rel <= threshold) return null; // écart faible → pas de ligne comparative
+  final lowerIsBetter = scoreType == 'time';
+  return lowerIsBetter ? myBestRaw < estimateRaw : myBestRaw > estimateRaw;
+}
+
 /// Durée en secondes → « h:mm:ss » (≥ 1 h) ou « m:ss ».
 String formatDuration(int totalSeconds) {
   final s = totalSeconds < 0 ? 0 : totalSeconds;

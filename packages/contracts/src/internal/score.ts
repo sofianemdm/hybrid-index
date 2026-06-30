@@ -234,8 +234,19 @@ export type PredictResultRequest = z.infer<typeof PredictResultRequest>;
 
 export const PredictResultResponse = z.object({
   /** Résultat brut prédit (entier : secondes si time, reps si reps, kg si load, m si distance).
+   *  Reste le POINT central (mid) de la fourchette pour la rétro-compatibilité aller-retour.
    *  `null` si le WOD est inconnu/non-prédictible, ou si aucun attribut cible n'est débloqué. */
   predictedRaw: z.number().int().nullable(),
+  /** Borne BASSE de la fourchette d'estimation (entier, même unité que `predictedRaw`).
+   *  Pour un `time` (dir = -1) c'est le temps OPTIMISTE (plus rapide). `null`/absent si pas de
+   *  prédiction OU si seul un point est disponible (repli population sans fourchette). */
+  predictedLow: z.number().int().nullable().optional(),
+  /** Borne HAUTE de la fourchette d'estimation (entier, même unité que `predictedRaw`).
+   *  `null`/absent si pas de fourchette → l'affichage retombe sur le point `predictedRaw`. */
+  predictedHigh: z.number().int().nullable().optional(),
+  /** Niveau de confiance de l'estimation. Plus la couverture (mouvements connus, charges) est
+   *  faible, plus la fourchette est large et la confiance basse. Absent ⇒ pas de fourchette. */
+  confidence: z.enum(["low", "medium", "high"]).optional(),
   /** Type de métrique du WOD prédit (pour formater l'affichage côté mobile). */
   scoreType: ScoreType,
 });

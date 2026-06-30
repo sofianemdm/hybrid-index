@@ -661,13 +661,32 @@ class CardBadge {
 }
 
 /// Prédiction de perf sur un WOD d'après le niveau de l'utilisateur (/v1/wods/:id/prediction).
+///
+/// INC. 3 — FOURCHETTE : la prédiction est désormais un INTERVALLE [low, high] autour d'un point
+/// central (`predictedRaw` = mid). `predictedLow`/`predictedHigh`/`confidence` sont OPTIONNELS :
+/// absents → seul un point est disponible (repli population), l'affichage retombe sur `predictedRaw`.
 class WodPrediction {
-  final int? predictedRaw; // secondes (time) / reps / kg / m selon scoreType ; null si non prédictible
+  final int? predictedRaw; // POINT central (mid) ; secondes (time) / reps / kg / m selon scoreType ; null si non prédictible
+  final int? predictedLow; // borne basse de la fourchette (null = pas de fourchette)
+  final int? predictedHigh; // borne haute de la fourchette (null = pas de fourchette)
+  final String? confidence; // "low" | "medium" | "high" ; null = pas de fourchette
   final String scoreType;
-  const WodPrediction({this.predictedRaw, required this.scoreType});
+  const WodPrediction({
+    this.predictedRaw,
+    this.predictedLow,
+    this.predictedHigh,
+    this.confidence,
+    required this.scoreType,
+  });
+
+  /// `true` si une fourchette [low, high] est disponible (les deux bornes fournies).
+  bool get hasRange => predictedLow != null && predictedHigh != null;
 
   factory WodPrediction.fromJson(Map<String, dynamic> j) => WodPrediction(
         predictedRaw: (j['predictedRaw'] as num?)?.toInt(),
+        predictedLow: (j['predictedLow'] as num?)?.toInt(),
+        predictedHigh: (j['predictedHigh'] as num?)?.toInt(),
+        confidence: j['confidence'] as String?,
         scoreType: j['scoreType'] as String? ?? 'time',
       );
 }

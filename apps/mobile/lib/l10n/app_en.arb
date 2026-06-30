@@ -33,6 +33,9 @@
   "bugReportTooShort": "Add a few words describing the bug.",
   "wodPredictionTitle": "Based on your level, you'd do",
   "wodPredictionChallenge": "Your move: go all out and beat this estimate 🔥",
+  "wodPredictionConfidenceHigh": "Reliable estimate",
+  "wodPredictionConfidenceMedium": "Rough estimate",
+  "wodPredictionConfidenceLow": "Wide estimate — do a few more sessions to refine it",
   "homeBetaBanner": "Beta version — found a bug? Tap to learn more",
   "homeBetaTitle": "App in beta",
   "homeBetaBody": "It's evolving fast: you may still hit bugs, inconsistencies or imperfect data. Tell us anything that looks off so we can fix it quickly — every report helps. 🙏",
@@ -160,6 +163,12 @@
   "wodDetailTierIntermediate": "Intermediate",
   "wodDetailTierBeginner": "Beginner",
   "wodDetailYou": "You: ",
+  "wodDetailLevelEstimate": "level estimate: {estimate}",
+  "@wodDetailLevelEstimate": {
+    "placeholders": { "estimate": { "type": "String" } }
+  },
+  "wodDetailAboveLevel": "you're beating your estimated level 🔥",
+  "wodDetailBelowLevel": "room to push harder",
   "wodDetailPoints": "{n} pts",
   "@wodDetailPoints": {
     "placeholders": {

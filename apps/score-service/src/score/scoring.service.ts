@@ -15,6 +15,20 @@ import {
 import { WodsService } from "../wods/wods.service";
 import type { WodDefinition } from "../wods/wod.types";
 import { ScoringVersionService } from "./scoring-version.service";
+import {
+  estimateRound,
+  totalTimeForRounds,
+  totalVolumeForCap,
+  estimateBlueprintTime,
+  estimateBlueprintVolume,
+  blueprintCoverage,
+  predictionConfidence,
+  SPREAD_BY_CONFIDENCE,
+  type ResolvedBlock,
+  type ResolvedBlueprintBlock,
+  type AttrScores,
+} from "./wod-time-engine";
+import { WOD_BLUEPRINTS, blueprintMovementsExist, type WodBlueprint } from "../wods/wod-blueprints.data";
 
 /**
  * Service de calcul du score, adossé à la logique pure `@hybrid-index/scoring-core`.
@@ -262,7 +276,6 @@ export class ScoringService {
       return this.estimateLoad(req);
     }
 
-    const BW = req.sex === "male" ? 80 : 65;
     const dir: 1 | -1 = req.scoreType === "time" ? -1 : 1;
     const levels = ["champion", "intermediate", "occasional"] as const;
     const predicted: Record<(typeof levels)[number], number> = { champion: 0, intermediate: 0, occasional: 0 };
@@ -272,61 +285,33 @@ export class ScoringService {
     // (course/cal/temps) qui dégénéraient à 0 auparavant. §B du chantier.
     let workPerRound = 0;
 
-    // Modèle de temps prédit (recalibré sport-science, 23 juin).
-    const BREAK_SEC = { champion: 3.0, intermediate: 3.0, occasional: 4.0 } as const; // pause par coupure de série
-    const ROUND_DECAY = { champion: 0.08, intermediate: 0.06, occasional: 0.04 } as const; // dégradation inter-tours
-    const TRANSITION = 3.5; // s entre deux blocs
+    // Blocs résolus (mouvement validé en amont + quantité native + charge). La quantité native
+    // reproduit l'ordre de priorité d'origine (reps → distance → cal → durée). Le moteur de temps
+    // (`wod-time-engine.ts`) consomme cette décomposition canonique — UNE seule mécanique partagée.
+    const resolvedBlocks: ResolvedBlock[] = req.blocks.map((block) => ({
+      movement: MOVEMENTS_BY_ID.get(block.movementId)!, // déjà validé en amont
+      amount: block.reps ?? block.distanceMeters ?? block.calories ?? block.durationSec ?? 0,
+      loadKg: block.loadKg,
+    }));
 
     for (const level of levels) {
-      let roundTime = 0;
-      const lineCosts: Array<{ attrs: { attribute: string; weight: number }[]; cost: number }> = [];
-      for (const block of req.blocks) {
-        const m = MOVEMENTS_BY_ID.get(block.movementId)!; // déjà validé en amont
-        const rate = m.rate[level][req.sex];
-        const amount = block.reps ?? block.distanceMeters ?? block.calories ?? block.durationSec ?? 0;
-        let cost: number;
-        if (m.unit === "second") {
-          cost = amount; // maintien : durée directe
-        } else if (m.unit === "meter" && (m.id === "run" || m.id === "sprint")) {
-          cost = (amount / rate) * Math.pow(Math.max(amount, 1) / 400, 0.06); // Riegel
-        } else {
-          // Charge : pénalité au-dessus de la charge Rx de référence (sous-Rx = pas de bonus).
-          const refLoad = m.loadFactor ? m.loadFactor * BW : 0;
-          const loadMult = block.loadKg && refLoad > 0 ? 1 + 0.6 * Math.max(0, block.loadKg / refLoad - 1) : 1;
-          // Fatigue : courbe de puissance d'origine MAIS bornée à 1 → plus de « remise » absurde
-          // pour les petites séries (le bug), tout en gardant la pénalité réaliste des gros volumes.
-          const fatMult = Math.max(1, Math.pow(amount / 15, m.fatigueExponent - 1));
-          // Coupures de série implicites (on ne tient pas 30 répétitions d'affilée).
-          const breaks = amount > 0 ? Math.floor((amount - 1) / (m.maxSet ?? 12)) : 0;
-          cost = (amount / rate) * loadMult * fatMult + breaks * BREAK_SEC[level];
-        }
-        roundTime += cost;
-        lineCosts.push({ attrs: m.attributes, cost });
-        // Travail natif du tour (calculé une seule fois, sur le premier niveau parcouru) : on agrège
-        // toutes les unités comptables. Pour un AMRAP de course/cal/temps SANS reps, ce sont les
-        // mètres/calories/secondes qui portent le volume → plus d'estimation à 0.
-        if (level === "champion") {
-          workPerRound += block.reps ?? block.calories ?? block.durationSec ?? block.distanceMeters ?? 0;
-        }
-      }
-      roundTime += Math.max(0, req.blocks.length - 1) * TRANSITION; // transitions entre blocs
+      // Moteur unifié en mode « niveau » : reproduit à l'identique l'ancien calcul inline (Inc. 1,
+      // iso-comportement). La pénalité de charge relative / capacité par mouvement arriveront en Inc. 2.
+      const round = estimateRound(resolvedBlocks, req.sex, { kind: "level", level });
+      if (level === "champion") workPerRound = round.workPerRound;
       const rounds = req.rounds ?? 1;
       if (req.scoreType === "time") {
-        // Dégradation inter-tours : chaque tour est un peu plus lent. Σ_{i=0..rounds-1} (1 + decay·i).
-        let mult = 0;
-        for (let i = 0; i < rounds; i++) mult += 1 + ROUND_DECAY[level] * i;
-        predicted[level] = roundTime * mult;
+        predicted[level] = totalTimeForRounds(round.roundTimeSec, rounds, level);
       } else {
         // AMRAP / volume : nb de tours tenables dans le cap × travail natif par tour. `workPerRound`
         // agrège reps + mètres + cal + secondes (cf. §B), donc un AMRAP cardio produit un volume > 0
         // au lieu de dégénérer. Clamp final : jamais 0/NaN (au moins 1 unité de travail).
         const cap = req.timeCapSec ?? 600;
-        const rounds = cap / Math.max(roundTime, 1);
-        predicted[level] = Math.max(1, Math.round(rounds * Math.max(workPerRound, 1)));
+        predicted[level] = totalVolumeForCap(round.roundTimeSec, workPerRound, cap);
       }
       if (level === "intermediate") {
-        const tot = roundTime || 1;
-        for (const { attrs, cost } of lineCosts) {
+        const tot = round.roundTimeSec || 1;
+        for (const { attrs, cost } of round.lineCosts) {
           const share = cost / tot;
           for (const t of attrs) attrShare.set(t.attribute, (attrShare.get(t.attribute) ?? 0) + share * t.weight);
         }
@@ -550,16 +535,83 @@ export class ScoringService {
       return { predictedRaw: null, scoreType: wod.scoreType };
     }
 
-    // Moyenne SIMPLE des sous-scores cibles débloqués (cf. note de calibration : tous les attributs
-    // cibles d'un WOD sont a priori d'égale importance ; pas de pondération par défaut côté registre).
+    const ref = wod.bySex[req.sex];
+
+    // CŒUR (Inc. 2) — MODÈLE « PRO » PAR MOUVEMENT. Si le benchmark a un blueprint canonique
+    // exploitable, on estime le temps/volume via le moteur en MODE ATHLÈTE : capacité par mouvement
+    // (la FORCE entre via `m.attributes`, même hors `targetAttributes`) + pénalité de charge
+    // relative (1RM estimé). C'est le correctif « 40 kg trop lourd ». La distribution de population
+    // (`ref.model`) ne GÉNÈRE plus l'estimation : elle devient un GARDE-FOU DE BORNES (clamp final).
+    const resolved = this.resolveBlueprintBlocks(req.wodId, req.sex);
+    if (resolved) {
+      // Scores d'attribut de l'athlète : on n'utilise QUE les attributs débloqués (un attribut
+      // verrouillé ne compte pas — cohérent avec le repli population).
+      const scores: AttrScores = {};
+      for (const a of req.attributeScores) if (a.unlocked) scores[a.attribute] = a.score;
+      const blocks = resolved.blocks;
+      let estimate: number;
+      if (resolved.blueprint.amrap && wod.scoreType !== "time") {
+        estimate = estimateBlueprintVolume(blocks, req.sex, scores, resolved.blueprint.amrap.timeCapSec, resolved.blueprint.amrap.scoreUnit);
+      } else {
+        estimate = estimateBlueprintTime(blocks, req.sex, scores);
+      }
+      if (Number.isFinite(estimate) && estimate > 0) {
+        // GARDE-FOU POPULATION (B.4) : on borne l'estimation dans [hardMin, hardMax] ET dans la
+        // fourchette plausible de la distribution (quantiles 0.01/0.99) — jamais d'absurdité. Les
+        // bornes sont dir-agnostiques : on prend les extrêmes des deux quantiles + hardMin/hardMax.
+        const q1 = quantile(0.01, ref.model);
+        const q99 = quantile(0.99, ref.model);
+        const lo = Math.min(ref.hardMin, ref.hardMax, q1, q99);
+        const hi = Math.max(ref.hardMin, ref.hardMax, q1, q99);
+        const bounded = Math.min(hi, Math.max(lo, estimate));
+        // INC. 3 — FOURCHETTE (B.6). On enveloppe le mid d'une fourchette dont la largeur dépend de
+        // la CONFIANCE (couverture des attributs estimés × nb de blocs chargés = source d'erreur).
+        // Les bornes restent dans le garde-fou population [lo, hi]. Le mid (predictedRaw) NE change
+        // PAS → rétro-compatibilité aller-retour préservée.
+        const unlockedAttrs = new Set(req.attributeScores.filter((a) => a.unlocked).map((a) => a.attribute));
+        const coverage = blueprintCoverage(blocks, unlockedAttrs);
+        const chargedBlocks = blocks.filter((b) => b.loadKg != null).length;
+        const confidence = predictionConfidence(coverage, chargedBlocks);
+        const spread = SPREAD_BY_CONFIDENCE[confidence];
+        const mid = Math.round(bounded);
+        const predictedLow = Math.round(Math.min(hi, Math.max(lo, bounded * (1 - spread))));
+        const predictedHigh = Math.round(Math.min(hi, Math.max(lo, bounded * (1 + spread))));
+        return { predictedRaw: mid, predictedLow, predictedHigh, confidence, scoreType: wod.scoreType };
+      }
+      // Estimation dégénérée (improbable) ⇒ repli population ci-dessous (jamais de crash/NaN).
+    }
+
+    // REPLI POPULATION (WOD sans blueprint : course pure, max-reps 1 série, 1RM…) : on garde la
+    // prédiction historique. Moyenne SIMPLE des sous-scores cibles débloqués (tous d'égale
+    // importance) → percentile → quantile(modèle), borné dans [hardMin, hardMax].
     const userInternal = unlockedTargetScores.reduce((s, v) => s + v, 0) / unlockedTargetScores.length;
     const p = percentileFromInternal(userInternal);
-
-    const ref = wod.bySex[req.sex];
     const raw = quantile(p, ref.model);
-    // Borne dans les limites physiologiques du WOD (mêmes bornes que l'anti-triche §5.5).
     const clamped = Math.min(ref.hardMax, Math.max(ref.hardMin, raw));
     return { predictedRaw: Math.round(clamped), scoreType: wod.scoreType };
+  }
+
+  /**
+   * Décompose un benchmark via son BLUEPRINT canonique en blocs résolus prêts pour le moteur de
+   * temps (`wod-time-engine.ts`). Renvoie `null` si le WOD n'a PAS de blueprint exploitable (course
+   * pure, max-reps 1 série, charge 1RM…) → l'appelant RETOMBE sur la prédiction population.
+   *
+   * INC. 1 — ce chemin est CÂBLÉ mais N'ALTÈRE PAS encore les valeurs prédites (iso-comportement) :
+   * `predictResult` continue de renvoyer la prédiction population. Le moteur consommera réellement
+   * ce blueprint à l'Inc. 2 (mode « athlète » + pénalité de charge). On valide ici que le blueprint
+   * est résoluble (mouvements connus) — un blueprint cassé ⇒ repli silencieux, jamais de crash.
+   */
+  private resolveBlueprintBlocks(wodId: string, sex: "male" | "female"): { blocks: ResolvedBlueprintBlock[]; blueprint: WodBlueprint } | null {
+    const blueprint = WOD_BLUEPRINTS[wodId];
+    if (!blueprint || !blueprintMovementsExist(blueprint)) return null;
+    const blocks: ResolvedBlueprintBlock[] = [];
+    for (const b of blueprint.blocks) {
+      const movement = MOVEMENTS_BY_ID.get(b.movementId);
+      if (!movement) return null; // garde-fou : repli sur la population si un mouvement manque
+      // Reps PAR TOUR conservées (le moteur coûte tour par tour : reps variables type 21-15-9).
+      blocks.push({ movement, repsPerRound: b.repsPerRound, loadKg: b.loadKg ? b.loadKg[sex] : undefined });
+    }
+    return { blocks, blueprint };
   }
 
   /** Grand Chelem : compte les WODs de référence où le meilleur effort bat la référence pro. */

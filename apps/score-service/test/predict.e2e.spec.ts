@@ -82,41 +82,86 @@ describe("score-service — prédiction inverse (e2e)", () => {
       expect(strong.body.predictedRaw).toBeGreaterThan(weak.body.predictedRaw);
     });
 
-    it("moyenne des attributs cibles : ignore les attributs NON cibles du WOD", async () => {
-      // Fran cible {muscular_endurance, power}. Un 'engine' très bas ne doit pas peser.
-      const withNoise = await request(app.getHttpServer())
+    // ─────────────────────────────────────────────────────────────────────────────────────────
+    // MODÈLE « PRO » PAR MOUVEMENT (Inc. 2) — ces deux tests REMPLACENT les anciens « moyenne des
+    // cibles / ignore les non-cibles », qui encodaient le BUG d'origine (la FORCE était ignorée sur
+    // Fran). Désormais Fran passe par son blueprint (thruster power/ME/STRENGTH, pull-up
+    // ME/STRENGTH) : la FORCE entre dans la cadence ET dans la pénalité de charge (1RM estimé).
+    // ─────────────────────────────────────────────────────────────────────────────────────────
+    it("la FORCE (hors targetAttributes de Fran) AMÉLIORE le temps de Fran à charge fixe", async () => {
+      // Même power/ME, on fait MONTER la force : 40 kg devient relativement plus léger (1RM ↑) et
+      // la cadence des mouvements qui pondèrent la force monte → temps PLUS BAS. Avec l'ancien
+      // modèle (moyenne des seules cibles {ME, power}), la force n'avait AUCUN effet : régression
+      // intentionnelle.
+      const base = ["muscular_endurance", "power"];
+      const weakStrength = await request(app.getHttpServer())
         .post("/v1/score/predict")
-        .send({
-          wodId: "fran",
-          sex: "male",
-          attributeScores: [...attrs(["muscular_endurance", "power"], 600), { attribute: "engine", score: 50, unlocked: true }],
-        })
+        .send({ wodId: "fran", sex: "male", attributeScores: [...attrs(base, 700), { attribute: "strength", score: 350, unlocked: true }] })
         .expect(201);
-      const clean = await request(app.getHttpServer())
+      const strongStrength = await request(app.getHttpServer())
         .post("/v1/score/predict")
-        .send({ wodId: "fran", sex: "male", attributeScores: attrs(["muscular_endurance", "power"], 600) })
+        .send({ wodId: "fran", sex: "male", attributeScores: [...attrs(base, 700), { attribute: "strength", score: 900, unlocked: true }] })
         .expect(201);
-      expect(withNoise.body.predictedRaw).toBe(clean.body.predictedRaw);
+      expect(typeof weakStrength.body.predictedRaw).toBe("number");
+      expect(strongStrength.body.predictedRaw).toBeLessThan(weakStrength.body.predictedRaw);
     });
 
-    it("ne compte QUE les attributs cibles DÉBLOQUÉS", async () => {
-      // power verrouillé → seul muscular_endurance (600) compte, pas la moyenne avec power(200).
-      const oneLocked = await request(app.getHttpServer())
+    // ── INC. 3 — FOURCHETTE { low, mid, high } + confiance ─────────────────────────────────────
+    it("renvoie une FOURCHETTE cohérente (low ≤ mid ≤ high) + confiance sur un blueprint (Fran)", async () => {
+      const res = await request(app.getHttpServer())
         .post("/v1/score/predict")
         .send({
           wodId: "fran",
           sex: "male",
-          attributeScores: [
-            { attribute: "muscular_endurance", score: 600, unlocked: true },
-            { attribute: "power", score: 200, unlocked: false },
-          ],
+          attributeScores: [...attrs(["muscular_endurance", "power"], 700), { attribute: "strength", score: 700, unlocked: true }],
         })
         .expect(201);
-      const onlyUnlocked = await request(app.getHttpServer())
+      expect(typeof res.body.predictedRaw).toBe("number");
+      expect(typeof res.body.predictedLow).toBe("number");
+      expect(typeof res.body.predictedHigh).toBe("number");
+      expect(["low", "medium", "high"]).toContain(res.body.confidence);
+      // low ≤ mid ≤ high, bornes entières.
+      expect(res.body.predictedLow).toBeLessThanOrEqual(res.body.predictedRaw);
+      expect(res.body.predictedRaw).toBeLessThanOrEqual(res.body.predictedHigh);
+      expect(Number.isInteger(res.body.predictedLow)).toBe(true);
+      expect(Number.isInteger(res.body.predictedHigh)).toBe(true);
+      // Fourchette NON dégénérée (le mid n'est pas collé aux deux bornes en confiance moyenne/basse).
+      expect(res.body.predictedHigh).toBeGreaterThan(res.body.predictedLow);
+    });
+
+    it("repli population (course pure : pas de fourchette) ⇒ predictedRaw seul, fields optionnels absents", async () => {
+      const res = await request(app.getHttpServer())
         .post("/v1/score/predict")
-        .send({ wodId: "fran", sex: "male", attributeScores: attrs(["muscular_endurance"], 600) })
+        .send({ wodId: "run_5k", sex: "male", attributeScores: attrs(["engine"], 600) })
         .expect(201);
-      expect(oneLocked.body.predictedRaw).toBe(onlyUnlocked.body.predictedRaw);
+      expect(typeof res.body.predictedRaw).toBe("number");
+      // Le repli population ne fournit qu'un point : pas de fourchette (mobile retombe sur le point).
+      expect(res.body.predictedLow ?? null).toBeNull();
+      expect(res.body.predictedHigh ?? null).toBeNull();
+      expect(res.body.confidence ?? null).toBeNull();
+    });
+
+    it("un attribut VERROUILLÉ ne contribue pas (Fran ralentit si la force est verrouillée)", async () => {
+      // Force présente mais VERROUILLÉE ⇒ traitée comme indisponible (capacité renormalisée sur les
+      // attributs débloqués + 1RM dérivé d'une force à 0). Résultat : temps STRICTEMENT plus lent
+      // que si la même force était débloquée. Confirme que seul l'`unlocked` compte (par mouvement).
+      const strengthLocked = await request(app.getHttpServer())
+        .post("/v1/score/predict")
+        .send({
+          wodId: "fran",
+          sex: "male",
+          attributeScores: [...attrs(["muscular_endurance", "power"], 700), { attribute: "strength", score: 800, unlocked: false }],
+        })
+        .expect(201);
+      const strengthUnlocked = await request(app.getHttpServer())
+        .post("/v1/score/predict")
+        .send({
+          wodId: "fran",
+          sex: "male",
+          attributeScores: [...attrs(["muscular_endurance", "power"], 700), { attribute: "strength", score: 800, unlocked: true }],
+        })
+        .expect(201);
+      expect(strengthLocked.body.predictedRaw).toBeGreaterThan(strengthUnlocked.body.predictedRaw);
     });
 
     it("AUCUN attribut cible débloqué ⇒ predictedRaw null", async () => {

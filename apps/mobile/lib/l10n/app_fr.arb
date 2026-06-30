@@ -32,6 +32,9 @@
   "bugReportTooShort": "Ajoute quelques mots pour décrire le bug.",
   "wodPredictionTitle": "D'après ton niveau, tu ferais",
   "wodPredictionChallenge": "À toi de jouer : donne tout et bats cette estimation 🔥",
+  "wodPredictionConfidenceHigh": "Estimation fiable",
+  "wodPredictionConfidenceMedium": "Estimation approximative",
+  "wodPredictionConfidenceLow": "Estimation large — fais quelques séances de plus pour l'affiner",
   "homeBetaBanner": "Version bêta — un bug ? Touche pour en savoir plus",
   "homeBetaTitle": "Application en version bêta",
   "homeBetaBody": "Elle évolue vite : il peut encore y avoir des bugs, des incohérences ou des données imparfaites. Signale-nous tout ce qui cloche pour qu'on le corrige au plus vite — chaque retour compte. 🙏",
@@ -153,6 +156,12 @@
   "wodDetailTierIntermediate": "Intermédiaire",
   "wodDetailTierBeginner": "Débutant",
   "wodDetailYou": "Toi : ",
+  "wodDetailLevelEstimate": "estimation niveau : {estimate}",
+  "@wodDetailLevelEstimate": {
+    "placeholders": { "estimate": { "type": "String" } }
+  },
+  "wodDetailAboveLevel": "tu dépasses ton niveau estimé 🔥",
+  "wodDetailBelowLevel": "tu peux encore progresser",
   "wodDetailPoints": "{n} pts",
   "wodDetailMinutes": "{n} min",
   "wodDetailChallenge": "Le défi",
