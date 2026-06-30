@@ -17,6 +17,7 @@ import '../messaging/conversations_screen.dart';
 import '../profile/public_profile_screen.dart';
 import '../wods/wod_detail_screen.dart';
 import '../wods/wod_format.dart';
+import 'comments_sheet.dart';
 import 'explore_screen.dart';
 import 'post_composer_screen.dart';
 
@@ -39,6 +40,9 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
   static const int _pageSize = 15;
   int _visibleCount = _pageSize;
 
+  /// Portée du fil : 'all' = fil GLOBAL (toute la communauté, défaut), 'following' = mes suivis + moi.
+  String _scope = 'all';
+
   @override
   void initState() {
     super.initState();
@@ -47,9 +51,19 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
 
   void _load() {
     _visibleCount = _pageSize; // tout rechargement repart de la première page
-    _future = ref.read(apiClientProvider).feed().then((list) {
+    _future = ref.read(apiClientProvider).feed(scope: _scope).then((list) {
       _items = list;
       return list;
+    });
+  }
+
+  /// Bascule entre fil global et fil des suivis → rechargement complet.
+  void _setScope(String scope) {
+    if (_scope == scope) return;
+    HiHaptics.tap();
+    setState(() {
+      _scope = scope;
+      _load();
     });
   }
 
@@ -201,57 +215,14 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
     return res ?? false;
   }
 
-  /// Glossaire du jargon des séances (AMRAP / EMOM / For Time / Rx) → feuille de définitions i18n,
-  /// accessible depuis l'en-tête du fil. Démystifie les termes pour les débutants.
-  void _showGlossary() {
-    final t = AppLocalizations.of(context);
-    showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: HiColors.bgElevated,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(HiRadius.xxl))),
-      builder: (ctx) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(HiSpace.lg, HiSpace.lg, HiSpace.lg, HiSpace.xl),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(children: [
-                Icon(Icons.menu_book_outlined, color: HiColors.brandPrimary),
-                const SizedBox(width: HiSpace.sm),
-                Expanded(child: Text(t.communityGlossaryTitle, style: HiType.titleM.copyWith(color: HiColors.textPrimary))),
-              ]),
-              const SizedBox(height: HiSpace.md),
-              _glossaryEntry(t.communityGlossaryAmrapTerm, t.communityGlossaryAmrapDef),
-              _glossaryEntry(t.communityGlossaryEmomTerm, t.communityGlossaryEmomDef),
-              _glossaryEntry(t.communityGlossaryForTimeTerm, t.communityGlossaryForTimeDef),
-              _glossaryEntry(t.communityGlossaryRxTerm, t.communityGlossaryRxDef),
-              const SizedBox(height: HiSpace.sm),
-              SizedBox(
-                width: double.infinity,
-                child: TextButton(
-                  onPressed: () => Navigator.of(ctx).pop(),
-                  child: Text(t.commonGotIt, style: TextStyle(color: HiColors.textTertiary)),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+  /// Ouvre le fil de commentaires d'un post → met à jour le compteur de la carte au retour (delta).
+  Future<void> _openComments(FeedActivity a) async {
+    HiHaptics.tap();
+    final delta = await showCommentsSheet(context, post: a);
+    if (delta != 0 && mounted) {
+      setState(() => a.commentCount = (a.commentCount + delta).clamp(0, 1 << 30));
+    }
   }
-
-  Widget _glossaryEntry(String term, String def) => Padding(
-        padding: const EdgeInsets.only(bottom: HiSpace.md),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(term, style: HiType.bodyStrong.copyWith(color: HiColors.brandPrimary)),
-            const SizedBox(height: 2),
-            Text(def, style: HiType.body.copyWith(color: HiColors.textSecondary, height: 1.4)),
-          ],
-        ),
-      );
 
   @override
   Widget build(BuildContext context) {
@@ -284,32 +255,48 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
             final items = _items;
             final discoverMode = items.isNotEmpty && items.every((a) => a.isDiscover);
             if (items.isEmpty) {
-              return ListView(children: [
-                Padding(
-                  padding: const EdgeInsets.all(HiSpace.xl),
-                  child: Column(children: [
-                    Icon(Icons.groups_outlined, color: HiColors.textTertiary, size: 40),
-                    const SizedBox(height: HiSpace.md),
-                    Text(t.communityEmpty,
-                        textAlign: TextAlign.center, style: TextStyle(color: HiColors.textTertiary)),
-                    const SizedBox(height: HiSpace.md),
-                    Wrap(spacing: 8, runSpacing: 8, alignment: WrapAlignment.center, children: [
-                      FilledButton.icon(
-                        style: FilledButton.styleFrom(
-                            backgroundColor: HiColors.brandPrimary, foregroundColor: HiColors.textOnBrand),
-                        onPressed: _openComposer,
-                        icon: const Icon(Icons.edit_outlined, size: 18),
-                        label: Text(t.communityPublish),
-                      ),
-                      OutlinedButton.icon(
-                        onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ExploreScreen())),
-                        icon: const Icon(Icons.search, size: 18),
-                        label: Text(t.communityTooltipSearch),
-                      ),
+              final following = _scope == 'following';
+              return ListView(
+                padding: const EdgeInsets.fromLTRB(HiSpace.lg, HiSpace.lg, HiSpace.lg, 96),
+                children: [
+                  // L'en-tête (avec le sélecteur Tout/Suivis) reste visible pour pouvoir changer de portée.
+                  _header(t),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: HiSpace.xl),
+                    child: Column(children: [
+                      Icon(Icons.groups_outlined, color: HiColors.textTertiary, size: 40),
+                      const SizedBox(height: HiSpace.md),
+                      Text(following ? t.communityEmptyFollowing : t.communityEmpty,
+                          textAlign: TextAlign.center, style: TextStyle(color: HiColors.textTertiary)),
+                      const SizedBox(height: HiSpace.md),
+                      Wrap(spacing: 8, runSpacing: 8, alignment: WrapAlignment.center, children: [
+                        if (following)
+                          FilledButton.icon(
+                            style: FilledButton.styleFrom(
+                                backgroundColor: HiColors.brandPrimary, foregroundColor: HiColors.textOnBrand),
+                            onPressed: () => _setScope('all'),
+                            icon: const Icon(Icons.public, size: 18),
+                            label: Text(t.communityScopeAll),
+                          )
+                        else
+                          FilledButton.icon(
+                            style: FilledButton.styleFrom(
+                                backgroundColor: HiColors.brandPrimary, foregroundColor: HiColors.textOnBrand),
+                            onPressed: _openComposer,
+                            icon: const Icon(Icons.edit_outlined, size: 18),
+                            label: Text(t.communityPublish),
+                          ),
+                        OutlinedButton.icon(
+                          onPressed: () =>
+                              Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ExploreScreen())),
+                          icon: const Icon(Icons.search, size: 18),
+                          label: Text(t.communityTooltipSearch),
+                        ),
+                      ]),
                     ]),
-                  ]),
-                ),
-              ]);
+                  ),
+                ],
+              );
             }
             // En-tête (titre + actions) puis cartes du fil. ListView.builder PARESSEUX : seules les
             // cartes visibles sont construites, et on n'expose qu'une fenêtre (_visibleCount) qui
@@ -357,48 +344,96 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
     );
   }
 
-  /// En-tête du fil : titre + actions (messages, publier, clubs, recherche, glossaire).
+  /// En-tête du fil : titre + actions (messages, publier, clubs, recherche) + sélecteur Tout/Suivis.
   Widget _header(AppLocalizations t) => Padding(
         padding: const EdgeInsets.only(bottom: HiSpace.sm),
-        child: Row(children: [
-          Expanded(
-            child: Text(t.communityTitle, style: HiType.titleL.copyWith(color: HiColors.textPrimary)),
-          ),
-          Badge.count(
-            count: ref.watch(unreadMessagesProvider).value ?? 0,
-            isLabelVisible: (ref.watch(unreadMessagesProvider).value ?? 0) > 0,
-            backgroundColor: HiColors.error,
-            child: IconButton(
-              tooltip: t.communityTooltipMessages,
-              icon: Icon(Icons.forum_outlined, color: HiColors.textTertiary),
-              onPressed: () async {
-                await Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ConversationsScreen()));
-                ref.invalidate(unreadMessagesProvider); // maj de la pastille au retour
-              },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(children: [
+              Expanded(
+                child: Text(t.communityTitle, style: HiType.titleL.copyWith(color: HiColors.textPrimary)),
+              ),
+              Badge.count(
+                count: ref.watch(unreadMessagesProvider).value ?? 0,
+                isLabelVisible: (ref.watch(unreadMessagesProvider).value ?? 0) > 0,
+                backgroundColor: HiColors.error,
+                child: IconButton(
+                  tooltip: t.communityTooltipMessages,
+                  icon: Icon(Icons.forum_outlined, color: HiColors.textTertiary),
+                  onPressed: () async {
+                    await Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ConversationsScreen()));
+                    ref.invalidate(unreadMessagesProvider); // maj de la pastille au retour
+                  },
+                ),
+              ),
+              IconButton(
+                tooltip: t.communityTooltipPublish,
+                icon: Icon(Icons.edit_outlined, color: HiColors.brandPrimary),
+                onPressed: _openComposer,
+              ),
+              IconButton(
+                tooltip: t.communityTooltipClubs,
+                icon: Icon(Icons.groups, color: HiColors.textTertiary),
+                onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ClubsScreen())),
+              ),
+              IconButton(
+                tooltip: t.communityTooltipSearch,
+                icon: Icon(Icons.search, color: HiColors.textTertiary),
+                onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ExploreScreen())),
+              ),
+            ]),
+            const SizedBox(height: HiSpace.xs),
+            _scopeSelector(t),
+          ],
+        ),
+      );
+
+  /// Sélecteur de portée du fil : « Tout » (global) / « Suivis ». Segment compact façon pilule.
+  Widget _scopeSelector(AppLocalizations t) {
+    Widget seg(String value, String label) {
+      final active = _scope == value;
+      return Expanded(
+        child: GestureDetector(
+          onTap: () => _setScope(value),
+          child: Semantics(
+            button: true,
+            selected: active,
+            label: label,
+            child: Container(
+              height: 34,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: active ? HiColors.brandPrimary : Colors.transparent,
+                borderRadius: BorderRadius.circular(HiRadius.pill),
+              ),
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: active ? HiColors.textOnBrand : HiColors.textSecondary,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13,
+                ),
+              ),
             ),
           ),
-          IconButton(
-            tooltip: t.communityTooltipPublish,
-            icon: Icon(Icons.edit_outlined, color: HiColors.brandPrimary),
-            onPressed: _openComposer,
-          ),
-          IconButton(
-            tooltip: t.communityTooltipClubs,
-            icon: Icon(Icons.groups, color: HiColors.textTertiary),
-            onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ClubsScreen())),
-          ),
-          IconButton(
-            tooltip: t.communityTooltipSearch,
-            icon: Icon(Icons.search, color: HiColors.textTertiary),
-            onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ExploreScreen())),
-          ),
-          IconButton(
-            tooltip: t.communityGlossaryTooltip,
-            icon: Icon(Icons.help_outline, color: HiColors.textTertiary),
-            onPressed: _showGlossary,
-          ),
-        ]),
+        ),
       );
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        color: HiColors.bgElevated2,
+        borderRadius: BorderRadius.circular(HiRadius.pill),
+        border: Border.all(color: HiColors.strokeSubtle),
+      ),
+      child: Row(children: [
+        seg('all', t.communityScopeAll),
+        seg('following', t.communityScopeFollowing),
+      ]),
+    );
+  }
 
   /// Bandeau « Découvrir » affiché quand on ne suit personne (le fil est rempli par le top de la ligue).
   Widget _discoverHeader(AppLocalizations t) => Padding(
@@ -515,8 +550,56 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
             _perfLine(a),
           ],
           const SizedBox(height: HiSpace.sm),
-          _kudos(a),
+          Row(children: [
+            _kudos(a),
+            // Les commentaires ne s'appliquent qu'aux posts d'athlètes (pas aux events auto).
+            if (a.isPost) ...[
+              const SizedBox(width: HiSpace.sm),
+              _commentButton(a),
+            ],
+          ]),
         ],
+      ),
+    );
+  }
+
+  /// Bouton commentaire (💬) avec compteur → ouvre le fil de commentaires du post.
+  Widget _commentButton(FeedActivity a) {
+    final t = AppLocalizations.of(context);
+    final count = a.commentCount;
+    return Semantics(
+      button: true,
+      label: t.commentsTitle,
+      value: count > 0 ? '$count' : null,
+      child: ExcludeSemantics(
+        child: GestureDetector(
+          onTap: () => _openComments(a),
+          child: Tooltip(
+            message: t.commentsTitle,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: HiTap.minTarget),
+              child: Center(
+                widthFactor: 1,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: HiColors.bgElevated2,
+                    borderRadius: BorderRadius.circular(HiRadius.pill),
+                    border: Border.all(color: HiColors.strokeSubtle),
+                  ),
+                  child: Row(mainAxisSize: MainAxisSize.min, children: [
+                    Icon(Icons.mode_comment_outlined, size: 15, color: HiColors.textSecondary),
+                    if (count > 0) ...[
+                      const SizedBox(width: 6),
+                      Text('$count',
+                          style: TextStyle(color: HiColors.textSecondary, fontWeight: FontWeight.w600)),
+                    ],
+                  ]),
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

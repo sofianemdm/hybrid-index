@@ -807,40 +807,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get communityPostDeleted => 'Publication supprimée.';
 
   @override
-  String get communityGlossaryTooltip => 'Termes des séances';
-
-  @override
-  String get communityGlossaryTitle => 'Le jargon des séances';
-
-  @override
-  String get communityGlossaryAmrapTerm => 'AMRAP';
-
-  @override
-  String get communityGlossaryAmrapDef =>
-      'Le plus de tours (ou de répétitions) possible dans un temps donné. Plus il y a de tours, meilleur est le score.';
-
-  @override
-  String get communityGlossaryEmomTerm => 'EMOM';
-
-  @override
-  String get communityGlossaryEmomDef =>
-      'Chaque minute, pile à la minute : on lance les répétitions prévues en début de minute, puis on récupère jusqu\'à la suivante.';
-
-  @override
-  String get communityGlossaryForTimeTerm => 'For Time';
-
-  @override
-  String get communityGlossaryForTimeDef =>
-      'Terminer le travail prévu le plus vite possible. Le score, c\'est le temps total.';
-
-  @override
-  String get communityGlossaryRxTerm => 'Rx';
-
-  @override
-  String get communityGlossaryRxDef =>
-      '« Comme prescrit » : la séance faite avec les charges et mouvements officiels. Scaled = adaptée (plus léger / plus facile).';
-
-  @override
   String get communityDiscoverTitle => 'Personne à suivre… pour l\'instant';
 
   @override
@@ -858,6 +824,38 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get communityWorkoutFallback => 'une séance';
+
+  @override
+  String get communityScopeAll => 'Tout';
+
+  @override
+  String get communityScopeFollowing => 'Suivis';
+
+  @override
+  String get communityEmptyFollowing =>
+      'Tu ne suis personne pour l\'instant. Bascule sur « Tout » pour découvrir la communauté, ou suis des athlètes pour remplir ton fil.';
+
+  @override
+  String get commentsTitle => 'Commentaires';
+
+  @override
+  String get commentsEmpty =>
+      'Aucun commentaire pour l\'instant. Sois le premier à réagir.';
+
+  @override
+  String get commentHint => 'Ajoute un commentaire…';
+
+  @override
+  String get commentSend => 'Envoyer';
+
+  @override
+  String get commentDelete => 'Supprimer';
+
+  @override
+  String get commentReport => 'Signaler';
+
+  @override
+  String get commentDeleted => 'Commentaire supprimé.';
 
   @override
   String get timeAgoNow => 'à l\'instant';
@@ -879,7 +877,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String communityMsgPr(String wodName) {
-    return '🏆 Nouveau PR — $wodName';
+    return '🏆 Nouveau record — $wodName';
   }
 
   @override
@@ -2649,6 +2647,9 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get guidedDone => 'Séance terminée';
+
+  @override
+  String get guidedSaveResult => 'Enregistrer mon temps';
 
   @override
   String guidedTotalTime(String time) {

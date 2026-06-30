@@ -1,12 +1,16 @@
 import { Global, Module } from "@nestjs/common";
+import { EngagementModule } from "../engagement/engagement.module";
 import { PostsController } from "./posts.controller";
 import { PostsService } from "./posts.service";
+import { CommentsController } from "./comments.controller";
+import { CommentsService } from "./comments.service";
 
 /** Global : PostsService.forFeed() consommé par le feed unifié (SocialService). */
 @Global()
 @Module({
-  controllers: [PostsController],
-  providers: [PostsService],
-  exports: [PostsService],
+  imports: [EngagementModule], // PushService (notif « on a commenté ton post »)
+  controllers: [PostsController, CommentsController],
+  providers: [PostsService, CommentsService],
+  exports: [PostsService, CommentsService],
 })
 export class PostsModule {}

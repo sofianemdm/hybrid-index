@@ -29,6 +29,8 @@ export interface FeedPostItem {
   /** Kudos unifié : nombre d'applaudissements + si j'ai applaudi. */
   kudosCount: number;
   iKudo: boolean;
+  /** Nombre de commentaires visibles sous le post (mini réseau social). */
+  commentCount: number;
   /** @deprecated conservé pour compat ; toujours mappé sur le kudos 👏. */
   reactions: Record<string, number>;
   /** @deprecated conservé pour compat. */
@@ -111,6 +113,7 @@ export class PostsService {
       payload: { body: post.body, ...payloadExtra },
       kudosCount: 0,
       iKudo: false,
+      commentCount: 0,
       reactions: {},
       myReactions: [],
     };
@@ -161,10 +164,35 @@ export class PostsService {
    */
   async forFeed(actorIds: string[], me: string, take: number): Promise<FeedPostItem[]> {
     if (actorIds.length === 0) return [];
+    return this.queryFeedPosts({ authorId: { in: actorIds } }, me, take);
+  }
+
+  /**
+   * Feed GLOBAL : posts PUBLICS de TOUS les utilisateurs actifs, en excluant les auteurs bloqués
+   * (dans un sens OU l'autre) — `blockedIds` est fourni par l'appelant (SocialService).
+   * Soi-même n'est PAS exclu (mes posts apparaissent aussi dans le fil global).
+   */
+  async forGlobalFeed(me: string, take: number, blockedIds: string[]): Promise<FeedPostItem[]> {
+    return this.queryFeedPosts(
+      {
+        author: { is: { status: "active" } },
+        ...(blockedIds.length ? { authorId: { notIn: blockedIds } } : {}),
+      },
+      me,
+      take,
+    );
+  }
+
+  /** Cœur commun des feeds (following / global) : applique status/visibility + exclusion de MES signalements. */
+  private async queryFeedPosts(
+    extraWhere: Record<string, unknown>,
+    me: string,
+    take: number,
+  ): Promise<FeedPostItem[]> {
     const reportedIds = await this.moderation.reportedPostIds(me);
     const posts = await this.prisma.post.findMany({
       where: {
-        authorId: { in: actorIds },
+        ...extraWhere,
         status: "visible",
         visibility: "public",
         ...(reportedIds.length ? { id: { notIn: reportedIds } } : {}),
@@ -180,6 +208,7 @@ export class PostsService {
           },
         },
         reactions: { select: { emoji: true, fromUserId: true } },
+        _count: { select: { comments: { where: { hidden: false } } } },
       },
     });
 
@@ -225,6 +254,7 @@ export class PostsService {
         payload,
         kudosCount,
         iKudo,
+        commentCount: p._count?.comments ?? 0,
         reactions,
         myReactions: iKudo ? [KUDOS] : [],
       };

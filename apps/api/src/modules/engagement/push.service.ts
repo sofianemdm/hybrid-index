@@ -248,4 +248,10 @@ export class PushService {
     const locale = await this.recipientLocale(userId);
     return this.sendToUser(userId, this.compose("new-message", { senderName }, locale));
   }
+
+  /** Nouveau commentaire sous le post de `userId`. `authorName` = pseudo du commentateur. */
+  async notifyComment(userId: string, authorName: string): Promise<void> {
+    const locale = await this.recipientLocale(userId);
+    return this.sendToUser(userId, this.compose("comment", { authorName }, locale));
+  }
 }

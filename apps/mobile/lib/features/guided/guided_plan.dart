@@ -103,6 +103,19 @@ class GuidedPlan {
   /// Nombre de phases « réelles » hors `done` (utile pour la barre de progression).
   int get workPhaseCount => phases.where((p) => p.kind != GuidedPhaseKind.done).length;
 
+  /// La séance comporte-t-elle PLUSIEURS tours déclarés ? `totalRounds == null` ⇒ structure de
+  /// tours inconnue ⇒ un seul tour implicite.
+  bool get isMultiRound => (totalRounds ?? 1) > 1;
+
+  /// Faut-il proposer le compteur / bouton « Tour +1 » manuel ?
+  /// - AMRAP : le nombre de tours EST le score → toujours pertinent (même sans total déclaré).
+  /// - for_time : seulement si la séance est explicitement MULTI-TOURS (`totalRounds > 1`). Un
+  ///   for_time à un seul effort (ex. une course) ne doit pas afficher de compteur de tours.
+  /// - free (séance coach) : masqué sauf multi-tours déclaré (jamais en pratique).
+  /// Évite le bouton de tour parasite sur une séance à UN SEUL tour (cf. bug compteur de tour).
+  bool get showManualRoundCounter =>
+      manualRoundCounter && (format == 'amrap' || isMultiRound);
+
   /// La séance crédite-t-elle une CoachSession (mode simplifié) plutôt qu'un WOD loguable ?
   bool get isCoachSession => coachSessionId != null;
 }
@@ -153,8 +166,10 @@ class GuidedPlanBuilder {
   GuidedPlanBuilder._();
 
   // --- Constantes canoniques documentées (cf. plan §2) ---
-  /// Compte à rebours d'entrée « 3-2-1 GO ».
-  static const Duration prep = Duration(seconds: 10);
+  /// Compte à rebours d'entrée « 3 · 2 · 1 · GO » : EXACTEMENT 3 s pour qu'une SEULE séquence
+  /// propre tourne (overlay plein écran 3→2→1), sans qu'un chrono « tourne puis se reset ». Le
+  /// chrono principal reste masqué (à 0) pendant la prep et démarre à GO (cf. UI _Chrono).
+  static const Duration prep = Duration(seconds: 3);
 
   /// Durée d'une fenêtre EMOM (top de minute).
   static const Duration emomWindow = Duration(seconds: 60);

@@ -110,13 +110,13 @@ describe("PushService — activation via compte de service", () => {
     expect(sent[0].title).toBe("On t'a doublé au classement"); // FR par défaut
   });
 
-  it("le catalogue Réglages = STRICTEMENT les 6 push réellement émis (1 toggle = 1 vraie notif)", () => {
+  it("le catalogue Réglages = STRICTEMENT les 7 push réellement émis (1 toggle = 1 vraie notif)", () => {
     const keys = NOTIFICATION_TRIGGERS.map((t) => t.key).sort();
     expect(keys).toEqual(
-      ["kudos", "near-rank", "new-message", "rank-overtaken", "stale-attribute", "weekly-recap"].sort(),
+      ["comment", "kudos", "near-rank", "new-message", "rank-overtaken", "stale-attribute", "weekly-recap"].sort(),
     );
     // Plus aucun toggle « fantôme » qui ne pilote aucun push.
-    expect(NOTIFICATION_TRIGGERS).toHaveLength(6);
+    expect(NOTIFICATION_TRIGGERS).toHaveLength(7);
   });
 
   it("le titre catalogue de rank-overtaken est UNIFIÉ avec la copie délivrée (pas de divergence)", () => {

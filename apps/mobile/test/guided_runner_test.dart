@@ -192,7 +192,7 @@ void main() {
         },
       );
       runner.start();
-      // prep = 10 s ; on avance seconde par seconde pour capter 3,2,1.
+      // prep = 3 s (3·2·1·GO) ; le « 3 » est émis dès start(), on avance ensuite pour capter 2 et 1.
       for (var i = 0; i < 10; i++) {
         clock.advance(const Duration(seconds: 1));
         runner.tick();

@@ -42,6 +42,8 @@ class GuidedSessionScreen extends StatefulWidget {
     required this.title,
     this.cues = const [],
     this.onCompleted,
+    this.onFinishAction,
+    this.finishActionLabel,
   });
 
   /// Plan pré-calculé (issu de `GuidedPlanBuilder`).
@@ -56,7 +58,22 @@ class GuidedSessionScreen extends StatefulWidget {
   /// Appelé UNE fois à l'entrée dans la phase TERMINÉ (crédit série / log WOD). Idempotent côté appelant.
   /// Synchrone ou asynchrone : s'il retourne un `Future`, le lecteur attend pour afficher l'état
   /// validation → succès/échec (avec bouton « réessayer »).
+  ///
+  /// IMPORTANT : `onCompleted` est un EFFET DE BORD silencieux (crédit). Il ne doit PAS faire de
+  /// navigation : l'écran « Séance terminée » reste affiché jusqu'à une action explicite. Pour une
+  /// suite EXPLICITE (ex. saisie du temps d'un WOD), utiliser [onFinishAction] / [finishActionLabel].
   final FutureOr<void> Function()? onCompleted;
+
+  /// Action EXPLICITE proposée sur l'écran « Séance terminée » via un bouton primaire (ex. « Enregistrer
+  /// mon temps » pour un WOD). Le lecteur FERME d'abord (pop) puis exécute l'action — aucune
+  /// navigation automatique/temporisée. Si `null`, l'écran terminé n'affiche qu'un bouton « Fermer ».
+  /// Quand [onFinishAction] est fourni, [onCompleted] n'est PAS déclenché automatiquement (l'action
+  /// explicite prend le relais).
+  final VoidCallback? onFinishAction;
+
+  /// Libellé du bouton primaire de l'écran terminé (ex. « Enregistrer mon temps »). Requis si
+  /// [onFinishAction] est fourni ; ignoré sinon.
+  final String? finishActionLabel;
 
   // --------------------------------------------------------------------------
   // Helpers de lancement (route plein écran). Ne branche pas encore les points
@@ -70,6 +87,8 @@ class GuidedSessionScreen extends StatefulWidget {
     required String title,
     List<GuidedCue> cues = const [],
     FutureOr<void> Function()? onCompleted,
+    VoidCallback? onFinishAction,
+    String? finishActionLabel,
   }) {
     return Navigator.of(context, rootNavigator: true).push<void>(
       MaterialPageRoute(
@@ -79,6 +98,8 @@ class GuidedSessionScreen extends StatefulWidget {
           title: title,
           cues: cues,
           onCompleted: onCompleted,
+          onFinishAction: onFinishAction,
+          finishActionLabel: finishActionLabel,
         ),
       ),
     );
@@ -91,22 +112,27 @@ class GuidedSessionScreen extends StatefulWidget {
     required WodDetail wod,
     String sex = 'male',
     bool scaled = false,
-    FutureOr<void> Function()? onCompleted,
+    VoidCallback? onSaveResult,
   }) {
     final source = _sourceFromWod(wod);
     final labels = _labelsOf(context);
+    final t = AppLocalizations.of(context);
     final plan = GuidedPlanBuilder.fromWod(
       source,
       wodId: wod.id,
       scoreType: wod.scoreType,
       labels: labels,
     );
+    // Un WOD est une ÉPREUVE LOGUABLE : l'écran « Séance terminée » RESTE affiché et propose un
+    // bouton EXPLICITE « Enregistrer mon temps » → on ferme le lecteur puis on ouvre la saisie de
+    // résultat. Plus d'auto-navigation/auto-pop temporisée (cf. bug écran terminé qui disparaît).
     return start(
       context,
       plan: plan,
       title: wod.name,
       cues: _cuesFromWod(wod, sex: sex, scaled: scaled),
-      onCompleted: onCompleted,
+      onFinishAction: onSaveResult,
+      finishActionLabel: t.guidedSaveResult,
     );
   }
 
@@ -219,6 +245,8 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen>
 
   // Overlay 3-2-1 GO : chiffre courant (ou 0 = « GO »), null = pas d'overlay.
   int? _countdownDigit;
+  // Maintient « GO » affiché brièvement à l'entrée du travail, puis retire l'overlay.
+  Timer? _goTimer;
 
   // État de complétion (auto, best-effort). idle au départ → saving → ok / failed.
   _Credit _credit = _Credit.idle;
@@ -238,6 +266,7 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen>
   @override
   void dispose() {
     _flashTimer?.cancel();
+    _goTimer?.cancel();
     _ticker.dispose();
     WidgetsBinding.instance.removeObserver(this);
     _runner.removeListener(_onRunnerChange);
@@ -253,8 +282,11 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen>
 
   void _onRunnerChange() {
     if (!mounted) return;
-    // Complétion AUTO : à l'entrée dans TERMINÉ, on déclenche le crédit une seule fois.
-    if (_runner.isFinished && !_completionFired) {
+    // Complétion AUTO (effet de bord silencieux, ex. crédit de série coach) : à l'entrée dans
+    // TERMINÉ, on déclenche `onCompleted` une seule fois. MAIS si une action de fin EXPLICITE est
+    // fournie (`onFinishAction`, ex. « Enregistrer mon temps » d'un WOD), on n'auto-déclenche RIEN :
+    // l'écran « Séance terminée » reste affiché jusqu'à l'action de l'utilisateur.
+    if (_runner.isFinished && !_completionFired && widget.onFinishAction == null) {
       _completionFired = true;
       _fireCompletion();
     }
@@ -282,7 +314,17 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen>
         _sound(SystemSoundType.alert);
         HiHaptics.impact();
         _flash(HiColors.success);
-        setState(() => _countdownDigit = null);
+        // Si on arrivait du décompte de prep, on affiche brièvement « GO » (digit 0) puis on
+        // retire l'overlay — une seule séquence 3·2·1·GO, pas de chrono fantôme.
+        if (_countdownDigit != null) {
+          setState(() => _countdownDigit = 0);
+          _goTimer?.cancel();
+          _goTimer = Timer(const Duration(milliseconds: 600), () {
+            if (mounted) setState(() => _countdownDigit = null);
+          });
+        } else {
+          setState(() => _countdownDigit = null);
+        }
         break;
       case GuidedEventType.restStart:
         _sound(SystemSoundType.click);
@@ -331,6 +373,16 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen>
   void _onAddRound() {
     HiHaptics.tap();
     _runner.bumpRound();
+  }
+
+  /// Action de fin EXPLICITE (ex. « Enregistrer mon temps ») : on FERME d'abord le lecteur, puis on
+  /// exécute l'action de l'appelant (qui ouvre la suite, ex. saisie de résultat). Aucun timer.
+  void _onFinishAction() {
+    final action = widget.onFinishAction;
+    if (action == null) return;
+    HiHaptics.impact();
+    Navigator.of(context).pop();
+    action();
   }
 
   Future<bool> _confirmQuit() async {
@@ -447,6 +499,8 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen>
                         }
                       },
                       onDone: () => Navigator.of(context).pop(),
+                      onFinishAction: widget.onFinishAction == null ? null : _onFinishAction,
+                      finishActionLabel: widget.finishActionLabel,
                       labelStart: t.guidedStart,
                       labelPause: t.guidedPause,
                       labelResume: t.guidedResume,
@@ -658,12 +712,16 @@ class _Chrono extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
-    final d = runner.displayTime;
+    final isPrep = phase.kind == GuidedPhaseKind.prep;
+    // Pendant la PRÉPA, le chrono principal reste figé à 0 (l'overlay 3·2·1·GO assure le décompte).
+    // Il « démarre » réellement à GO, à l'entrée de la première phase de travail — jamais de chrono
+    // qui tourne pendant la prep puis se remet à zéro.
+    final d = isPrep ? Duration.zero : runner.displayTime;
     final text = fmt(d);
 
     // Avertissement « 3 dernières secondes » d'une phase à rebours : couleur warn.
     final remaining = runner.remainingInPhase;
-    final warning = remaining != null && remaining.inSeconds <= 3 && phase.kind != GuidedPhaseKind.prep;
+    final warning = remaining != null && remaining.inSeconds <= 3 && !isPrep;
     final color = warning ? HiColors.warn : HiColors.textPrimary;
 
     return Semantics(
@@ -691,8 +749,8 @@ class _Counter extends StatelessWidget {
     String? text;
     String? a11y;
 
-    if (plan.manualRoundCounter) {
-      // for_time / amrap / free : compteur de tours manuel.
+    if (plan.showManualRoundCounter) {
+      // for_time multi-tours / amrap : compteur de tours manuel (masqué si un seul tour).
       final n = runner.manualRounds;
       if (plan.totalRounds != null && plan.totalRounds! > 0) {
         text = t.guidedRoundOf(n.clamp(0, plan.totalRounds!), plan.totalRounds!);
@@ -700,7 +758,7 @@ class _Counter extends StatelessWidget {
         text = t.guidedRoundsDone(n);
       }
       a11y = t.a11yGuidedRound(n);
-    } else if (phase.roundIndex != null) {
+    } else if (!plan.manualRoundCounter && phase.roundIndex != null) {
       final k = phase.roundIndex!;
       final n = plan.totalRounds ?? plan.workPhaseCount;
       switch (plan.format) {
@@ -891,6 +949,8 @@ class _Controls extends StatelessWidget {
     required this.onAddRound,
     required this.onFinish,
     required this.onDone,
+    required this.onFinishAction,
+    required this.finishActionLabel,
     required this.labelStart,
     required this.labelPause,
     required this.labelResume,
@@ -911,6 +971,9 @@ class _Controls extends StatelessWidget {
   final VoidCallback onAddRound;
   final VoidCallback onFinish;
   final VoidCallback onDone;
+  /// Action de fin EXPLICITE (ex. enregistrer le temps). Null = pas de bouton primaire dédié.
+  final VoidCallback? onFinishAction;
+  final String? finishActionLabel;
   final String labelStart;
   final String labelPause;
   final String labelResume;
@@ -923,6 +986,32 @@ class _Controls extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (finished) {
+      // Écran « Séance terminée » : RESTE affiché jusqu'à une action explicite.
+      // - WOD (action de fin fournie) : bouton primaire « Enregistrer mon temps » + « Fermer ».
+      // - Sinon (séance coach) : un seul bouton « Fermer ».
+      final action = onFinishAction;
+      if (action != null) {
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              height: 64,
+              width: double.infinity,
+              child: HiButton(
+                label: finishActionLabel ?? labelDone,
+                icon: Icons.timer_outlined,
+                onPressed: action,
+              ),
+            ),
+            const SizedBox(height: HiSpace.sm),
+            SizedBox(
+              height: 48,
+              width: double.infinity,
+              child: HiButtonSecondary(label: labelDone, onPressed: onDone),
+            ),
+          ],
+        );
+      }
       return SizedBox(
         height: 64,
         width: double.infinity,
@@ -939,10 +1028,14 @@ class _Controls extends StatelessWidget {
 
     final plan = runner.plan;
     final paused = runner.isPaused;
-    // Bouton central : Tour +1 (for_time/amrap/free) · Série faite (strength) · Skip (emom/interval/tabata).
-    final Widget middle;
+    // Bouton central OPTIONNEL : Tour +1 (for_time multi-tours / amrap) · Série faite (strength) ·
+    // Skip (emom/interval/tabata). Pour une séance à UN SEUL tour (for_time simple, séance coach
+    // « free »), aucun bouton central : on n'affiche pas de « Tour +1 » parasite (cf. bug compteur).
+    Widget? middle;
     if (plan.manualRoundCounter) {
-      middle = HiButtonSecondary(label: labelAddRound, icon: Icons.add_rounded, onPressed: onAddRound);
+      if (plan.showManualRoundCounter) {
+        middle = HiButtonSecondary(label: labelAddRound, icon: Icons.add_rounded, onPressed: onAddRound);
+      }
     } else if (plan.format == 'strength') {
       middle = HiButtonSecondary(label: labelSetDone, icon: Icons.check_rounded, onPressed: onSkip);
     } else {
@@ -959,8 +1052,10 @@ class _Controls extends StatelessWidget {
                 : HiButtonSecondary(label: labelPause, icon: Icons.pause_rounded, onPressed: onPause),
           ),
           const SizedBox(width: HiSpace.sm),
-          Expanded(child: middle),
-          const SizedBox(width: HiSpace.sm),
+          if (middle != null) ...[
+            Expanded(child: middle),
+            const SizedBox(width: HiSpace.sm),
+          ],
           Expanded(
             child: HiButtonSecondary(label: labelFinish, icon: Icons.flag_rounded, onPressed: onFinish),
           ),

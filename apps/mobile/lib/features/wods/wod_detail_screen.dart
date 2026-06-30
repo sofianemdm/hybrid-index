@@ -94,10 +94,10 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
   }
 
   /// Lance le Mode guidé format-aware pour ce WOD (bloc `guided` du back, sinon repli via `type`).
-  /// COMPLÉTION : un WOD est une ÉPREUVE LOGUABLE → à la fin du lecteur (onCompleted), on enchaîne
-  /// AUTOMATIQUEMENT sur la saisie de résultat ([WodResultEntryScreen]) ; l'athlète peut renseigner
-  /// son score (qui met à jour l'Athlete Index) ou simplement revenir. Le crédit/refresh se fait via
-  /// le retour de [_doWod] (idempotent : rien n'est forcé si la saisie est annulée).
+  /// COMPLÉTION : un WOD est une ÉPREUVE LOGUABLE → l'écran « Séance terminée » RESTE affiché et
+  /// propose un bouton EXPLICITE « Enregistrer mon temps ». À l'appui, le lecteur se ferme puis on
+  /// ouvre la saisie de résultat ([WodResultEntryScreen]) ; l'athlète renseigne son score (qui met
+  /// à jour l'Athlete Index) ou revient. Plus d'auto-navigation : rien ne se déclenche sans action.
   Future<void> _startGuidedWod(WodDetail d) {
     final scalable = d.prescription?.weights.isNotEmpty ?? false;
     return GuidedSessionScreen.fromWod(
@@ -105,7 +105,7 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
       wod: d,
       sex: _sex,
       scaled: _variant == 'scaled',
-      onCompleted: () => _doWod(d.scoreType, scalable: scalable),
+      onSaveResult: () => _doWod(d.scoreType, scalable: scalable),
     );
   }
 

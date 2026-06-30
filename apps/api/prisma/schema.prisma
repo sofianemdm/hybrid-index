@@ -182,6 +182,7 @@ model User {
   progressEvents    ProgressEvent[]
   posts             Post[]             @relation("PostAuthor")
   postReactions     PostReaction[]     @relation("PostReactionAuthor")
+  comments          Comment[]          @relation("CommentAuthor")
   reports           Report[]           @relation("Reporter")
   clubsOwned        Club[]             @relation("ClubOwner")
   clubMemberships   ClubMember[]
@@ -301,6 +302,7 @@ enum ReportTargetType {
   message
   club
   user
+  comment
 
   @@schema("app")
 }
@@ -341,11 +343,33 @@ model Post {
 
   author    User           @relation("PostAuthor", fields: [authorId], references: [id], onDelete: Cascade)
   reactions PostReaction[]
+  comments  Comment[]
 
   @@index([authorId, createdAt(sort: Desc)])
   @@index([status, createdAt(sort: Desc)])
   @@index([clubId, createdAt(sort: Desc)])
   @@map("post")
+  @@schema("app")
+}
+
+// Commentaire sous un post du feed (mini réseau social). `hidden` = auto-masqué par modération
+// (seuil de signalements distincts) ou masqué manuellement. Supprimable par l'auteur du commentaire
+// OU par l'auteur du post. Cascade à la suppression du post ou de l'auteur.
+model Comment {
+  id          String   @id @default(uuid()) @db.Uuid
+  postId      String   @map("post_id") @db.Uuid
+  authorId    String   @map("author_id") @db.Uuid
+  body        String   @db.VarChar(500)
+  hidden      Boolean  @default(false)
+  reportCount Int      @default(0) @map("report_count")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author User @relation("CommentAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([postId, createdAt])
+  @@index([authorId])
+  @@map("comment")
   @@schema("app")
 }
 

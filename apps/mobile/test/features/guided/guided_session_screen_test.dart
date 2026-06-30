@@ -50,9 +50,10 @@ void main() {
       expect(find.widgetWithText(HiButton, 'Démarrer'), findsOneWidget);
     });
 
-    testWidgets('for_time : après Démarrer → Tour +1 présent, tap incrémente', (tester) async {
+    testWidgets('for_time MULTI-TOURS : après Démarrer → Tour +1 présent, tap incrémente', (tester) async {
+      // for_time à PLUSIEURS tours (rounds > 1) : le compteur de tours manuel a du sens.
       final plan = GuidedPlanBuilder.fromWod(
-        const GuidedSource(format: 'for_time', capSec: 600),
+        const GuidedSource(format: 'for_time', capSec: 600, rounds: 5),
         wodId: 'w1',
         scoreType: 'time',
       );
@@ -61,13 +62,30 @@ void main() {
       await tester.tap(find.widgetWithText(HiButton, 'Démarrer'));
       await tester.pump();
 
-      // Le compteur de tours manuel + le bouton Tour +1 apparaissent (manualRoundCounter).
+      // Le compteur de tours manuel + le bouton Tour +1 apparaissent (multi-tours).
       expect(find.text('Tour +1'), findsOneWidget);
-      expect(find.textContaining('Tours :'), findsWidgets);
 
       await tester.tap(find.text('Tour +1'));
       await tester.pump();
-      expect(find.text('Tours : 1'), findsOneWidget);
+      // Compteur « Tour k / N » incrémenté.
+      expect(find.text('Tour 1 / 5'), findsOneWidget);
+    });
+
+    testWidgets('for_time UN SEUL tour : aucun bouton ni compteur Tour +1', (tester) async {
+      // for_time à un seul effort (pas de rounds) : on ne montre PAS de compteur de tours parasite.
+      final plan = GuidedPlanBuilder.fromWod(
+        const GuidedSource(format: 'for_time', capSec: 600),
+        wodId: 'w1b',
+        scoreType: 'time',
+      );
+      await _pump(tester, plan: plan);
+
+      await tester.tap(find.widgetWithText(HiButton, 'Démarrer'));
+      await tester.pump();
+
+      expect(find.text('Tour +1'), findsNothing);
+      expect(find.textContaining('Tours :'), findsNothing);
+      expect(find.textContaining('Tour 1'), findsNothing);
     });
 
     testWidgets('emom : bandeau PHASE + Passer après démarrage, pas de Tour +1', (tester) async {
@@ -173,7 +191,7 @@ void main() {
   });
 
   group('GuidedSessionScreen — depuis CoachSession (mode simplifié)', () {
-    testWidgets('fromCoachSession : pas de prep, Tour +1 manuel', (tester) async {
+    testWidgets('fromCoachSession : séance à un seul tour → pas de Tour +1', (tester) async {
       final plan = GuidedPlanBuilder.fromCoachSession(
         sessionId: 'c1',
         durationMin: 20,
@@ -189,8 +207,8 @@ void main() {
       await tester.tap(find.widgetWithText(HiButton, 'Démarrer'));
       await tester.pump();
 
-      // Mode simplifié = compteur de tours manuel.
-      expect(find.text('Tour +1'), findsOneWidget);
+      // Séance coach « free » = un seul tour continu : pas de compteur/bouton de tour parasite.
+      expect(find.text('Tour +1'), findsNothing);
       expect(plan.isCoachSession, isTrue);
       // Laisse retomber le flash de phase (Timer 160ms) avant le teardown.
       await tester.pump(const Duration(milliseconds: 200));

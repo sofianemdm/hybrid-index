@@ -25,7 +25,7 @@ import 'home_shell.dart';
 import 'rival_card.dart';
 import 'weekly_recap_card.dart';
 import '../avatar/dice_avatar_screen.dart';
-import '../coach/coach_screen.dart';
+import '../coach/coach_library_screen.dart';
 import '../coach/sessions_by_attribute_screen.dart';
 import '../history/history_screen.dart';
 import '../progression/progression_screen.dart';
@@ -313,8 +313,10 @@ class HomeScreen extends ConsumerWidget {
               const SizedBox(height: HiSpace.sm),
               RadarView(
                 radar: p.radar,
+                // Tap sur un axe du radar → bibliothèque du coach filtrée sur cet axe (séances
+                // guidées pour progresser sur l'axe choisi), pas la liste de WODs.
                 onTapAttribute: (attr) => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => SessionsByAttributeScreen(attribute: attr)),
+                  MaterialPageRoute(builder: (_) => CoachLibraryScreen(attribute: attr)),
                 ),
               ),
               const SizedBox(height: HiSpace.md),
@@ -327,8 +329,10 @@ class HomeScreen extends ConsumerWidget {
         HiButton(
           label: t.homeCoachCta,
           icon: Icons.fitness_center_rounded,
+          // Entrée « Coach : progresser sur un axe » → directement la BIBLIOTHÈQUE du coach
+          // (séances guidées clés en main), et non l'ancien écran de WODs par axe.
           onPressed: () => Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const CoachScreen()),
+            MaterialPageRoute(builder: (_) => const CoachLibraryScreen()),
           ),
         ),
         const SizedBox(height: HiSpace.sm),

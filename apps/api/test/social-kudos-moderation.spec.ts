@@ -1,5 +1,6 @@
 import { SocialService } from "../src/modules/social/social.service";
 import { PostsService } from "../src/modules/posts/posts.service";
+import { CommentsService } from "../src/modules/posts/comments.service";
 import { ModerationService } from "../src/modules/moderation/moderation.service";
 
 /**
@@ -16,7 +17,8 @@ function makePrismaMock() {
     feedEvent: { findUnique: jest.fn(), findMany: jest.fn() },
     reaction: { deleteMany: jest.fn(), create: jest.fn(), count: jest.fn() },
     postReaction: { upsert: jest.fn(), deleteMany: jest.fn(), count: jest.fn() },
-    post: { findUnique: jest.fn(), update: jest.fn(), findMany: jest.fn() },
+    post: { findUnique: jest.fn(), update: jest.fn(), findMany: jest.fn(), delete: jest.fn() },
+    comment: { create: jest.fn(), findUnique: jest.fn(), findMany: jest.fn(), update: jest.fn(), delete: jest.fn() },
     report: { upsert: jest.fn(), count: jest.fn(), findMany: jest.fn() },
     follow: { findMany: jest.fn(), upsert: jest.fn() },
     profile: { findUnique: jest.fn(), findMany: jest.fn() },
@@ -187,7 +189,7 @@ describe("Repli « Découvrir » (SocialService.feed)", () => {
       { userId: "top1", value: 900, user: { profile: { displayName: "Max", rank: "elite" }, avatar: null } },
       { userId: "me", value: 850, user: { profile: { displayName: "Moi", rank: "gold" }, avatar: null } },
     ]);
-    const posts = { forFeed: jest.fn().mockResolvedValue([]) };
+    const posts = { forFeed: jest.fn().mockResolvedValue([]), forGlobalFeed: jest.fn().mockResolvedValue([]) };
     const moderation = { blockedIds: jest.fn().mockResolvedValue([]) };
     const svc = new SocialService(prisma as never, posts as never, moderation as never, {} as never);
 
@@ -214,19 +216,9 @@ describe("Blocage — actions d'engagement (P0 sécurité)", () => {
     expect(prisma.follow.upsert).not.toHaveBeenCalled();
   });
 
-  it("follow() : refuse de suivre un profil non public (visibility != public)", async () => {
+  it("follow() : autorise un athlète actif sans blocage (plus de gate de visibilité)", async () => {
     const prisma = makePrismaMock();
-    prisma.user.findFirst.mockResolvedValue({ id: "target", profile: { visibility: "private" } });
-    const moderation = { isBlockedBetween: jest.fn().mockResolvedValue(false) };
-    const svc = new SocialService(prisma as never, {} as never, moderation as never, {} as never);
-
-    await expect(svc.follow("me", "target")).rejects.toThrow();
-    expect(prisma.follow.upsert).not.toHaveBeenCalled();
-  });
-
-  it("follow() : autorise un profil public sans blocage", async () => {
-    const prisma = makePrismaMock();
-    prisma.user.findFirst.mockResolvedValue({ id: "target", profile: { visibility: "public" } });
+    prisma.user.findFirst.mockResolvedValue({ id: "target" });
     prisma.follow.upsert.mockResolvedValue({});
     const moderation = { isBlockedBetween: jest.fn().mockResolvedValue(false) };
     const svc = new SocialService(prisma as never, {} as never, moderation as never, {} as never);
@@ -272,5 +264,196 @@ describe("Blocage — actions d'engagement (P0 sécurité)", () => {
     expect(moderation.blockedIds).toHaveBeenCalledWith("me");
     const whereArg = prisma.profile.findMany.mock.calls[0][0].where;
     expect(whereArg.userId).toEqual({ notIn: ["me", "blocker", "blocked"] });
+  });
+});
+
+describe("Commentaires (CommentsService)", () => {
+  function commentRow(over: Record<string, unknown> = {}) {
+    return {
+      id: "c1",
+      postId: "p1",
+      body: "Bien joué !",
+      authorId: "me",
+      createdAt: new Date("2026-06-30T10:00:00Z"),
+      author: { profile: { displayName: "Moi", rank: "gold" }, avatar: null },
+      ...over,
+    };
+  }
+
+  it("create() : valide, crée le commentaire et notifie l'AUTEUR DU POST (best-effort)", async () => {
+    const prisma = makePrismaMock();
+    prisma.post.findUnique.mockResolvedValue({ id: "p1", authorId: "author", status: "visible" });
+    prisma.comment.create.mockResolvedValue(commentRow({ author: { profile: { displayName: "Léa", rank: "gold" }, avatar: null }, authorId: "me" }));
+    const moderation = { isBlockedBetween: jest.fn().mockResolvedValue(false), isCleanName: jest.fn().mockReturnValue(true) };
+    const push = { notifyComment: jest.fn().mockResolvedValue(undefined) };
+    const svc = new CommentsService(prisma as never, moderation as never, push as never);
+
+    const res = await svc.create("me", "p1", "  Bien joué !  ");
+
+    expect(prisma.comment.create.mock.calls[0][0].data).toEqual({ postId: "p1", authorId: "me", body: "Bien joué !" });
+    expect(push.notifyComment).toHaveBeenCalledWith("author", "Léa");
+    expect(res.body).toBe("Bien joué !");
+    expect(res.author.isMe).toBe(true);
+  });
+
+  it("create() : NE notifie PAS en cas d'auto-commentaire (auteur du post == moi)", async () => {
+    const prisma = makePrismaMock();
+    prisma.post.findUnique.mockResolvedValue({ id: "p1", authorId: "me", status: "visible" });
+    prisma.comment.create.mockResolvedValue(commentRow());
+    const moderation = { isBlockedBetween: jest.fn().mockResolvedValue(false), isCleanName: jest.fn().mockReturnValue(true) };
+    const push = { notifyComment: jest.fn() };
+    const svc = new CommentsService(prisma as never, moderation as never, push as never);
+
+    await svc.create("me", "p1", "mon propre post");
+    expect(push.notifyComment).not.toHaveBeenCalled();
+  });
+
+  it("create() : refuse un corps vide", async () => {
+    const prisma = makePrismaMock();
+    const moderation = { isBlockedBetween: jest.fn(), isCleanName: jest.fn().mockReturnValue(true) };
+    const svc = new CommentsService(prisma as never, moderation as never, {} as never);
+    await expect(svc.create("me", "p1", "   ")).rejects.toThrow();
+    expect(prisma.comment.create).not.toHaveBeenCalled();
+  });
+
+  it("create() : refuse un terme interdit (filtre de noms)", async () => {
+    const prisma = makePrismaMock();
+    prisma.post.findUnique.mockResolvedValue({ id: "p1", authorId: "author", status: "visible" });
+    const moderation = { isBlockedBetween: jest.fn().mockResolvedValue(false), isCleanName: jest.fn().mockReturnValue(false) };
+    const svc = new CommentsService(prisma as never, moderation as never, {} as never);
+    await expect(svc.create("me", "p1", "insulte")).rejects.toThrow();
+    expect(prisma.comment.create).not.toHaveBeenCalled();
+  });
+
+  it("create() : refuse de commenter le post d'un utilisateur bloqué", async () => {
+    const prisma = makePrismaMock();
+    prisma.post.findUnique.mockResolvedValue({ id: "p1", authorId: "author", status: "visible" });
+    const moderation = { isBlockedBetween: jest.fn().mockResolvedValue(true), isCleanName: jest.fn().mockReturnValue(true) };
+    const svc = new CommentsService(prisma as never, moderation as never, {} as never);
+    await expect(svc.create("me", "p1", "salut")).rejects.toThrow();
+    expect(prisma.comment.create).not.toHaveBeenCalled();
+  });
+
+  it("list() : exclut les commentaires masqués ET les auteurs bloqués ; pagine par curseur", async () => {
+    const prisma = makePrismaMock();
+    prisma.comment.findMany.mockResolvedValue([commentRow()]);
+    const moderation = { blockedIds: jest.fn().mockResolvedValue(["blk"]) };
+    const svc = new CommentsService(prisma as never, moderation as never, {} as never);
+
+    const out = await svc.list("me", "p1");
+
+    const whereArg = prisma.comment.findMany.mock.calls[0][0].where;
+    expect(whereArg.hidden).toBe(false);
+    expect(whereArg.authorId).toEqual({ notIn: ["blk"] });
+    expect(out.items).toHaveLength(1);
+    expect(out.nextCursor).toBeNull();
+  });
+
+  it("delete() : autorisé à l'auteur du commentaire", async () => {
+    const prisma = makePrismaMock();
+    prisma.comment.findUnique.mockResolvedValue({ authorId: "me", post: { authorId: "other" } });
+    prisma.comment.delete.mockResolvedValue({});
+    const svc = new CommentsService(prisma as never, {} as never, {} as never);
+    await expect(svc.delete("me", "c1")).resolves.toEqual({ removed: true });
+  });
+
+  it("delete() : autorisé à l'auteur du POST (modération de son fil)", async () => {
+    const prisma = makePrismaMock();
+    prisma.comment.findUnique.mockResolvedValue({ authorId: "other", post: { authorId: "me" } });
+    prisma.comment.delete.mockResolvedValue({});
+    const svc = new CommentsService(prisma as never, {} as never, {} as never);
+    await expect(svc.delete("me", "c1")).resolves.toEqual({ removed: true });
+  });
+
+  it("delete() : refusé à un tiers (ni auteur du commentaire ni du post)", async () => {
+    const prisma = makePrismaMock();
+    prisma.comment.findUnique.mockResolvedValue({ authorId: "other", post: { authorId: "poster" } });
+    const svc = new CommentsService(prisma as never, {} as never, {} as never);
+    await expect(svc.delete("me", "c1")).rejects.toThrow();
+    expect(prisma.comment.delete).not.toHaveBeenCalled();
+  });
+});
+
+describe("Auto-masquage des commentaires signalés (ModerationService)", () => {
+  it("report() d'un commentaire AU seuil (3) : passe le commentaire en hidden=true", async () => {
+    const prisma = makePrismaMock();
+    prisma.report.upsert.mockResolvedValue({});
+    prisma.report.count.mockResolvedValue(3);
+    prisma.comment.update.mockResolvedValue({});
+    const svc = new ModerationService(prisma as never);
+
+    await svc.report("r3", { targetType: "comment", targetId: "c1", reason: "harassment" });
+
+    const updateArg = prisma.comment.update.mock.calls[0][0];
+    expect(updateArg.data.reportCount).toBe(3);
+    expect(updateArg.data.hidden).toBe(true);
+  });
+
+  it("report() d'un commentaire sous le seuil : reportCount maj mais PAS masqué", async () => {
+    const prisma = makePrismaMock();
+    prisma.report.upsert.mockResolvedValue({});
+    prisma.report.count.mockResolvedValue(1);
+    prisma.comment.update.mockResolvedValue({});
+    const svc = new ModerationService(prisma as never);
+
+    await svc.report("r1", { targetType: "comment", targetId: "c1", reason: "spam" });
+
+    const updateArg = prisma.comment.update.mock.calls[0][0];
+    expect(updateArg.data.reportCount).toBe(1);
+    expect(updateArg.data.hidden).toBeUndefined();
+  });
+});
+
+describe("Feed global vs following (SocialService.feed)", () => {
+  function makeSvc(prisma: Record<string, Record<string, AnyFn>>, posts: Record<string, AnyFn>, blocked: string[] = []) {
+    const moderation = { blockedIds: jest.fn().mockResolvedValue(blocked) };
+    return new SocialService(prisma as never, posts as never, moderation as never, {} as never);
+  }
+
+  it("scope='all' : interroge les events de TOUS les acteurs actifs (pas de filtre actorId in) et appelle forGlobalFeed", async () => {
+    const prisma = makePrismaMock();
+    prisma.follow.findMany.mockResolvedValue([]);
+    prisma.feedEvent.findMany.mockResolvedValue([]);
+    const posts = { forGlobalFeed: jest.fn().mockResolvedValue([{ id: "p", source: "post", createdAt: "2026-06-30T10:00:00Z" }]), forFeed: jest.fn() };
+    const svc = makeSvc(prisma, posts, ["blk"]);
+
+    await svc.feed("me", "all");
+
+    const evWhere = prisma.feedEvent.findMany.mock.calls[0][0].where;
+    expect(evWhere.actorId).toEqual({ notIn: ["blk"] });
+    expect(evWhere.actor).toEqual({ is: { status: "active" } });
+    expect(posts.forGlobalFeed).toHaveBeenCalledWith("me", expect.any(Number), ["blk"]);
+    expect(posts.forFeed).not.toHaveBeenCalled();
+  });
+
+  it("scope='following' : restreint les events aux acteurs (suivis + moi) et appelle forFeed", async () => {
+    const prisma = makePrismaMock();
+    prisma.follow.findMany.mockResolvedValue([{ followeeId: "f1" }]);
+    prisma.feedEvent.findMany.mockResolvedValue([]);
+    const posts = { forFeed: jest.fn().mockResolvedValue([{ id: "p", source: "post", createdAt: "2026-06-30T10:00:00Z" }]), forGlobalFeed: jest.fn() };
+    const svc = makeSvc(prisma, posts);
+
+    await svc.feed("me", "following");
+
+    const evWhere = prisma.feedEvent.findMany.mock.calls[0][0].where;
+    expect(evWhere.actorId).toEqual({ in: expect.arrayContaining(["f1", "me"]) });
+    expect(posts.forFeed).toHaveBeenCalled();
+    expect(posts.forGlobalFeed).not.toHaveBeenCalled();
+  });
+});
+
+describe("Follow — plus de gate de visibilité (cahier : tout est public)", () => {
+  it("follow() : suit un user actif sans lire sa visibilité de profil", async () => {
+    const prisma = makePrismaMock();
+    prisma.user.findFirst.mockResolvedValue({ id: "target" });
+    prisma.follow.upsert.mockResolvedValue({});
+    const moderation = { isBlockedBetween: jest.fn().mockResolvedValue(false) };
+    const svc = new SocialService(prisma as never, {} as never, moderation as never, {} as never);
+
+    const res = await svc.follow("me", "target");
+    expect(res).toEqual({ following: true });
+    // Le select ne demande plus la visibilité du profil.
+    const selectArg = prisma.user.findFirst.mock.calls[0][0].select;
+    expect(selectArg.profile).toBeUndefined();
   });
 });

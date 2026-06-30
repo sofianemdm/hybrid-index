@@ -151,7 +151,21 @@ class GuidedRunner extends ChangeNotifier {
     _phaseStartElapsed = Duration.zero;
     _clock.start();
     _emitPhaseStart(currentPhase);
+    // Si la première phase est une PRÉPA, on émet TOUT DE SUITE le premier chiffre du décompte
+    // (ex. « 3 ») sans attendre le premier tick — l'overlay 3·2·1·GO démarre dès l'appui sur Démarrer.
+    _maybeEmitPrepTick();
     notifyListeners();
+  }
+
+  /// Émet un `prepTick` (3/2/1) si la phase courante est une prépa et que la seconde a changé.
+  /// Idempotent par seconde grâce à `_lastPrepSecond`.
+  void _maybeEmitPrepTick() {
+    if (currentPhase.kind != GuidedPhaseKind.prep) return;
+    final left = (remainingInPhase ?? Duration.zero).inSeconds;
+    if (left <= 3 && left >= 1 && left != _lastPrepSecond) {
+      _lastPrepSecond = left;
+      onEvent?.call(GuidedEvent(GuidedEventType.prepTick, secondsLeft: left));
+    }
   }
 
   void pause() {
@@ -193,13 +207,7 @@ class GuidedRunner extends ChangeNotifier {
     if (!_started || _finished || !_clock.isRunning) return;
 
     // Signaux de décompte de prep (3-2-1) sur la phase de préparation.
-    if (currentPhase.kind == GuidedPhaseKind.prep) {
-      final left = (remainingInPhase ?? Duration.zero).inSeconds;
-      if (left <= 3 && left >= 1 && left != _lastPrepSecond) {
-        _lastPrepSecond = left;
-        onEvent?.call(GuidedEvent(GuidedEventType.prepTick, secondsLeft: left));
-      }
-    }
+    _maybeEmitPrepTick();
 
     // Rejoue toutes les bascules de phase dont la durée est échue (rattrapage après background).
     var guard = 0;

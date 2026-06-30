@@ -8,6 +8,8 @@ import { AppModule as ScoreAppModule } from "@hybrid-index/score-service/dist/ap
 import { configureApp as configureScoreApp } from "@hybrid-index/score-service/dist/app.config";
 import { isoWeekKey } from "../src/modules/engagement/iso-week";
 import { leagueWeekPoints } from "../src/modules/league/league-points.logic";
+import { LeagueLifecycleService } from "../src/modules/league/league-lifecycle.service";
+import { monthKeyOf } from "../src/modules/league/league.rotation";
 
 /**
  * Mode Ligue (e2e réel) — la SYNERGIE « 1 log → 2 usages » et ses garde-fous :
@@ -108,6 +110,13 @@ describe("api — mode Ligue (e2e réel)", () => {
       await prisma.progressWeekly.deleteMany({ where: { userId } }).catch(() => undefined);
       await prisma.user.deleteMany({ where: { id: userId } }).catch(() => undefined);
     }
+    // ISOLATION « plus jamais » : ce spec a supprimé en beforeAll la saison de dev qui couvrait
+    // « maintenant ». On la RECRÉE (idempotent, garde-fou WODs) pour laisser la base de dev saine —
+    // sinon l'app affiche « aucune saison de ligue en cours » après un run de tests sur la base dev.
+    // Best-effort : un échec (WODs non seedés) ne doit pas faire échouer la suite.
+    await new LeagueLifecycleService(prisma as never)
+      .openSeasonForMonth(monthKeyOf(new Date()))
+      .catch(() => undefined);
     await prisma.$disconnect().catch(() => undefined);
     await api?.close();
     await scoreApp?.close();

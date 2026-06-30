@@ -18,6 +18,9 @@ const FEED_LIMIT = 60;
 /** Repli « Découvrir » : top de la ligue (même sexe) quand l'utilisateur ne suit personne. */
 const DISCOVER_LIMIT = 20;
 
+/** Portée du feed : 'all' = fil global (tous les actifs) ; 'following' = suivis + moi. */
+export type FeedScope = "all" | "following";
+
 @Injectable()
 export class SocialService {
   constructor(
@@ -32,17 +35,15 @@ export class SocialService {
     if (me === target) throw new BadRequestException({ code: "VALIDATION_ERROR", message: "On ne se suit pas soi-même." });
     const exists = await this.prisma.user.findFirst({
       where: { id: target, status: "active" },
-      select: { id: true, profile: { select: { visibility: true } } },
+      select: { id: true },
     });
     if (!exists) throw new BadRequestException({ code: "NOT_FOUND", message: "Athlète introuvable." });
     // Sécurité : impossible de suivre quelqu'un avec qui il existe un blocage (dans un sens OU l'autre).
     if (await this.moderation.isBlockedBetween(me, target)) {
       throw new ForbiddenException({ code: "FORBIDDEN", message: "Action impossible avec cet utilisateur." });
     }
-    // Respect de la visibilité : on ne suit pas un profil non public.
-    if (exists.profile && exists.profile.visibility !== "public") {
-      throw new ForbiddenException({ code: "FORBIDDEN", message: "Ce profil n'est pas public." });
-    }
+    // Cahier des charges : « tout est public ». On ne gate PLUS sur la visibilité du profil — ce
+    // contrôle bloquait à tort les follows. Seuls l'anti-auto-follow et l'anti-blocage subsistent.
     await this.prisma.follow.upsert({
       where: { followerId_followeeId: { followerId: me, followeeId: target } },
       create: { followerId: me, followeeId: target },
@@ -134,18 +135,33 @@ export class SocialService {
   }
 
   // --- Feed unifié (événements auto + posts authored), FINI, hors utilisateurs bloqués ---
-  async feed(me: string): Promise<unknown[]> {
+  // scope='all' (défaut) : fil GLOBAL = activités publiques de TOUS les utilisateurs actifs.
+  // scope='following' : fil restreint aux personnes suivies + moi (comportement historique).
+  async feed(me: string, scope: FeedScope = "all"): Promise<unknown[]> {
     const [follows, blocked] = await Promise.all([
       this.prisma.follow.findMany({ where: { followerId: me }, select: { followeeId: true } }),
       this.moderation.blockedIds(me),
     ]);
     const blockedSet = new Set(blocked);
     const followeeIds = follows.map((f) => f.followeeId).filter((id) => !blockedSet.has(id));
+
+    // Acteurs des ÉVÉNEMENTS auto (feed_event). En 'following' : suivis + moi. En 'all' : non borné.
     const actorIds = [...new Set([...followeeIds, me])].filter((id) => !blockedSet.has(id));
+
+    // Filtre des événements selon le scope : 'following' = liste explicite ; 'all' = tous les
+    // acteurs actifs, hors utilisateurs bloqués (dans un sens OU l'autre).
+    const eventWhere =
+      scope === "following"
+        ? { actorId: { in: actorIds }, visibility: "public" as const }
+        : {
+            visibility: "public" as const,
+            actor: { is: { status: "active" } },
+            ...(blocked.length ? { actorId: { notIn: blocked } } : {}),
+          };
 
     const [events, postItems] = await Promise.all([
       this.prisma.feedEvent.findMany({
-        where: { actorId: { in: actorIds }, visibility: "public" },
+        where: eventWhere,
         orderBy: { createdAt: "desc" },
         take: FEED_LIMIT,
         include: {
@@ -159,7 +175,9 @@ export class SocialService {
           reactions: { select: { fromUserId: true } },
         },
       }),
-      this.posts.forFeed(actorIds, me, FEED_LIMIT),
+      scope === "following"
+        ? this.posts.forFeed(actorIds, me, FEED_LIMIT)
+        : this.posts.forGlobalFeed(me, FEED_LIMIT, blocked),
     ]);
 
     const eventItems = events.map((e) => {
@@ -185,6 +203,7 @@ export class SocialService {
         payload: e.payload,
         kudosCount,
         iKudo,
+        commentCount: 0, // les événements auto ne portent pas de commentaires (posts seulement)
         reactions,
         myReactions: iKudo ? [KUDOS] : [],
       };
@@ -195,10 +214,10 @@ export class SocialService {
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
       .slice(0, FEED_LIMIT);
 
-    // Fil « Découvrir » : si l'utilisateur ne suit personne ET que son propre feed est (quasi) vide,
-    // on renvoie un repli engageant — le top de SA ligue — plutôt qu'un vide mort. Chaque carte porte
-    // `canFollow:true` pour un bouton « Suivre » direct côté client.
-    if (followeeIds.length === 0 && merged.length === 0) {
+    // Fil « Découvrir » : si le fil est vide, on renvoie un repli engageant — le top de SA ligue —
+    // plutôt qu'un vide mort. Chaque carte porte `canFollow:true` pour un bouton « Suivre » direct.
+    // S'applique aux deux scopes (un fil global vide = communauté naissante → on suggère qui suivre).
+    if (merged.length === 0) {
       return this.discover(me);
     }
     return merged;
@@ -252,6 +271,7 @@ export class SocialService {
         canFollow: true,
         kudosCount: 0,
         iKudo: false,
+        commentCount: 0,
         reactions: {},
         myReactions: [],
       }));

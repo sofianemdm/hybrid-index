@@ -34,7 +34,7 @@ export const WOD_PRESCRIPTIONS: Record<string, WodPrescription> = {
     blocks: [
       { reps: "3 tours :", movement: "à enchaîner sans repos" },
       { reps: "→ 500 m", movement: "Course" },
-      { reps: "→ 500 m", movement: "Rameur", detail: "ou 400 m SkiErg" },
+      { reps: "→ 500 m", movement: "Rameur" },
       { reps: "→ 20", movement: "Wall balls" },
     ],
     weights: [

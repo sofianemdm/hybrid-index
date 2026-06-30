@@ -6,7 +6,7 @@ import { JwtAuthGuard, type AuthenticatedUser } from "../auth/jwt-auth.guard";
 import { ModerationService } from "./moderation.service";
 
 const ReportRequest = z.object({
-  targetType: z.enum(["post", "message", "club", "user"]),
+  targetType: z.enum(["post", "message", "club", "user", "comment"]),
   targetId: z.string().uuid(),
   reason: z.enum(["spam", "harassment", "inappropriate", "cheating", "other"]),
   note: z.string().max(500).optional(),

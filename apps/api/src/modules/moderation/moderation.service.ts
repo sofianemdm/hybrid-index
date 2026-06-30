@@ -60,9 +60,10 @@ export class ModerationService {
       create: { reporterId, targetType: body.targetType, targetId: body.targetId, reason: body.reason, note: body.note },
       update: { reason: body.reason, note: body.note },
     });
-    // Auto-masquage des posts : compte les rapporteurs DISTINCTS (l'upsert garantit l'unicité par
-    // rapporteur via @@unique). Au seuil atteint, le post passe en `hidden` et quitte tous les feeds.
+    // Auto-masquage : compte les rapporteurs DISTINCTS (l'upsert garantit l'unicité par rapporteur
+    // via @@unique). Au seuil atteint, l'élément est masqué et quitte tous les feeds.
     if (body.targetType === "post") await this.maybeAutoHidePost(body.targetId);
+    if (body.targetType === "comment") await this.maybeAutoHideComment(body.targetId);
     return { reported: true };
   }
 
@@ -72,6 +73,14 @@ export class ModerationService {
     await this.prisma.post
       .update({ where: { id: postId }, data: { reportCount: count, ...(count >= AUTOHIDE_REPORTS ? { status: "hidden" } : {}) } })
       .catch(() => undefined); // post supprimé entre-temps : best-effort, on ignore.
+  }
+
+  /** Recompte les signalements distincts d'un commentaire et le masque (hidden=true) au seuil. */
+  private async maybeAutoHideComment(commentId: string): Promise<void> {
+    const count = await this.prisma.report.count({ where: { targetType: "comment", targetId: commentId } });
+    await this.prisma.comment
+      .update({ where: { id: commentId }, data: { reportCount: count, ...(count >= AUTOHIDE_REPORTS ? { hidden: true } : {}) } })
+      .catch(() => undefined); // commentaire supprimé entre-temps : best-effort, on ignore.
   }
 
   /** Ids des posts que `me` a signalés — masqués immédiatement de SON feed dès le signalement. */

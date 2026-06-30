@@ -2,6 +2,7 @@ import "reflect-metadata";
 import { randomUUID } from "node:crypto";
 import { PrismaClient } from "@prisma/client";
 import { LeagueService } from "../src/modules/league/league.service";
+import { LeagueLifecycleService } from "../src/modules/league/league-lifecycle.service";
 
 /**
  * `LeagueService.lastResult` (DB réelle) — le « reveal » de fin de saison.
@@ -13,7 +14,9 @@ import { LeagueService } from "../src/modules/league/league.service";
  */
 describe("LeagueService.lastResult (e2e DB réel)", () => {
   const prisma = new PrismaClient();
-  const svc = new LeagueService(prisma as never);
+  // `lastResult` ne touche pas au cycle de vie ; on fournit un lifecycle réel (même prisma) pour
+  // satisfaire la signature du constructeur sans changer le comportement testé.
+  const svc = new LeagueService(prisma as never, new LeagueLifecycleService(prisma as never));
 
   const stamp = Date.now();
   const monthKey = `9999-${String((stamp % 12) + 1).padStart(2, "0")}`;

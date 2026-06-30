@@ -3,7 +3,7 @@ import { z } from "zod";
 import { ZodValidationPipe } from "../../common/zod-validation.pipe";
 import { CurrentUser } from "../auth/current-user.decorator";
 import { JwtAuthGuard, type AuthenticatedUser } from "../auth/jwt-auth.guard";
-import { SocialService } from "./social.service";
+import { SocialService, type FeedScope } from "./social.service";
 
 // L'emoji est optionnel et ignoré : le kudos est toujours 👏 (compat anciens clients).
 const ReactionRequest = z.object({ feedEventId: z.string().uuid(), emoji: z.string().optional() });
@@ -33,9 +33,14 @@ export class SocialController {
     return this.social.listFollowers(user.userId);
   }
 
+  /**
+   * Fil d'actualité. `?scope=all` (défaut) = fil GLOBAL (toute la communauté active) ;
+   * `?scope=following` = restreint aux personnes suivies + moi.
+   */
   @Get("feed")
-  feed(@CurrentUser() user: AuthenticatedUser): Promise<unknown[]> {
-    return this.social.feed(user.userId);
+  feed(@CurrentUser() user: AuthenticatedUser, @Query("scope") scope?: string): Promise<unknown[]> {
+    const safeScope: FeedScope = scope === "following" ? "following" : "all";
+    return this.social.feed(user.userId, safeScope);
   }
 
   /** Fil « Découvrir » : top de la ligue (même sexe) à suivre — repli quand on ne suit personne. */

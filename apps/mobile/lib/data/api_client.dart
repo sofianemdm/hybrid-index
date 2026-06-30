@@ -352,8 +352,9 @@ class ApiClient {
 
 
   // --- Communauté ---
-  Future<List<FeedActivity>> feed() async {
-    final j = await _send('GET', '/v1/feed') as List<dynamic>;
+  /// Fil d'actualité. [scope] = 'all' (fil GLOBAL, défaut) ou 'following' (suivis + moi).
+  Future<List<FeedActivity>> feed({String scope = 'all'}) async {
+    final j = await _send('GET', '/v1/feed?scope=$scope') as List<dynamic>;
     return j.map((e) => FeedActivity.fromJson(e as Map<String, dynamic>)).toList();
   }
 
@@ -390,6 +391,25 @@ class ApiClient {
 
   Future<void> reportPost(String id, String reason, {String? note}) async =>
       _send('POST', '/v1/posts/$id/report', {'reason': reason, if (note != null && note.isNotEmpty) 'note': note});
+
+  // --- Commentaires (sous un post du feed) ---
+  /// Liste paginée des commentaires d'un post (curseur ; ordre chronologique).
+  Future<CommentPage> comments(String postId, {String? cursor}) async {
+    final q = cursor == null || cursor.isEmpty ? '' : '?cursor=${Uri.encodeQueryComponent(cursor)}';
+    final j = await _send('GET', '/v1/posts/$postId/comments$q') as Map<String, dynamic>;
+    return CommentPage.fromJson(j);
+  }
+
+  /// Poste un commentaire sous [postId] → renvoie le commentaire créé.
+  Future<Comment> createComment(String postId, String body) async {
+    final j = await _send('POST', '/v1/posts/$postId/comments', {'body': body}) as Map<String, dynamic>;
+    return Comment.fromJson(j);
+  }
+
+  Future<void> deleteComment(String id) async => _send('DELETE', '/v1/comments/$id');
+
+  Future<void> reportComment(String id, String reason, {String? note}) async =>
+      _send('POST', '/v1/comments/$id/report', {'reason': reason, if (note != null && note.isNotEmpty) 'note': note});
 
   Future<void> followUser(String userId) async => _send('POST', '/v1/follow/$userId');
 

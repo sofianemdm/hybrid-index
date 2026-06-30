@@ -801,40 +801,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get communityPostDeleted => 'Post deleted.';
 
   @override
-  String get communityGlossaryTooltip => 'Workout terms';
-
-  @override
-  String get communityGlossaryTitle => 'Workout jargon';
-
-  @override
-  String get communityGlossaryAmrapTerm => 'AMRAP';
-
-  @override
-  String get communityGlossaryAmrapDef =>
-      'As Many Rounds (or Reps) As Possible in a set time. The more rounds, the better the score.';
-
-  @override
-  String get communityGlossaryEmomTerm => 'EMOM';
-
-  @override
-  String get communityGlossaryEmomDef =>
-      'Every Minute On the Minute: start the prescribed reps at the top of each minute, then rest until the next one.';
-
-  @override
-  String get communityGlossaryForTimeTerm => 'For Time';
-
-  @override
-  String get communityGlossaryForTimeDef =>
-      'Finish the prescribed work as fast as you can. Your score is the total time.';
-
-  @override
-  String get communityGlossaryRxTerm => 'Rx';
-
-  @override
-  String get communityGlossaryRxDef =>
-      '\"As prescribed\": the workout done with the official loads and movements. Scaled means it was adapted (lighter / easier).';
-
-  @override
   String get communityDiscoverTitle => 'Nobody to follow… yet';
 
   @override
@@ -852,6 +818,37 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get communityWorkoutFallback => 'a workout';
+
+  @override
+  String get communityScopeAll => 'All';
+
+  @override
+  String get communityScopeFollowing => 'Following';
+
+  @override
+  String get communityEmptyFollowing =>
+      'You\'re not following anyone yet. Switch to \"All\" to discover the community, or follow athletes to fill your feed.';
+
+  @override
+  String get commentsTitle => 'Comments';
+
+  @override
+  String get commentsEmpty => 'No comments yet. Be the first to react.';
+
+  @override
+  String get commentHint => 'Add a comment…';
+
+  @override
+  String get commentSend => 'Send';
+
+  @override
+  String get commentDelete => 'Delete';
+
+  @override
+  String get commentReport => 'Report';
+
+  @override
+  String get commentDeleted => 'Comment deleted.';
 
   @override
   String get timeAgoNow => 'just now';
@@ -873,7 +870,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String communityMsgPr(String wodName) {
-    return '🏆 New PR — $wodName';
+    return '🏆 New record — $wodName';
   }
 
   @override
@@ -2632,6 +2629,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get guidedDone => 'Workout complete';
+
+  @override
+  String get guidedSaveResult => 'Save my time';
 
   @override
   String guidedTotalTime(String time) {

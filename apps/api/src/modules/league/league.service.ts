@@ -1,6 +1,8 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { isoWeekKey } from "../engagement/iso-week";
+import { monthKeyOf } from "./league.rotation";
+import { LeagueLifecycleService } from "./league-lifecycle.service";
 import { totalsBestPerWeek, rankTotals } from "./league.aggregate";
 import type {
   LeagueSeasonView,
@@ -18,11 +20,38 @@ const DEFAULT_TOP = 50;
 /** Lectures de la Ligue (saison/semaine courante, classement mensuel, résumé perso). */
 @Injectable()
 export class LeagueService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(LeagueService.name);
 
-  private async activeSeason() {
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly lifecycle: LeagueLifecycleService,
+  ) {}
+
+  /**
+   * Garde idempotent : renvoie la saison qui couvre « maintenant » et, si AUCUNE n'est active
+   * (ex. la saison du mois a été supprimée par un run e2e sur la base de dev — cf. mémoire
+   * « e2e-pollue-base-dev »), la RECRÉE à la volée pour le mois courant. Ainsi l'utilisateur ne
+   * voit JAMAIS « aucune saison de ligue en cours ».
+   *
+   * `openSeasonForMonth` est déjà idempotent et protégé (il refuse de créer une saison cassée si
+   * les WODs Ligue ne sont pas seedés → il lève). On capture cette erreur : dans ce cas on
+   * retombe sur le comportement historique (pas de saison) plutôt que de propager un 500.
+   */
+  private async ensureActiveSeason(now = new Date()) {
+    const existing = await this.activeSeason(now);
+    if (existing) return existing;
+    try {
+      await this.lifecycle.openSeasonForMonth(monthKeyOf(now));
+    } catch (e) {
+      // WODs Ligue non seedés (ou course concurrente) → on ne casse pas l'endpoint.
+      this.logger.warn(`Auto-réparation saison Ligue impossible : ${e}`);
+    }
+    // Re-lecture : si la création a réussi (ou si un autre process l'a créée entre-temps).
+    return this.activeSeason(now);
+  }
+
+  private async activeSeason(now = new Date()) {
     // « La » saison active = celle qui COUVRE le moment présent (une saison future ne compte pas).
-    const now = new Date();
     return this.prisma.leagueSeason.findFirst({
       where: { status: "active", opensAt: { lte: now }, closesAt: { gt: now } },
     });
@@ -46,7 +75,7 @@ export class LeagueService {
   }
 
   async seasonView(viewerUserId: string | undefined, now = new Date()): Promise<LeagueSeasonView | null> {
-    const season = await this.activeSeason();
+    const season = await this.ensureActiveSeason(now);
     if (!season) return null;
     const enrolled = viewerUserId
       ? (await this.prisma.leagueEntry.findUnique({
@@ -72,7 +101,7 @@ export class LeagueService {
   }
 
   async standings(sex: "male" | "female", viewerUserId?: string): Promise<LeagueStandingsView> {
-    const season = await this.activeSeason();
+    const season = await this.ensureActiveSeason();
     if (!season) return { monthKey: null, sex, total: 0, entries: [], me: null };
 
     const rows = await this.prisma.leaguePoints.findMany({
@@ -201,7 +230,7 @@ export class LeagueService {
   }
 
   async me(userId: string): Promise<LeagueMeView> {
-    const season = await this.activeSeason();
+    const season = await this.ensureActiveSeason();
     if (!season) return { enrolled: false, monthKey: null, points: 0, position: null, weeksPlayed: 0, clubName: null };
     // Club « principal » du viewer : affiché sur sa carte « ma position » (même hors top-50).
     const clubMembers = await this.prisma.clubMember.findMany({

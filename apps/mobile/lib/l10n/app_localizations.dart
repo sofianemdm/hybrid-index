@@ -1568,66 +1568,6 @@ abstract class AppLocalizations {
   /// **'Post deleted.'**
   String get communityPostDeleted;
 
-  /// No description provided for @communityGlossaryTooltip.
-  ///
-  /// In en, this message translates to:
-  /// **'Workout terms'**
-  String get communityGlossaryTooltip;
-
-  /// No description provided for @communityGlossaryTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Workout jargon'**
-  String get communityGlossaryTitle;
-
-  /// No description provided for @communityGlossaryAmrapTerm.
-  ///
-  /// In en, this message translates to:
-  /// **'AMRAP'**
-  String get communityGlossaryAmrapTerm;
-
-  /// No description provided for @communityGlossaryAmrapDef.
-  ///
-  /// In en, this message translates to:
-  /// **'As Many Rounds (or Reps) As Possible in a set time. The more rounds, the better the score.'**
-  String get communityGlossaryAmrapDef;
-
-  /// No description provided for @communityGlossaryEmomTerm.
-  ///
-  /// In en, this message translates to:
-  /// **'EMOM'**
-  String get communityGlossaryEmomTerm;
-
-  /// No description provided for @communityGlossaryEmomDef.
-  ///
-  /// In en, this message translates to:
-  /// **'Every Minute On the Minute: start the prescribed reps at the top of each minute, then rest until the next one.'**
-  String get communityGlossaryEmomDef;
-
-  /// No description provided for @communityGlossaryForTimeTerm.
-  ///
-  /// In en, this message translates to:
-  /// **'For Time'**
-  String get communityGlossaryForTimeTerm;
-
-  /// No description provided for @communityGlossaryForTimeDef.
-  ///
-  /// In en, this message translates to:
-  /// **'Finish the prescribed work as fast as you can. Your score is the total time.'**
-  String get communityGlossaryForTimeDef;
-
-  /// No description provided for @communityGlossaryRxTerm.
-  ///
-  /// In en, this message translates to:
-  /// **'Rx'**
-  String get communityGlossaryRxTerm;
-
-  /// No description provided for @communityGlossaryRxDef.
-  ///
-  /// In en, this message translates to:
-  /// **'\"As prescribed\": the workout done with the official loads and movements. Scaled means it was adapted (lighter / easier).'**
-  String get communityGlossaryRxDef;
-
   /// No description provided for @communityDiscoverTitle.
   ///
   /// In en, this message translates to:
@@ -1664,6 +1604,66 @@ abstract class AppLocalizations {
   /// **'a workout'**
   String get communityWorkoutFallback;
 
+  /// No description provided for @communityScopeAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get communityScopeAll;
+
+  /// No description provided for @communityScopeFollowing.
+  ///
+  /// In en, this message translates to:
+  /// **'Following'**
+  String get communityScopeFollowing;
+
+  /// No description provided for @communityEmptyFollowing.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re not following anyone yet. Switch to \"All\" to discover the community, or follow athletes to fill your feed.'**
+  String get communityEmptyFollowing;
+
+  /// No description provided for @commentsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Comments'**
+  String get commentsTitle;
+
+  /// No description provided for @commentsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No comments yet. Be the first to react.'**
+  String get commentsEmpty;
+
+  /// No description provided for @commentHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a comment…'**
+  String get commentHint;
+
+  /// No description provided for @commentSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get commentSend;
+
+  /// No description provided for @commentDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get commentDelete;
+
+  /// No description provided for @commentReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Report'**
+  String get commentReport;
+
+  /// No description provided for @commentDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Comment deleted.'**
+  String get commentDeleted;
+
   /// No description provided for @timeAgoNow.
   ///
   /// In en, this message translates to:
@@ -1691,7 +1691,7 @@ abstract class AppLocalizations {
   /// No description provided for @communityMsgPr.
   ///
   /// In en, this message translates to:
-  /// **'🏆 New PR — {wodName}'**
+  /// **'🏆 New record — {wodName}'**
   String communityMsgPr(String wodName);
 
   /// No description provided for @communityMsgWodLogged.
@@ -4436,6 +4436,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Workout complete'**
   String get guidedDone;
+
+  /// No description provided for @guidedSaveResult.
+  ///
+  /// In en, this message translates to:
+  /// **'Save my time'**
+  String get guidedSaveResult;
 
   /// No description provided for @guidedTotalTime.
   ///

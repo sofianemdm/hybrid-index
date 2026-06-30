@@ -1116,6 +1116,10 @@ class FeedActivity {
   int kudos;
   bool hasKudoed;
 
+  /// Nombre de commentaires (posts uniquement ; 0 pour events/découvrir).
+  /// Mutable → maj optimiste du compteur quand on ajoute/retire un commentaire.
+  int commentCount;
+
   /// Carte « Découvrir » (athlète suggéré) → bouton « Suivre » direct.
   final bool canFollow;
   FeedActivity({
@@ -1132,6 +1136,7 @@ class FeedActivity {
     required this.payload,
     required int kudosCount,
     required bool iKudo,
+    this.commentCount = 0,
     this.canFollow = false,
   })  : kudos = kudosCount,
         hasKudoed = iKudo;
@@ -1162,9 +1167,63 @@ class FeedActivity {
       payload: (j['payload'] as Map?)?.cast<String, dynamic>() ?? {},
       kudosCount: kudosCount,
       iKudo: iKudo,
+      commentCount: (j['commentCount'] as num?)?.toInt() ?? 0,
       canFollow: j['canFollow'] as bool? ?? false,
     );
   }
+}
+
+/// Commentaire sous un post du feed (mini réseau social). Mapping de `CommentItem` (API).
+class Comment {
+  final String id;
+  final String postId;
+  final String body;
+  final DateTime? createdAt;
+  final String authorUserId;
+  final String authorName;
+  final String authorRank;
+  final AvatarConfig? authorAvatar;
+  final bool isMe;
+  const Comment({
+    required this.id,
+    required this.postId,
+    required this.body,
+    required this.createdAt,
+    required this.authorUserId,
+    required this.authorName,
+    required this.authorRank,
+    required this.authorAvatar,
+    required this.isMe,
+  });
+  factory Comment.fromJson(Map<String, dynamic> j) {
+    final author = (j['author'] as Map?)?.cast<String, dynamic>() ?? const {};
+    final created = j['createdAt'] as String?;
+    return Comment(
+      id: j['id'] as String,
+      postId: j['postId'] as String? ?? '',
+      body: j['body'] as String? ?? '',
+      createdAt: created == null ? null : DateTime.tryParse(created),
+      authorUserId: author['userId'] as String? ?? '',
+      authorName: author['displayName'] as String? ?? '—',
+      authorRank: author['rank'] as String? ?? 'rookie',
+      authorAvatar:
+          author['avatar'] == null ? null : AvatarConfig.fromJson((author['avatar'] as Map).cast<String, dynamic>()),
+      isMe: author['isMe'] as bool? ?? false,
+    );
+  }
+}
+
+/// Page de commentaires (curseur). `nextCursor` null = fin de liste.
+class CommentPage {
+  final List<Comment> items;
+  final String? nextCursor;
+  const CommentPage({required this.items, required this.nextCursor});
+  factory CommentPage.fromJson(Map<String, dynamic> j) => CommentPage(
+        items: ((j['items'] as List?) ?? [])
+            .map((e) => Comment.fromJson((e as Map).cast<String, dynamic>()))
+            .toList(),
+        nextCursor: j['nextCursor'] as String?,
+      );
 }
 
 class AthleteSummary {

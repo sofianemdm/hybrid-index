@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'data/models.dart';
+import 'data/realtime_service.dart';
 import 'data/session.dart';
 import 'features/auth/auth_screen.dart';
 import 'features/home/home_shell.dart';
@@ -102,9 +103,12 @@ final unreadMessagesProvider = FutureProvider<int>((ref) async {
 final appLifecycleProvider = StateProvider<AppLifecycleState>((ref) => AppLifecycleState.resumed);
 
 /// Pastille « boîte de réception » de la CLOCHE = messages non lus + invitations de club en attente.
-/// AUTO-RAFRAÎCHIE toutes les 8 s tant que la cloche est visible ET que l'app est au premier plan →
-/// l'utilisateur voit arriver un message ou une invitation SANS rien rafraîchir (livraison
-/// quasi-instantanée, sans push FCM). Le poll se met en PAUSE en arrière-plan (cf. chat_screen).
+///
+/// TEMPS RÉEL D'ABORD : on s'abonne au flux WebSocket ([realtimeServiceProvider]). Dès qu'un
+/// événement `dm` arrive — MÊME hors écran messagerie — on refetch IMMÉDIATEMENT le compteur, donc
+/// la pastille bouge en quasi-instantané côté destinataire (plus d'attente de ~1 min). Le polling
+/// REST RESTE un repli : intervalle court (4 s) quand le WS est DOWN, long (20 s) quand il est UP
+/// (le WS porte alors l'instantanéité). Le poll se met en PAUSE en arrière-plan (cf. chat_screen).
 final inboxBadgeProvider = StreamProvider.autoDispose<int>((ref) async* {
   final session = ref.watch(sessionProvider);
   if (session.status != AuthStatus.loggedIn) {
@@ -112,6 +116,17 @@ final inboxBadgeProvider = StreamProvider.autoDispose<int>((ref) async* {
     return;
   }
   final api = ref.read(apiClientProvider);
+  final realtime = ref.read(realtimeServiceProvider);
+
+  // Réveil immédiat du poll sur événement temps réel : un `dm` reçu complète le `Completer` courant
+  // → on sort tout de suite de l'attente et on refetch (badge à jour sans attendre le prochain cycle).
+  Completer<void>? wake;
+  final rtSub = realtime.events.listen((e) {
+    final w = wake;
+    if (e is DmReceived && w != null && !w.isCompleted) w.complete();
+  });
+  ref.onDispose(rtSub.cancel);
+
   while (true) {
     // Hors premier plan : on ne scrute pas. On attend le retour au premier plan avant de reprendre
     // (un `await` sur le changement d'état évite tout poll réseau en arrière-plan).
@@ -133,7 +148,20 @@ final inboxBadgeProvider = StreamProvider.autoDispose<int>((ref) async* {
       count += invites.length;
     } catch (_) {/* réseau */}
     yield count;
-    await Future.delayed(const Duration(seconds: 8));
+
+    // Attente jusqu'au prochain cycle OU jusqu'à un événement temps réel (le premier qui survient).
+    // Repli plus réactif quand le WS est down ; rythme détendu quand il porte déjà l'instantanéité.
+    final pollDelay = realtime.isConnected
+        ? const Duration(seconds: 20)
+        : const Duration(seconds: 4);
+    final w = Completer<void>();
+    wake = w;
+    final timer = Timer(pollDelay, () {
+      if (!w.isCompleted) w.complete();
+    });
+    await w.future;
+    timer.cancel();
+    wake = null;
   }
 });
 

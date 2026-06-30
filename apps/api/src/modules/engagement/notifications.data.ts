@@ -26,6 +26,7 @@ export const NOTIFICATION_TRIGGERS: NotificationTrigger[] = [
   { key: "kudos", trigger: "session_kudos_received", title: "On a réagi à ta perf", body: "Des athlètes ont salué ta séance.", priority: "medium", cooldown: "12h", category: "social" },
   { key: "weekly-recap", trigger: "weekly_cron && (sessions > 0 || deltaIndex > 0)", title: "Ta semaine en bref", body: "Ton récap de la semaine est prêt.", priority: "low", cooldown: "7d", category: "progression" },
   { key: "new-message", trigger: "direct_message_received", title: "Nouveau message", body: "Ouvre la conversation pour répondre.", priority: "medium", cooldown: "0", category: "social" },
+  { key: "comment", trigger: "post_comment_received", title: "Nouveau commentaire", body: "Un athlète a commenté ton post.", priority: "medium", cooldown: "0", category: "social" },
 ];
 
 /**
@@ -104,6 +105,10 @@ const PUSH_COPY: Record<string, Record<PushLocale, PushCopyEntry>> = {
   "new-message": {
     fr: { title: "Message de {senderName}", body: () => "Ouvre la conversation pour répondre." },
     en: { title: "Message from {senderName}", body: () => "Open the conversation to reply." },
+  },
+  comment: {
+    fr: { title: "Nouveau commentaire", body: (p) => `${p.authorName} a commenté ton post. 💬` },
+    en: { title: "New comment", body: (p) => `${p.authorName} commented on your post. 💬` },
   },
 };
 
