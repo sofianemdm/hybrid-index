@@ -77,24 +77,39 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
   // Débounce du canal MONTANT : on n'émet « typing » qu'au plus une fois toutes les ~2 s tant que
   // l'utilisateur tape (évite d'inonder le WS à chaque touche).
   DateTime? _lastTypingSent;
+  // Un message est arrivé en temps réel alors que l'utilisateur lisait l'historique (pas en bas) :
+  // on N'AUTO-SCROLLE PAS (on ne l'arrache pas à sa lecture) et on affiche une pastille « nouveau
+  // message » qui, au tap, le ramène en bas. Remise à false dès qu'il revient en bas.
+  bool _newBelow = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _convId = widget.conversationId;
+    // Signale au reste de l'app que CETTE conversation est à l'écran → le bandeau in-app temps réel
+    // ne s'affichera pas pour ses messages (ils apparaissent déjà directement dans le fil ci-dessous).
+    if (_convId != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) ref.read(activeConversationProvider.notifier).state = _convId;
+      });
+    }
     _scroll.addListener(_onScroll);
     _load();
     _startPolling();
     // Temps réel (on ne réagit qu'aux events de LA conversation ouverte ; les autres sont ignorés) :
-    // - DmReceived : nouveau message → poll immédiat (repli : polling ralenti ci-dessous).
+    // - DmReceived avec message → APPEND DIRECT (zéro REST). Sans message → repli `_pollMessages`.
     // - ReadReceipt : le destinataire a lu → mes bulles passent « Envoyé » → « Lu » sans attendre.
     // - TypingSignal : l'autre écrit → on affiche l'indicateur, éteint après ~3 s sans signal.
     _rtSub = ref.read(realtimeServiceProvider).events.listen((e) {
       if (_convId == null) return;
       switch (e) {
-        case DmReceived(:final conversationId) when conversationId == _convId:
-          _pollMessages();
+        case DmReceived(:final conversationId, :final message) when conversationId == _convId:
+          if (message != null) {
+            _appendRealtime(message);
+          } else {
+            _pollMessages(); // ancienne trame sans contenu : repli refetch
+          }
         case ReadReceipt(:final conversationId) when conversationId == _convId:
           _markAllMineRead();
         case TypingSignal(:final conversationId) when conversationId == _convId:
@@ -108,6 +123,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    // On quitte le chat → plus aucune conversation « active » (les futurs DM repassent par le bandeau).
+    // `_convId` peut être resté null jusqu'au 1er envoi : on n'efface que si on l'avait posé.
+    final active = ref.read(activeConversationProvider);
+    if (active != null && active == _convId) {
+      ref.read(activeConversationProvider.notifier).state = null;
+    }
     _poll?.cancel();
     _typingOff?.cancel();
     _rtSub?.cancel();
@@ -173,6 +194,91 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
       if (next[i].id != _messages[i].id || next[i].readAt != _messages[i].readAt) return true;
     }
     return false;
+  }
+
+  /// AJOUT DIRECT d'un message reçu en temps réel (Incrément 1) — aucun round-trip REST.
+  ///
+  /// - DÉDUP PAR ID : si le message est déjà présent (poll/optimiste déjà confirmé) on l'ignore.
+  /// - RÉCONCILIATION OPTIMISTE : un de MES messages qui revient par le WS (multi-device) retire la
+  ///   bulle optimiste `tmp_…` correspondante (même corps, statut en attente) pour éviter le doublon.
+  /// - ORDRE : insertion stable triée par (`createdAt`, `id`) — le serveur garantit déjà cet ordre,
+  ///   mais on l'impose côté client pour rester robuste aux trames hors séquence.
+  /// - SCROLL : auto-scroll en bas SEULEMENT si l'utilisateur y est déjà ; sinon pastille `_newBelow`.
+  /// - LU : un message reçu (non mien) marque la conversation comme consultée (pastille inbox à jour).
+  void _appendRealtime(DmMessage incoming) {
+    if (!mounted) return;
+    // Déjà connu (poll ou send REST a déjà inséré la vérité serveur) → rien à faire.
+    if (_messages.any((m) => m.id == incoming.id)) return;
+
+    final wasAtBottom = _isNearBottom();
+    setState(() {
+      // Si c'est mon propre message (autre device / écho serveur), purger l'optimiste équivalent.
+      if (incoming.isMine) {
+        final i = _pending.indexWhere(
+          (p) => p.id.startsWith('tmp_') && p.body == incoming.body && p.status != DmSendStatus.failed,
+        );
+        if (i != -1) _pending.removeAt(i);
+      }
+      _insertSorted(incoming);
+      if (!incoming.isMine && !wasAtBottom) _newBelow = true;
+    });
+
+    // L'utilisateur est en bas (ou vient d'envoyer) → on colle au dernier message.
+    if (wasAtBottom) _jumpToEnd();
+    // MARQUAGE LU (comme avant) : si l'utilisateur REGARDE la conversation (en bas), le message
+    // reçu doit passer « lu » côté serveur. On déclenche un marquage léger SANS écraser le fil
+    // (le contenu est déjà affiché par l'append direct ; cet appel sert UNIQUEMENT à poser le
+    // `readAt` serveur + rafraîchir la pastille globale). Hors bas, on laisse non-lu (pastille).
+    if (!incoming.isMine && wasAtBottom) {
+      _markConversationRead();
+    } else {
+      // Compteur global possiblement à jour (nouveau non-lu) → on resynchronise la pastille.
+      ref.invalidate(unreadMessagesProvider);
+    }
+  }
+
+  /// Marque la conversation comme lue côté serveur (le backend pose `readAt` sur la page récente à
+  /// chaque lecture). On NE remplace PAS `_messages` ici : l'append direct fait déjà foi pour
+  /// l'affichage ; on se contente d'aligner les accusés de lecture + la pastille globale. Best-effort.
+  Future<void> _markConversationRead() async {
+    if (_convId == null) return;
+    try {
+      final c = await ref.read(apiClientProvider).conversationMessages(_convId!);
+      if (!mounted) return;
+      // On réaligne discrètement les `readAt` si le serveur en a posé de nouveaux, sans casser
+      // l'ordre déjà en place (même ensemble d'ids attendu sur la page courante).
+      if (_serverStateChanged(c.messages) && _isNearBottom()) {
+        setState(() {
+          _messages = c.messages;
+          _hasMore = c.hasMore;
+          _nextBefore = c.nextBefore;
+        });
+      }
+      ref.invalidate(unreadMessagesProvider);
+    } catch (_) {
+      // silencieux : le marquage « lu » est best-effort, le repli polling rattrapera.
+    }
+  }
+
+  /// Insère [m] dans `_messages` en respectant l'ordre (`createdAt`, `id`). Liste quasi triée et
+  /// petite (page courante) → un parcours linéaire suffit largement.
+  void _insertSorted(DmMessage m) {
+    var idx = _messages.length;
+    for (var i = 0; i < _messages.length; i++) {
+      if (_compareMessages(m, _messages[i]) < 0) {
+        idx = i;
+        break;
+      }
+    }
+    _messages.insert(idx, m);
+  }
+
+  /// Ordre stable : d'abord `createdAt` (ISO comparable lexicographiquement à précision égale),
+  /// puis `id` comme départage déterministe (aligné sur le tri backend).
+  int _compareMessages(DmMessage a, DmMessage b) {
+    final byDate = a.createdAt.compareTo(b.createdAt);
+    if (byDate != 0) return byDate;
+    return a.id.compareTo(b.id);
   }
 
   /// Lecture temps réel : à réception d'un `ReadReceipt`, on marque localement comme lus TOUS mes
@@ -257,8 +363,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
     return p.maxScrollExtent - p.pixels < 120;
   }
 
-  /// Détecte le scroll vers le HAUT (proche de l'offset 0) pour charger la page antérieure.
+  /// Détecte le scroll vers le HAUT (proche de l'offset 0) pour charger la page antérieure, et
+  /// éteint la pastille « nouveau message » dès que l'utilisateur revient (quasi) en bas du fil.
   void _onScroll() {
+    if (_newBelow && _isNearBottom() && mounted) setState(() => _newBelow = false);
     if (!_scroll.hasClients || !_hasMore || _loadingMore) return;
     if (_scroll.position.pixels <= 80) _loadMore();
   }
@@ -321,6 +429,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
     try {
       final api = ref.read(apiClientProvider);
       _convId = await api.sendMessage(widget.otherUserId, text);
+      // Première conversation créée à l'envoi : on la marque « active » pour que le bandeau in-app
+      // n'apparaisse pas sur ses propres messages (réception multi-device / écho serveur).
+      ref.read(activeConversationProvider.notifier).state = _convId;
       HiHaptics.success();
       final c = await api.conversationMessages(_convId!);
       if (mounted) {
@@ -454,7 +565,22 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
       body: SafeArea(
         child: Column(
           children: [
-            Expanded(child: _body()),
+            Expanded(
+              child: Stack(
+                children: [
+                  _body(),
+                  // Pastille « nouveau message » : visible seulement si un DM est arrivé pendant que
+                  // l'utilisateur lisait l'historique (pas en bas). Tap → retour en bas + extinction.
+                  if (_newBelow)
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      bottom: 8,
+                      child: Center(child: _newBelowPill(t)),
+                    ),
+                ],
+              ),
+            ),
             _typingIndicator(),
             _composer(),
           ],
@@ -683,6 +809,38 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
               ),
             )
           : const SizedBox(key: ValueKey('no-typing'), height: 0, width: double.infinity),
+    );
+  }
+
+  /// Pastille flottante « nouveau message » (tap → bas du fil). Apparaît quand un DM arrive en
+  /// temps réel alors qu'on lit l'historique, pour ne pas téléporter l'utilisateur sans son accord.
+  Widget _newBelowPill(AppLocalizations t) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(HiRadius.pill),
+        onTap: () {
+          if (mounted) setState(() => _newBelow = false);
+          _jumpToEnd();
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            color: HiColors.brandPrimary,
+            borderRadius: BorderRadius.circular(HiRadius.pill),
+            boxShadow: HiShadow.glowBrand(0.35),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.arrow_downward_rounded, size: 16, color: HiColors.textOnBrand),
+              const SizedBox(width: 6),
+              Text(t.chatNewMessage,
+                  style: HiType.caption.copyWith(color: HiColors.textOnBrand, fontWeight: FontWeight.w800)),
+            ],
+          ),
+        ),
+      ),
     );
   }
 

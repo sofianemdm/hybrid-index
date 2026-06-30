@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../app.dart' show appNavigatorKey, appMessengerKey;
 import '../core/env.dart';
+import '../features/messaging/chat_screen.dart';
 import '../features/messaging/conversations_screen.dart';
 import '../theme/tokens.dart';
 import 'api_client.dart';
@@ -179,9 +180,21 @@ class PushService {
     final type = _typeOf(message);
     switch (type) {
       case 'new-message':
-        // Communauté + ouverture de la liste des conversations (Messages).
+        // Deep-link : si le backend a joint `conversationId` (+ `senderId`/`senderName`) on ouvre
+        // DIRECTEMENT le bon fil de discussion. Sinon (ancienne notif), repli sur la liste.
         goToTab(_Tab.community);
-        _push((_) => const ConversationsScreen());
+        final convId = _dataStr(message, 'conversationId');
+        final senderId = _dataStr(message, 'senderId');
+        final senderName = _dataStr(message, 'senderName');
+        if (convId.isNotEmpty && senderId.isNotEmpty) {
+          _push((_) => ChatScreen(
+                conversationId: convId,
+                otherUserId: senderId,
+                otherName: senderName.isNotEmpty ? senderName : '—',
+              ));
+        } else {
+          _push((_) => const ConversationsScreen());
+        }
       case 'kudos':
       // Notifications sociales (likes/commentaires/réponses/mentions de posts & commentaires) :
       // toutes mènent à l'onglet Communauté. Le payload FCM ne porte que `type` (pas d'id de post/
@@ -215,8 +228,11 @@ class PushService {
   }
 
   /// `type` normalisé (chaîne ou vide) — `message.data` est un `Map<String, dynamic>`.
-  String _typeOf(RemoteMessage message) {
-    final raw = message.data['type'];
+  String _typeOf(RemoteMessage message) => _dataStr(message, 'type');
+
+  /// Lit une clé STRING du bloc `data` du push (FCM impose des strings), ou '' si absente/non-string.
+  String _dataStr(RemoteMessage message, String key) {
+    final raw = message.data[key];
     return raw is String ? raw : '';
   }
 

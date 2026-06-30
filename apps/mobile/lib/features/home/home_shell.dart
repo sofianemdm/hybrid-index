@@ -11,6 +11,7 @@ import '../../theme/haptics.dart';
 import '../../theme/tokens.dart';
 import '../leaderboard/leaderboard_screen.dart';
 import '../log/log_wod_screen.dart';
+import '../messaging/realtime_banner.dart';
 import '../community/community_tab.dart';
 import '../wods/wod_tab.dart';
 import '../wods/wod_builder_screen.dart';
@@ -130,10 +131,17 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     final tab = ref.watch(homeTabProvider);
     return Scaffold(
       extendBody: true, // le contenu glisse sous la barre translucide
-      body: IndexedStack(
-        index: tab,
-        // 4 onglets (Progression sortie de la barre → accessible via la carte Index de l'Accueil).
-        children: const [HomeScreen(), WodTab(), CommunityTab(), LeaderboardScreen()],
+      body: Stack(
+        children: [
+          IndexedStack(
+            index: tab,
+            // 4 onglets (Progression sortie de la barre → accessible via la carte Index de l'Accueil).
+            children: const [HomeScreen(), WodTab(), CommunityTab(), LeaderboardScreen()],
+          ),
+          // Observateur temps réel (sans rendu) : affiche le bandeau « Nouveau message de X » quand
+          // un DM arrive hors de la conversation ouverte. Monté ici → vivant sur tous les onglets.
+          const RealtimeBanner(),
+        ],
       ),
       bottomNavigationBar: _notchedNav(t),
     );

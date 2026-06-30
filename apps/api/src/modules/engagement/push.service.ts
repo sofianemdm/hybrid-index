@@ -8,7 +8,7 @@ import {
   prefEnabled,
   type QuietHours,
 } from "./notification-gating";
-import { NOTIFICATION_TRIGGERS, pushCopy, type PushLocale } from "./notifications.data";
+import { NOTIFICATION_TRIGGERS, isTransactionalNotification, pushCopy, type PushLocale } from "./notifications.data";
 
 /** Charge utile d'une notification push (copie déjà localisée FR). */
 export interface PushMessage {
@@ -105,6 +105,12 @@ export class PushService {
    * Gating AAA : décide si un push de `type` peut partir MAINTENANT pour `userId`, en appliquant
    * les préférences (opt-out par clé, quietHours, dailyCap) + le cooldown par type. Retourne la
    * raison du blocage (pour le log) ou null si l'envoi est autorisé. `now` injectable (tests).
+   *
+   * EXCEPTION TRANSACTIONNELLE (Incrément 2) : un type marqué `transactional` (ex. `new-message`,
+   * un DM 1-à-1) CONTOURNE quietHours + dailyCap + cooldown — il doit arriver « à la seconde »,
+   * même la nuit ou au-delà du plafond journalier. SEUL l'opt-out par clé reste appliqué (l'usager
+   * garde le contrôle : s'il a coupé les notifs de message, on ne notifie pas). Le gating des autres
+   * types (nudges d'engagement) est INCHANGÉ.
    */
   private async gate(userId: string, type: string | undefined, now = new Date()): Promise<string | null> {
     const prefsRow = await this.prisma.notificationPrefs.findUnique({ where: { userId } });
@@ -112,8 +118,13 @@ export class PushService {
     const quietHours = (prefsRow?.quietHours as QuietHours | undefined) ?? DEFAULT_QUIET;
     const dailyCap = prefsRow?.dailyCap ?? DEFAULT_DAILY_CAP;
 
-    // 1) Opt-out par clé (le type du déclencheur sert de clé de préférence).
+    // 1) Opt-out par clé (le type du déclencheur sert de clé de préférence). TOUJOURS appliqué,
+    //    y compris aux notifs transactionnelles : l'utilisateur garde le contrôle.
     if (type && !prefEnabled(prefs, type)) return "opt-out";
+
+    // Notif TRANSACTIONNELLE : opt-out déjà vérifié → on COURT-CIRCUITE le gating de confort
+    // (quietHours + dailyCap + cooldown). Un message direct n'est pas un nudge marketing.
+    if (isTransactionalNotification(type)) return null;
 
     // 2) Heures de silence.
     if (withinQuietHours(now, quietHours)) return "quiet-hours";
@@ -212,10 +223,20 @@ export class PushService {
     }
   }
 
-  /** Compose un PushMessage à partir de la copie centralisée, dans la langue voulue (repli FR). */
-  private compose(type: string, params: Record<string, string | number> = {}, locale: PushLocale = "fr"): PushMessage {
+  /**
+   * Compose un PushMessage à partir de la copie centralisée, dans la langue voulue (repli FR).
+   * `extraData` enrichit le bloc `data` du push (toujours des STRINGS — contrainte FCM) pour le
+   * routage/deep-link côté client (ex. `conversationId` pour ouvrir LA bonne conversation). `type`
+   * reste prioritaire (clé de gating/routage), on ne le laisse pas être écrasé par `extraData`.
+   */
+  private compose(
+    type: string,
+    params: Record<string, string | number> = {},
+    locale: PushLocale = "fr",
+    extraData: Record<string, string> = {},
+  ): PushMessage {
     const { title, body } = pushCopy(type, locale, params);
-    return { title, body, data: { type } };
+    return { title, body, data: { ...extraData, type } };
   }
 
   async notifyRankOvertaken(userId: string): Promise<void> {
@@ -243,10 +264,20 @@ export class PushService {
     return this.sendToUser(userId, this.compose("weekly-recap", { deltaIndex, sessions }, locale));
   }
 
-  /** Nouveau message privé reçu. `senderName` = pseudo de l'expéditeur. */
-  async notifyNewMessage(userId: string, senderName: string): Promise<void> {
+  /**
+   * Nouveau message privé reçu (notification TRANSACTIONNELLE : non throttlée, opt-out respecté).
+   * `senderName` = pseudo de l'expéditeur. `conversationId`/`senderId` sont placés dans `data` pour
+   * le DEEP-LINK : le tap ouvre LA bonne conversation côté client (et permet de construire l'écran
+   * de chat sans round-trip). Tous deux optionnels (rétro-compat : un appel sans deep-link reste valide).
+   */
+  async notifyNewMessage(userId: string, senderName: string, conversationId?: string, senderId?: string): Promise<void> {
     const locale = await this.recipientLocale(userId);
-    return this.sendToUser(userId, this.compose("new-message", { senderName }, locale));
+    const deepLink: Record<string, string> = {};
+    if (conversationId) deepLink.conversationId = conversationId;
+    if (senderId) deepLink.senderId = senderId;
+    // `senderName` côté data sert aussi à composer l'écran de chat à l'ouverture (titre de la conv).
+    deepLink.senderName = senderName;
+    return this.sendToUser(userId, this.compose("new-message", { senderName }, locale, deepLink));
   }
 
   /** Nouveau commentaire sous le post de `userId`. `authorName` = pseudo du commentateur. */

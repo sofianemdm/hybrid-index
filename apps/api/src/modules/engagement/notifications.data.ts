@@ -9,6 +9,14 @@ export interface NotificationTrigger {
   priority: "high" | "medium" | "low";
   cooldown: string;
   category: string;
+  /**
+   * TRANSACTIONNEL (Incrément 2) : la notification répond à une action 1-à-1 directe (ex. un message
+   * privé reçu), pas à un nudge d'engagement. Une notif transactionnelle CONTOURNE le gating de
+   * confort (quietHours + dailyCap + cooldown) — elle doit arriver « à la seconde », même la nuit ou
+   * au-delà du plafond journalier — tout en RESPECTANT l'opt-out utilisateur. Absent/false = nudge
+   * marketing soumis au gating complet. NE change RIEN au gating des notifs non transactionnelles.
+   */
+  transactional?: boolean;
 }
 
 /**
@@ -25,13 +33,29 @@ export const NOTIFICATION_TRIGGERS: NotificationTrigger[] = [
   { key: "stale-attribute", trigger: "attribute_stale && unlocked", title: "Un de tes axes mérite un re-test", body: "Un attribut peut grimper. Quand tu veux.", priority: "low", cooldown: "7d", category: "progression" },
   { key: "kudos", trigger: "session_kudos_received", title: "On a réagi à ta perf", body: "Des athlètes ont salué ta séance.", priority: "medium", cooldown: "12h", category: "social" },
   { key: "weekly-recap", trigger: "weekly_cron && (sessions > 0 || deltaIndex > 0)", title: "Ta semaine en bref", body: "Ton récap de la semaine est prêt.", priority: "low", cooldown: "7d", category: "progression" },
-  { key: "new-message", trigger: "direct_message_received", title: "Nouveau message", body: "Ouvre la conversation pour répondre.", priority: "medium", cooldown: "0", category: "social" },
+  // TRANSACTIONNEL : un DM 1-à-1 doit arriver « à la seconde » (jamais throttlé par quietHours /
+  // dailyCap / cooldown), l'opt-out utilisateur restant respecté. cf. Incrément 2.
+  { key: "new-message", trigger: "direct_message_received", title: "Nouveau message", body: "Ouvre la conversation pour répondre.", priority: "high", cooldown: "0", category: "social", transactional: true },
   { key: "comment", trigger: "post_comment_received", title: "Nouveau commentaire", body: "Un athlète a commenté ton post.", priority: "medium", cooldown: "0", category: "social" },
   { key: "post-kudos", trigger: "post_kudos_received", title: "On a applaudi ton post", body: "Un athlète a salué ce que tu as partagé.", priority: "medium", cooldown: "12h", category: "social" },
   { key: "comment-kudos", trigger: "comment_kudos_received", title: "On a applaudi ton commentaire", body: "Un athlète a aimé ce que tu as écrit.", priority: "low", cooldown: "12h", category: "social" },
   { key: "comment-reply", trigger: "comment_reply_received", title: "On a répondu à ton commentaire", body: "Un athlète a réagi à ce que tu as écrit.", priority: "medium", cooldown: "0", category: "social" },
   { key: "mention", trigger: "mentioned_in_post_or_comment", title: "On t'a mentionné", body: "Un athlète t'a cité dans la communauté.", priority: "medium", cooldown: "0", category: "social" },
 ];
+
+/**
+ * Clés des déclencheurs TRANSACTIONNELS, DÉRIVÉES du catalogue (source de vérité unique : on ne
+ * marque `transactional:true` qu'à un seul endroit). Une notif de ce type contourne le gating de
+ * confort (quietHours + dailyCap + cooldown) mais respecte l'opt-out. cf. Incrément 2.
+ */
+export const TRANSACTIONAL_NOTIFICATION_TYPES: ReadonlySet<string> = new Set(
+  NOTIFICATION_TRIGGERS.filter((t) => t.transactional).map((t) => t.key),
+);
+
+/** Le type de notification est-il transactionnel (DM 1-à-1) → exempté du gating de confort ? */
+export function isTransactionalNotification(type: string | undefined): boolean {
+  return type != null && TRANSACTIONAL_NOTIFICATION_TYPES.has(type);
+}
 
 /**
  * SOURCE DE VÉRITÉ UNIQUE du seuil « prochain rang tout proche » (en points d'AFFICHAGE /100).

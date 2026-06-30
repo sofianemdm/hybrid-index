@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../app.dart';
+import 'models.dart';
 import 'session.dart';
 
 /// Événement temps réel poussé par le serveur (signal de rafraîchissement, sans contenu).
@@ -16,9 +17,17 @@ sealed class RealtimeEvent {
 }
 
 /// Un message direct vient d'être enregistré dans [conversationId] (côté destinataire OU expéditeur).
+///
+/// Depuis l'Incrément 1 (instantanéité), le serveur pousse le MESSAGE COMPLET dans la trame WS :
+/// [message] porte alors le contenu prêt à être ajouté DIRECTEMENT au fil (zéro round-trip REST),
+/// avec son `id` (dédup), son `body` (aperçu/bandeau), son `senderId` et son horodatage.
+/// [message] est `null` UNIQUEMENT si une ancienne version du backend n'envoie qu'un signal :
+/// dans ce cas, le repli historique (refetch REST) prend le relais. Toujours tester `message != null`
+/// avant de s'en servir, jamais supposer sa présence.
 class DmReceived extends RealtimeEvent {
   final String conversationId;
-  const DmReceived(this.conversationId);
+  final DmMessage? message;
+  const DmReceived(this.conversationId, {this.message});
 }
 
 /// Le destinataire a OUVERT [conversationId] et marqué mes messages comme lus : mon fil passe
@@ -143,7 +152,18 @@ class RealtimeService {
     // Champ `type` discriminant : on IGNORE tout type inconnu (évolutions sans casse).
     switch (type) {
       case 'dm':
-        _controller.add(DmReceived(id));
+        // Le serveur joint le MESSAGE COMPLET (`message`) → on le parse pour un append direct,
+        // sans REST. Rétro-compat : si absent/illisible, on émet le simple signal (repli refetch).
+        DmMessage? msg;
+        final rawMsg = json['message'];
+        if (rawMsg is Map<String, dynamic>) {
+          try {
+            msg = DmMessage.fromJson(rawMsg);
+          } catch (_) {
+            msg = null; // trame partielle : on retombe sur le signal pur (refetch côté écran)
+          }
+        }
+        _controller.add(DmReceived(id, message: msg));
       case 'read':
         _controller.add(ReadReceipt(id));
       case 'typing':

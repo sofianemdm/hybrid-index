@@ -96,6 +96,12 @@ final unreadMessagesProvider = FutureProvider<int>((ref) async {
   }
 });
 
+/// Id de la conversation actuellement OUVERTE à l'écran (chat au premier plan), ou `null` si
+/// l'utilisateur n'est dans aucun chat. Posé par `ChatScreen` à son `initState`/`dispose`. Sert au
+/// bandeau in-app temps réel ([RealtimeBanner]) à NE PAS notifier un message de la conversation déjà
+/// affichée (sinon doublon visuel : la bulle apparaît ET un bandeau s'affiche pour le même message).
+final activeConversationProvider = StateProvider<String?>((ref) => null);
+
 /// État du cycle de vie de l'app, alimenté par l'observateur global de [main.dart]
 /// (`didChangeAppLifecycleState`). Permet aux providers à scrutation périodique (ex.
 /// [inboxBadgeProvider]) de SUSPENDRE leur poll quand l'app n'est pas au premier plan,

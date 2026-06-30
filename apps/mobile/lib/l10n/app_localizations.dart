@@ -2048,6 +2048,30 @@ abstract class AppLocalizations {
   /// **'{name} is typing…'**
   String chatTyping(String name);
 
+  /// No description provided for @chatNewMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'New message'**
+  String get chatNewMessage;
+
+  /// No description provided for @newMessageBannerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New message from {name}'**
+  String newMessageBannerTitle(String name);
+
+  /// No description provided for @newMessageBannerOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get newMessageBannerOpen;
+
+  /// No description provided for @newMessageSenderFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'an athlete'**
+  String get newMessageSenderFallback;
+
   /// No description provided for @chatViewProfile.
   ///
   /// In en, this message translates to:

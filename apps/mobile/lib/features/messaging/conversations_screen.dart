@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../app.dart';
 import '../../data/models.dart';
 import '../../data/realtime_service.dart';
 import '../../data/session.dart';
@@ -33,10 +34,21 @@ class _ConversationsScreenState extends ConsumerState<ConversationsScreen> {
   void initState() {
     super.initState();
     _load();
-    // Temps réel : tout DM (reçu OU envoyé sur un autre device) déclenche un rafraîchissement
-    // immédiat de la liste. Le polling ci-dessous est le REPLI (si le WS n'est pas connecté).
+    // Temps réel : tout DM (reçu OU envoyé sur un autre device) met à jour la liste IMMÉDIATEMENT.
+    // Le message complet (Incrément 1) nous permet de patcher la conversation concernée SANS attendre
+    // le REST (aperçu + non-lus + remontée en tête instantanés). On déclenche tout de même un refetch
+    // léger en arrière-plan pour réconcilier (nom/avatar d'une toute nouvelle conversation, etc.).
+    // Le polling ci-dessous reste le REPLI (si le WS n'est pas connecté).
     _rtSub = ref.read(realtimeServiceProvider).events.listen((e) {
-      if (e is DmReceived && mounted) setState(_load);
+      if (e is! DmReceived || !mounted) return;
+      final patched = _patchLocally(e);
+      // Réconciliation REST : indispensable si la conversation est inconnue localement (nouvelle),
+      // sinon best-effort (le patch local a déjà donné l'instantanéité).
+      if (!patched) {
+        setState(_load);
+      } else {
+        _reconcileSilently();
+      }
     });
     // Repli : auto-refresh RALENTI (10 s) — l'instantanéité est désormais portée par le WebSocket.
     // Si le WS est down (web/prod/réseau), ce poll assure quand même la livraison.
@@ -53,6 +65,47 @@ class _ConversationsScreenState extends ConsumerState<ConversationsScreen> {
   }
 
   void _load() => _future = ref.read(apiClientProvider).conversations();
+
+  /// Patch LOCAL instantané de la conversation concernée par [e] à partir du message temps réel :
+  /// met à jour l'aperçu (`lastBody`/`lastIsMine`), incrémente les non-lus (si le message n'est pas
+  /// de moi) et remonte la conversation EN TÊTE — le tout sans REST. Renvoie `false` si la
+  /// conversation est inconnue localement (nouvelle) ou si le message manque : l'appelant retombe
+  /// alors sur un refetch complet.
+  bool _patchLocally(DmReceived e) {
+    final msg = e.message;
+    if (msg == null) return false;
+    final current = _last;
+    if (current == null) return false;
+    final idx = current.indexWhere((c) => c.id == e.conversationId);
+    if (idx == -1) return false; // conversation absente de la liste → besoin d'un refetch
+
+    final old = current[idx];
+    final updated = ConversationSummary(
+      id: old.id,
+      otherUserId: old.otherUserId,
+      otherName: old.otherName,
+      otherRank: old.otherRank,
+      otherIndex: old.otherIndex,
+      otherAvatar: old.otherAvatar,
+      lastBody: msg.body,
+      lastIsMine: msg.isMine,
+      // Un message reçu (non mien) ajoute un non-lu ; un message à moi (autre device) n'en ajoute pas.
+      unread: msg.isMine ? old.unread : old.unread + 1,
+    );
+    final next = [updated, ...current.where((c) => c.id != old.id)];
+    setState(() {
+      _last = next;
+      _future = Future.value(next); // le FutureBuilder reflète immédiatement la liste patchée
+    });
+    ref.invalidate(unreadMessagesProvider);
+    return true;
+  }
+
+  /// Refetch REST silencieux (anti-flicker) pour réconcilier la liste après un patch local optimiste
+  /// (corrige d'éventuels écarts : non-lus exacts, horodatage, conversations modifiées ailleurs).
+  void _reconcileSilently() {
+    if (mounted) setState(_load);
+  }
 
   Future<void> _open(ConversationSummary c) async {
     await Navigator.of(context).push(MaterialPageRoute(

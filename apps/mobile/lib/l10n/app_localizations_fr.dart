@@ -1113,6 +1113,20 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
+  String get chatNewMessage => 'Nouveau message';
+
+  @override
+  String newMessageBannerTitle(String name) {
+    return 'Nouveau message de $name';
+  }
+
+  @override
+  String get newMessageBannerOpen => 'Ouvrir';
+
+  @override
+  String get newMessageSenderFallback => 'un athlète';
+
+  @override
   String get chatViewProfile => 'Voir le profil';
 
   @override

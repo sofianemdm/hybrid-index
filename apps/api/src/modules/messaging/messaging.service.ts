@@ -99,36 +99,41 @@ export class MessagingService implements OnModuleInit {
     const msg = await this.prisma.message.create({
       data: { conversationId: conv.id, senderId: me, body },
     });
-    // Notification push au destinataire (best-effort, no-op si push inactif).
-    void this.notifyRecipient(me, toUserId);
+    // Notification push au destinataire (best-effort, no-op si push inactif). On passe l'id de
+    // conversation pour le deep-link (tap → la BONNE conversation) côté client.
+    void this.notifyRecipient(me, toUserId, conv.id);
     // Signal temps réel APRÈS commit (best-effort, jamais bloquant pour l'envoi REST) : on pousse
-    // un événement léger au DESTINATAIRE et à l'EXPÉDITEUR (multi-device). Pas de contenu : le client
-    // refetch via REST. `emitToUser` est déjà best-effort, on isole tout de même par prudence.
+    // le MESSAGE COMPLET (Incrément 1 — instantanéité) au DESTINATAIRE et à l'EXPÉDITEUR
+    // (multi-device). Le client l'ajoute DIRECTEMENT au fil, SANS round-trip REST. `isMine` est
+    // calculé par destinataire (false côté destinataire, true côté expéditeur). `emitToUser` est
+    // déjà best-effort, on isole tout de même par prudence.
+    const createdAtIso = msg.createdAt.toISOString();
+    const dmMessage = (forUser: string) => ({
+      id: msg.id,
+      senderId: me,
+      body: msg.body,
+      createdAt: createdAtIso,
+      sentAt: createdAtIso,
+      readAt: null,
+      isMine: msg.senderId === forUser,
+    });
     try {
-      this.realtime.emitToUser(toUserId, { type: "dm", conversationId: conv.id });
-      this.realtime.emitToUser(me, { type: "dm", conversationId: conv.id });
+      this.realtime.emitToUser(toUserId, { type: "dm", conversationId: conv.id, message: dmMessage(toUserId) });
+      this.realtime.emitToUser(me, { type: "dm", conversationId: conv.id, message: dmMessage(me) });
     } catch {
       // best-effort : le DM est persisté, le temps réel est un bonus.
     }
     return {
       conversationId: conv.id,
-      message: {
-        id: msg.id,
-        senderId: me,
-        body: msg.body,
-        createdAt: msg.createdAt.toISOString(),
-        sentAt: msg.createdAt.toISOString(),
-        readAt: null,
-        isMine: true,
-      },
+      message: dmMessage(me),
     };
   }
 
   /** Pousse une notif « nouveau message » au destinataire (jamais bloquant pour l'envoi). */
-  private async notifyRecipient(senderId: string, toUserId: string): Promise<void> {
+  private async notifyRecipient(senderId: string, toUserId: string, conversationId: string): Promise<void> {
     try {
       const sender = await this.prisma.profile.findUnique({ where: { userId: senderId }, select: { displayName: true } });
-      await this.push.notifyNewMessage(toUserId, sender?.displayName ?? "Un athlète");
+      await this.push.notifyNewMessage(toUserId, sender?.displayName ?? "Un athlète", conversationId, senderId);
     } catch {
       // best-effort
     }
