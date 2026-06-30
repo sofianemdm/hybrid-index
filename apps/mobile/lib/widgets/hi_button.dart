@@ -88,6 +88,88 @@ class HiButtonSecondary extends StatelessWidget {
   }
 }
 
+/// Bouton bleu plein : fond bleu (HiColors.info), texte clair lisible. Sert d'action « chrono »
+/// distincte du CTA marque (cyan). Même gabarit/feel que [HiButton] (hauteur 52, micro-scale).
+class HiButtonBlue extends StatelessWidget {
+  final String label;
+  final VoidCallback? onPressed;
+  final IconData? icon;
+  const HiButtonBlue({super.key, required this.label, this.onPressed, this.icon});
+
+  @override
+  Widget build(BuildContext context) {
+    final enabled = onPressed != null;
+    const fg = Color(0xFFFFFFFF); // texte blanc : AA sur le bleu HiColors.info des deux thèmes
+    return HiPressable(
+      onTap: onPressed,
+      pressedScale: 0.96,
+      child: Opacity(
+        opacity: enabled ? 1 : 0.5,
+        child: Container(
+          height: 52,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: HiColors.info,
+            borderRadius: BorderRadius.circular(HiRadius.md),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (icon != null) ...[
+                Icon(icon, color: fg, size: 20),
+                const SizedBox(width: HiSpace.sm),
+              ],
+              Text(label, style: HiType.button.copyWith(color: fg)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Bouton clair : fond blanc / surface claire, texte sombre lisible et fin contour. Pour une action
+/// secondaire mise en avant (ex. « Enregistre ton temps »). Même gabarit que [HiButton].
+class HiButtonLight extends StatelessWidget {
+  final String label;
+  final VoidCallback? onPressed;
+  final IconData? icon;
+  const HiButtonLight({super.key, required this.label, this.onPressed, this.icon});
+
+  @override
+  Widget build(BuildContext context) {
+    final enabled = onPressed != null;
+    const bg = Color(0xFFFFFFFF);
+    const fg = Color(0xFF11161F); // texte sombre sur fond blanc (contraste AAA)
+    return HiPressable(
+      onTap: onPressed,
+      pressedScale: 0.96,
+      child: Opacity(
+        opacity: enabled ? 1 : 0.5,
+        child: Container(
+          height: 52,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: bg,
+            borderRadius: BorderRadius.circular(HiRadius.md),
+            border: Border.all(color: HiColors.strokeStrong, width: 1),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (icon != null) ...[
+                Icon(icon, color: fg, size: 20),
+                const SizedBox(width: HiSpace.sm),
+              ],
+              Text(label, style: HiType.button.copyWith(color: fg, fontSize: 15)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// Bouton fantôme : pas de fond ni bordure, texte marque. Actions discrètes (historique, partage).
 class HiGhostButton extends StatelessWidget {
   final String label;

@@ -149,8 +149,8 @@
   "wodDetailReferenceTimesCaption": "Beginner · intermediate · champion, by sex",
   "wodDetailNoTiers": "Tiers not available for this workout.",
   "wodDetailLeaderboard": "Leaderboard",
-  "wodDetailDoThisWorkout": "Do this workout",
-  "wodDetailGuidedMode": "Guided mode",
+  "wodDetailLogTime": "Log your time",
+  "wodDetailStartTimer": "Start your timer here",
   "wodDetailEdit": "Edit workout",
   "wodDetailDelete": "Delete workout",
   "wodDetailDeleteTitle": "Delete this workout?",
@@ -1367,16 +1367,5 @@
   "a11yOnbContinue": "Continue to the next step",
   "a11yOnbReveal": "Reveal my Index",
   "a11yOnbEffortToggle": "{name}, {state, select, on{enabled} off{disabled} other{}}",
-  "@a11yOnbEffortToggle": { "placeholders": { "name": { "type": "String" }, "state": { "type": "String" } } },
-  "movementGuideButton": "How to do the movements",
-  "movementGuideTitle": "How to do the movements",
-  "movementGuideIntro": "Quick refresher on each movement: how to do it, what to watch for, and an easier version if needed.",
-  "movementGuideHowTo": "How to do it",
-  "movementGuideKeyPoints": "Key points",
-  "movementGuideMistakes": "Common mistakes",
-  "movementGuideEasyVersion": "Easier version",
-  "movementGuideEmpty": "No guide available for this workout's movements yet.",
-  "movementGuideEmptyGlossary": "The movement guide is coming soon.",
-  "a11yMovementCard": "Movement: {name}. How to do it, key points, common mistakes and an easier version.",
-  "@a11yMovementCard": { "placeholders": { "name": { "type": "String" } } }
+  "@a11yOnbEffortToggle": { "placeholders": { "name": { "type": "String" }, "state": { "type": "String" } } }
 }

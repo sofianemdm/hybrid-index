@@ -23,8 +23,6 @@ import '../../l10n/app_localizations.dart';
 import '../../theme/haptics.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/hi_button.dart';
-import '../movements/movement_guide_content.dart';
-import '../movements/movement_guide_screen.dart';
 import 'guided_plan.dart';
 import 'guided_runner.dart';
 
@@ -43,7 +41,6 @@ class GuidedSessionScreen extends StatefulWidget {
     required this.plan,
     required this.title,
     this.cues = const [],
-    this.movementLabels = const [],
     this.onCompleted,
     this.onFinishAction,
     this.finishActionLabel,
@@ -57,10 +54,6 @@ class GuidedSessionScreen extends StatefulWidget {
 
   /// Consignes à dérouler dans le panneau (mouvements/reps). Vide → panneau masqué.
   final List<GuidedCue> cues;
-
-  /// Libellés des mouvements de la séance (ids ou noms libres), pour le guide « Comment faire ».
-  /// Vide ⇒ pas de bouton guide dans l'en-tête.
-  final List<String> movementLabels;
 
   /// Appelé UNE fois à l'entrée dans la phase TERMINÉ (crédit série / log WOD). Idempotent côté appelant.
   /// Synchrone ou asynchrone : s'il retourne un `Future`, le lecteur attend pour afficher l'état
@@ -93,7 +86,6 @@ class GuidedSessionScreen extends StatefulWidget {
     required GuidedPlan plan,
     required String title,
     List<GuidedCue> cues = const [],
-    List<String> movementLabels = const [],
     FutureOr<void> Function()? onCompleted,
     VoidCallback? onFinishAction,
     String? finishActionLabel,
@@ -105,7 +97,6 @@ class GuidedSessionScreen extends StatefulWidget {
           plan: plan,
           title: title,
           cues: cues,
-          movementLabels: movementLabels,
           onCompleted: onCompleted,
           onFinishAction: onFinishAction,
           finishActionLabel: finishActionLabel,
@@ -140,38 +131,9 @@ class GuidedSessionScreen extends StatefulWidget {
       plan: plan,
       title: wod.name,
       cues: _cuesFromWod(wod, sex: sex, scaled: scaled),
-      movementLabels: _movementLabelsFromWod(wod),
       onFinishAction: onSaveResult,
       finishActionLabel: t.guidedSaveResult,
     );
-  }
-
-  /// Libellés des mouvements d'un WOD pour le guide « Comment faire » : ids exacts de `editPayload`
-  /// si présents (WOD custom), sinon noms libres de la prescription (résolus par nom côté guide).
-  static List<String> _movementLabelsFromWod(WodDetail wod) {
-    // 1) PRIORITÉ aux identifiants canoniques exposés par le backend (movementIds du blueprint).
-    //    Résolution exacte côté guide → les ids basiques supprimés sont ignorés silencieusement.
-    if (wod.movementIds.isNotEmpty) return List<String>.from(wod.movementIds);
-
-    // 2) Repli : ids d'édition (WOD custom) puis noms libres de la prescription.
-    final out = <String>[];
-    final payloadBlocks = wod.editPayload?.blocks;
-    if (payloadBlocks != null && payloadBlocks.isNotEmpty) {
-      for (final b in payloadBlocks) {
-        final id = b['movementId'];
-        if (id is String && id.trim().isNotEmpty) out.add(id);
-      }
-    }
-    final p = wod.prescription;
-    if (p != null) {
-      for (final b in p.blocks) {
-        if (b.movement.trim().isNotEmpty) out.add(b.movement);
-      }
-      for (final w in p.weights) {
-        if (w.movement.trim().isNotEmpty) out.add(w.movement);
-      }
-    }
-    return out;
   }
 
   /// Construit un plan SIMPLIFIÉ (chrono libre + consignes texte + Tour +1 manuel) pour une CoachSession.
@@ -339,14 +301,6 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen>
 
   bool get _reduceMotion => MediaQuery.maybeDisableAnimationsOf(context) ?? false;
 
-  /// Vrai si au moins un mouvement de la séance a une fiche « Comment faire » (sinon pas de bouton).
-  bool get _hasMovementGuide => resolveMovementGuides(widget.movementLabels).isNotEmpty;
-
-  /// Ouvre le guide des mouvements de la séance en cours (consignes/exécution).
-  void _openMovementGuide() {
-    MovementGuideScreen.open(context, labels: widget.movementLabels, title: widget.title);
-  }
-
   void _onEvent(GuidedEvent e) {
     if (!mounted) return;
     switch (e.type) {
@@ -493,7 +447,6 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen>
                         final quit = await _confirmQuit();
                         if (quit && context.mounted) Navigator.of(context).pop();
                       },
-                      onShowGuide: _hasMovementGuide ? _openMovementGuide : null,
                     ),
                     const SizedBox(height: HiSpace.sm),
                     _SessionProgressBar(
@@ -601,16 +554,12 @@ class _Header extends StatelessWidget {
     required this.soundOn,
     required this.onToggleSound,
     required this.onClose,
-    this.onShowGuide,
   });
 
   final String title;
   final bool soundOn;
   final VoidCallback onToggleSound;
   final VoidCallback onClose;
-
-  /// Ouvre le guide « Comment faire les mouvements ». Null ⇒ bouton masqué.
-  final VoidCallback? onShowGuide;
 
   @override
   Widget build(BuildContext context) {
@@ -636,17 +585,6 @@ class _Header extends StatelessWidget {
             style: HiType.titleM.copyWith(color: HiColors.textPrimary),
           ),
         ),
-        if (onShowGuide != null)
-          Semantics(
-            button: true,
-            label: t.movementGuideButton,
-            child: IconButton(
-              iconSize: 24,
-              constraints: const BoxConstraints(minWidth: HiTap.minTarget, minHeight: HiTap.minTarget),
-              onPressed: onShowGuide,
-              icon: Icon(Icons.menu_book_outlined, color: HiColors.textSecondary),
-            ),
-          ),
         Semantics(
           button: true,
           label: soundOn ? t.guidedSoundOn : t.guidedSoundOff,

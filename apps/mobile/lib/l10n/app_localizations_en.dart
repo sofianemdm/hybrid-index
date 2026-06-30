@@ -455,10 +455,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get wodDetailLeaderboard => 'Leaderboard';
 
   @override
-  String get wodDetailDoThisWorkout => 'Do this workout';
+  String get wodDetailLogTime => 'Log your time';
 
   @override
-  String get wodDetailGuidedMode => 'Guided mode';
+  String get wodDetailStartTimer => 'Start your timer here';
 
   @override
   String get wodDetailEdit => 'Edit workout';
@@ -2894,39 +2894,5 @@ class AppLocalizationsEn extends AppLocalizations {
       },
     );
     return '$name, $_temp0';
-  }
-
-  @override
-  String get movementGuideButton => 'How to do the movements';
-
-  @override
-  String get movementGuideTitle => 'How to do the movements';
-
-  @override
-  String get movementGuideIntro =>
-      'Quick refresher on each movement: how to do it, what to watch for, and an easier version if needed.';
-
-  @override
-  String get movementGuideHowTo => 'How to do it';
-
-  @override
-  String get movementGuideKeyPoints => 'Key points';
-
-  @override
-  String get movementGuideMistakes => 'Common mistakes';
-
-  @override
-  String get movementGuideEasyVersion => 'Easier version';
-
-  @override
-  String get movementGuideEmpty =>
-      'No guide available for this workout\'s movements yet.';
-
-  @override
-  String get movementGuideEmptyGlossary => 'The movement guide is coming soon.';
-
-  @override
-  String a11yMovementCard(String name) {
-    return 'Movement: $name. How to do it, key points, common mistakes and an easier version.';
   }
 }

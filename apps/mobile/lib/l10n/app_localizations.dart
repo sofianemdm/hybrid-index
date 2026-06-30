@@ -920,17 +920,17 @@ abstract class AppLocalizations {
   /// **'Leaderboard'**
   String get wodDetailLeaderboard;
 
-  /// No description provided for @wodDetailDoThisWorkout.
+  /// No description provided for @wodDetailLogTime.
   ///
   /// In en, this message translates to:
-  /// **'Do this workout'**
-  String get wodDetailDoThisWorkout;
+  /// **'Log your time'**
+  String get wodDetailLogTime;
 
-  /// No description provided for @wodDetailGuidedMode.
+  /// No description provided for @wodDetailStartTimer.
   ///
   /// In en, this message translates to:
-  /// **'Guided mode'**
-  String get wodDetailGuidedMode;
+  /// **'Start your timer here'**
+  String get wodDetailStartTimer;
 
   /// No description provided for @wodDetailEdit.
   ///
@@ -4808,66 +4808,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{name}, {state, select, on{enabled} off{disabled} other{}}'**
   String a11yOnbEffortToggle(String name, String state);
-
-  /// No description provided for @movementGuideButton.
-  ///
-  /// In en, this message translates to:
-  /// **'How to do the movements'**
-  String get movementGuideButton;
-
-  /// No description provided for @movementGuideTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'How to do the movements'**
-  String get movementGuideTitle;
-
-  /// No description provided for @movementGuideIntro.
-  ///
-  /// In en, this message translates to:
-  /// **'Quick refresher on each movement: how to do it, what to watch for, and an easier version if needed.'**
-  String get movementGuideIntro;
-
-  /// No description provided for @movementGuideHowTo.
-  ///
-  /// In en, this message translates to:
-  /// **'How to do it'**
-  String get movementGuideHowTo;
-
-  /// No description provided for @movementGuideKeyPoints.
-  ///
-  /// In en, this message translates to:
-  /// **'Key points'**
-  String get movementGuideKeyPoints;
-
-  /// No description provided for @movementGuideMistakes.
-  ///
-  /// In en, this message translates to:
-  /// **'Common mistakes'**
-  String get movementGuideMistakes;
-
-  /// No description provided for @movementGuideEasyVersion.
-  ///
-  /// In en, this message translates to:
-  /// **'Easier version'**
-  String get movementGuideEasyVersion;
-
-  /// No description provided for @movementGuideEmpty.
-  ///
-  /// In en, this message translates to:
-  /// **'No guide available for this workout\'s movements yet.'**
-  String get movementGuideEmpty;
-
-  /// No description provided for @movementGuideEmptyGlossary.
-  ///
-  /// In en, this message translates to:
-  /// **'The movement guide is coming soon.'**
-  String get movementGuideEmptyGlossary;
-
-  /// No description provided for @a11yMovementCard.
-  ///
-  /// In en, this message translates to:
-  /// **'Movement: {name}. How to do it, key points, common mistakes and an easier version.'**
-  String a11yMovementCard(String name);
 }
 
 class _AppLocalizationsDelegate
