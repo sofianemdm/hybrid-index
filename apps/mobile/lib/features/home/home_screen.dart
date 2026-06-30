@@ -313,10 +313,11 @@ class HomeScreen extends ConsumerWidget {
               const SizedBox(height: HiSpace.sm),
               RadarView(
                 radar: p.radar,
-                // Tap sur un axe du radar → bibliothèque du coach filtrée sur cet axe (séances
-                // guidées pour progresser sur l'axe choisi), pas la liste de WODs.
+                // Tap sur un axe du radar → séances ciblées sur cet axe (mêmes WODs que l'axe
+                // ouvert depuis l'onglet « Séances »). La bibliothèque du coach reste, elle,
+                // derrière le CTA dédié « Coach — progresser sur un axe ».
                 onTapAttribute: (attr) => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => CoachLibraryScreen(attribute: attr)),
+                  MaterialPageRoute(builder: (_) => SessionsByAttributeScreen(attribute: attr)),
                 ),
               ),
               const SizedBox(height: HiSpace.md),
