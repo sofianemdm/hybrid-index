@@ -1,27 +1,36 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none" stroke-linecap="round" stroke-linejoin="round">
   <!-- floor -->
-  <path d="M20 180 L180 180" stroke="#8A93A6" stroke-width="4"/>
-  <!-- clean catch (ghost): front rack squat -->
+  <path d="M16 184 L184 184" stroke="#8A93A6" stroke-width="4"/>
+
+  <!-- ===== PHASE 1 (ghost) : EPAULE — bar racked on shoulders, elbows high, knees bent ===== -->
   <g stroke="#8A93A6" stroke-width="4" opacity="0.5">
-    <circle cx="52" cy="84" r="9"/>
-    <path d="M52 93 L50 122"/>
-    <path d="M50 122 L68 132 L68 168 M50 122 L32 132 L36 168"/>
-    <path d="M52 100 L36 90 M52 100 L68 90"/>
-    <line x1="28" y1="74" x2="76" y2="74"/>
+    <!-- head -->
+    <circle cx="58" cy="78" r="10"/>
+    <!-- torso, slightly upright -->
+    <path d="M58 88 L56 124"/>
+    <!-- elbows high under the bar (front rack) -->
+    <path d="M56 100 L36 92 L40 70 M56 100 L76 92 L72 70"/>
+    <!-- bent legs (receiving) -->
+    <path d="M56 124 L74 142 L74 184 M56 124 L38 142 L40 184"/>
+    <!-- barbell across shoulders -->
+    <line x1="30" y1="64" x2="86" y2="64"/>
+    <circle cx="30" cy="64" r="13"/>
+    <circle cx="86" cy="64" r="13"/>
   </g>
-  <!-- jerk: standing, bar locked overhead, split stance -->
+
+  <!-- ===== PHASE 2 (key) : JETE — bar locked overhead, arms straight, split stance ===== -->
   <g stroke="#2BD4F5" stroke-width="4">
-    <circle cx="132" cy="72" r="11"/>
-    <path d="M132 83 L132 132"/>
-    <!-- arms locked up -->
-    <path d="M132 90 L116 52 M132 90 L148 52"/>
-    <!-- split legs -->
-    <path d="M132 132 L156 158 L156 180 M132 132 L108 158 L100 180"/>
-  </g>
-  <!-- barbell overhead -->
-  <g stroke="#8A93A6" stroke-width="4">
-    <line x1="102" y1="46" x2="162" y2="46"/>
-    <line x1="106" y1="38" x2="106" y2="54"/>
-    <line x1="158" y1="38" x2="158" y2="54"/>
+    <!-- head -->
+    <circle cx="138" cy="84" r="10"/>
+    <!-- torso, tall -->
+    <path d="M138 94 L138 132"/>
+    <!-- straight arms locked overhead -->
+    <path d="M138 100 L122 52 M138 100 L154 52"/>
+    <!-- split-stance legs (jerk lockout) -->
+    <path d="M138 132 L162 158 L162 184 M138 132 L114 158 L106 184"/>
+    <!-- barbell locked overhead -->
+    <line x1="110" y1="46" x2="166" y2="46"/>
+    <circle cx="110" cy="46" r="13"/>
+    <circle cx="166" cy="46" r="13"/>
   </g>
 </svg>

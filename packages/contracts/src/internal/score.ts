@@ -209,6 +209,12 @@ export const WodLevelsResponse = z.object({
   scoreType: ScoreType,
   male: WodLevelTriple,
   female: WodLevelTriple,
+  /**
+   * IDENTIFIANTS CANONIQUES des mouvements du WOD (blueprint), ordonnés et sans doublon. Permet au
+   * guide des mouvements de NE PLUS deviner par le nom FR. Optionnel (rétro-compat back ancien) ;
+   * `[]` pour un WOD sans blueprint (course pure, max-reps…).
+   */
+  movementIds: z.array(z.string()).optional(),
 });
 export type WodLevelsResponse = z.infer<typeof WodLevelsResponse>;
 

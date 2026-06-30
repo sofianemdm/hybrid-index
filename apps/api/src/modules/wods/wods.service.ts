@@ -488,6 +488,23 @@ export class WodsService {
     const wod = await this.prisma.wod.findUnique({ where: { id } });
     if (!wod) throw new NotFoundException({ code: "NOT_FOUND", message: "WOD introuvable." });
 
+    // IDENTIFIANTS CANONIQUES des mouvements de la séance, dans l'ordre et sans doublon. Le guide des
+    // mouvements (mobile) s'en sert pour NE PLUS deviner par le nom FR de la prescription.
+    //  - WOD CUSTOM   → movementId des blocs enregistrés (wod.movements jsonb), ordonnés/dédupliqués ;
+    //  - benchmark/Ligue → movementIds du blueprint, fournis par le score-service (cf. plus bas) ;
+    //  - sinon (course pure, max-reps…) → [].
+    let movementIds: string[] = [];
+    if (wod.isCustom) {
+      const seen = new Set<string>();
+      for (const b of (wod.movements as Array<{ movementId?: unknown }>) ?? []) {
+        const id = typeof b?.movementId === "string" ? b.movementId : null;
+        if (id && !seen.has(id)) {
+          seen.add(id);
+          movementIds.push(id);
+        }
+      }
+    }
+
     let levels: unknown = null;
     if (wod.isCustom) {
       // WOD communautaire : pas de barème officiel → on REJOUE l'estimation (par sexe) à partir des
@@ -521,9 +538,13 @@ export class WodsService {
       }
     } else {
       try {
-        levels = await this.scoreClient.getWodLevels(id);
+        const wodLevels = await this.scoreClient.getWodLevels(id);
+        levels = wodLevels;
+        // movementIds canoniques du blueprint, transportés par la même réponse (pas de round-trip
+        // supplémentaire). Absents (back ancien) ⇒ [] (course pure / WOD sans blueprint).
+        movementIds = wodLevels.movementIds ?? [];
       } catch {
-        levels = null; // barème indisponible (score-service down)
+        levels = null; // barème indisponible (score-service down) → movementIds reste []
       }
     }
 
@@ -570,6 +591,9 @@ export class WodsService {
       // n'affiche les actions Éditer/Supprimer QUE dans ce cas (mêmes garde-fous que PATCH/DELETE).
       isMine: wod.isCustom && userId != null && wod.createdById === userId,
       levels,
+      // IDs canoniques des mouvements (blueprint pour benchmark/Ligue, blocs pour custom, [] sinon) :
+      // le guide des mouvements du mobile les résout directement, sans deviner par le nom.
+      movementIds,
       myBest,
       myHistory, // mes prestations passées sur cette séance (récent → ancien)
       // Énoncé concret de la séance (mouvements + poids) : barème de référence, ou reconstruit

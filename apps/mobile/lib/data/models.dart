@@ -1661,6 +1661,11 @@ class WodDetail {
 
   /// Cibles « Référence Pro » (données publiques) à viser.
   final List<WodReference> references;
+
+  /// Identifiants canoniques des mouvements de la séance (blueprint pour benchmark/Ligue, blocs pour
+  /// un WOD custom), ordonnés et sans doublon. Vide pour une course pure / max-reps. Le guide des
+  /// mouvements les résout directement, sans deviner par le nom de la prescription.
+  final List<String> movementIds;
   const WodDetail({
     required this.id,
     required this.name,
@@ -1679,6 +1684,7 @@ class WodDetail {
     this.guided,
     this.myHistory = const [],
     this.references = const [],
+    this.movementIds = const [],
   });
 
   WodTriple? levels(String sex) => sex == 'female' ? female : male;
@@ -1714,6 +1720,7 @@ class WodDetail {
       references: ((j['references'] as List?) ?? [])
           .map((e) => WodReference.fromJson((e as Map).cast<String, dynamic>()))
           .toList(),
+      movementIds: ((j['movementIds'] as List?) ?? []).map((e) => e.toString()).toList(),
     );
   }
 }

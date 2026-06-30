@@ -28,7 +28,7 @@ import {
   type ResolvedBlueprintBlock,
   type AttrScores,
 } from "./wod-time-engine";
-import { WOD_BLUEPRINTS, blueprintMovementsExist, type WodBlueprint } from "../wods/wod-blueprints.data";
+import { WOD_BLUEPRINTS, blueprintMovementIds, blueprintMovementsExist, type WodBlueprint } from "../wods/wod-blueprints.data";
 
 /**
  * Service de calcul du score, adossé à la logique pure `@hybrid-index/scoring-core`.
@@ -505,7 +505,14 @@ export class ScoringService {
     if (!levels) {
       throw new NotFoundException({ code: "NOT_FOUND", message: `Aucun palier de référence pour ${wodId}.` });
     }
-    return { wodId, scoreType: wod.scoreType, male: levels.male, female: levels.female };
+    // IDs canoniques des mouvements (blueprint) → le guide mobile ne devine plus par le nom FR.
+    return {
+      wodId,
+      scoreType: wod.scoreType,
+      male: levels.male,
+      female: levels.female,
+      movementIds: blueprintMovementIds(wodId),
+    };
   }
 
   /**

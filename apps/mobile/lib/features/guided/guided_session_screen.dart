@@ -149,6 +149,11 @@ class GuidedSessionScreen extends StatefulWidget {
   /// Libellés des mouvements d'un WOD pour le guide « Comment faire » : ids exacts de `editPayload`
   /// si présents (WOD custom), sinon noms libres de la prescription (résolus par nom côté guide).
   static List<String> _movementLabelsFromWod(WodDetail wod) {
+    // 1) PRIORITÉ aux identifiants canoniques exposés par le backend (movementIds du blueprint).
+    //    Résolution exacte côté guide → les ids basiques supprimés sont ignorés silencieusement.
+    if (wod.movementIds.isNotEmpty) return List<String>.from(wod.movementIds);
+
+    // 2) Repli : ids d'édition (WOD custom) puis noms libres de la prescription.
     final out = <String>[];
     final payloadBlocks = wod.editPayload?.blocks;
     if (payloadBlocks != null && payloadBlocks.isNotEmpty) {

@@ -78,8 +78,6 @@ String movementSvgAsset(String id) => 'assets/movements/$id.svg';
 const Map<String, String> _movementAlias = {
   'lunge_m': 'lunge',
   'burpee_broad_jump_m': 'burpee_broad_jump',
-  'row_cal': 'row',
-  'sprint': 'run',
   'thruster_db': 'thruster',
 };
 
@@ -180,56 +178,6 @@ final Map<String, MovementGuide> movementGuides = {
   // =====================================================================================
   // GYMNASTIQUE / POIDS DE CORPS
   // =====================================================================================
-  'push_up': MovementGuide(
-    id: 'push_up',
-    svgAsset: movementSvgAsset('push_up'),
-    name: const {'fr': 'Pompe', 'en': 'Push-up'},
-    steps: const {
-      'fr': [
-        'Mains au sol un peu plus larges que les épaules, bras tendus, corps en planche.',
-        'Gaine le ventre et serre les fessiers : tête, dos et talons forment une ligne droite.',
-        'Plie les coudes et descends la poitrine vers le sol, coudes vers l’arrière (pas écartés).',
-        'Frôle le sol, puis pousse fort pour revenir bras tendus.',
-      ],
-      'en': [
-        'Hands on the floor slightly wider than your shoulders, arms straight, body in a plank.',
-        'Brace your stomach and squeeze your glutes: head, back and heels form one straight line.',
-        'Bend the elbows and lower your chest toward the floor, elbows back (not flared out).',
-        'Touch near the floor, then push hard to return to straight arms.',
-      ],
-    },
-    cues: const {
-      'fr': [
-        'Garde le corps en planche : les hanches ne montent ni ne s’affaissent.',
-        'Coudes serrés vers le corps (~45°) pour protéger les épaules.',
-        'Inspire en descendant, souffle en poussant.',
-      ],
-      'en': [
-        'Keep the body in a plank: hips neither pike up nor sag down.',
-        'Tuck elbows toward the body (~45°) to protect the shoulders.',
-        'Inhale on the way down, exhale as you push.',
-      ],
-    },
-    mistakes: const {
-      'fr': [
-        'Hanches qui tombent (dos creux) : signe que le gainage lâche.',
-        'Amplitude partielle : la poitrine ne descend pas assez bas.',
-        'Coudes trop écartés en T : douloureux pour les épaules.',
-      ],
-      'en': [
-        'Hips sagging (arched back): a sign the core has switched off.',
-        'Partial range: the chest doesn’t come down far enough.',
-        'Elbows flared out in a T: hard on the shoulders.',
-      ],
-    },
-    beginner: const {
-      'fr': 'Pompe sur les genoux (genoux au sol, même ligne hanches-épaules), ou mains '
-          'surélevées sur un banc / mur pour réduire la charge.',
-      'en': 'Push-up on the knees (knees down, same hip-to-shoulder line), or hands elevated '
-          'on a bench / wall to reduce the load.',
-    },
-  ),
-
   'pull_up': MovementGuide(
     id: 'pull_up',
     svgAsset: movementSvgAsset('pull_up'),
@@ -526,56 +474,6 @@ final Map<String, MovementGuide> movementGuides = {
       'fr': 'Crunch à amplitude réduite (seulement les omoplates décollent), bras croisés sur '
           'la poitrine.',
       'en': 'Short-range crunch (only the shoulder blades lift), arms crossed on the chest.',
-    },
-  ),
-
-  'air_squat': MovementGuide(
-    id: 'air_squat',
-    svgAsset: movementSvgAsset('air_squat'),
-    name: const {'fr': 'Squat au poids du corps', 'en': 'Air squat'},
-    steps: const {
-      'fr': [
-        'Debout, pieds largeur de hanches, pointes légèrement vers l’extérieur.',
-        'Gaine le ventre, poitrine haute, regard devant.',
-        'Pousse les hanches vers l’arrière et plie les genoux pour descendre.',
-        'Descends jusqu’à ce que les hanches passent sous les genoux, puis remonte en poussant dans les talons.',
-      ],
-      'en': [
-        'Stand with feet hip-width, toes turned slightly out.',
-        'Brace your core, chest tall, eyes forward.',
-        'Push your hips back and bend the knees to descend.',
-        'Drop until the hips go below the knees, then stand by driving through the heels.',
-      ],
-    },
-    cues: const {
-      'fr': [
-        'Garde les talons au sol et le poids réparti sur tout le pied.',
-        'Genoux alignés avec les pointes de pieds (ne rentrent pas).',
-        'Dos droit et poitrine ouverte tout du long.',
-      ],
-      'en': [
-        'Keep your heels down and weight spread across the whole foot.',
-        'Knees track over the toes (don’t cave inward).',
-        'Flat back and open chest throughout.',
-      ],
-    },
-    mistakes: const {
-      'fr': [
-        'Talons qui décollent (poids vers les orteils).',
-        'Genoux qui rentrent vers l’intérieur.',
-        'Squat trop haut : les hanches ne passent pas sous les genoux.',
-      ],
-      'en': [
-        'Heels lifting (weight on the toes).',
-        'Knees caving inward.',
-        'Squatting too high: hips don’t break below the knees.',
-      ],
-    },
-    beginner: const {
-      'fr': 'Squat sur boîte : descends t’asseoir légèrement sur une chaise/boîte puis relève-toi. '
-          'Tu contrôles la profondeur et la trajectoire.',
-      'en': 'Box squat: sit lightly back onto a chair/box, then stand. You control the depth '
-          'and the path.',
     },
   ),
 
@@ -1078,56 +976,6 @@ final Map<String, MovementGuide> movementGuides = {
           'apprendre le timing jambes-bras.',
       'en': 'Thruster with an empty bar, light dumbbells, or even no load to learn the leg-to-arm '
           'timing.',
-    },
-  ),
-
-  'wall_ball': MovementGuide(
-    id: 'wall_ball',
-    svgAsset: movementSvgAsset('wall_ball'),
-    name: const {'fr': 'Wall ball (lancer au mur)', 'en': 'Wall ball'},
-    steps: const {
-      'fr': [
-        'Face au mur, médecine-ball tenu sous le menton, coudes sous la balle.',
-        'Descends en squat complet, dos droit.',
-        'Remonte explosivement et lance la balle vers une cible haute sur le mur.',
-        'Rattrape la balle en l’absorbant et enchaîne directement le squat suivant.',
-      ],
-      'en': [
-        'Facing the wall, hold the medicine ball under your chin, elbows under the ball.',
-        'Drop into a full squat, flat back.',
-        'Stand up explosively and throw the ball to a high target on the wall.',
-        'Catch the ball, absorbing it, and flow straight into the next squat.',
-      ],
-    },
-    cues: const {
-      'fr': [
-        'La puissance vient des jambes, les bras ne font que guider/lancer.',
-        'Squat complet à chaque rep (hanches sous les genoux).',
-        'Réceptionne la balle en pliant les bras pour amortir.',
-      ],
-      'en': [
-        'Power comes from the legs; the arms only guide/throw.',
-        'Full squat on every rep (hips below knees).',
-        'Catch the ball by bending the arms to cushion it.',
-      ],
-    },
-    mistakes: const {
-      'fr': [
-        'Lancer trop bas (cible non atteinte).',
-        'Squat partiel pour aller plus vite.',
-        'Rattraper la balle bras tendus (choc).',
-      ],
-      'en': [
-        'Throwing too low (target not reached).',
-        'Partial squat to go faster.',
-        'Catching the ball with straight arms (jarring).',
-      ],
-    },
-    beginner: const {
-      'fr': 'Utilise une balle plus légère et/ou une cible plus basse ; au besoin, sépare le geste '
-          '(squat puis lancer) avant de l’enchaîner.',
-      'en': 'Use a lighter ball and/or a lower target; if needed, split the movement (squat then '
-          'throw) before chaining it.',
     },
   ),
 
@@ -1634,156 +1482,6 @@ final Map<String, MovementGuide> movementGuides = {
   // =====================================================================================
   // CARDIO / MONOSTRUCTUREL
   // =====================================================================================
-  'run': MovementGuide(
-    id: 'run',
-    svgAsset: movementSvgAsset('run'),
-    name: const {'fr': 'Course à pied', 'en': 'Running'},
-    steps: const {
-      'fr': [
-        'Tiens-toi droit, regard loin devant, épaules relâchées.',
-        'Pose le pied sous ton centre de gravité (pas trop loin devant), foulée légère.',
-        'Bras pliés à ~90°, balancier d’avant en arrière (pas en travers du corps).',
-        'Trouve une cadence régulière et une respiration que tu peux tenir.',
-      ],
-      'en': [
-        'Stand tall, eyes far ahead, shoulders relaxed.',
-        'Land your foot under your centre of gravity (not far in front), light footstrike.',
-        'Arms bent at ~90°, swinging front-to-back (not across the body).',
-        'Find a steady cadence and a breathing rhythm you can hold.',
-      ],
-    },
-    cues: const {
-      'fr': [
-        'Pars sur une allure que tu peux tenir : ne sprinte pas le départ.',
-        'Épaules et mains relâchées, pas crispées.',
-        'Respire de façon régulière et profonde.',
-      ],
-      'en': [
-        'Start at a pace you can sustain: don’t sprint the opening.',
-        'Shoulders and hands relaxed, not clenched.',
-        'Breathe steadily and deeply.',
-      ],
-    },
-    mistakes: const {
-      'fr': [
-        'Partir trop vite et exploser après quelques centaines de mètres.',
-        'Foulée trop longue qui « freine » à chaque pose de pied.',
-        'Crispation des épaules et des bras.',
-      ],
-      'en': [
-        'Going out too fast and blowing up after a few hundred metres.',
-        'Overstriding, which “brakes” on each footstrike.',
-        'Tension in the shoulders and arms.',
-      ],
-    },
-    beginner: const {
-      'fr': 'Alterne course et marche (par ex. 2 min de course / 1 min de marche) et allonge '
-          'progressivement les phases de course.',
-      'en': 'Alternate running and walking (e.g. 2 min run / 1 min walk) and gradually extend the '
-          'running intervals.',
-    },
-  ),
-
-  'sprint': MovementGuide(
-    id: 'sprint',
-    svgAsset: movementSvgAsset('sprint'),
-    name: const {'fr': 'Sprint (≤200 m)', 'en': 'Sprint (≤200 m)'},
-    steps: const {
-      'fr': [
-        'Échauffe-toi sérieusement avant tout sprint (jambes et cardio).',
-        'Départ penché vers l’avant, pousse fort dans le sol avec la jambe arrière.',
-        'Monte les genoux, foulée puissante, bras qui pompent énergiquement.',
-        'Reste relâché du visage et des épaules malgré l’effort maximal.',
-      ],
-      'en': [
-        'Warm up thoroughly before any sprint (legs and cardio).',
-        'Lean forward at the start, push hard into the ground with the back leg.',
-        'Drive the knees up, powerful stride, arms pumping vigorously.',
-        'Stay relaxed in the face and shoulders despite the all-out effort.',
-      ],
-    },
-    cues: const {
-      'fr': [
-        'Échauffement indispensable : sprinter à froid = risque de claquage.',
-        'Pousse dans le sol (propulsion), monte les genoux.',
-        'Garde le haut du corps relâché même à fond.',
-      ],
-      'en': [
-        'A warm-up is essential: sprinting cold risks a muscle pull.',
-        'Push into the ground (propulsion), drive the knees up.',
-        'Keep the upper body relaxed even at full effort.',
-      ],
-    },
-    mistakes: const {
-      'fr': [
-        'Sprinter sans échauffement (blessure musculaire).',
-        'Crispation des épaules qui freine la foulée.',
-        'Se redresser trop tôt à l’accélération.',
-      ],
-      'en': [
-        'Sprinting without warming up (muscle injury).',
-        'Tense shoulders that slow the stride.',
-        'Standing up too early during acceleration.',
-      ],
-    },
-    beginner: const {
-      'fr': 'Cours à 70-80 % d’abord (« strides »), augmente l’intensité au fil des séances, et '
-          'récupère bien entre les répétitions.',
-      'en': 'Run at 70-80% first (“strides”), build the intensity over sessions, and rest fully '
-          'between reps.',
-    },
-  ),
-
-  'row': MovementGuide(
-    id: 'row',
-    svgAsset: movementSvgAsset('row'),
-    name: const {'fr': 'Rameur', 'en': 'Rowing (erg)'},
-    steps: const {
-      'fr': [
-        'Assis, pieds sanglés, attrape la poignée, bras tendus, tibias verticaux (position « catch »).',
-        'Pousse fort avec les JAMBES en premier, buste qui suit.',
-        'Quand les jambes sont presque tendues, bascule légèrement le buste en arrière puis tire la poignée vers le bas des côtes.',
-        'Reviens dans l’ordre inverse : bras, buste, puis jambes.',
-      ],
-      'en': [
-        'Sit with feet strapped in, grab the handle, arms straight, shins vertical (the “catch”).',
-        'Push hard with the LEGS first, torso following.',
-        'When the legs are nearly straight, lean the torso back slightly then pull the handle to the lower ribs.',
-        'Return in reverse order: arms, torso, then legs.',
-      ],
-    },
-    cues: const {
-      'fr': [
-        'Ordre de la poussée : JAMBES → buste → bras (et l’inverse au retour).',
-        '~60 % de la force vient des jambes, pas des bras.',
-        'Tire la poignée vers le bas des côtes, coudes près du corps.',
-      ],
-      'en': [
-        'Drive order: LEGS → torso → arms (and the reverse on the return).',
-        '~60% of the force comes from the legs, not the arms.',
-        'Pull the handle to the lower ribs, elbows close to the body.',
-      ],
-    },
-    mistakes: const {
-      'fr': [
-        'Tirer avec les bras avant de pousser les jambes.',
-        'Dos arrondi pendant la traction.',
-        'Se précipiter sur le retour (la « récup » doit être plus lente).',
-      ],
-      'en': [
-        'Pulling with the arms before pushing with the legs.',
-        'Rounding the back during the pull.',
-        'Rushing the recovery (the return should be slower).',
-      ],
-    },
-    beginner: const {
-      'fr': 'Travaille à cadence lente pour sentir l’ordre jambes-buste-bras, puis augmente '
-          'l’intensité. Règle le frein (« damper ») autour de 4-6.',
-      'en': 'Practise at a slow stroke rate to feel the legs-torso-arms order, then build '
-          'intensity. Set the damper around 4-6.',
-    },
-  ),
-
   'bike_erg_cal': MovementGuide(
     id: 'bike_erg_cal',
     svgAsset: movementSvgAsset('bike_erg_cal'),

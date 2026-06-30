@@ -326,3 +326,113 @@ describe("WodsService.detail — bloc `guided` (Mode guidé)", () => {
     await expect(service.detail("ghost")).rejects.toBeInstanceOf(NotFoundException);
   });
 });
+
+describe("WodsService.detail — movementIds canoniques (guide des mouvements)", () => {
+  type Row = {
+    id: string;
+    name: string;
+    type: string;
+    scoreType: string;
+    rounds: number | null;
+    timeCapSec: number | null;
+    requiresEquipment: boolean;
+    targetAttributes: string[];
+    isBenchmark: boolean;
+    isCustom: boolean;
+    createdById: string | null;
+    movements?: unknown;
+  };
+
+  const row = (over: Partial<Row>): Row => ({
+    id: "fran",
+    name: "Fran",
+    type: "for_time",
+    scoreType: "time",
+    rounds: null,
+    timeCapSec: null,
+    requiresEquipment: true,
+    targetAttributes: ["strength"],
+    isBenchmark: true,
+    isCustom: false,
+    createdById: null,
+    ...over,
+  });
+
+  /**
+   * Benchmark : detail() reçoit les movementIds du blueprint via la réponse `getWodLevels` du
+   * score-service. On mock cette réponse avec les IDs canoniques attendus (mêmes que ceux produits
+   * par `blueprintMovementIds`, testés côté score-service) et on vérifie qu'ils ressortent tels quels.
+   */
+  const benchmarkService = (id: string, movementIds: string[]): WodsService => {
+    const prisma = {
+      wod: { findUnique: jest.fn().mockResolvedValue(row({ id, name: id })) },
+      wodResult: { findFirst: jest.fn(), findMany: jest.fn() },
+    };
+    const scoreClient = {
+      getWodLevels: jest.fn().mockResolvedValue({
+        wodId: id,
+        scoreType: "time",
+        male: { champion: 120, intermediate: 240, occasional: 480 },
+        female: { champion: 150, intermediate: 300, occasional: 600 },
+        movementIds,
+      }),
+    };
+    return new WodsService(prisma as never, scoreClient as never, {} as never, {} as never, {} as never);
+  };
+
+  it("fran → [thruster, pull_up]", async () => {
+    const service = benchmarkService("fran", ["thruster", "pull_up"]);
+    const res = (await service.detail("fran")) as { movementIds: string[] };
+    expect(res.movementIds).toEqual(["thruster", "pull_up"]);
+  });
+
+  it("benchmark_zero → [burpee, push_up, air_squat]", async () => {
+    const service = benchmarkService("benchmark_zero", ["burpee", "push_up", "air_squat"]);
+    const res = (await service.detail("benchmark_zero")) as { movementIds: string[] };
+    expect(res.movementIds).toEqual(["burpee", "push_up", "air_squat"]);
+  });
+
+  // ergo_skill : rameur en CALORIES → `row_cal` (id canonique réel du blueprint), pas `row`.
+  it("ergo_skill → [row_cal, wall_walk, toes_to_bar]", async () => {
+    const service = benchmarkService("ergo_skill", ["row_cal", "wall_walk", "toes_to_bar"]);
+    const res = (await service.detail("ergo_skill")) as { movementIds: string[] };
+    expect(res.movementIds).toEqual(["row_cal", "wall_walk", "toes_to_bar"]);
+  });
+
+  it("score-service indisponible (getWodLevels rejette) → movementIds = [] (état dégradé)", async () => {
+    const prisma = {
+      wod: { findUnique: jest.fn().mockResolvedValue(row({ id: "fran" })) },
+      wodResult: { findFirst: jest.fn(), findMany: jest.fn() },
+    };
+    const scoreClient = { getWodLevels: jest.fn().mockRejectedValue(new Error("down")) };
+    const service = new WodsService(prisma as never, scoreClient as never, {} as never, {} as never, {} as never);
+    const res = (await service.detail("fran")) as { movementIds: string[] };
+    expect(res.movementIds).toEqual([]);
+  });
+
+  it("WOD custom → movementIds dérivés des blocs (wod.movements), ordonnés & dédupliqués", async () => {
+    const prisma = {
+      wod: {
+        findUnique: jest.fn().mockResolvedValue(
+          row({
+            id: "w-custom",
+            isCustom: true,
+            isBenchmark: false,
+            createdById: "owner",
+            movements: [
+              { movementId: "burpee", reps: 20 },
+              { movementId: "push_up", reps: 30 },
+              { movementId: "burpee", reps: 10 }, // doublon → ignoré
+            ],
+          }),
+        ),
+      },
+      wodResult: { findFirst: jest.fn(), findMany: jest.fn() },
+    };
+    // computeEstimate (paliers custom) peut échouer : detail() retombe sur levels=null, sans incidence.
+    const scoreClient = { computeEstimate: jest.fn().mockRejectedValue(new Error("n/a")) };
+    const service = new WodsService(prisma as never, scoreClient as never, {} as never, {} as never, {} as never);
+    const res = (await service.detail("w-custom")) as { movementIds: string[] };
+    expect(res.movementIds).toEqual(["burpee", "push_up"]);
+  });
+});

@@ -149,3 +149,25 @@ export const BLUEPRINT_MOVEMENT_IDS: ReadonlySet<string> = new Set(
 export function blueprintMovementsExist(bp: WodBlueprint): boolean {
   return bp.blocks.every((b) => MOVEMENTS_BY_ID.has(b.movementId));
 }
+
+/**
+ * IDENTIFIANTS CANONIQUES des mouvements d'un WOD de référence, dans l'ORDRE d'exécution et SANS
+ * doublon (un mouvement répété sur plusieurs blocs n'apparaît qu'une fois, à sa 1re occurrence).
+ *
+ * Source de vérité = le blueprint (`blocks[].movementId`), pas la prescription TEXTE : le guide des
+ * mouvements côté mobile s'appuie dessus pour NE PLUS deviner par le nom FR. WOD sans blueprint
+ * (course pure, max-reps, 1RM…) ⇒ `[]` (pas de décomposition exploitable).
+ */
+export function blueprintMovementIds(wodId: string): string[] {
+  const bp = WOD_BLUEPRINTS[wodId];
+  if (!bp) return [];
+  const seen = new Set<string>();
+  const ids: string[] = [];
+  for (const block of bp.blocks) {
+    if (!seen.has(block.movementId)) {
+      seen.add(block.movementId);
+      ids.push(block.movementId);
+    }
+  }
+  return ids;
+}

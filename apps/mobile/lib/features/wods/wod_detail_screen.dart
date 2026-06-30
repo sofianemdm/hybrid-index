@@ -105,6 +105,12 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
   /// sur la prescription (`blocks`/`weights` : noms libres FR/EN, résolus par nom côté guide).
   /// Le filtrage final (résolution → fiche) est fait par l'écran ; ici on collecte au plus large.
   List<String> _movementLabels(WodDetail d) {
+    // 1) PRIORITÉ aux identifiants canoniques exposés par le backend (movementIds du blueprint,
+    //    ex. `thruster`, `wall_walk`, `toes_to_bar`). Résolution exacte → les ids basiques
+    //    supprimés (run/row/push_up…) sont silencieusement ignorés par le resolver.
+    if (d.movementIds.isNotEmpty) return List<String>.from(d.movementIds);
+
+    // 2) Repli : ancienne dérivation par ids d'édition (WOD custom) puis noms de prescription.
     final out = <String>[];
     final payloadBlocks = d.editPayload?.blocks;
     if (payloadBlocks != null && payloadBlocks.isNotEmpty) {
