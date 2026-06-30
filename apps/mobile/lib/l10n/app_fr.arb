@@ -162,6 +162,10 @@
   },
   "wodDetailAboveLevel": "tu dépasses ton niveau estimé 🔥",
   "wodDetailBelowLevel": "tu peux encore progresser",
+  "wodDetailBeatRecord": "Tu as déjà fait {best} sur cette séance — bats ton record !",
+  "@wodDetailBeatRecord": {
+    "placeholders": { "best": { "type": "String" } }
+  },
   "wodDetailPoints": "{n} pts",
   "wodDetailMinutes": "{n} min",
   "wodDetailChallenge": "Le défi",

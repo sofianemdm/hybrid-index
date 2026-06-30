@@ -169,6 +169,10 @@
   },
   "wodDetailAboveLevel": "you're beating your estimated level 🔥",
   "wodDetailBelowLevel": "room to push harder",
+  "wodDetailBeatRecord": "You already did {best} on this workout — beat your record!",
+  "@wodDetailBeatRecord": {
+    "placeholders": { "best": { "type": "String" } }
+  },
   "wodDetailPoints": "{n} pts",
   "@wodDetailPoints": {
     "placeholders": {

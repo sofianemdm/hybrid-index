@@ -511,6 +511,11 @@ class AppLocalizationsFr extends AppLocalizations {
   String get wodDetailBelowLevel => 'tu peux encore progresser';
 
   @override
+  String wodDetailBeatRecord(String best) {
+    return 'Tu as déjà fait $best sur cette séance — bats ton record !';
+  }
+
+  @override
   String wodDetailPoints(int n) {
     return '$n pts';
   }

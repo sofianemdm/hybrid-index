@@ -1022,6 +1022,12 @@ abstract class AppLocalizations {
   /// **'room to push harder'**
   String get wodDetailBelowLevel;
 
+  /// No description provided for @wodDetailBeatRecord.
+  ///
+  /// In en, this message translates to:
+  /// **'You already did {best} on this workout — beat your record!'**
+  String wodDetailBeatRecord(String best);
+
   /// No description provided for @wodDetailPoints.
   ///
   /// In en, this message translates to:

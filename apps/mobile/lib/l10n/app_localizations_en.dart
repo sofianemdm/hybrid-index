@@ -509,6 +509,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get wodDetailBelowLevel => 'room to push harder';
 
   @override
+  String wodDetailBeatRecord(String best) {
+    return 'You already did $best on this workout — beat your record!';
+  }
+
+  @override
   String wodDetailPoints(int n) {
     return '$n pts';
   }

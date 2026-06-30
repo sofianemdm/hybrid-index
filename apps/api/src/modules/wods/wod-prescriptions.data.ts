@@ -394,21 +394,21 @@ export const WOD_PRESCRIPTIONS: Record<string, WodPrescription> = {
 
   // ───────────── Épreuves « Autre » (réelles, jouables) ─────────────
   hyrox_solo: {
-    summary: "L'épreuve HYROX solo : 8 km de course fractionnés, entrelacés avec 8 stations fonctionnelles, le tout enchaîné pour le temps.",
+    summary: "L'épreuve HYROX solo : 8 km de course fractionnés (8 × 1 km), entrelacés avec les 8 stations officielles (SkiErg, Sled Push, Sled Pull, Burpee Broad Jump, Rowing, Farmers Carry, Sandbag Lunges, Wall Balls), le tout enchaîné pour le temps.",
     format: "8 × 1 km + 8 stations, pour le temps",
     blocks: [
-      { reps: "8 ×", movement: "1 km course", detail: "avant chaque station" },
+      { reps: "8 ×", movement: "Course 1 km", detail: "avant chaque station" },
       { reps: "1000 m", movement: "SkiErg" },
-      { reps: "50 m", movement: "Poussée de traîneau" },
-      { reps: "50 m", movement: "Tirage de traîneau" },
-      { reps: "80 m", movement: "Burpee-sauts" },
-      { reps: "1000 m", movement: "Rameur" },
-      { reps: "200 m", movement: "Port de sacs (farmers)" },
-      { reps: "100 m", movement: "Fentes lestées" },
-      { reps: "100", movement: "Wall balls" },
+      { reps: "50 m", movement: "Sled Push" },
+      { reps: "50 m", movement: "Sled Pull" },
+      { reps: "80 m", movement: "Burpee Broad Jump" },
+      { reps: "1000 m", movement: "Rowing" },
+      { reps: "200 m", movement: "Farmers Carry" },
+      { reps: "100 m", movement: "Sandbag Lunges" },
+      { reps: "100", movement: "Wall Balls" },
     ],
     weights: [
-      { movement: "Wall ball", rxMale: 9, rxFemale: 6, scaledMale: 6, scaledFemale: 4, unit: "kg" },
+      { movement: "Wall Balls", rxMale: 9, rxFemale: 6, scaledMale: 6, scaledFemale: 4, unit: "kg" },
     ],
     scoringNote: SCORE_TIME,
   },

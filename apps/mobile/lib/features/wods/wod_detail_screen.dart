@@ -275,7 +275,7 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
                 const SizedBox(height: HiSpace.sm),
                 _leaderboardSection(d.scoreType, d.prescription?.weights.isNotEmpty ?? false),
                 const SizedBox(height: HiSpace.lg),
-                _predictionCard(),
+                _predictionCard(d),
                 HiButtonSecondary(
                   label: t.wodDetailGuidedMode,
                   icon: Icons.play_circle_outline_rounded,
@@ -407,16 +407,11 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
   }
 
   String _fmtPredicted(int raw, String scoreType) {
-    switch (scoreType) {
-      case 'reps':
-        return '$raw reps';
-      case 'load':
-        return '$raw kg';
-      case 'distance':
-        return '$raw m';
-      default:
-        return _fmtCap(raw); // time
-    }
+    // Délègue au formateur central : gère les WODs en TOURS (kRoundWods, ex. cindy → « tours »)
+    // ET les temps longs en h:mm:ss (semi/marathon/hyrox_solo → « 1:32:00 »). Ne PAS réimplémenter
+    // ici (un format ad hoc ignorait l'unité « tours » et les heures).
+    return formatWodResult(raw, scoreType,
+        wodId: widget.wodId, roundsLabel: AppLocalizations.of(context).wodFormatRounds);
   }
 
   /// Libellé de confiance de la fourchette (INC. 3). `null` ⇒ pas de fourchette → aucun libellé.
@@ -433,12 +428,43 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
     }
   }
 
+  /// Carte « 🏆 Tu as déjà fait {temps} — bats ton record ! » : affichée à la place de l'estimation
+  /// dès que l'athlète a un vrai résultat. Ton positif/dopaminergique (accent victoire). Remplace
+  /// l'ancien `SizedBox.shrink()` qui laissait un vide quand le WOD était déjà fait.
+  Widget _recordCard(WodDetail d) {
+    final t = AppLocalizations.of(context);
+    final best = formatWodResult(d.myBestRaw!, d.scoreType,
+        wodId: widget.wodId, roundsLabel: t.wodFormatRounds);
+    return Container(
+      margin: const EdgeInsets.only(bottom: HiSpace.md),
+      padding: const EdgeInsets.all(HiSpace.md),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(colors: [
+          HiColors.accentVictory.withValues(alpha: 0.16),
+          HiColors.brandPrimary.withValues(alpha: 0.10),
+        ]),
+        borderRadius: BorderRadius.circular(HiRadius.lg),
+        border: Border.all(color: HiColors.accentVictory.withValues(alpha: 0.5)),
+      ),
+      child: Row(
+        children: [
+          const Text('🏆', style: HiType.titleM),
+          const SizedBox(width: HiSpace.sm),
+          Expanded(
+            child: Text(t.wodDetailBeatRecord(best),
+                style: HiType.bodyStrong.copyWith(color: HiColors.textPrimary)),
+          ),
+        ],
+      ),
+    );
+  }
+
   /// Carte « Temps estimé pour toi » : prédiction d'après le niveau + phrase qui pousse à faire mieux.
   /// Ne s'affiche QUE tant que l'athlète n'a pas de vrai résultat. Dès qu'un résultat existe
-  /// (`myBestRaw != null`), l'estimation n'est plus une cible à venir → on la masque ici et on la
-  /// transforme en ligne comparative dans le bloc « Toi » (cf. [_tierCard]).
-  Widget _predictionCard() {
-    if (_loaded?.myBestRaw != null) return const SizedBox.shrink();
+  /// (`myBestRaw != null`), l'estimation n'est plus une cible à venir → on affiche à la place une
+  /// carte « record » motivante (cf. [_recordCard]). La ligne comparative reste dans le bloc « Toi ».
+  Widget _predictionCard(WodDetail d) {
+    if (d.myBestRaw != null) return _recordCard(d);
     return FutureBuilder<WodPrediction?>(
       future: _prediction,
       builder: (context, snap) {
