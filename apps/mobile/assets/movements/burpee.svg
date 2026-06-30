@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <!-- floor -->
+  <path d="M24 176 L176 176" stroke="#8A93A6" stroke-width="4"/>
+  <!-- step 1: chest to ground (ghost) -->
+  <g stroke="#8A93A6" stroke-width="4" opacity="0.55">
+    <circle cx="44" cy="160" r="9"/>
+    <path d="M53 162 L120 168"/>
+    <path d="M120 168 L150 174"/>
+  </g>
+  <!-- step 2: jump up, arms overhead -->
+  <g stroke="#2BD4F5" stroke-width="4">
+    <circle cx="130" cy="58" r="11"/>
+    <path d="M130 69 L130 116"/>
+    <!-- arms overhead -->
+    <path d="M130 78 L116 48 M130 78 L144 48"/>
+    <!-- legs, feet off ground (jump) -->
+    <path d="M130 116 L116 150 M130 116 L146 150"/>
+  </g>
+  <!-- upward motion arrow -->
+  <path d="M168 150 L168 96 M160 108 L168 92 L176 108" stroke="#8A93A6" stroke-width="4"/>
+</svg>

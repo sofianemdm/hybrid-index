@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <!-- bar -->
+  <path d="M28 40 L172 40" stroke="#8A93A6" stroke-width="4"/>
+  <path d="M44 24 L44 40 M156 24 L156 40" stroke="#8A93A6" stroke-width="4"/>
+  <g stroke="#2BD4F5" stroke-width="4">
+    <!-- hanging, arms straight, body folded so toes reach bar -->
+    <path d="M88 40 L94 70 M112 40 L106 70"/>
+    <circle cx="100" cy="82" r="10"/>
+    <path d="M100 92 L100 118"/>
+    <!-- hips fold, legs swing up to bar -->
+    <path d="M100 118 L72 100 L66 52 M100 118 L78 96 L74 50"/>
+  </g>
+  <!-- toes contact -->
+  <path d="M62 48 L78 48" stroke="#2BD4F5" stroke-width="6"/>
+</svg>

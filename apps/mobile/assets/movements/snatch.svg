@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <!-- floor -->
+  <path d="M20 180 L180 180" stroke="#8A93A6" stroke-width="4"/>
+  <!-- start: wide grip over bar (ghost) -->
+  <g stroke="#8A93A6" stroke-width="4" opacity="0.5">
+    <circle cx="50" cy="106" r="9"/>
+    <path d="M55 112 L84 136 L84 180"/>
+    <path d="M84 136 L56 160"/>
+    <line x1="40" y1="158" x2="68" y2="158"/>
+  </g>
+  <!-- catch: overhead squat, bar locked high, wide grip -->
+  <g stroke="#2BD4F5" stroke-width="4">
+    <circle cx="132" cy="78" r="11"/>
+    <path d="M132 89 L130 120"/>
+    <!-- wide arms locked overhead -->
+    <path d="M132 92 L108 54 M132 92 L156 54"/>
+    <!-- squat legs -->
+    <path d="M130 120 L150 132 L150 180 M130 120 L110 132 L114 180"/>
+  </g>
+  <!-- barbell high overhead -->
+  <g stroke="#8A93A6" stroke-width="4">
+    <line x1="98" y1="48" x2="166" y2="48"/>
+    <line x1="102" y1="40" x2="102" y2="56"/>
+    <line x1="162" y1="40" x2="162" y2="56"/>
+  </g>
+</svg>

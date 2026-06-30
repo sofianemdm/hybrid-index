@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <!-- floor -->
+  <path d="M20 176 L180 176" stroke="#8A93A6" stroke-width="4"/>
+  <!-- start: hinged over bar on floor (ghost) -->
+  <g stroke="#8A93A6" stroke-width="4" opacity="0.5">
+    <circle cx="50" cy="96" r="9"/>
+    <path d="M56 102 L86 128"/>
+    <path d="M86 128 L86 176"/>
+    <path d="M86 128 L60 154"/>
+  </g>
+  <!-- lockout: standing tall, bar at hips -->
+  <g stroke="#2BD4F5" stroke-width="4">
+    <circle cx="134" cy="50" r="11"/>
+    <path d="M134 61 L134 118"/>
+    <!-- straight arms down to bar -->
+    <path d="M134 72 L128 116 M134 72 L140 116"/>
+    <!-- legs -->
+    <path d="M134 118 L124 176 M134 118 L144 176"/>
+  </g>
+  <!-- barbell at hip height -->
+  <g stroke="#8A93A6" stroke-width="4">
+    <line x1="104" y1="118" x2="164" y2="118"/>
+    <circle cx="106" cy="118" r="13"/>
+    <circle cx="162" cy="118" r="13"/>
+  </g>
+</svg>

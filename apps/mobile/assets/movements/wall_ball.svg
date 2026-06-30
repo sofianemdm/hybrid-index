@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <!-- wall + target -->
+  <path d="M30 20 L30 180" stroke="#8A93A6" stroke-width="4"/>
+  <path d="M30 180 L176 180" stroke="#8A93A6" stroke-width="4"/>
+  <circle cx="52" cy="50" r="14" stroke="#8A93A6" stroke-width="4"/>
+  <g stroke="#2BD4F5" stroke-width="4">
+    <!-- figure in squat throwing ball to target -->
+    <circle cx="118" cy="88" r="11"/>
+    <path d="M118 99 L116 130"/>
+    <!-- squat legs -->
+    <path d="M116 130 L138 134 L138 180 M116 130 L96 136 L100 180"/>
+    <!-- arms reaching up toward target -->
+    <path d="M118 104 L88 74"/>
+  </g>
+  <!-- medicine ball -->
+  <circle cx="80" cy="68" r="11" stroke="#2BD4F5" stroke-width="4"/>
+  <!-- throw arc to target -->
+  <path d="M70 60 Q56 40 56 52" stroke="#8A93A6" stroke-width="4" stroke-dasharray="2 9"/>
+</svg>

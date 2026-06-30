@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <!-- erg monorail + flywheel housing -->
+  <g stroke="#8A93A6" stroke-width="4">
+    <path d="M26 150 L182 150"/>
+    <circle cx="44" cy="118" r="20"/>
+    <line x1="44" y1="98" x2="44" y2="150"/>
+  </g>
+  <g stroke="#2BD4F5" stroke-width="4">
+    <!-- rower at finish: leaning back, legs straight, handle to chest -->
+    <circle cx="138" cy="86" r="11"/>
+    <path d="M134 96 L106 122"/>
+    <!-- legs extended along rail -->
+    <path d="M106 122 L72 134 L70 150"/>
+    <!-- arms pulling handle to chest -->
+    <path d="M132 102 L108 108"/>
+  </g>
+  <!-- chain to handle -->
+  <path d="M64 118 L108 108" stroke="#8A93A6" stroke-width="4"/>
+</svg>

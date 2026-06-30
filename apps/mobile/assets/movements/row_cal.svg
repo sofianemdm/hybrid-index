@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <!-- erg monorail + flywheel housing -->
+  <g stroke="#8A93A6" stroke-width="4">
+    <path d="M26 158 L182 158"/>
+    <circle cx="44" cy="126" r="20"/>
+    <line x1="44" y1="106" x2="44" y2="158"/>
+  </g>
+  <g stroke="#2BD4F5" stroke-width="4">
+    <circle cx="138" cy="94" r="11"/>
+    <path d="M134 104 L106 130"/>
+    <path d="M106 130 L72 142 L70 158"/>
+    <path d="M132 110 L108 116"/>
+  </g>
+  <path d="M64 126 L108 116" stroke="#8A93A6" stroke-width="4"/>
+  <!-- calorie gauge accent (monitor) -->
+  <g stroke="#2BD4F5" stroke-width="4">
+    <rect x="120" y="26" width="44" height="30" rx="5"/>
+    <path d="M132 48 A10 10 0 0 1 152 48"/>
+    <line x1="142" y1="48" x2="150" y2="38"/>
+  </g>
+</svg>

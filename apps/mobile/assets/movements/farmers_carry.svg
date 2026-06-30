@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <!-- floor -->
+  <path d="M20 176 L180 176" stroke="#8A93A6" stroke-width="4"/>
+  <g stroke="#2BD4F5" stroke-width="4">
+    <!-- upright figure walking, weights at sides -->
+    <circle cx="100" cy="46" r="11"/>
+    <path d="M100 57 L100 112"/>
+    <!-- straight arms hanging at sides -->
+    <path d="M100 70 L78 110 M100 70 L122 110"/>
+    <!-- walking legs, mid-stride -->
+    <path d="M100 112 L84 152 L82 176 M100 112 L118 150 L120 176"/>
+  </g>
+  <!-- two implements (dumbbells/KBs) at hands -->
+  <g stroke="#8A93A6" stroke-width="4">
+    <rect x="68" y="112" width="20" height="10" rx="3"/>
+    <line x1="78" y1="106" x2="78" y2="112"/>
+    <rect x="112" y="112" width="20" height="10" rx="3"/>
+    <line x1="122" y1="106" x2="122" y2="112"/>
+  </g>
+  <!-- direction arrow -->
+  <path d="M40 192 L160 192 M148 184 L160 192 L148 200" stroke="#8A93A6" stroke-width="4"/>
+</svg>

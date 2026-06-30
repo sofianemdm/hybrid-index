@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <!-- floor -->
+  <path d="M24 184 L176 184" stroke="#8A93A6" stroke-width="4"/>
+  <g stroke="#2BD4F5" stroke-width="4">
+    <!-- bottom of squat, bar locked overhead -->
+    <circle cx="100" cy="70" r="11"/>
+    <path d="M100 81 L98 116"/>
+    <!-- arms straight up to bar -->
+    <path d="M100 84 L82 46 M100 84 L118 46"/>
+    <!-- deep squat legs -->
+    <path d="M98 116 L128 122 L128 184 M98 116 L68 124 L72 184"/>
+  </g>
+  <!-- barbell overhead -->
+  <g stroke="#8A93A6" stroke-width="4">
+    <line x1="68" y1="40" x2="132" y2="40"/>
+    <line x1="72" y1="32" x2="72" y2="48"/>
+    <line x1="128" y1="32" x2="128" y2="48"/>
+  </g>
+</svg>

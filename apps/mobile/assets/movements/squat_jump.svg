@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <!-- floor -->
+  <path d="M24 176 L176 176" stroke="#8A93A6" stroke-width="4"/>
+  <!-- squat bottom (ghost) -->
+  <g stroke="#8A93A6" stroke-width="4" opacity="0.55">
+    <circle cx="56" cy="92" r="10"/>
+    <path d="M56 102 L54 132"/>
+    <path d="M54 132 L80 134 L80 176 M54 132 L32 136 L36 176"/>
+    <path d="M56 114 L78 110"/>
+  </g>
+  <!-- jump extension: airborne, arms up, legs straight -->
+  <g stroke="#2BD4F5" stroke-width="4">
+    <circle cx="134" cy="48" r="11"/>
+    <path d="M134 59 L134 110"/>
+    <path d="M134 70 L118 44 M134 70 L150 44"/>
+    <path d="M134 110 L122 144 M134 110 L148 144"/>
+  </g>
+  <!-- up arrow -->
+  <path d="M170 150 L170 100 M162 112 L170 96 L178 112" stroke="#8A93A6" stroke-width="4"/>
+</svg>

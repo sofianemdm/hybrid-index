@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <!-- floor -->
+  <path d="M20 180 L180 180" stroke="#8A93A6" stroke-width="4"/>
+  <!-- start: DB on floor between feet (ghost) -->
+  <g stroke="#8A93A6" stroke-width="4" opacity="0.5">
+    <circle cx="48" cy="108" r="9"/>
+    <path d="M53 114 L80 140 L80 180"/>
+    <path d="M53 114 L66 150"/>
+  </g>
+  <!-- finish: one DB locked overhead, single arm -->
+  <g stroke="#2BD4F5" stroke-width="4">
+    <circle cx="130" cy="74" r="11"/>
+    <path d="M130 85 L130 136"/>
+    <!-- working arm overhead -->
+    <path d="M130 92 L138 54"/>
+    <!-- other arm down -->
+    <path d="M130 96 L114 122"/>
+    <path d="M130 136 L120 180 M130 136 L140 180"/>
+  </g>
+  <!-- dumbbell overhead -->
+  <g stroke="#8A93A6" stroke-width="4">
+    <line x1="140" y1="50" x2="140" y2="32"/>
+    <rect x="130" y="28" width="20" height="9" rx="2"/>
+    <rect x="130" y="46" width="20" height="9" rx="2"/>
+  </g>
+</svg>

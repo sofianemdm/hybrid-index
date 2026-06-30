@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <!-- floor -->
+  <path d="M20 172 L180 172" stroke="#8A93A6" stroke-width="4"/>
+  <g stroke="#2BD4F5" stroke-width="4">
+    <!-- walking lunge figure -->
+    <circle cx="96" cy="50" r="10"/>
+    <path d="M96 60 L96 104"/>
+    <path d="M96 74 L82 98 M96 74 L110 98"/>
+    <path d="M96 104 L126 122 L126 160"/>
+    <path d="M96 104 L72 142 L60 160"/>
+  </g>
+  <!-- direction / distance arrow -->
+  <g stroke="#8A93A6" stroke-width="4">
+    <path d="M40 188 L160 188"/>
+    <path d="M148 180 L160 188 L148 196"/>
+  </g>
+</svg>

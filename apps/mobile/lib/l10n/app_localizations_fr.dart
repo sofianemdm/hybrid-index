@@ -2805,4 +2805,39 @@ class AppLocalizationsFr extends AppLocalizations {
     );
     return '$name, $_temp0';
   }
+
+  @override
+  String get movementGuideButton => 'Comment faire les mouvements';
+
+  @override
+  String get movementGuideTitle => 'Comment faire les mouvements';
+
+  @override
+  String get movementGuideIntro =>
+      'Petit rappel sur chaque mouvement : comment le faire, à quoi faire attention, et une version plus facile si besoin.';
+
+  @override
+  String get movementGuideHowTo => 'Comment faire';
+
+  @override
+  String get movementGuideKeyPoints => 'Points clés';
+
+  @override
+  String get movementGuideMistakes => 'Erreurs fréquentes';
+
+  @override
+  String get movementGuideEasyVersion => 'Version facile';
+
+  @override
+  String get movementGuideEmpty =>
+      'Aucune fiche disponible pour les mouvements de cette séance pour l\'instant.';
+
+  @override
+  String get movementGuideEmptyGlossary =>
+      'Le guide des mouvements arrive bientôt.';
+
+  @override
+  String a11yMovementCard(String name) {
+    return 'Mouvement : $name. Comment faire, points clés, erreurs fréquentes et une version facile.';
+  }
 }

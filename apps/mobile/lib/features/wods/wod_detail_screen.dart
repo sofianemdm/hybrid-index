@@ -11,6 +11,8 @@ import '../../widgets/error_retry.dart';
 import '../../widgets/hi_button.dart';
 import '../../widgets/hi_skeleton.dart';
 import '../../widgets/rank_badge.dart';
+import '../movements/movement_guide_content.dart';
+import '../movements/movement_guide_screen.dart';
 import 'wod_builder_screen.dart';
 import 'wod_format.dart';
 import 'wod_result_entry_screen.dart';
@@ -98,6 +100,38 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
   /// propose un bouton EXPLICITE « Enregistrer mon temps ». À l'appui, le lecteur se ferme puis on
   /// ouvre la saisie de résultat ([WodResultEntryScreen]) ; l'athlète renseigne son score (qui met
   /// à jour l'Athlete Index) ou revient. Plus d'auto-navigation : rien ne se déclenche sans action.
+  /// Dérive la liste ORDONNÉE des libellés de mouvements d'un WOD, pour le guide « Comment faire ».
+  /// Priorité : `editPayload.blocks` (WOD custom) expose des `movementId` exacts ; sinon on retombe
+  /// sur la prescription (`blocks`/`weights` : noms libres FR/EN, résolus par nom côté guide).
+  /// Le filtrage final (résolution → fiche) est fait par l'écran ; ici on collecte au plus large.
+  List<String> _movementLabels(WodDetail d) {
+    final out = <String>[];
+    final payloadBlocks = d.editPayload?.blocks;
+    if (payloadBlocks != null && payloadBlocks.isNotEmpty) {
+      for (final b in payloadBlocks) {
+        final id = b['movementId'];
+        if (id is String && id.trim().isNotEmpty) out.add(id);
+      }
+    }
+    final p = d.prescription;
+    if (p != null) {
+      for (final b in p.blocks) {
+        if (b.movement.trim().isNotEmpty) out.add(b.movement);
+      }
+      for (final w in p.weights) {
+        if (w.movement.trim().isNotEmpty) out.add(w.movement);
+      }
+    }
+    return out;
+  }
+
+  /// Vrai s'il existe au moins un mouvement mappable vers une fiche (sinon on masque le bouton).
+  bool _hasMovementGuide(WodDetail d) => resolveMovementGuides(_movementLabels(d)).isNotEmpty;
+
+  void _openMovementGuide(WodDetail d) {
+    MovementGuideScreen.open(context, labels: _movementLabels(d), title: d.name);
+  }
+
   Future<void> _startGuidedWod(WodDetail d) {
     final scalable = d.prescription?.weights.isNotEmpty ?? false;
     return GuidedSessionScreen.fromWod(
@@ -276,6 +310,14 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
                 _leaderboardSection(d.scoreType, d.prescription?.weights.isNotEmpty ?? false),
                 const SizedBox(height: HiSpace.lg),
                 _predictionCard(d),
+                if (_hasMovementGuide(d)) ...[
+                  HiButtonSecondary(
+                    label: t.movementGuideButton,
+                    icon: Icons.menu_book_outlined,
+                    onPressed: () => _openMovementGuide(d),
+                  ),
+                  const SizedBox(height: HiSpace.sm),
+                ],
                 HiButtonSecondary(
                   label: t.wodDetailGuidedMode,
                   icon: Icons.play_circle_outline_rounded,

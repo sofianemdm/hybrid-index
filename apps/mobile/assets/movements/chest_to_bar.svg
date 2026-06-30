@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <!-- bar -->
+  <path d="M28 56 L172 56" stroke="#8A93A6" stroke-width="4"/>
+  <path d="M44 40 L44 56 M156 40 L156 56" stroke="#8A93A6" stroke-width="4"/>
+  <g stroke="#2BD4F5" stroke-width="4">
+    <!-- chest pulled to the bar: head above-behind, chest at bar line -->
+    <circle cx="100" cy="40" r="10"/>
+    <path d="M82 56 L96 50 M118 56 L104 50"/>
+    <path d="M100 62 L100 116"/>
+    <path d="M100 116 L86 152 M100 116 L116 150 L112 168"/>
+  </g>
+  <!-- contact marker at bar -->
+  <path d="M92 56 L108 56" stroke="#2BD4F5" stroke-width="6"/>
+</svg>

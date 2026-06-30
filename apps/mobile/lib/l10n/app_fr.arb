@@ -883,5 +883,16 @@
   "a11yOnbContinue": "Continuer vers l'étape suivante",
   "a11yOnbReveal": "Révéler mon Index",
   "a11yOnbEffortToggle": "{name}, {state, select, on{activé} off{désactivé} other{}}",
-  "@a11yOnbEffortToggle": { "placeholders": { "name": { "type": "String" }, "state": { "type": "String" } } }
+  "@a11yOnbEffortToggle": { "placeholders": { "name": { "type": "String" }, "state": { "type": "String" } } },
+  "movementGuideButton": "Comment faire les mouvements",
+  "movementGuideTitle": "Comment faire les mouvements",
+  "movementGuideIntro": "Petit rappel sur chaque mouvement : comment le faire, à quoi faire attention, et une version plus facile si besoin.",
+  "movementGuideHowTo": "Comment faire",
+  "movementGuideKeyPoints": "Points clés",
+  "movementGuideMistakes": "Erreurs fréquentes",
+  "movementGuideEasyVersion": "Version facile",
+  "movementGuideEmpty": "Aucune fiche disponible pour les mouvements de cette séance pour l'instant.",
+  "movementGuideEmptyGlossary": "Le guide des mouvements arrive bientôt.",
+  "a11yMovementCard": "Mouvement : {name}. Comment faire, points clés, erreurs fréquentes et une version facile.",
+  "@a11yMovementCard": { "placeholders": { "name": { "type": "String" } } }
 }

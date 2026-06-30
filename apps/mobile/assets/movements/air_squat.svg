@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <!-- floor -->
+  <path d="M24 176 L176 176" stroke="#8A93A6" stroke-width="4"/>
+  <!-- standing ghost (start) -->
+  <g stroke="#8A93A6" stroke-width="4" opacity="0.55">
+    <circle cx="58" cy="44" r="10"/>
+    <path d="M58 54 L58 110"/>
+    <path d="M58 110 L48 176 M58 110 L68 176"/>
+    <path d="M58 70 L44 96 M58 70 L72 96"/>
+  </g>
+  <!-- bottom squat position -->
+  <g stroke="#2BD4F5" stroke-width="4">
+    <circle cx="130" cy="70" r="11"/>
+    <path d="M130 81 L126 122"/>
+    <!-- thighs to knees forward, shins down to feet -->
+    <path d="M126 122 L160 124 L158 176 M126 122 L100 130 L104 176"/>
+    <!-- arms forward for balance -->
+    <path d="M130 94 L156 90"/>
+  </g>
+</svg>

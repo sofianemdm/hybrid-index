@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <!-- floor -->
+  <path d="M20 176 L180 176" stroke="#8A93A6" stroke-width="4"/>
+  <!-- box -->
+  <rect x="118" y="118" width="58" height="58" stroke="#8A93A6" stroke-width="4"/>
+  <g stroke="#2BD4F5" stroke-width="4">
+    <!-- figure landing on top of box, knees bent -->
+    <circle cx="146" cy="62" r="11"/>
+    <path d="M146 73 L142 104"/>
+    <!-- arms forward -->
+    <path d="M146 84 L168 80"/>
+    <!-- bent legs landing on box top -->
+    <path d="M142 104 L162 116 L160 118 M142 104 L128 116 L132 118"/>
+  </g>
+  <!-- jump arc from floor to box -->
+  <path d="M58 168 Q92 96 132 116" stroke="#8A93A6" stroke-width="4" stroke-dasharray="2 11"/>
+</svg>

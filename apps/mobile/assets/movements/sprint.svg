@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <!-- floor -->
+  <path d="M20 176 L180 176" stroke="#8A93A6" stroke-width="4"/>
+  <g stroke="#2BD4F5" stroke-width="4">
+    <!-- aggressive sprint lean, big stride -->
+    <circle cx="112" cy="44" r="11"/>
+    <path d="M112 55 L98 102"/>
+    <!-- pumping arms -->
+    <path d="M106 70 L134 58 L140 78 M106 70 L80 82 L74 60"/>
+    <!-- explosive long stride -->
+    <path d="M98 102 L132 112 L130 138 M98 102 L66 138 L74 166"/>
+  </g>
+  <!-- bold speed lines -->
+  <g stroke="#8A93A6" stroke-width="4">
+    <path d="M20 56 L58 56"/>
+    <path d="M14 84 L54 84"/>
+    <path d="M22 112 L58 112"/>
+    <path d="M16 140 L50 140"/>
+  </g>
+</svg>

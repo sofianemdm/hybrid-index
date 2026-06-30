@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <!-- floor -->
+  <path d="M20 166 L180 166" stroke="#8A93A6" stroke-width="4"/>
+  <!-- step 1: chest to ground (ghost) -->
+  <g stroke="#8A93A6" stroke-width="4" opacity="0.55">
+    <circle cx="40" cy="150" r="8"/>
+    <path d="M48 152 L104 158 L128 164"/>
+  </g>
+  <!-- step 2: broad jump forward -->
+  <g stroke="#2BD4F5" stroke-width="4">
+    <circle cx="118" cy="60" r="11"/>
+    <path d="M126 66 L150 100"/>
+    <path d="M124 76 L150 68"/>
+    <path d="M150 100 L138 128 M150 100 L162 122"/>
+  </g>
+  <path d="M64 140 Q110 82 154 140" stroke="#8A93A6" stroke-width="4" stroke-dasharray="2 11"/>
+  <!-- distance arrow -->
+  <g stroke="#8A93A6" stroke-width="4">
+    <path d="M36 186 L164 186"/>
+    <path d="M152 178 L164 186 L152 194"/>
+  </g>
+</svg>

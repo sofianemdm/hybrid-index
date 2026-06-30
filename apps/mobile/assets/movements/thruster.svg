@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <!-- floor -->
+  <path d="M24 184 L176 184" stroke="#8A93A6" stroke-width="4"/>
+  <!-- squat-clean (ghost): bar on shoulders, squatting -->
+  <g stroke="#8A93A6" stroke-width="4" opacity="0.5">
+    <circle cx="52" cy="78" r="9"/>
+    <path d="M52 87 L50 116"/>
+    <path d="M50 116 L70 118 L70 160 M50 116 L32 120 L34 160"/>
+    <line x1="30" y1="70" x2="74" y2="70"/>
+  </g>
+  <!-- top: standing, bar pressed overhead -->
+  <g stroke="#2BD4F5" stroke-width="4">
+    <circle cx="134" cy="74" r="11"/>
+    <path d="M134 85 L134 138"/>
+    <!-- arms up to bar -->
+    <path d="M134 92 L118 56 M134 92 L150 56"/>
+    <!-- legs -->
+    <path d="M134 138 L122 184 M134 138 L146 184"/>
+  </g>
+  <!-- barbell overhead -->
+  <g stroke="#8A93A6" stroke-width="4">
+    <line x1="104" y1="50" x2="164" y2="50"/>
+    <line x1="108" y1="42" x2="108" y2="58"/>
+    <line x1="160" y1="42" x2="160" y2="58"/>
+  </g>
+</svg>

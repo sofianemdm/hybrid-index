@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <!-- floor -->
+  <path d="M20 176 L180 176" stroke="#8A93A6" stroke-width="4"/>
+  <!-- step 1: chest to ground (ghost) -->
+  <g stroke="#8A93A6" stroke-width="4" opacity="0.55">
+    <circle cx="40" cy="160" r="8"/>
+    <path d="M48 162 L104 168 L128 174"/>
+  </g>
+  <!-- step 2: broad jump forward, body leaning, arms back-to-front -->
+  <g stroke="#2BD4F5" stroke-width="4">
+    <circle cx="118" cy="70" r="11"/>
+    <path d="M126 76 L150 110"/>
+    <!-- arms swung forward -->
+    <path d="M124 86 L150 78"/>
+    <!-- legs tucked for jump -->
+    <path d="M150 110 L138 138 M150 110 L162 132"/>
+  </g>
+  <!-- forward jump arc -->
+  <path d="M64 150 Q110 92 154 150" stroke="#8A93A6" stroke-width="4" stroke-dasharray="2 11"/>
+  <path d="M146 142 L156 152 L144 156" stroke="#8A93A6" stroke-width="4"/>
+</svg>

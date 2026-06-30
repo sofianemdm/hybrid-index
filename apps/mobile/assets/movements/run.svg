@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <!-- floor -->
+  <path d="M20 176 L180 176" stroke="#8A93A6" stroke-width="4"/>
+  <g stroke="#2BD4F5" stroke-width="4">
+    <!-- running figure, mid-stride, leaning forward -->
+    <circle cx="104" cy="48" r="11"/>
+    <path d="M104 59 L96 108"/>
+    <!-- arms: one forward bent, one back bent -->
+    <path d="M100 74 L124 66 L130 84 M100 74 L78 84 L72 66"/>
+    <!-- legs: front knee up, back leg extended -->
+    <path d="M96 108 L120 124 L116 152 M96 108 L74 132 L78 162"/>
+  </g>
+  <!-- speed lines -->
+  <g stroke="#8A93A6" stroke-width="4">
+    <path d="M28 70 L56 70"/>
+    <path d="M22 96 L52 96"/>
+    <path d="M30 122 L56 122"/>
+  </g>
+</svg>

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <!-- floor -->
+  <path d="M20 176 L180 176" stroke="#8A93A6" stroke-width="4"/>
+  <!-- sled: base sledge + upright posts -->
+  <g stroke="#8A93A6" stroke-width="4">
+    <path d="M30 176 L88 176"/>
+    <path d="M40 176 L40 112 M76 176 L76 112"/>
+    <path d="M40 112 L76 112"/>
+  </g>
+  <g stroke="#2BD4F5" stroke-width="4">
+    <!-- driving figure leaning hard into the sled -->
+    <circle cx="146" cy="74" r="11"/>
+    <path d="M140 82 L104 110"/>
+    <!-- arms extended to posts -->
+    <path d="M120 95 L78 108 M120 95 L78 116"/>
+    <!-- driving legs, back leg extended -->
+    <path d="M104 110 L124 146 L122 176 M104 110 L150 138 L160 168"/>
+  </g>
+  <!-- push direction arrow -->
+  <path d="M40 56 L100 56 M88 48 L102 56 L88 64" stroke="#8A93A6" stroke-width="4"/>
+</svg>
