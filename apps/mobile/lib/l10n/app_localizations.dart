@@ -278,36 +278,6 @@ abstract class AppLocalizations {
   /// **'Add a few words describing the bug.'**
   String get bugReportTooShort;
 
-  /// No description provided for @wodPredictionTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Based on your level, you\'d do'**
-  String get wodPredictionTitle;
-
-  /// No description provided for @wodPredictionChallenge.
-  ///
-  /// In en, this message translates to:
-  /// **'Your move: go all out and beat this estimate 🔥'**
-  String get wodPredictionChallenge;
-
-  /// No description provided for @wodPredictionConfidenceHigh.
-  ///
-  /// In en, this message translates to:
-  /// **'Reliable estimate'**
-  String get wodPredictionConfidenceHigh;
-
-  /// No description provided for @wodPredictionConfidenceMedium.
-  ///
-  /// In en, this message translates to:
-  /// **'Rough estimate'**
-  String get wodPredictionConfidenceMedium;
-
-  /// No description provided for @wodPredictionConfidenceLow.
-  ///
-  /// In en, this message translates to:
-  /// **'Wide estimate — do a few more sessions to refine it'**
-  String get wodPredictionConfidenceLow;
-
   /// No description provided for @homeBetaBanner.
   ///
   /// In en, this message translates to:
@@ -1009,24 +979,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You: '**
   String get wodDetailYou;
-
-  /// No description provided for @wodDetailLevelEstimate.
-  ///
-  /// In en, this message translates to:
-  /// **'level estimate: {estimate}'**
-  String wodDetailLevelEstimate(String estimate);
-
-  /// No description provided for @wodDetailAboveLevel.
-  ///
-  /// In en, this message translates to:
-  /// **'you\'re beating your estimated level 🔥'**
-  String get wodDetailAboveLevel;
-
-  /// No description provided for @wodDetailBelowLevel.
-  ///
-  /// In en, this message translates to:
-  /// **'room to push harder'**
-  String get wodDetailBelowLevel;
 
   /// No description provided for @wodDetailBeatRecord.
   ///

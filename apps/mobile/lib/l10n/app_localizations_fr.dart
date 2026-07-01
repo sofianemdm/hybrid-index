@@ -106,23 +106,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get bugReportTooShort => 'Ajoute quelques mots pour décrire le bug.';
 
   @override
-  String get wodPredictionTitle => 'D\'après ton niveau, tu ferais';
-
-  @override
-  String get wodPredictionChallenge =>
-      'À toi de jouer : donne tout et bats cette estimation 🔥';
-
-  @override
-  String get wodPredictionConfidenceHigh => 'Estimation fiable';
-
-  @override
-  String get wodPredictionConfidenceMedium => 'Estimation approximative';
-
-  @override
-  String get wodPredictionConfidenceLow =>
-      'Estimation large — fais quelques séances de plus pour l\'affiner';
-
-  @override
   String get homeBetaBanner =>
       'Version bêta — un bug ? Touche pour en savoir plus';
 
@@ -501,17 +484,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get wodDetailYou => 'Toi : ';
-
-  @override
-  String wodDetailLevelEstimate(String estimate) {
-    return 'estimation niveau : $estimate';
-  }
-
-  @override
-  String get wodDetailAboveLevel => 'tu dépasses ton niveau estimé 🔥';
-
-  @override
-  String get wodDetailBelowLevel => 'tu peux encore progresser';
 
   @override
   String wodDetailBeatRecord(String best) {

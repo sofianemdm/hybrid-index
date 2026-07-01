@@ -33,12 +33,10 @@ class WodDetailScreen extends ConsumerStatefulWidget {
 class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
   late String _sex;
   late Future<WodDetail> _detail;
-  late Future<WodPrediction?> _prediction;
   late Future<WodLeaderboard> _leaderboard;
   bool _clubScope = false;
   String _variant = 'rx'; // 'rx' (Rx) ou 'scaled' (allégé) — classements séparés
   WodDetail? _loaded; // dernier détail chargé → pilote le menu Éditer/Supprimer (auteur uniquement)
-  WodPrediction? _loadedPrediction; // prédiction résolue → ligne comparative dans le bloc « Toi »
 
   @override
   void initState() {
@@ -46,20 +44,7 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
     _sex = ref.read(sessionProvider).sex ?? 'male';
     _clubScope = widget.clubId != null; // ouvert depuis un club → on montre le club par défaut
     _detail = ref.read(apiClientProvider).wodDetail(widget.wodId);
-    _setPrediction(ref.read(apiClientProvider).wodPrediction(widget.wodId));
     _loadLeaderboard();
-  }
-
-  /// Mémorise la prédiction (Future + valeur résolue). La valeur résolue sert à enrichir le bloc
-  /// « Toi » d'une ligne comparative SANS nouvel appel réseau (réutilise le Future déjà lancé).
-  void _setPrediction(Future<WodPrediction?> future) {
-    _prediction = future;
-    _loadedPrediction = null;
-    future.then((p) {
-      if (mounted) setState(() => _loadedPrediction = p);
-    }).catchError((_) {
-      // L'estimation est facultative : un échec ne doit jamais casser la fiche.
-    });
   }
 
   void _loadLeaderboard() {
@@ -87,7 +72,6 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
     if (changed == true && mounted) {
       setState(() {
         _detail = ref.read(apiClientProvider).wodDetail(widget.wodId);
-        _setPrediction(ref.read(apiClientProvider).wodPrediction(widget.wodId));
         _loadLeaderboard();
       });
     }
@@ -122,7 +106,6 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
     if (mounted) {
       setState(() {
         _detail = ref.read(apiClientProvider).wodDetail(widget.wodId);
-        _setPrediction(ref.read(apiClientProvider).wodPrediction(widget.wodId));
         _loadLeaderboard();
       });
     }
@@ -221,7 +204,6 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
             if (snap.hasError) {
               return ErrorRetry(onRetry: () => setState(() {
                 _detail = ref.read(apiClientProvider).wodDetail(widget.wodId);
-                _setPrediction(ref.read(apiClientProvider).wodPrediction(widget.wodId));
                 _loadLeaderboard();
               }));
             }
@@ -365,28 +347,10 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
                 ],
               ),
             ),
-            if (_levelComparison(d) case final cmp?) ...[
-              const SizedBox(height: 4),
-              Text(cmp, textAlign: TextAlign.center, style: HiType.caption.copyWith(color: HiColors.textTertiary)),
-            ],
           ],
         ],
       ),
     );
-  }
-
-  /// Ligne comparative « estimation niveau : Y · verdict » affichée sous le temps réel de l'athlète,
-  /// UNIQUEMENT si l'écart relatif avec l'estimation dépasse ~8 % (sinon : pas de bruit → null).
-  /// Sens-conscient : pour un temps (plus court = mieux), battre l'estimation = faire MOINS ;
-  /// pour reps/charge/distance (plus haut = mieux), battre l'estimation = faire PLUS.
-  String? _levelComparison(WodDetail d) {
-    final est = _loadedPrediction?.predictedRaw;
-    final beats = wodBeatsEstimate(d.myBestRaw, est, d.scoreType);
-    if (beats == null) return null; // valeurs manquantes ou écart négligeable → pas de bruit
-    final t = AppLocalizations.of(context);
-    final estStr = formatWodResult(est!, d.scoreType, wodId: widget.wodId, roundsLabel: t.wodFormatRounds);
-    final verdict = beats ? t.wodDetailAboveLevel : t.wodDetailBelowLevel;
-    return '${t.wodDetailLevelEstimate(estStr)} · $verdict';
   }
 
   Widget _tierRow(String label, num value, String scoreType, Color color) {
@@ -407,28 +371,6 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
     final m = sec ~/ 60;
     final s = (sec % 60).toString().padLeft(2, '0');
     return '$m:$s';
-  }
-
-  String _fmtPredicted(int raw, String scoreType) {
-    // Délègue au formateur central : gère les WODs en TOURS (kRoundWods, ex. cindy → « tours »)
-    // ET les temps longs en h:mm:ss (semi/marathon/hyrox_solo → « 1:32:00 »). Ne PAS réimplémenter
-    // ici (un format ad hoc ignorait l'unité « tours » et les heures).
-    return formatWodResult(raw, scoreType,
-        wodId: widget.wodId, roundsLabel: AppLocalizations.of(context).wodFormatRounds);
-  }
-
-  /// Libellé de confiance de la fourchette (INC. 3). `null` ⇒ pas de fourchette → aucun libellé.
-  String? _confidenceLabel(AppLocalizations t, String? confidence) {
-    switch (confidence) {
-      case 'high':
-        return t.wodPredictionConfidenceHigh;
-      case 'medium':
-        return t.wodPredictionConfidenceMedium;
-      case 'low':
-        return t.wodPredictionConfidenceLow;
-      default:
-        return null;
-    }
   }
 
   /// Carte « 🏆 Tu as déjà fait {temps} — bats ton record ! » : affichée à la place de l'estimation
@@ -462,63 +404,12 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
     );
   }
 
-  /// Carte « Temps estimé pour toi » : prédiction d'après le niveau + phrase qui pousse à faire mieux.
-  /// Ne s'affiche QUE tant que l'athlète n'a pas de vrai résultat. Dès qu'un résultat existe
-  /// (`myBestRaw != null`), l'estimation n'est plus une cible à venir → on affiche à la place une
-  /// carte « record » motivante (cf. [_recordCard]). La ligne comparative reste dans le bloc « Toi ».
+  /// Carte « record » motivante : « 🏆 Tu as déjà fait {temps} — bats ton record ! ».
+  /// Affichée dès qu'un vrai résultat existe (`myBestRaw != null`). L'ancienne carte d'ESTIMATION
+  /// « Temps estimé pour toi » a été retirée (décision produit) : plus aucune prédiction per-user.
   Widget _predictionCard(WodDetail d) {
     if (d.myBestRaw != null) return _recordCard(d);
-    return FutureBuilder<WodPrediction?>(
-      future: _prediction,
-      builder: (context, snap) {
-        final p = snap.data;
-        if (p == null || p.predictedRaw == null) return const SizedBox.shrink();
-        final t = AppLocalizations.of(context);
-        return Container(
-          margin: const EdgeInsets.only(bottom: HiSpace.md),
-          padding: const EdgeInsets.all(HiSpace.md),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(colors: [
-              HiColors.brandPrimary.withValues(alpha: 0.14),
-              HiColors.accentVictory.withValues(alpha: 0.10),
-            ]),
-            borderRadius: BorderRadius.circular(HiRadius.lg),
-            border: Border.all(color: HiColors.brandPrimary.withValues(alpha: 0.4)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(Icons.track_changes_rounded, color: HiColors.brandPrimary, size: 18),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(t.wodPredictionTitle,
-                        style: HiType.caption.copyWith(color: HiColors.textSecondary)),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 2),
-              // INC. 3 — FOURCHETTE : on affiche un INTERVALLE « ~9:00 - 11:00 » quand les bornes
-              // sont dispo (estimation honnête plutôt qu'un point faussement précis). FALLBACK : si
-              // seul un point est dispo (repli population, pas de fourchette), on garde le point.
-              Text(
-                p.hasRange
-                    ? '~${_fmtPredicted(p.predictedLow!, p.scoreType)} - ${_fmtPredicted(p.predictedHigh!, p.scoreType)}'
-                    : '~${_fmtPredicted(p.predictedRaw!, p.scoreType)}',
-                style: HiType.numericL.copyWith(color: HiColors.textPrimary),
-              ),
-              if (_confidenceLabel(t, p.confidence) case final String label) ...[
-                const SizedBox(height: 2),
-                Text(label, style: HiType.caption.copyWith(color: HiColors.textTertiary)),
-              ],
-              const SizedBox(height: 4),
-              Text(t.wodPredictionChallenge, style: HiType.bodyStrong.copyWith(color: HiColors.brandPrimary)),
-            ],
-          ),
-        );
-      },
-    );
+    return const SizedBox.shrink();
   }
 
   /// Carte « Le défi » : énoncé concret de la séance + poids liés au sexe sélectionné.
