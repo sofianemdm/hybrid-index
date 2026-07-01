@@ -42,15 +42,20 @@ describe("score-service — prédiction inverse (e2e)", () => {
       expect(res.body.predictedRaw).toBeLessThanOrEqual(3600);
     });
 
-    it("cohérence ALLER-RETOUR : le raw prédit, re-noté, redonne ~le niveau de départ", async () => {
-      // userInternal = 600 (un seul attribut cible). predict → raw ; sub-score(raw) ≈ 600.
+    it("cohérence ALLER-RETOUR : le raw prédit (DÉ-bufferisé), re-noté, redonne ~le niveau de départ", async () => {
+      // userInternal = 600 (un seul attribut cible). Le raw AFFICHÉ est gonflé de +40 %
+      // (BEATABILITY_BUFFER, marge de battabilité gamification) → on le RETIRE avant de re-noter
+      // pour vérifier que la chaîne inverse raw↔sub-score reste exacte. run_5k = time (dir -1) ⇒
+      // raw « réel » = predictedRaw / 1.4. sub-score(raw réel) ≈ 600.
+      const BEATABILITY_BUFFER = 1.4;
       const pred = await request(app.getHttpServer())
         .post("/v1/score/predict")
         .send({ wodId: "run_5k", sex: "male", attributeScores: attrs(["engine"], 600) })
         .expect(201);
+      const unbuffered = Math.round(pred.body.predictedRaw / BEATABILITY_BUFFER);
       const scored = await request(app.getHttpServer())
         .post("/v1/score/sub-score")
-        .send({ wodId: "run_5k", sex: "male", scoreType: "time", rawResult: pred.body.predictedRaw })
+        .send({ wodId: "run_5k", sex: "male", scoreType: "time", rawResult: unbuffered })
         .expect(201);
       // ±6 : l'arrondi entier du temps prédit + la précision de l'inverse normale.
       expect(scored.body.subScore).toBeGreaterThanOrEqual(594);

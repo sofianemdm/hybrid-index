@@ -544,6 +544,12 @@ export class ScoringService {
 
     const ref = wod.bySex[req.sex];
 
+    // MARGE DE « BATTABILITÉ » (gamification, validée 30/06) : on gonfle la PRÉDICTION per-user de
+    // +40 % dans le sens FACILE À BATTRE (temps ×1.4 ; reps/charge ÷1.4) → effet « wow j'ai battu
+    // l'estimation ». N'affecte QUE predictResult (jamais les paliers élite/inter/débutant ni la notation).
+    const BEATABILITY_BUFFER = 1.4;
+    const beatBuf = ref.model.dir === -1 ? BEATABILITY_BUFFER : 1 / BEATABILITY_BUFFER;
+
     // CŒUR (Inc. 2) — MODÈLE « PRO » PAR MOUVEMENT. Si le benchmark a un blueprint canonique
     // exploitable, on estime le temps/volume via le moteur en MODE ATHLÈTE : capacité par mouvement
     // (la FORCE entre via `m.attributes`, même hors `targetAttributes`) + pénalité de charge
@@ -587,9 +593,11 @@ export class ScoringService {
         const chargedBlocks = blocks.filter((b) => b.loadKg != null).length;
         const confidence = predictionConfidence(coverage, chargedBlocks);
         const spread = SPREAD_BY_CONFIDENCE[confidence];
-        const mid = Math.round(bounded);
-        const predictedLow = Math.round(Math.min(hi, Math.max(lo, bounded * (1 - spread))));
-        const predictedHigh = Math.round(Math.min(hi, Math.max(lo, bounded * (1 + spread))));
+        // Marge de battabilité appliquée au mid ET à la fourchette (bornée par le garde-fou population).
+        const bufMid = Math.min(hi, Math.max(lo, bounded * beatBuf));
+        const mid = Math.round(bufMid);
+        const predictedLow = Math.round(Math.min(hi, Math.max(lo, bufMid * (1 - spread))));
+        const predictedHigh = Math.round(Math.min(hi, Math.max(lo, bufMid * (1 + spread))));
         return { predictedRaw: mid, predictedLow, predictedHigh, confidence, scoreType: wod.scoreType };
       }
       // Estimation dégénérée (improbable) ⇒ repli population ci-dessous (jamais de crash/NaN).
@@ -601,7 +609,8 @@ export class ScoringService {
     const userInternal = unlockedTargetScores.reduce((s, v) => s + v, 0) / unlockedTargetScores.length;
     const p = percentileFromInternal(userInternal);
     const raw = quantile(p, ref.model);
-    const clamped = Math.min(ref.hardMax, Math.max(ref.hardMin, raw));
+    // Marge de battabilité (+40 %) appliquée AVANT le clamp [hardMin, hardMax] (course pure, max-reps, 1RM).
+    const clamped = Math.min(ref.hardMax, Math.max(ref.hardMin, raw * beatBuf));
     return { predictedRaw: Math.round(clamped), scoreType: wod.scoreType };
   }
 

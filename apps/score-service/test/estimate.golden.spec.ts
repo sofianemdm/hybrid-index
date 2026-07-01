@@ -54,11 +54,13 @@ describe("score-service — golden estimation « pro » (e2e)", () => {
   const BEGINNER = { strength: 400, power: 450, muscular_endurance: 500 };
 
   describe("Fran (male, 40 kg) — cas pivot", () => {
-    it("CAS soso → ~9–11 min (540–660 s), PAS « 4:40 »", async () => {
+    it("CAS soso → ~13–15 min (756–924 s) après marge de battabilité ×1.4, PAS « 4:40 »", async () => {
+      // Estimation « réelle » ~9–11 min (540–660 s) GONFLÉE de +40 % (BEATABILITY_BUFFER) → l'app
+      // affiche un temps volontairement facile à battre. Plage = base [540, 660] × 1.4.
       const res = await predict("fran", "male", profile(SOSO));
       expect(res.body.scoreType).toBe("time");
-      expect(res.body.predictedRaw).toBeGreaterThanOrEqual(540);
-      expect(res.body.predictedRaw).toBeLessThanOrEqual(660);
+      expect(res.body.predictedRaw).toBeGreaterThanOrEqual(756);
+      expect(res.body.predictedRaw).toBeLessThanOrEqual(924);
       // Régression du bug d'origine : ne doit JAMAIS retomber au voisinage de l'ancien 4:40 (~280 s).
       expect(res.body.predictedRaw).toBeGreaterThan(360);
     });
@@ -66,9 +68,10 @@ describe("score-service — golden estimation « pro » (e2e)", () => {
     it("un athlète tout-en-haut (élite) reste RAPIDE", async () => {
       const elite = await predict("fran", "male", profile(ELITE));
       const soso = await predict("fran", "male", profile(SOSO));
-      // L'élite bat largement soso et reste dans un temps de pointe (≤ 5 min).
+      // L'élite bat largement soso et reste dans un temps de pointe. Base ~237 s × 1.4 (marge de
+      // battabilité) ≈ 332 s → on borne à ≤ 360 s (≈ 5 min × 1.4 / le buffer).
       expect(elite.body.predictedRaw).toBeLessThan(soso.body.predictedRaw);
-      expect(elite.body.predictedRaw).toBeLessThanOrEqual(300);
+      expect(elite.body.predictedRaw).toBeLessThanOrEqual(360);
     });
 
     it("un débutant complet est LENT (proche du time cap)", async () => {
@@ -168,8 +171,12 @@ describe("score-service — golden estimation « pro » (e2e)", () => {
         expect(r.body.predictedRaw).toBeGreaterThanOrEqual(45); // hardMin
         expect(r.body.predictedRaw).toBeLessThanOrEqual(600); // hardMax (60 kg brutal sous-Rx)
       }
-      expect(elite.body.predictedRaw).toBeLessThan(soso.body.predictedRaw);
-      expect(elite.body.predictedRaw).toBeLessThan(beginner.body.predictedRaw);
+      // CAS EXTRÊME SATURÉ : Isabel (30 snatch 60 kg) est déjà au plafond (hardMax 600) pour soso et
+      // débutant AVANT le buffer ; la marge de battabilité ×1.4 y pousse aussi l'élite → les trois
+      // profils saturent à 600. La monotonie STRICTE ne tient plus sur ce WOD volontairement brutal
+      // sous-Rx ; on la relâche en ≤ pour CE cas (tous bornés à 600), la stricte reste ailleurs.
+      expect(elite.body.predictedRaw).toBeLessThanOrEqual(soso.body.predictedRaw);
+      expect(elite.body.predictedRaw).toBeLessThanOrEqual(beginner.body.predictedRaw);
     });
 
     it("Le Moteur (AMRAP reps, course NON comptée) : score = reps, monotone, course exclue du volume", async () => {
