@@ -369,4 +369,39 @@ describe("score-service — calcul (e2e)", () => {
       expect(res.body[0]).not.toHaveProperty("rate"); // pas de paramètres internes exposés
     });
   });
+
+  // Les 5 WODs « Ligue du mois » (isBenchmark:false, cachés du catalogue) DOIVENT quand même
+  // alimenter l'Index : `isBenchmark` ne filtre RIEN dans le pipeline de score — un effort sur un
+  // WOD Ligue renvoie ses `attributesAffected` et fait monter le radar exactement comme un benchmark.
+  describe("WODs Ligue → comptent pour l'Index", () => {
+    it("sub-score d'un WOD Ligue renvoie bien ses attributs ciblés", async () => {
+      const res = await request(app.getHttpServer())
+        .post("/v1/score/sub-score")
+        .send({ wodId: "league_sprint_ladder", sex: "male", scoreType: "time", rawResult: 810 })
+        .expect(201);
+      expect(res.body.subScore).toBeGreaterThan(0);
+      // targetAttributes de league_sprint_ladder = speed + engine.
+      expect(res.body.attributesAffected).toEqual(expect.arrayContaining(["speed", "engine"]));
+    });
+
+    it("un effort sur un WOD Ligue débloque et fait monter les attributs du radar (donc l'Index)", async () => {
+      const res = await request(app.getHttpServer())
+        .post("/v1/score/profile")
+        .send({
+          sex: "male",
+          goal: "all_round",
+          efforts: [{ wodId: "league_engine_12", rawResult: 215 }], // ~élite → attributs élevés
+        })
+        .expect(201);
+      // engine + muscular_endurance + hybrid (targetAttributes de league_engine_12) débloqués.
+      for (const attr of ["engine", "muscular_endurance", "hybrid"]) {
+        const a = res.body.radar.find((r: { attribute: string }) => r.attribute === attr);
+        expect(a.unlocked).toBe(true);
+        expect(a.score).toBeGreaterThan(0);
+      }
+      // L'Index est donc calculé (non nul) à partir de ces attributs.
+      expect(res.body.index.value).toBeGreaterThan(0);
+      expect(res.body.index.radarCoverage).toBeGreaterThanOrEqual(3);
+    });
+  });
 });

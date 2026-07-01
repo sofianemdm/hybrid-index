@@ -15,7 +15,7 @@ const WODS: Array<{
   scoreType: ScoreType;
   requiresEquipment: boolean;
   targetAttributes: AttributeKey[];
-  isBenchmark?: boolean; // défaut true ; false = WOD « Ligue uniquement » (hors Index)
+  isBenchmark?: boolean; // défaut true ; false = WOD « Ligue » CACHÉ du catalogue (mais compte pour l'Index)
 }> = [
   { id: "hyrox_sprint", name: "Sprint HYROX", scoreType: "time", requiresEquipment: true, targetAttributes: ["engine", "power", "hybrid", "muscular_endurance"] },
   { id: "fran", name: "Fran", scoreType: "time", requiresEquipment: true, targetAttributes: ["muscular_endurance", "power"] },
@@ -45,7 +45,8 @@ const WODS: Array<{
   { id: "track_10000m", name: "10 000 m (piste)", scoreType: "time", requiresEquipment: false, targetAttributes: ["engine"] },
   { id: "half_marathon", name: "Semi-marathon", scoreType: "time", requiresEquipment: false, targetAttributes: ["engine"] },
   { id: "marathon", name: "Marathon", scoreType: "time", requiresEquipment: false, targetAttributes: ["engine"] },
-  // WODs « Ligue du mois » (sans matériel, 1 qualité/semaine) — isBenchmark:false → JAMAIS dans l'Index.
+  // WODs « Ligue du mois » (sans matériel, 1 qualité/semaine) — isBenchmark:false = cachés du
+  // catalogue (HIDDEN_WOD_IDS), mais leurs perfs comptent pour l'Index comme tout WOD.
   { id: "league_sprint_ladder", name: "La Flèche", scoreType: "time", requiresEquipment: false, targetAttributes: ["speed", "engine"], isBenchmark: false },
   { id: "league_engine_12", name: "Le Moteur", scoreType: "reps", requiresEquipment: false, targetAttributes: ["engine", "muscular_endurance", "hybrid"], isBenchmark: false },
   { id: "league_grind_squats", name: "Le Pilier", scoreType: "reps", requiresEquipment: false, targetAttributes: ["muscular_endurance", "strength"], isBenchmark: false },

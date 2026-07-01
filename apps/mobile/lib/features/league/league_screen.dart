@@ -14,10 +14,11 @@ import '../wods/wod_detail_screen.dart';
 import 'league_reveal_sheet.dart';
 import 'month_format.dart';
 
-/// Mode LIGUE — compétition mensuelle OUVERTE À TOUS, SÉPARÉE de l'Index.
+/// Mode LIGUE — compétition mensuelle OUVERTE À TOUS.
 /// Pas d'inscription : tout le monde est classé dès qu'il fait le WOD imposé de la semaine.
 /// Signature visuelle violette (`brandSecondary`) pour ne jamais confondre avec l'Index (cyan).
-/// Les points repartent à zéro chaque mois ; l'Index, lui, ne bouge jamais ici.
+/// Seuls les POINTS de Ligue repartent à zéro chaque mois ; les perfs sur les WODs Ligue
+/// comptent aussi pour l'Athlete Index (comme tout WOD).
 class LeagueScreen extends ConsumerStatefulWidget {
   const LeagueScreen({super.key});
 
@@ -233,7 +234,8 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
     );
   }
 
-  // D — Bloc dépliable « Comment ça marche ? » : règle du meilleur essai, reset mensuel, Index figé.
+  // D — Bloc dépliable « Comment ça marche ? » : règle du meilleur essai, reset mensuel des POINTS,
+  // et rappel que les perfs comptent aussi pour l'Index.
   Widget _howItWorks() {
     final t = AppLocalizations.of(context);
     return Container(
@@ -259,7 +261,7 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
             const SizedBox(height: HiSpace.sm),
             _howItWorksLine(Icons.restart_alt_rounded, t.leagueHowItWorksReset),
             const SizedBox(height: HiSpace.sm),
-            _howItWorksLine(Icons.lock_outline_rounded, t.leagueHowItWorksIndex),
+            _howItWorksLine(Icons.trending_up_rounded, t.leagueHowItWorksIndex),
           ],
         ),
       ),
@@ -328,6 +330,8 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
               ),
             ],
           ),
+          const SizedBox(height: HiSpace.sm),
+          _wodCountdown(week),
           const SizedBox(height: HiSpace.md),
           SizedBox(
             width: double.infinity,
@@ -344,6 +348,46 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  // Compte à rebours jusqu'à la fermeture de la séance de la semaine (`week.closesAt`).
+  // Recalculé à chaque build (l'écran est reconstruit à l'affichage) : « Plus que X j Yh ».
+  // Passe en orange (urgence) le dernier jour, en rouge le dernier créneau/expiré.
+  Widget _wodCountdown(LeagueWeekInfo week) {
+    final t = AppLocalizations.of(context);
+    final remaining = week.closesAt.difference(DateTime.now());
+    final expired = remaining <= Duration.zero;
+    // On tronque vers le bas : « 3 j 5 h » = au moins 3 jours et 5 heures restants.
+    final totalHours = expired ? 0 : remaining.inHours;
+    final days = totalHours ~/ 24;
+    final hours = totalHours % 24;
+
+    final String label;
+    final Color color;
+    if (expired) {
+      label = t.leagueWodCountdownExpired;
+      color = HiColors.textTertiary;
+    } else if (days >= 1) {
+      label = t.leagueWodCountdownDaysHours(days, hours);
+      // Dernier jour approche (< 2 j) → orange ; sinon violet de marque.
+      color = days < 2 ? HiColors.warn : HiColors.brandSecondaryText;
+    } else if (totalHours >= 1) {
+      label = t.leagueWodCountdownHours(hours);
+      color = HiColors.warn; // moins d'un jour → urgence
+    } else {
+      label = t.leagueWodCountdownLastHour;
+      color = HiColors.error; // dernière heure → rouge
+    }
+
+    return Row(
+      children: [
+        Icon(expired ? Icons.event_busy_rounded : Icons.timer_outlined, color: color, size: 16),
+        const SizedBox(width: 6),
+        Expanded(
+          child: Text(label, style: HiType.caption.copyWith(color: color, fontWeight: FontWeight.w700)),
+        ),
+      ],
     );
   }
 

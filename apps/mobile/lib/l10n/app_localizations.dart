@@ -4128,8 +4128,32 @@ abstract class AppLocalizations {
   /// No description provided for @leagueHowItWorksIndex.
   ///
   /// In en, this message translates to:
-  /// **'Your Index never moves here: the League is a separate monthly competition.'**
+  /// **'Your performances on the League WODs also count toward your Athlete Index. Only the League POINTS reset to zero every month.'**
   String get leagueHowItWorksIndex;
+
+  /// No description provided for @leagueWodCountdownDaysHours.
+  ///
+  /// In en, this message translates to:
+  /// **'{days}d {hours}h left to do it'**
+  String leagueWodCountdownDaysHours(int days, int hours);
+
+  /// No description provided for @leagueWodCountdownHours.
+  ///
+  /// In en, this message translates to:
+  /// **'{hours}h left to do it'**
+  String leagueWodCountdownHours(int hours);
+
+  /// No description provided for @leagueWodCountdownLastHour.
+  ///
+  /// In en, this message translates to:
+  /// **'Last hour to do it!'**
+  String get leagueWodCountdownLastHour;
+
+  /// No description provided for @leagueWodCountdownExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Workout of the week over'**
+  String get leagueWodCountdownExpired;
 
   /// No description provided for @leagueRevealTitle.
   ///

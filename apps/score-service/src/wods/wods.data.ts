@@ -581,7 +581,8 @@ export const WODS: ReadonlyArray<WodDefinition> = [
   },
 
   // ---------------- 5 WODs « LIGUE DU MOIS » (sans matériel, 8–15 min, 1 qualité/semaine) ----------------
-  // Dédiés à la Ligue (isBenchmark:false → JAMAIS dans l'Index). Barèmes estimation `low`, à
+  // Dédiés à la Ligue (isBenchmark:false = CACHÉS du catalogue via HIDDEN_WOD_IDS, PAS exclus de
+  // l'Index : leurs perfs comptent pour le radar/l'Index comme tout WOD). Barèmes estimation `low`, à
   // recalibrer N≥200/sexe après le 1er mois. Spec : docs/wods-ligue-mensuelle.md (sport-science).
   {
     // Semaine 1 — VITESSE. Intervalles de course en échelle (100-200-300-400-300-200-100 = 1500 m),

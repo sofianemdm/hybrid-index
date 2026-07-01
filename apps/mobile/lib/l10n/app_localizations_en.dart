@@ -2439,7 +2439,23 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get leagueHowItWorksIndex =>
-      'Your Index never moves here: the League is a separate monthly competition.';
+      'Your performances on the League WODs also count toward your Athlete Index. Only the League POINTS reset to zero every month.';
+
+  @override
+  String leagueWodCountdownDaysHours(int days, int hours) {
+    return '${days}d ${hours}h left to do it';
+  }
+
+  @override
+  String leagueWodCountdownHours(int hours) {
+    return '${hours}h left to do it';
+  }
+
+  @override
+  String get leagueWodCountdownLastHour => 'Last hour to do it!';
+
+  @override
+  String get leagueWodCountdownExpired => 'Workout of the week over';
 
   @override
   String leagueRevealTitle(String month) {
