@@ -47,15 +47,21 @@ class Celebration {
       barrierLabel: AppLocalizations.of(context).celebrationClose,
       barrierColor: Colors.black.withValues(alpha: 0.55),
       transitionDuration: HiMotion.base,
-      pageBuilder: (ctx, _, __) => _CelebrationView(
-        title: title,
-        subtitle: subtitle,
-        value: value,
-        icon: icon,
-        accent: accent ?? (eff == CelebrationIntensity.strong ? HiColors.accentVictory : HiColors.brandPrimary),
-        strong: eff == CelebrationIntensity.strong,
-        actionLabel: actionLabel,
-        onAction: onAction,
+      // Material(transparency) INDISPENSABLE : showGeneralDialog ne fournit PAS de Material/
+      // DefaultTextStyle (contrairement à showDialog) → sans lui, tous les Text s'affichent
+      // soulignés en JAUNE (« yellow underline of shame »). Transparent → visuel inchangé.
+      pageBuilder: (ctx, _, __) => Material(
+        type: MaterialType.transparency,
+        child: _CelebrationView(
+          title: title,
+          subtitle: subtitle,
+          value: value,
+          icon: icon,
+          accent: accent ?? (eff == CelebrationIntensity.strong ? HiColors.accentVictory : HiColors.brandPrimary),
+          strong: eff == CelebrationIntensity.strong,
+          actionLabel: actionLabel,
+          onAction: onAction,
+        ),
       ),
       transitionBuilder: (ctx, anim, _, child) => FadeTransition(opacity: anim, child: child),
     );
