@@ -69,7 +69,10 @@ class GuidedSessionScreen extends StatefulWidget {
   /// navigation automatique/temporisée. Si `null`, l'écran terminé n'affiche qu'un bouton « Fermer ».
   /// Quand [onFinishAction] est fourni, [onCompleted] n'est PAS déclenché automatiquement (l'action
   /// explicite prend le relais).
-  final VoidCallback? onFinishAction;
+  ///
+  /// Reçoit la durée d'EFFORT réelle (`runner.effortElapsed`, HORS décompte 3·2·1) afin que la suite
+  /// (ex. saisie de résultat) puisse PRÉ-REMPLIR le temps que l'athlète vient de réaliser.
+  final void Function(Duration effort)? onFinishAction;
 
   /// Libellé du bouton primaire de l'écran terminé (ex. « Enregistrer mon temps »). Requis si
   /// [onFinishAction] est fourni ; ignoré sinon.
@@ -87,7 +90,7 @@ class GuidedSessionScreen extends StatefulWidget {
     required String title,
     List<GuidedCue> cues = const [],
     FutureOr<void> Function()? onCompleted,
-    VoidCallback? onFinishAction,
+    void Function(Duration effort)? onFinishAction,
     String? finishActionLabel,
   }) {
     return Navigator.of(context, rootNavigator: true).push<void>(
@@ -112,7 +115,7 @@ class GuidedSessionScreen extends StatefulWidget {
     required WodDetail wod,
     String sex = 'male',
     bool scaled = false,
-    VoidCallback? onSaveResult,
+    void Function(Duration effort)? onSaveResult,
   }) {
     final source = _sourceFromWod(wod);
     final labels = _labelsOf(context);
@@ -381,8 +384,10 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen>
     final action = widget.onFinishAction;
     if (action == null) return;
     HiHaptics.impact();
+    // Capturé AVANT le pop (le runner est disposé ensuite) : durée d'effort réelle (hors 3·2·1).
+    final effort = _runner.effortElapsed;
     Navigator.of(context).pop();
-    action();
+    action(effort);
   }
 
   Future<bool> _confirmQuit() async {

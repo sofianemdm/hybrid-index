@@ -27,12 +27,19 @@ class WodResultEntryScreen extends ConsumerStatefulWidget {
   /// La séance a-t-elle une échelle Rx/Allégé ? UNIQUE source = la prescription du back (poids
   /// non vide), passée par l'appelant (fiche WOD). Défaut false (custom / poids du corps / cardio).
   final bool scalable;
+
+  /// Temps d'effort réalisé au Mode guidé (HORS décompte 3·2·1), à PRÉ-REMPLIR dans la saisie.
+  /// Pris en compte UNIQUEMENT pour un WOD `scoreType == 'time'` (le chrono ne représente pas le
+  /// score d'un AMRAP/charge/reps). `null` = saisie manuelle → champs vides (comportement inchangé).
+  /// L'utilisateur peut toujours modifier la valeur pré-remplie avant de valider.
+  final Duration? prefill;
   const WodResultEntryScreen({
     super.key,
     required this.wodId,
     required this.wodName,
     required this.scoreType,
     this.scalable = false,
+    this.prefill,
   });
 
   @override
@@ -64,6 +71,14 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
   void initState() {
     super.initState();
     if (_isHyrox) _rx = false; // défaut HYROX : Open (catégorie la plus courante).
+    // Pré-remplissage depuis le Mode guidé : uniquement pour un WOD chrono (`time`). Pour les autres
+    // scoreType (reps/charge/AMRAP), le chrono ne représente pas le score → on laisse les champs vides.
+    final prefill = widget.prefill;
+    if (prefill != null && _isTime) {
+      final totalSec = prefill.inSeconds;
+      _min.text = (totalSec ~/ 60).toString();
+      _sec.text = (totalSec % 60).toString().padLeft(2, '0'); // secondes sur 2 chiffres (ex. 3min02 → '02')
+    }
   }
 
   @override

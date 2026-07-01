@@ -56,7 +56,7 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
     );
   }
 
-  Future<void> _doWod(String scoreType, {required bool scalable}) async {
+  Future<void> _doWod(String scoreType, {required bool scalable, Duration? prefill}) async {
     final changed = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
         builder: (_) => WodResultEntryScreen(
@@ -66,6 +66,8 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
           // Source UNIQUE de la scalabilité Rx/Allégé = la prescription du back (poids non vide).
           // Plus de liste codée en dur côté entrée de résultat.
           scalable: scalable,
+          // Depuis le Mode guidé : temps d'effort réel à pré-remplir (WOD chrono uniquement).
+          prefill: prefill,
         ),
       ),
     );
@@ -89,7 +91,7 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
       wod: d,
       sex: _sex,
       scaled: _variant == 'scaled',
-      onSaveResult: () => _doWod(d.scoreType, scalable: scalable),
+      onSaveResult: (effort) => _doWod(d.scoreType, scalable: scalable, prefill: effort),
     );
   }
 
