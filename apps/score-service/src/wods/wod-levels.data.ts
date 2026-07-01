@@ -34,7 +34,7 @@ export const WOD_LEVELS: Record<string, { male: WodLevels; female: WodLevels }> 
   // WODs « Ligue du mois » (5) — RECALIBRÉS 29/06 (sport-science). time → champion < inter < occ ;
   // reps → champion > inter > occ. inter = médiane du modèle de wods.data.ts ; champion = élite hybride
   // (≈P95-98) ; occasionnel = débutant qui termine (≈P10-15, jamais écrasé). Détail : docs/recalibration-baremes-ligue.md.
-  league_sprint_ladder: { male: { champion: 270, intermediate: 450, occasional: 630 }, female: { champion: 310, intermediate: 510, occasional: 720 } }, // s (échelle 1500 m)
+  league_sprint_ladder: { male: { champion: 630, intermediate: 810, occasional: 990 }, female: { champion: 670, intermediate: 870, occasional: 1080 } }, // s (échelle 1500 m + 6 récups d'1 min, chrono continu)
   league_engine_12: { male: { champion: 215, intermediate: 140, occasional: 75 }, female: { champion: 160, intermediate: 100, occasional: 52 } }, // reps (air squats + burpees ; course non comptée)
   league_grind_squats: { male: { champion: 540, intermediate: 320, occasional: 160 }, female: { champion: 415, intermediate: 235, occasional: 120 } }, // reps
   league_power_amrap: { male: { champion: 330, intermediate: 170, occasional: 95 }, female: { champion: 200, intermediate: 105, occasional: 58 } }, // reps

@@ -461,20 +461,21 @@ export const WOD_PRESCRIPTIONS: Record<string, WodPrescription> = {
     scalable: false,
     summary:
       "Semaine VITESSE. Une échelle de sprints : tu montes puis tu redescends. Pars vite mais garde " +
-      "de la fraîcheur pour le 400 m. Les marches de récup sont imposées (elles ne comptent pas dans ton temps).",
-    format: "Pour le temps (course uniquement) — time cap 12 min",
-    timeCapSec: 720,
+      "de la fraîcheur pour le 400 m. 1 min de récup imposée entre chaque sprint, et le chrono tourne " +
+      "en CONTINU : tout le temps compte, récup incluse (plus simple à chronométrer).",
+    format: "Pour le temps (chrono continu, récup comprise) — time cap 18 min",
+    timeCapSec: 1080,
     blocks: [
-      { reps: "100 m", movement: "Sprint", detail: "puis 30 s de récup" },
-      { reps: "200 m", movement: "Sprint", detail: "puis 45 s de récup" },
-      { reps: "300 m", movement: "Sprint", detail: "puis 60 s de récup" },
-      { reps: "400 m", movement: "Sprint", detail: "puis 60 s de récup" },
-      { reps: "300 m", movement: "Sprint", detail: "puis 45 s de récup" },
-      { reps: "200 m", movement: "Sprint", detail: "puis 30 s de récup" },
+      { reps: "100 m", movement: "Sprint", detail: "puis 1 min de récup" },
+      { reps: "200 m", movement: "Sprint", detail: "puis 1 min de récup" },
+      { reps: "300 m", movement: "Sprint", detail: "puis 1 min de récup" },
+      { reps: "400 m", movement: "Sprint", detail: "puis 1 min de récup" },
+      { reps: "300 m", movement: "Sprint", detail: "puis 1 min de récup" },
+      { reps: "200 m", movement: "Sprint", detail: "puis 1 min de récup" },
       { reps: "100 m", movement: "Sprint" },
     ],
     weights: [],
-    scoringNote: "Tu enregistres le TEMPS DE COURSE cumulé (1 600 m), récup non comprise.",
+    scoringNote: "Tu enregistres le TEMPS TOTAL (sprints + les 6 récups d'1 min, chrono continu).",
   },
   league_engine_12: {
     scalable: false,

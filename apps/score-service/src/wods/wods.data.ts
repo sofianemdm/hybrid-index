@@ -585,10 +585,12 @@ export const WODS: ReadonlyArray<WodDefinition> = [
   // recalibrer N≥200/sexe après le 1er mois. Spec : docs/wods-ligue-mensuelle.md (sport-science).
   {
     // Semaine 1 — VITESSE. Intervalles de course en échelle (100-200-300-400-300-200-100 = 1500 m),
-    // score = temps couru total (départs toutes les 90 s, le reliquat est récup). Recalibrage 29/06 :
-    // médiane = pratiquant régulier qui boucle les 1500 m en ~7:30 (M) / ~8:30 (F) à allure de seuil
-    // entrecoupée ; champion = athlète hybride élite ~4:30 (M, ~5,5 m/s net) / ~5:10 (F) ; débutant
-    // motivé qui termine ~10:30 (M) / ~12:00 (F). σ 0.30 (queue lente réaliste, réf. intervalles 5k).
+    // 1 min de récup imposée entre chaque sprint (6 récups) et CHRONO CONTINU : le score = temps TOTAL,
+    // récups d'1 min COMPRISES (choix produit 01/07 : plus simple à chronométrer). Recalibrage 01/07 :
+    // +360 s (6×60 s de récup fixe) ajoutés à toutes les valeurs ; médiane = pratiquant régulier
+    // ~13:30 total (M) / ~14:30 (F) ; champion hybride élite ~10:30 (M) / ~11:10 (F) ; débutant motivé
+    // ~16:30 (M) / ~18:00 (F). σ RESSERRÉ 0.16 (les 6 min de récup FIXE réduisent l'écart relatif :
+    // le temps de course varie mais la part récup, constante, comprime la dispersion → 0.30 → 0.16).
     id: "league_sprint_ladder",
     name: "La Flèche",
     scoreType: "time",
@@ -599,8 +601,8 @@ export const WODS: ReadonlyArray<WodDefinition> = [
       { attribute: "engine", estimated: false },
     ],
     bySex: {
-      male: { model: lognormalFromMedian(450, 0.30), hardMin: 250, hardMax: 900, proReference: 270 },
-      female: { model: lognormalFromMedian(510, 0.30), hardMin: 290, hardMax: 1020, proReference: 310 },
+      male: { model: lognormalFromMedian(810, 0.16), hardMin: 610, hardMax: 1260, proReference: 630 },
+      female: { model: lognormalFromMedian(870, 0.16), hardMin: 650, hardMax: 1380, proReference: 670 },
     },
   },
   {
