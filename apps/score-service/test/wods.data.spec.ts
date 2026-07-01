@@ -11,17 +11,17 @@ const LEAGUE_WOD_IDS = [
 ];
 
 describe("Registre des WODs (intégrité)", () => {
-  it("contient 32 WODs : 21 de référence + 6 « Autre » + 5 Ligue (14 avec matériel + 18 sans)", () => {
-    expect(WODS).toHaveLength(32);
-    // 21 séances de référence (11 avec / 10 sans) + 6 « Autre » + 5 WODs « Ligue du mois » (sans matériel).
+  it("contient 33 WODs : 22 de référence + 6 « Autre » + 5 Ligue (14 avec matériel + 19 sans)", () => {
+    expect(WODS).toHaveLength(33);
+    // 22 séances de référence (11 avec / 11 sans, dont le 400 m) + 6 « Autre » + 5 WODs « Ligue du mois » (sans matériel).
     expect(WODS.filter((w) => w.requiresEquipment)).toHaveLength(14);
-    expect(WODS.filter((w) => !w.requiresEquipment)).toHaveLength(18);
+    expect(WODS.filter((w) => !w.requiresEquipment)).toHaveLength(19);
   });
 
   it("a des identifiants uniques et un index cohérent", () => {
     const ids = new Set(WODS.map((w) => w.id));
-    expect(ids.size).toBe(32);
-    expect(WODS_BY_ID.size).toBe(32);
+    expect(ids.size).toBe(33);
+    expect(WODS_BY_ID.size).toBe(33);
   });
 
   it("chaque WOD a une référence pour les deux sexes avec bornes valides", () => {

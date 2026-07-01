@@ -26,6 +26,7 @@ export const WOD_LEVELS: Record<string, { male: WodLevels; female: WodLevels }> 
   run_3k: { male: { champion: 600, intermediate: 990, occasional: 1560 }, female: { champion: 690, intermediate: 1140, occasional: 1770 } },
   profil_express: { male: { champion: 205, intermediate: 400, occasional: 600 }, female: { champion: 232, intermediate: 470, occasional: 740 } },
   run_1k: { male: { champion: 131, intermediate: 330, occasional: 500 }, female: { champion: 148, intermediate: 390, occasional: 588 } },
+  run_400: { male: { champion: 55, intermediate: 130, occasional: 200 }, female: { champion: 62, intermediate: 154, occasional: 232 } },
   max_pushups: { male: { champion: 60, intermediate: 20, occasional: 8 }, female: { champion: 35, intermediate: 10, occasional: 4 } },
   max_air_squats_2min: { male: { champion: 85, intermediate: 42, occasional: 25 }, female: { champion: 80, intermediate: 38, occasional: 22 } },
   max_strict_pullups: { male: { champion: 30, intermediate: 6, occasional: 2 }, female: { champion: 18, intermediate: 2, occasional: 0 } },

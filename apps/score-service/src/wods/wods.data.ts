@@ -33,6 +33,7 @@ export const WODS: ReadonlyArray<WodDefinition> = [
       { attribute: "power", estimated: false },
       { attribute: "hybrid", estimated: false },
       { attribute: "muscular_endurance", estimated: false },
+      { attribute: "speed", estimated: false },
     ],
     bySex: {
       male: { model: lognormalFromMedian(1080, 0.28), hardMin: 600, hardMax: 1800, proReference: 660 },
@@ -334,6 +335,23 @@ export const WODS: ReadonlyArray<WodDefinition> = [
     bySex: {
       male: { model: lognormalFromMedian(330, 0.35), hardMin: 145, hardMax: 720, proReference: 180 },
       female: { model: lognormalFromMedian(390, 0.35), hardMin: 165, hardMax: 840, proReference: 210 },
+    },
+  },
+  {
+    // 400 m : sprint-endurance anaérobie, allure strictement plus rapide qu'au 1 km. Vitesse dominante
+    // + moteur. Distributions sport-science (allure médiane 32,5 s/100 m H, bornes sous le record mondial).
+    id: "run_400",
+    name: "400 m Course",
+    scoreType: "time",
+    requiresEquipment: false,
+    isBenchmark: true,
+    targetAttributes: [
+      { attribute: "speed", estimated: false },
+      { attribute: "engine", estimated: false },
+    ],
+    bySex: {
+      male: { model: lognormalFromMedian(130, 0.34), hardMin: 50, hardMax: 300, proReference: 68 },
+      female: { model: lognormalFromMedian(154, 0.34), hardMin: 56, hardMax: 340, proReference: 76 },
     },
   },
   {

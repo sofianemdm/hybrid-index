@@ -20,6 +20,7 @@ const FALLBACK_WHITELIST = new Set<string>([
   "run_5k",
   "run_3k",
   "run_1k",
+  "run_400",
   "run_free_distance",
   "track_10000m",
   "half_marathon",

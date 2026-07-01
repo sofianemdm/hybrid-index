@@ -299,6 +299,15 @@ export const WOD_PRESCRIPTIONS: Record<string, WodPrescription> = {
     scoringNote: SCORE_TIME,
   },
 
+  run_400: {
+    summary:
+      "400 mètres en course à pied à fond. Sprint-endurance : la vitesse pure compte, soutenue par le moteur.",
+    format: "400 m, pour le temps",
+    blocks: [{ reps: "400 m", movement: "Course" }],
+    weights: [],
+    scoringNote: SCORE_TIME,
+  },
+
   // ─────────────────────────────────────────────────────────────────────────
   // 12. Max pompes strictes (sans matériel) — une série.
   // ─────────────────────────────────────────────────────────────────────────
