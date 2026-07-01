@@ -127,6 +127,16 @@ class GuidedRunner extends ChangeNotifier {
   /// Temps total écoulé depuis le départ (pour la pré-saisie du résultat for_time).
   Duration get totalElapsed => _clock.elapsed;
 
+  /// Temps de l'EFFORT réel, HORS décompte de prépa (3·2·1). C'est ce qu'on affiche/enregistre à la
+  /// fin : le compte à rebours ne fait pas partie du temps de la séance (corrige le décalage +3 s).
+  Duration get effortElapsed {
+    final first = plan.phases.isNotEmpty ? plan.phases.first : null;
+    final prep =
+        (first != null && first.kind == GuidedPhaseKind.prep) ? (first.duration ?? Duration.zero) : Duration.zero;
+    final e = _clock.elapsed - prep;
+    return e.isNegative ? Duration.zero : e;
+  }
+
   /// Temps restant de la phase courante si elle est bornée, sinon `null` (phase ouverte).
   Duration? get remainingInPhase {
     final d = currentPhase.duration;
@@ -161,7 +171,9 @@ class GuidedRunner extends ChangeNotifier {
   /// Idempotent par seconde grâce à `_lastPrepSecond`.
   void _maybeEmitPrepTick() {
     if (currentPhase.kind != GuidedPhaseKind.prep) return;
-    final left = (remainingInPhase ?? Duration.zero).inSeconds;
+    // CEIL (et non troncature inSeconds) : chaque chiffre reste affiché 1 s PLEINE → vrai
+    // « 3 · 2 · 1 ». Avant, inSeconds tronquait « 3 » à ~100 ms → on ne voyait que « 2 1 ».
+    final left = ((remainingInPhase ?? Duration.zero).inMilliseconds / 1000).ceil();
     if (left <= 3 && left >= 1 && left != _lastPrepSecond) {
       _lastPrepSecond = left;
       onEvent?.call(GuidedEvent(GuidedEventType.prepTick, secondsLeft: left));

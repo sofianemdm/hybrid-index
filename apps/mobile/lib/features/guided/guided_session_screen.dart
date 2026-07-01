@@ -866,7 +866,7 @@ class _FinishedView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
-    final total = _Chrono.fmt(runner.totalElapsed);
+    final total = _Chrono.fmt(runner.effortElapsed); // hors décompte 3·2·1 (temps réel du WOD)
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
