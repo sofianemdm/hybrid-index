@@ -34,6 +34,11 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen>
     WidgetsBinding.instance.addObserver(this);
     _future = ref.read(apiClientProvider).notificationsFeed();
     _loadInvites();
+    // Le compteur de messages non lus (`unreadMessagesProvider`) est un FutureProvider MIS EN CACHE :
+    // à l'ouverture il pouvait renvoyer une valeur périmée (0) → la carte « nouveaux messages »
+    // n'apparaissait qu'après être ressorti/rentré. On l'invalide À L'OUVERTURE pour un fil frais.
+    ref.invalidate(unreadMessagesProvider);
+    ref.invalidate(inboxBadgeProvider);
   }
 
   @override
