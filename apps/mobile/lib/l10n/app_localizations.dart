@@ -1607,7 +1607,7 @@ abstract class AppLocalizations {
   /// No description provided for @communityKudosTooltip.
   ///
   /// In en, this message translates to:
-  /// **'Kudos'**
+  /// **'Like'**
   String get communityKudosTooltip;
 
   /// No description provided for @communityWorkoutFallback.
@@ -1679,7 +1679,7 @@ abstract class AppLocalizations {
   /// No description provided for @commentKudosTooltip.
   ///
   /// In en, this message translates to:
-  /// **'Kudos'**
+  /// **'Like'**
   String get commentKudosTooltip;
 
   /// No description provided for @commentReply.
@@ -1709,7 +1709,7 @@ abstract class AppLocalizations {
   /// No description provided for @a11yCommentKudos.
   ///
   /// In en, this message translates to:
-  /// **'Kudos, {count} claps'**
+  /// **'Like, {count}'**
   String a11yCommentKudos(int count);
 
   /// No description provided for @a11yMention.
@@ -1745,13 +1745,13 @@ abstract class AppLocalizations {
   /// No description provided for @notifPostKudos.
   ///
   /// In en, this message translates to:
-  /// **'Your post got kudos 👏'**
+  /// **'Your post got a like 👍'**
   String get notifPostKudos;
 
   /// No description provided for @notifPostKudosBody.
   ///
   /// In en, this message translates to:
-  /// **'{count, plural, one{1 person gave} other{{count} people gave}} kudos to your post.'**
+  /// **'{count, plural, one{1 person liked} other{{count} people liked}} your post.'**
   String notifPostKudosBody(int count);
 
   /// No description provided for @notifComment.
@@ -1769,13 +1769,13 @@ abstract class AppLocalizations {
   /// No description provided for @notifCommentKudos.
   ///
   /// In en, this message translates to:
-  /// **'Your comment got kudos 👏'**
+  /// **'Your comment got a like 👍'**
   String get notifCommentKudos;
 
   /// No description provided for @notifCommentKudosBody.
   ///
   /// In en, this message translates to:
-  /// **'{count, plural, one{1 person gave} other{{count} people gave}} kudos to your comment.'**
+  /// **'{count, plural, one{1 person liked} other{{count} people liked}} your comment.'**
   String notifCommentKudosBody(int count);
 
   /// No description provided for @notifReply.

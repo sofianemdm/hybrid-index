@@ -828,7 +828,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get communityFollowing => 'Suivi';
 
   @override
-  String get communityKudosTooltip => 'Bravo';
+  String get communityKudosTooltip => 'J\'aime';
 
   @override
   String get communityWorkoutFallback => 'une séance';
@@ -866,7 +866,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get commentDeleted => 'Commentaire supprimé.';
 
   @override
-  String get commentKudosTooltip => 'Bravo';
+  String get commentKudosTooltip => 'J\'aime';
 
   @override
   String get commentReply => 'Répondre';
@@ -892,7 +892,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String a11yCommentKudos(int count) {
-    return 'Bravo, $count applaudissements';
+    return 'J\'aime, $count';
   }
 
   @override
@@ -914,15 +914,15 @@ class AppLocalizationsFr extends AppLocalizations {
   String get composerMentionHint => 'Mentionne quelqu\'un avec @';
 
   @override
-  String get notifPostKudos => 'On a applaudi ta publication 👏';
+  String get notifPostKudos => 'On a aimé ta publication 👍';
 
   @override
   String notifPostKudosBody(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count personnes ont applaudi',
-      one: '1 personne a applaudi',
+      other: '$count personnes ont aimé',
+      one: '1 personne a aimé',
     );
     return '$_temp0 ta publication.';
   }
@@ -936,15 +936,15 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get notifCommentKudos => 'On a applaudi ton commentaire 👏';
+  String get notifCommentKudos => 'On a aimé ton commentaire 👍';
 
   @override
   String notifCommentKudosBody(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count personnes ont applaudi',
-      one: '1 personne a applaudi',
+      other: '$count personnes ont aimé',
+      one: '1 personne a aimé',
     );
     return '$_temp0 ton commentaire.';
   }

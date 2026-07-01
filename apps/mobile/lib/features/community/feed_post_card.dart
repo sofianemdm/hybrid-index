@@ -263,14 +263,22 @@ class _FeedPostCardState extends State<FeedPostCard> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: active ? HiColors.brandPrimary.withValues(alpha: 0.15) : HiColors.bgElevated2,
+                    color: active ? HiColors.info.withValues(alpha: 0.15) : HiColors.bgElevated2,
                     borderRadius: BorderRadius.circular(HiRadius.pill),
                     border:
-                        Border.all(color: active ? HiColors.brandPrimary.withValues(alpha: 0.5) : HiColors.strokeSubtle),
+                        Border.all(color: active ? HiColors.info.withValues(alpha: 0.5) : HiColors.strokeSubtle),
                   ),
-                  child: Text('👏 ${count > 0 ? count : ''}'.trim(),
-                      style: TextStyle(
-                          color: active ? HiColors.brandPrimary : HiColors.textSecondary, fontWeight: FontWeight.w600)),
+                  child: Row(mainAxisSize: MainAxisSize.min, children: [
+                    Icon(active ? Icons.thumb_up_rounded : Icons.thumb_up_alt_outlined,
+                        size: 16, color: active ? HiColors.info : HiColors.textSecondary),
+                    if (count > 0) ...[
+                      const SizedBox(width: 6),
+                      Text('$count',
+                          style: TextStyle(
+                              color: active ? HiColors.info : HiColors.textSecondary,
+                              fontWeight: FontWeight.w600)),
+                    ],
+                  ]),
                 ),
               ),
             ),

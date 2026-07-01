@@ -535,15 +535,13 @@ class _CommentsSheetState extends ConsumerState<_CommentsSheet> {
             child: ConstrainedBox(
               constraints: const BoxConstraints(minHeight: HiTap.minTarget),
               child: Row(mainAxisSize: MainAxisSize.min, children: [
-                Text('👏',
-                    style: TextStyle(
-                        fontSize: 14,
-                        color: active ? HiColors.brandPrimary : HiColors.textTertiary)),
+                Icon(active ? Icons.thumb_up_rounded : Icons.thumb_up_alt_outlined,
+                    size: 16, color: active ? HiColors.info : HiColors.textTertiary),
                 if (count > 0) ...[
                   const SizedBox(width: 4),
                   Text('$count',
                       style: TextStyle(
-                          color: active ? HiColors.brandPrimary : HiColors.textTertiary,
+                          color: active ? HiColors.info : HiColors.textTertiary,
                           fontWeight: FontWeight.w600,
                           fontSize: 12)),
                 ],

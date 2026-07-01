@@ -822,7 +822,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get communityFollowing => 'Following';
 
   @override
-  String get communityKudosTooltip => 'Kudos';
+  String get communityKudosTooltip => 'Like';
 
   @override
   String get communityWorkoutFallback => 'a workout';
@@ -859,7 +859,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commentDeleted => 'Comment deleted.';
 
   @override
-  String get commentKudosTooltip => 'Kudos';
+  String get commentKudosTooltip => 'Like';
 
   @override
   String get commentReply => 'Reply';
@@ -885,7 +885,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String a11yCommentKudos(int count) {
-    return 'Kudos, $count claps';
+    return 'Like, $count';
   }
 
   @override
@@ -907,17 +907,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get composerMentionHint => 'Mention someone with @';
 
   @override
-  String get notifPostKudos => 'Your post got kudos 👏';
+  String get notifPostKudos => 'Your post got a like 👍';
 
   @override
   String notifPostKudosBody(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count people gave',
-      one: '1 person gave',
+      other: '$count people liked',
+      one: '1 person liked',
     );
-    return '$_temp0 kudos to your post.';
+    return '$_temp0 your post.';
   }
 
   @override
@@ -929,17 +929,17 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get notifCommentKudos => 'Your comment got kudos 👏';
+  String get notifCommentKudos => 'Your comment got a like 👍';
 
   @override
   String notifCommentKudosBody(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count people gave',
-      one: '1 person gave',
+      other: '$count people liked',
+      one: '1 person liked',
     );
-    return '$_temp0 kudos to your comment.';
+    return '$_temp0 your comment.';
   }
 
   @override
