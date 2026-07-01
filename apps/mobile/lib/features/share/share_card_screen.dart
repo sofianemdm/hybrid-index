@@ -280,9 +280,11 @@ class _PlayerCardState extends State<PlayerCard> with TickerProviderStateMixin {
   // (l.224) : la carte est « scellée » tant que l'Index n'est pas réellement complet.
   // En export PNG l'écran de partage suppose un Index complet → on NE force PAS l'état scellé
   // pour exporting (la carte de partage reste l'état FINAL, cf. contrainte).
-  bool get _underConstruction =>
-      !widget.exporting &&
-      (widget.profile.index.isEstimated || widget.profile.index.radarCoverage < 6);
+  // Décision produit (01/07/2026) : la carte affiche TOUJOURS toutes les notes, même quand
+  // l'Index est estimé (Profil Express). Plus de cadenas sur les stats, plus de ruban
+  // « EN CONSTRUCTION », plus d'accroche « plus que N séances ». On neutralise l'état scellé
+  // à la source (la machinerie ci-dessous reste, inerte, au cas où on reviendrait dessus).
+  bool get _underConstruction => false;
 
   /// Un attribut est « scellé » s'il n'est pas mesuré OU s'il n'est qu'estimé (pas de
   /// fausse flatterie : on ne montre un chiffre que s'il est réellement mesuré).
