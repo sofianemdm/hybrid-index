@@ -108,19 +108,24 @@ export class ProgressService {
     return gain >= 2 || gain >= prevBest * 0.01;
   }
 
-  /** Classement de la semaine courante (par sexe). Personne n'est « dernier » : EP = 0 → absent. */
+  /** Classement de la semaine courante (par sexe). Personne n'est « dernier » : EP = 0 → absent.
+   *  IMPORTANT : on restreint aux athlètes qui ont ENCORE un profil. Un compte supprimé peut laisser
+   *  des lignes progress_weekly orphelines (agrégat sans FK cascade — cf. engagement.service) : elles
+   *  ne doivent JAMAIS apparaître au classement, sinon on affiche des lignes « — » sans nom. */
   async board(sex: string, userId?: string, memberIds?: string[]): Promise<unknown> {
     const weekKey = isoWeekKey(new Date());
-    const where = { weekKey, sex: sex as Sex, ep: { gt: 0 }, ...(memberIds ? { userId: { in: memberIds } } : {}) };
+    // Profils existants du sexe visé (éventuellement restreints à un club) = seuls athlètes classables.
+    const eligible = await this.prisma.profile.findMany({
+      where: { sex: sex as Sex, ...(memberIds ? { userId: { in: memberIds } } : {}) },
+      select: { userId: true, displayName: true, rank: true },
+    });
+    const names = new Map(eligible.map((p) => [p.userId, p]));
+    const eligibleIds = eligible.map((p) => p.userId);
+    const where = { weekKey, sex: sex as Sex, ep: { gt: 0 }, userId: { in: eligibleIds } };
     const [rows, total] = await Promise.all([
       this.prisma.progressWeekly.findMany({ where, orderBy: { ep: "desc" }, take: 50 }),
       this.prisma.progressWeekly.count({ where }),
     ]);
-    const profiles = await this.prisma.profile.findMany({
-      where: { userId: { in: rows.map((r) => r.userId) } },
-      select: { userId: true, displayName: true, rank: true },
-    });
-    const names = new Map(profiles.map((p) => [p.userId, p]));
     const entries = rows.map((r, i) => ({
       position: i + 1,
       userId: r.userId,
@@ -135,7 +140,7 @@ export class ProgressService {
       const mine = await this.prisma.progressWeekly.findUnique({ where: { userId_weekKey: { userId, weekKey } } });
       if (mine && mine.ep > 0) {
         const above = await this.prisma.progressWeekly.count({
-          where: { weekKey, sex: sex as Sex, ep: { gt: mine.ep }, ...(memberIds ? { userId: { in: memberIds } } : {}) },
+          where: { weekKey, sex: sex as Sex, ep: { gt: mine.ep }, userId: { in: eligibleIds } },
         });
         me = { position: above + 1, ep: mine.ep };
       }
