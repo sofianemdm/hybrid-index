@@ -3924,7 +3924,7 @@ abstract class AppLocalizations {
   /// No description provided for @rfNoPredictionBody1.
   ///
   /// In en, this message translates to:
-  /// **'Nice session, it\'s in the books. A few more workouts and we\'ll be able to tell you exactly where you stand — and predict your next times.'**
+  /// **'Nice session, it\'s in the books. Every saved result grows your Athlete Index — keep it up.'**
   String get rfNoPredictionBody1;
 
   /// No description provided for @rfNoPredictionTitle2.
@@ -3936,7 +3936,7 @@ abstract class AppLocalizations {
   /// No description provided for @rfNoPredictionBody2.
   ///
   /// In en, this message translates to:
-  /// **'Every saved result brings your full Index closer. Soon, we\'ll give you a personalized target to beat on every session.'**
+  /// **'Every saved result brings your full Index closer and fills out your attribute radar.'**
   String get rfNoPredictionBody2;
 
   /// No description provided for @rfMetricTime.

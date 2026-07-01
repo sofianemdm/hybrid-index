@@ -2317,14 +2317,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rfNoPredictionBody1 =>
-      'Nice session, it\'s in the books. A few more workouts and we\'ll be able to tell you exactly where you stand — and predict your next times.';
+      'Nice session, it\'s in the books. Every saved result grows your Athlete Index — keep it up.';
 
   @override
   String get rfNoPredictionTitle2 => 'Logged, keep going';
 
   @override
   String get rfNoPredictionBody2 =>
-      'Every saved result brings your full Index closer. Soon, we\'ll give you a personalized target to beat on every session.';
+      'Every saved result brings your full Index closer and fills out your attribute radar.';
 
   @override
   String get rfMetricTime => 'time';

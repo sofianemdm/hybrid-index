@@ -2334,14 +2334,14 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get rfNoPredictionBody1 =>
-      'Belle séance, c\'est dans la boîte. Encore quelques entraînements et on pourra te dire exactement où tu te situes — et te prédire tes prochains chronos.';
+      'Belle séance, c\'est dans la boîte. Chaque résultat enregistré fait grandir ton Athlete Index — continue comme ça.';
 
   @override
   String get rfNoPredictionTitle2 => 'C\'est noté, continue';
 
   @override
   String get rfNoPredictionBody2 =>
-      'Chaque résultat enregistré rapproche ton Index complet. Bientôt, on te donnera une cible personnalisée à battre sur chaque séance.';
+      'Chaque résultat enregistré rapproche ton Index complet et enrichit ton radar d\'attributs.';
 
   @override
   String get rfMetricTime => 'temps';
