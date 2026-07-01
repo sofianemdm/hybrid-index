@@ -42,13 +42,17 @@ class ApiClient {
   Future<dynamic> _send(String method, String path, [Map<String, dynamic>? body]) async {
     final uri = Uri.parse('$_baseUrl$path');
     late http.Response res;
+    // Corps JSON : un POST/PATCH SANS body envoyait `jsonEncode(null)` = la chaîne "null" avec
+    // Content-Type application/json → le serveur rejette (400). On envoie `{}` par défaut pour les
+    // endpoints sans corps (ex. suivre un utilisateur) qui échouaient tous en « une erreur est survenue ».
+    final jsonBody = jsonEncode(body ?? const <String, dynamic>{});
     try {
       switch (method) {
         case 'POST':
-          res = await _client.post(uri, headers: _headers, body: jsonEncode(body));
+          res = await _client.post(uri, headers: _headers, body: jsonBody);
           break;
         case 'PATCH':
-          res = await _client.patch(uri, headers: _headers, body: jsonEncode(body));
+          res = await _client.patch(uri, headers: _headers, body: jsonBody);
           break;
         case 'DELETE':
           res = await _client.delete(uri, headers: _headers);
