@@ -13,7 +13,9 @@ class Env {
   /// Vide = bouton Google désactivé.
   static const String googleClientId = String.fromEnvironment(
     'GOOGLE_CLIENT_ID',
-    defaultValue: '963703387600-v3hj9b93pmldhr3tfs866vi14bcim5v1.apps.googleusercontent.com',
+    // Client OAuth *Web* du projet Firebase hybrid-index-ffe2c (doit être IDENTIQUE au
+    // GOOGLE_CLIENT_ID vérifié par le backend). Sert de serverClientId sur mobile.
+    defaultValue: '702021189861-5v879fvjgs796gttas206gb5qip0meq7.apps.googleusercontent.com',
   );
 
   static bool get googleEnabled => googleClientId.isNotEmpty;
