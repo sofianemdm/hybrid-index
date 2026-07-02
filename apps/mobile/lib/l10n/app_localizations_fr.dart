@@ -1181,7 +1181,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get notificationsNewMessagesBody => 'Ouvre tes conversations.';
 
   @override
-  String get feedWeekAlmostTitle => 'Plus qu\'un WOD';
+  String get feedWeekAlmostTitle => 'Plus qu\'une séance';
 
   @override
   String feedWeekAlmostBody(int count, int goal) {
@@ -1212,8 +1212,8 @@ class AppLocalizationsFr extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       points,
       locale: localeName,
-      other: 'Encore $points points. Un bon WOD et tu y es.',
-      one: 'Encore 1 point. Un bon WOD et tu y es.',
+      other: 'Encore $points points.',
+      one: 'Encore 1 point.',
     );
     return '$_temp0';
   }
@@ -1237,7 +1237,7 @@ class AppLocalizationsFr extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Battu sur $count WODs',
+      other: 'Battu sur $count séances',
       one: 'Un athlète a battu ton temps',
     );
     return '$_temp0';
@@ -2456,7 +2456,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get leagueHowItWorksIndex =>
-      'Tes perfs sur les WODs de la Ligue comptent aussi pour ton Athlete Index. Seuls les POINTS de la Ligue repartent à zéro chaque mois.';
+      'Tes perfs sur les séances de la Ligue comptent aussi pour ton Athlete Index. Seuls les POINTS de la Ligue repartent à zéro chaque mois.';
 
   @override
   String leagueWodCountdownDaysHours(int days, int hours) {

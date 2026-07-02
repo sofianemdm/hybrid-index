@@ -815,7 +815,7 @@ abstract class AppLocalizations {
   /// No description provided for @otherWorkoutsIntro.
   ///
   /// In en, this message translates to:
-  /// **'Major real-world events (HYROX, competition WODs, races). Open one to see the details and records — and log your time.'**
+  /// **'Major real-world events (HYROX, competition workouts, races). Open one to see the details and records — and log your time.'**
   String get otherWorkoutsIntro;
 
   /// No description provided for @otherWorkoutsNoEquipment.
@@ -2153,7 +2153,7 @@ abstract class AppLocalizations {
   /// No description provided for @feedWeekAlmostTitle.
   ///
   /// In en, this message translates to:
-  /// **'One WOD to go'**
+  /// **'One workout to go'**
   String get feedWeekAlmostTitle;
 
   /// No description provided for @feedWeekAlmostBody.
@@ -2183,7 +2183,7 @@ abstract class AppLocalizations {
   /// No description provided for @feedNextRankBody.
   ///
   /// In en, this message translates to:
-  /// **'{points, plural, one{Just 1 point to go. One good WOD and you\'re there.} other{Just {points} points to go. One good WOD and you\'re there.}}'**
+  /// **'{points, plural, one{Just 1 point to go.} other{Just {points} points to go.}}'**
   String feedNextRankBody(int points);
 
   /// No description provided for @feedRankOvertakenTitle.
@@ -2201,7 +2201,7 @@ abstract class AppLocalizations {
   /// No description provided for @feedWodOvertakenTitle.
   ///
   /// In en, this message translates to:
-  /// **'{count, plural, one{An athlete beat your time} other{Beaten on {count} WODs}}'**
+  /// **'{count, plural, one{An athlete beat your time} other{Beaten on {count} workouts}}'**
   String feedWodOvertakenTitle(int count);
 
   /// No description provided for @feedWodOvertakenBody.
@@ -4128,7 +4128,7 @@ abstract class AppLocalizations {
   /// No description provided for @leagueHowItWorksIndex.
   ///
   /// In en, this message translates to:
-  /// **'Your performances on the League WODs also count toward your Athlete Index. Only the League POINTS reset to zero every month.'**
+  /// **'Your performances on the League workouts also count toward your Athlete Index. Only the League POINTS reset to zero every month.'**
   String get leagueHowItWorksIndex;
 
   /// No description provided for @leagueWodCountdownDaysHours.

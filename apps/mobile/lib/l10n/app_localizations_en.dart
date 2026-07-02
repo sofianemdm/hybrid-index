@@ -396,7 +396,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get otherWorkoutsIntro =>
-      'Major real-world events (HYROX, competition WODs, races). Open one to see the details and records — and log your time.';
+      'Major real-world events (HYROX, competition workouts, races). Open one to see the details and records — and log your time.';
 
   @override
   String get otherWorkoutsNoEquipment => 'No equipment';
@@ -1172,7 +1172,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notificationsNewMessagesBody => 'Open your conversations.';
 
   @override
-  String get feedWeekAlmostTitle => 'One WOD to go';
+  String get feedWeekAlmostTitle => 'One workout to go';
 
   @override
   String feedWeekAlmostBody(int count, int goal) {
@@ -1203,8 +1203,8 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       points,
       locale: localeName,
-      other: 'Just $points points to go. One good WOD and you\'re there.',
-      one: 'Just 1 point to go. One good WOD and you\'re there.',
+      other: 'Just $points points to go.',
+      one: 'Just 1 point to go.',
     );
     return '$_temp0';
   }
@@ -1228,7 +1228,7 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Beaten on $count WODs',
+      other: 'Beaten on $count workouts',
       one: 'An athlete beat your time',
     );
     return '$_temp0';
@@ -2439,7 +2439,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get leagueHowItWorksIndex =>
-      'Your performances on the League WODs also count toward your Athlete Index. Only the League POINTS reset to zero every month.';
+      'Your performances on the League workouts also count toward your Athlete Index. Only the League POINTS reset to zero every month.';
 
   @override
   String leagueWodCountdownDaysHours(int days, int hours) {
