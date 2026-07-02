@@ -681,8 +681,8 @@
       }
     }
   },
-  "endgameGlobalRank": "Global rank",
-  "endgameTop100": "Global Top 100 🌍",
+  "endgameGlobalRank": "Athlete League rank",
+  "endgameTop100": "Athlete League Top 100 🏆",
   "endgameHeroBronze": "Bronze Grand Slam",
   "endgameHeroSilver": "Silver Grand Slam",
   "endgameHeroGold": "Gold Grand Slam",

@@ -2699,13 +2699,13 @@ abstract class AppLocalizations {
   /// No description provided for @endgameGlobalRank.
   ///
   /// In en, this message translates to:
-  /// **'Global rank'**
+  /// **'Athlete League rank'**
   String get endgameGlobalRank;
 
   /// No description provided for @endgameTop100.
   ///
   /// In en, this message translates to:
-  /// **'Global Top 100 🌍'**
+  /// **'Athlete League Top 100 🏆'**
   String get endgameTop100;
 
   /// No description provided for @endgameHeroBronze.

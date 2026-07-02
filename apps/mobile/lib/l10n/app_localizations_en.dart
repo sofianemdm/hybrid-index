@@ -1518,10 +1518,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get endgameGlobalRank => 'Global rank';
+  String get endgameGlobalRank => 'Athlete League rank';
 
   @override
-  String get endgameTop100 => 'Global Top 100 🌍';
+  String get endgameTop100 => 'Athlete League Top 100 🏆';
 
   @override
   String get endgameHeroBronze => 'Bronze Grand Slam';

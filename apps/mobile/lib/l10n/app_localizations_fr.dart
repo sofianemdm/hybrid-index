@@ -1529,10 +1529,10 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get endgameGlobalRank => 'Rang mondial';
+  String get endgameGlobalRank => 'Rang Athlete Ligue';
 
   @override
-  String get endgameTop100 => 'Top 100 mondial 🌍';
+  String get endgameTop100 => 'Top 100 Athlete Ligue 🏆';
 
   @override
   String get endgameHeroBronze => 'Grand Chelem Bronze';
@@ -1605,7 +1605,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get progressionEndgameButton =>
-      'Endgame — Grand Chelem & rang mondial';
+      'Endgame — Grand Chelem & Rang Athlete Ligue';
 
   @override
   String progressionBadges(int unlocked, int total) {
