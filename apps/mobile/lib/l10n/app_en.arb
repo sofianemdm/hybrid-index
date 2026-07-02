@@ -6,6 +6,7 @@
   "navCommunity": "Community",
   "navProgress": "Progress",
   "navLeaderboard": "League",
+  "settingsEmailLabel": "Email address",
   "settingsEquipmentLabel": "Equipment — \"Equipped\" also unlocks equipment-free sessions",
   "settingsEquipmentNone": "No equipment",
   "settingsEquipmentEquipped": "Equipped (gym)",

@@ -28,6 +28,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get navLeaderboard => 'Ligue';
 
   @override
+  String get settingsEmailLabel => 'Adresse e-mail';
+
+  @override
   String get settingsEquipmentLabel =>
       'Matériel — « Équipé » donne aussi accès au sans-matériel';
 

@@ -19,6 +19,9 @@ class GoogleSignInButton extends StatelessWidget {
         serverClientId: Env.googleClientId.isEmpty ? null : Env.googleClientId,
         scopes: const ['email', 'profile'],
       );
+      // Déconnexion préalable : sinon google_sign_in réutilise SILENCIEUSEMENT le dernier compte.
+      // On force ainsi le sélecteur de compte (utile quand plusieurs comptes Google sont sur le tel).
+      await gsi.signOut();
       final account = await gsi.signIn();
       if (account == null) return; // annulé
       final auth = await account.authentication;

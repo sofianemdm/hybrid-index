@@ -134,6 +134,12 @@ abstract class AppLocalizations {
   /// **'League'**
   String get navLeaderboard;
 
+  /// No description provided for @settingsEmailLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Email address'**
+  String get settingsEmailLabel;
+
   /// No description provided for @settingsEquipmentLabel.
   ///
   /// In en, this message translates to:

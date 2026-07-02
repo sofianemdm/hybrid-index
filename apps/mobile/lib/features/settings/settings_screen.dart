@@ -167,6 +167,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
+    final email = ref.watch(sessionProvider).user?.email ?? '';
     return Scaffold(
       appBar: AppBar(
           title: Text(t.settingsTitle), backgroundColor: Colors.transparent, elevation: 0),
@@ -186,6 +187,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       InputDecorator(
                         decoration: const InputDecoration(prefixIcon: Icon(Icons.lock_outline)),
                         child: Text(_displayName.text.isEmpty ? '—' : _displayName.text,
+                            style: TextStyle(color: HiColors.textPrimary)),
+                      ),
+                      const SizedBox(height: HiSpace.lg),
+                      // Adresse e-mail du compte (lecture seule).
+                      Text(t.settingsEmailLabel, style: TextStyle(color: HiColors.textSecondary)),
+                      const SizedBox(height: 8),
+                      InputDecorator(
+                        decoration: const InputDecoration(prefixIcon: Icon(Icons.mail_outline)),
+                        child: Text(email.isEmpty ? '—' : email,
                             style: TextStyle(color: HiColors.textPrimary)),
                       ),
                       const SizedBox(height: HiSpace.lg),

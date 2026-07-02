@@ -27,6 +27,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navLeaderboard => 'League';
 
   @override
+  String get settingsEmailLabel => 'Email address';
+
+  @override
   String get settingsEquipmentLabel =>
       'Equipment — \"Equipped\" also unlocks equipment-free sessions';
 
