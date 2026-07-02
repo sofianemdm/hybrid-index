@@ -12,8 +12,11 @@ class GoogleSignInButton extends StatelessWidget {
 
   Future<void> _signIn() async {
     try {
+      // Sur Android/iOS, `clientId` est lu depuis google-services.json (client OAuth natif).
+      // `serverClientId` = le client OAuth *Web* du même projet Firebase → l'idToken renvoyé a pour
+      // audience ce client, que le backend vérifie (GOOGLE_CLIENT_ID). Les DEUX doivent être identiques.
       final gsi = GoogleSignIn(
-        clientId: Env.googleClientId.isEmpty ? null : Env.googleClientId,
+        serverClientId: Env.googleClientId.isEmpty ? null : Env.googleClientId,
         scopes: const ['email', 'profile'],
       );
       final account = await gsi.signIn();

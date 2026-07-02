@@ -26,11 +26,28 @@ android {
         versionName = flutter.versionName
     }
 
+    // Clé de signature STABLE pour le release (requise pour Google Sign-In : le SHA-1 doit être
+    // enregistré dans Firebase). Fournie via variables d'env (secret GitHub décodé dans le workflow).
+    // Si absente (build local sans secret), on retombe sur la clé debug pour ne rien casser.
+    val releaseKeystorePath: String? = System.getenv("ANDROID_KEYSTORE_PATH")
+    val hasReleaseKeystore = releaseKeystorePath != null && file(releaseKeystorePath).exists()
+    signingConfigs {
+        create("release") {
+            if (hasReleaseKeystore) {
+                storeFile = file(releaseKeystorePath!!)
+                storePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("ANDROID_KEY_ALIAS")
+                keyPassword = System.getenv("ANDROID_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = if (hasReleaseKeystore)
+                signingConfigs.getByName("release")
+            else
+                signingConfigs.getByName("debug")
         }
     }
 }

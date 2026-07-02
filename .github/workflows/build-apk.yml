@@ -34,7 +34,23 @@ jobs:
       - name: Dépendances
         run: flutter pub get
 
-      - name: Build APK (release, signé debug → installable pour tester)
+      - name: Décoder la clé de signature (si le secret est présent)
+        env:
+          KS_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KS_B64" ]; then
+            echo "$KS_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
+            echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+            echo "✓ Clé de release décodée (APK signé avec la clé stable → Google Sign-In OK)."
+          else
+            echo "⚠ Pas de secret ANDROID_KEYSTORE_BASE64 → signature debug (Google Sign-In KO)."
+          fi
+
+      - name: Build APK (release, signé avec la clé stable si dispo)
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: >
           flutter build apk --release
           --dart-define=API_BASE_URL=https://api-production-9a50.up.railway.app
