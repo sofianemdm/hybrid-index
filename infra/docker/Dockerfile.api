@@ -39,5 +39,12 @@ COPY --from=build /out/node_modules ./node_modules
 COPY --from=build /out/package.json ./package.json
 # Client Prisma généré (sinon « Cannot find module '.prisma/client/default' » au démarrage).
 COPY --from=build /prisma-client ./node_modules/.prisma
+# Schéma + migrations : requis par `prisma migrate deploy` au démarrage (cf. CMD).
+COPY --from=build /repo/apps/api/prisma ./prisma
 EXPOSE 3000
-CMD ["node", "dist/main.js"]
+# MIGRATIONS AUTOMATIQUES au démarrage : `migrate deploy` applique les migrations en attente
+# (idempotent, no-op si la base est à jour) AVANT de lancer l'app. Sans ça, tout push contenant
+# une migration casse la prod tant qu'on n'a pas migré à la main (incident du 02/07/2026).
+# Le CLI `prisma` est une dependency de PROD (apps/api/package.json) → présent dans node_modules ;
+# `--no-install` interdit tout téléchargement au boot (version épinglée par le lockfile).
+CMD ["sh", "-c", "npx --no-install prisma migrate deploy && node dist/main.js"]
