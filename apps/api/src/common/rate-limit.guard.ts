@@ -21,7 +21,9 @@ export interface RateLimitOptions {
 
 export const RATE_LIMIT_KEY = "rate_limit";
 
-/** Limite le débit d'une route. Compteur en Redis (fail-open si Redis indisponible).
+/** Limite le débit d'une route. Compteur en Redis ; si Redis est indisponible, REPLI sur un
+ *  compteur en mémoire (par instance) — jamais de fail-open : les routes sensibles (login,
+ *  register) restent limitées même en incident Redis.
  *  Ex. `@RateLimit({ limit: 5, windowSec: 900 })` = 5 req / 15 min / IP. */
 export const RateLimit = (opts: RateLimitOptions): MethodDecorator => SetMetadata(RATE_LIMIT_KEY, opts);
 
@@ -47,14 +49,37 @@ export class RateLimitGuard implements CanActivate {
     const identity = opts.by === "user" ? (this.userIdFromBearer(req) ?? this.ip(req)) : this.ip(req);
     const key = `${handler}:${identity}`;
 
-    const count = await this.redis.rateLimit(key, opts.windowSec);
-    if (count !== null && count > opts.limit) {
+    // Redis indisponible (null) → repli compteur EN MÉMOIRE (par instance). L'ancien comportement
+    // fail-open laissait login/register SANS AUCUNE limite pendant un incident Redis (brute-force).
+    const count = (await this.redis.rateLimit(key, opts.windowSec)) ?? this.memoryRateLimit(key, opts.windowSec);
+    if (count > opts.limit) {
       throw new HttpException(
         { code: "RATE_LIMITED", message: "Trop de tentatives. Réessaie dans quelques instants." },
         HttpStatus.TOO_MANY_REQUESTS,
       );
     }
     return true;
+  }
+
+  /** Compteurs de secours en mémoire (fenêtre fixe). Suffisant en mono-instance ; en multi-instance
+   *  la limite devient « par instance » — toujours infiniment mieux que pas de limite du tout. */
+  private readonly memoryCounters = new Map<string, { count: number; resetAt: number }>();
+
+  private memoryRateLimit(key: string, windowSec: number): number {
+    const now = Date.now();
+    // Nettoyage paresseux : borne la mémoire si Redis reste longtemps indisponible.
+    if (this.memoryCounters.size > 10_000) {
+      for (const [k, v] of this.memoryCounters) {
+        if (v.resetAt <= now) this.memoryCounters.delete(k);
+      }
+    }
+    const entry = this.memoryCounters.get(key);
+    if (!entry || entry.resetAt <= now) {
+      this.memoryCounters.set(key, { count: 1, resetAt: now + windowSec * 1000 });
+      return 1;
+    }
+    entry.count += 1;
+    return entry.count;
   }
 
   /** sub du Bearer (clé de rate-limit par utilisateur). null si absent/invalide → repli IP. */
