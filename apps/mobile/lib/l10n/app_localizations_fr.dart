@@ -1832,6 +1832,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get gradeCompleteSuffix => ' pour révéler ton vrai Index :';
 
   @override
+  String get gradeCompleteOptional =>
+      'Pas obligatoire : ton vrai Index peut aussi se révéler en ajoutant d\'autres séances de ton choix.';
+
+  @override
   String gradeUnlocks(String covers) {
     return 'Débloque : $covers';
   }

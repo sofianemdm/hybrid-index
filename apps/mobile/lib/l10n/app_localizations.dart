@@ -3212,6 +3212,12 @@ abstract class AppLocalizations {
   /// **' to reveal your real Index:'**
   String get gradeCompleteSuffix;
 
+  /// No description provided for @gradeCompleteOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Not required: your real Index can also be revealed by logging other sessions of your choice.'**
+  String get gradeCompleteOptional;
+
   /// No description provided for @gradeUnlocks.
   ///
   /// In en, this message translates to:

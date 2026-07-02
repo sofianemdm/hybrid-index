@@ -1818,6 +1818,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get gradeCompleteSuffix => ' to reveal your real Index:';
 
   @override
+  String get gradeCompleteOptional =>
+      'Not required: your real Index can also be revealed by logging other sessions of your choice.';
+
+  @override
   String gradeUnlocks(String covers) {
     return 'Unlocks: $covers';
   }

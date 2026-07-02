@@ -549,6 +549,7 @@
   "gradeCompleteSessionOne": "cette séance",
   "gradeCompleteSessionMany": "ces {n} séances",
   "gradeCompleteSuffix": " pour révéler ton vrai Index :",
+  "gradeCompleteOptional": "Pas obligatoire : ton vrai Index peut aussi se révéler en ajoutant d'autres séances de ton choix.",
   "gradeUnlocks": "Débloque : {covers}",
   "gradeClimbTo": "Continue à logger tes séances pour grimper vers {next}.",
   "gradeWorkPrefix": "Travaille ta ",

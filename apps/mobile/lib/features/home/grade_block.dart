@@ -93,6 +93,13 @@ class EstimationBlock extends ConsumerWidget {
                     ),
                   ),
                   ),
+                  const SizedBox(height: 6),
+                  // Précision rassurante : ces séances recommandées ne sont pas obligatoires.
+                  ExcludeSemantics(
+                    child: Text(t.gradeCompleteOptional,
+                        style: HiType.caption.copyWith(
+                            color: HiColors.textTertiary, fontStyle: FontStyle.italic, height: 1.3)),
+                  ),
                   const SizedBox(height: 8),
                   ...plan.sessions.map((s) => _sessionRow(context, s)),
                 ],

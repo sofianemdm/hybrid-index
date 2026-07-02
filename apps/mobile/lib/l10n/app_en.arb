@@ -877,6 +877,7 @@
     }
   },
   "gradeCompleteSuffix": " to reveal your real Index:",
+  "gradeCompleteOptional": "Not required: your real Index can also be revealed by logging other sessions of your choice.",
   "gradeUnlocks": "Unlocks: {covers}",
   "@gradeUnlocks": {
     "placeholders": {
