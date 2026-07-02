@@ -49,8 +49,10 @@ class HomeScreen extends ConsumerWidget {
     // célèbre. La PlayerCard rejoue son _reveal toute seule (reconstruite avec le nouveau profil) ;
     // ici on déclenche le moment de dopamine. Reduce-motion → SnackBar + haptique (pas de plein écran).
     ref.listen<AsyncValue<Profile?>>(myProfileProvider, (prev, next) {
-      final before = prev?.value;
-      final after = next.value;
+      // valueOrNull : `.value` RELANCE l'erreur sur un AsyncError (profil en échec réseau) →
+      // le listener plantait au lieu d'ignorer. Attrapé par le test d'écran « profil 500 ».
+      final before = prev?.valueOrNull;
+      final after = next.valueOrNull;
       if (before == null || after == null) return;
       final wasUnderConstruction = before.index.isEstimated || before.index.radarCoverage < 6;
       final nowComplete = !(after.index.isEstimated || after.index.radarCoverage < 6);
@@ -107,7 +109,9 @@ class HomeScreen extends ConsumerWidget {
                               tag: 'me-avatar',
                               child: HiAvatar(
                                 config: a,
-                                rank: profileAsync.value?.index.rank ?? 'rookie',
+                                // valueOrNull : `.value` RELANCE l'erreur sur AsyncError (profil en
+                                // échec) → l'entête plantait au lieu d'afficher le repli rookie.
+                                rank: profileAsync.valueOrNull?.index.rank ?? 'rookie',
                                 size: 48,
                               ),
                             ),
@@ -345,9 +349,11 @@ class HomeScreen extends ConsumerWidget {
           ),
           const SizedBox(height: HiSpace.sm),
         ],
-        // Actions secondaires discrètes (fantômes) sur une ligne.
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+        // Actions secondaires discrètes (fantômes). Wrap : sur petit écran (320) les deux boutons
+        // débordaient de 37 px — ils passent maintenant à la ligne (attrapé par le golden test).
+        Wrap(
+          alignment: WrapAlignment.center,
+          spacing: HiSpace.md,
           children: [
             HiGhostButton(
               label: t.homeHistory,
@@ -356,7 +362,6 @@ class HomeScreen extends ConsumerWidget {
                 MaterialPageRoute(builder: (_) => const HistoryScreen()),
               ),
             ),
-            const SizedBox(width: HiSpace.md),
             HiGhostButton(
               label: t.homeShareCard,
               icon: Icons.ios_share_rounded,

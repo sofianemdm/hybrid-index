@@ -220,8 +220,12 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
             children: [
               Icon(Icons.info_outline_rounded, color: HiColors.brandSecondaryText, size: 18),
               const SizedBox(width: 8),
-              Text(t.leagueExplainerTitle,
-                  style: HiType.bodyStrong.copyWith(color: HiColors.textPrimary)),
+              // Expanded : sans lui le titre déborde de 26 px sur petit écran (320) — attrapé par
+              // le golden test de l'écran Ligue.
+              Expanded(
+                child: Text(t.leagueExplainerTitle,
+                    style: HiType.bodyStrong.copyWith(color: HiColors.textPrimary)),
+              ),
             ],
           ),
           const SizedBox(height: HiSpace.sm),
@@ -245,7 +249,11 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
         border: Border.all(color: HiColors.strokeSubtle),
       ),
       clipBehavior: Clip.antiAlias,
-      child: Theme(
+      // Material(transparency) : l'ExpansionTile (un ListTile) peint son encre sur le Material le
+      // plus proche — sous un Container coloré, Flutter le signale (assertion en debug/tests).
+      child: Material(
+        type: MaterialType.transparency,
+        child: Theme(
         // Retire les séparateurs par défaut de l'ExpansionTile (intégration au design sombre).
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
@@ -264,6 +272,7 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
             _howItWorksLine(Icons.trending_up_rounded, t.leagueHowItWorksIndex),
           ],
         ),
+      ),
       ),
     );
   }

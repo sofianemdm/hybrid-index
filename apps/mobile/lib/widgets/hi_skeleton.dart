@@ -114,6 +114,10 @@ class HiListSkeleton extends StatelessWidget {
     return ListView.separated(
       padding: padding,
       physics: const NeverScrollableScrollPhysics(),
+      // shrinkWrap : le squelette apparaît aussi À L'INTÉRIEUR d'écrans déjà scrollables (ex.
+      // classement du détail d'une séance) → sans lui, viewport non borné = crash de layout.
+      // Coût négligeable (liste courte, jamais scrollée).
+      shrinkWrap: true,
       itemCount: count,
       separatorBuilder: (_, __) => const SizedBox(height: HiSpace.md),
       itemBuilder: (_, __) => HiSkeleton(height: itemHeight, radius: HiRadius.lg),
