@@ -462,15 +462,21 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
               Text(pos == null ? '—' : '#$pos', style: HiType.titleL.copyWith(color: HiColors.textPrimary)),
             ],
           ),
-          const Spacer(),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(t.leaguePts(pts), style: HiType.numericM.copyWith(color: HiColors.textPrimary, fontSize: 20)),
-              const SizedBox(height: 2),
-              Text(pos == null ? t.leagueDoWodToEnter : t.leagueThisMonth,
-                  style: HiType.caption.copyWith(color: HiColors.textSecondary)),
-            ],
+          const SizedBox(width: HiSpace.md),
+          // Expanded (au lieu de Spacer + colonne libre) : la colonne droite est CONTRAINTE →
+          // le long texte « Fais la séance… » passe à la ligne dans la carte au lieu de déborder
+          // hors de l'écran à droite.
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(t.leaguePts(pts), style: HiType.numericM.copyWith(color: HiColors.textPrimary, fontSize: 20)),
+                const SizedBox(height: 2),
+                Text(pos == null ? t.leagueDoWodToEnter : t.leagueThisMonth,
+                    textAlign: TextAlign.end,
+                    style: HiType.caption.copyWith(color: HiColors.textSecondary)),
+              ],
+            ),
           ),
         ],
       ),
