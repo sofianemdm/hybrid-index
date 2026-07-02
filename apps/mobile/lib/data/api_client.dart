@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
@@ -39,35 +40,62 @@ class ApiClient {
         if (_token != null) 'authorization': 'Bearer $_token',
       };
 
+  Future<http.Response> _request(String method, Uri uri, String jsonBody) {
+    switch (method) {
+      case 'POST':
+        return _client.post(uri, headers: _headers, body: jsonBody);
+      case 'PATCH':
+        return _client.patch(uri, headers: _headers, body: jsonBody);
+      case 'DELETE':
+        return _client.delete(uri, headers: _headers);
+      case 'GET':
+      default:
+        return _client.get(uri, headers: _headers);
+    }
+  }
+
+  /// Délai max par tentative : au-delà, l'appel échoue en « connexion trop lente » au lieu de
+  /// rester bloqué INDÉFINIMENT (squelette de chargement éternel sur réseau mobile instable).
+  static const Duration _timeout = Duration(seconds: 10);
+
   Future<dynamic> _send(String method, String path, [Map<String, dynamic>? body]) async {
     final uri = Uri.parse('$_baseUrl$path');
-    late http.Response res;
     // Corps JSON : un POST/PATCH SANS body envoyait `jsonEncode(null)` = la chaîne "null" avec
     // Content-Type application/json → le serveur rejette (400). On envoie `{}` par défaut pour les
     // endpoints sans corps (ex. suivre un utilisateur) qui échouaient tous en « une erreur est survenue ».
     final jsonBody = jsonEncode(body ?? const <String, dynamic>{});
-    try {
-      switch (method) {
-        case 'POST':
-          res = await _client.post(uri, headers: _headers, body: jsonBody);
-          break;
-        case 'PATCH':
-          res = await _client.patch(uri, headers: _headers, body: jsonBody);
-          break;
-        case 'DELETE':
-          res = await _client.delete(uri, headers: _headers);
-          break;
-        case 'GET':
-        default:
-          res = await _client.get(uri, headers: _headers);
-          break;
+    // 1 retry SILENCIEUX sur les lectures uniquement (GET = sans effet de bord) : une micro-coupure
+    // réseau se répare toute seule. Jamais de retry automatique sur écriture (POST/PATCH/DELETE) —
+    // on ne risque aucun doublon, même si les endpoints critiques sont déjà idempotents.
+    final attempts = method == 'GET' ? 2 : 1;
+    http.Response res;
+    for (var attempt = 1; ; attempt++) {
+      try {
+        res = await _request(method, uri, jsonBody).timeout(_timeout);
+        break;
+      } on TimeoutException {
+        if (attempt < attempts) {
+          await Future<void>.delayed(const Duration(milliseconds: 300));
+          continue;
+        }
+        throw ApiException('TIMEOUT', 'Connexion trop lente. Vérifie ton réseau et réessaie.', 0);
+      } catch (_) {
+        if (attempt < attempts) {
+          await Future<void>.delayed(const Duration(milliseconds: 300));
+          continue;
+        }
+        throw ApiException('NETWORK', 'Serveur injoignable. L\'API tourne-t-elle sur $_baseUrl ?', 0);
       }
-    } catch (_) {
-      throw ApiException('NETWORK', 'Serveur injoignable. L\'API tourne-t-elle sur $_baseUrl ?', 0);
     }
 
     final text = res.body.isEmpty ? '{}' : res.body;
-    final dynamic decoded = jsonDecode(text);
+    // Réponse non-JSON (ex. page HTML d'un proxy/504) → erreur normalisée plutôt qu'un crash de parsing.
+    dynamic decoded;
+    try {
+      decoded = jsonDecode(text);
+    } on FormatException {
+      throw ApiException('BAD_RESPONSE', 'Réponse serveur illisible (${res.statusCode}).', res.statusCode);
+    }
     if (res.statusCode >= 200 && res.statusCode < 300) {
       return decoded;
     }
