@@ -7,6 +7,11 @@ import 'package:flutter/material.dart';
 /// classements qui clignotent, data gaspillée). Sur le web, on garde `Image.network` (le cache
 /// HTTP du navigateur fait déjà le travail — zéro changement de comportement).
 class NetAvatarImage extends StatelessWidget {
+  /// Posé à true par le harnais de tests (flutter_test_config) : CachedNetworkImage fait de l'IO
+  /// disque/réseau réel (impossible en widget test) → on retombe sur Image.network, que
+  /// l'environnement de test intercepte proprement (HTTP 400 immédiat → placeholder d'erreur).
+  static bool testMode = false;
+
   final String url;
   final double? width;
   final double? height;
@@ -26,7 +31,7 @@ class NetAvatarImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (kIsWeb) {
+    if (kIsWeb || testMode) {
       return Image.network(
         url,
         width: width,
