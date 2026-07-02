@@ -342,7 +342,18 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
           children: [
             Row(children: [
               Expanded(
-                child: Text(t.communityTitle, style: HiType.titleL.copyWith(color: HiColors.textPrimary)),
+                // FittedBox : garde « Communauté » sur UNE seule ligne (jamais le « é » qui saute à la
+                // ligne), en réduisant très légèrement la taille si les 4 icônes serrent l'espace.
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    t.communityTitle,
+                    maxLines: 1,
+                    softWrap: false,
+                    style: HiType.titleL.copyWith(color: HiColors.textPrimary),
+                  ),
+                ),
               ),
               Badge.count(
                 count: ref.watch(unreadMessagesProvider).value ?? 0,
