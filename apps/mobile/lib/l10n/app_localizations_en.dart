@@ -514,6 +514,12 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get movementGuideA11y => 'See the movement explanation:';
+
+  @override
+  String get movementGuideUnavailable => 'Image unavailable.';
+
+  @override
   String get wodDetailLoads => 'LOADS';
 
   @override

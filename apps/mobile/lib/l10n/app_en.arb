@@ -183,6 +183,8 @@
   },
   "wodDetailChallenge": "The challenge",
   "wodDetailCap": "Cap {cap}",
+  "movementGuideA11y": "See the movement explanation:",
+  "movementGuideUnavailable": "Image unavailable.",
   "@wodDetailCap": {
     "placeholders": {
       "cap": {

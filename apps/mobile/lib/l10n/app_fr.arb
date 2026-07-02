@@ -162,6 +162,8 @@
   "wodDetailMinutes": "{n} min",
   "wodDetailChallenge": "Le défi",
   "wodDetailCap": "Cap {cap}",
+  "movementGuideA11y": "Voir l'explication du mouvement :",
+  "movementGuideUnavailable": "Image indisponible.",
   "wodDetailLoads": "CHARGES",
   "wodDetailRx": "RX : ",
   "wodDetailLight": "Léger : ",

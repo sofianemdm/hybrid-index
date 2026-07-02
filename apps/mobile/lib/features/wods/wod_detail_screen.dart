@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/api_client.dart';
 import '../../data/models.dart';
+import '../../data/movement_guides.dart';
 import '../../data/session.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
@@ -494,6 +495,7 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
   }
 
   Widget _blockRow(WodBlock b) {
+    final guide = movementGuideAsset(b.movement); // image d'explication si dispo
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
@@ -510,14 +512,94 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(b.movement,
-                    style: HiType.body.copyWith(color: HiColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600)),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Flexible(
+                      child: Text(b.movement,
+                          style: HiType.body
+                              .copyWith(color: HiColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600)),
+                    ),
+                    // Petit « info » cliquable → image expliquant le mouvement (si un guide existe).
+                    if (guide != null) _movementInfoButton(b.movement, guide),
+                  ],
+                ),
                 if (b.detail != null && b.detail!.isNotEmpty)
                   Text(b.detail!, style: HiType.caption.copyWith(color: HiColors.textTertiary)),
               ],
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// Bouton « i » discret à côté d'un mouvement : ouvre l'image d'explication.
+  Widget _movementInfoButton(String name, String asset) {
+    return Semantics(
+      button: true,
+      label: '${AppLocalizations.of(context).movementGuideA11y} $name',
+      child: InkResponse(
+        onTap: () => _showMovementGuide(name, asset),
+        radius: 20,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+          child: Icon(Icons.info_outline_rounded, size: 17, color: HiColors.brandSecondary),
+        ),
+      ),
+    );
+  }
+
+  /// Affiche l'image d'explication du mouvement (zoomable), avec titre + fermeture.
+  void _showMovementGuide(String name, String asset) {
+    showDialog<void>(
+      context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.75),
+      builder: (ctx) => Dialog(
+        backgroundColor: HiColors.bgElevated,
+        insetPadding: const EdgeInsets.all(HiSpace.lg),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(HiRadius.lg)),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(HiSpace.md, HiSpace.sm, HiSpace.sm, 0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(name,
+                        style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.close_rounded, color: HiColors.textSecondary),
+                    onPressed: () => Navigator.of(ctx).pop(),
+                    tooltip: MaterialLocalizations.of(ctx).closeButtonTooltip,
+                  ),
+                ],
+              ),
+            ),
+            Flexible(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(HiSpace.md, 0, HiSpace.md, HiSpace.md),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(HiRadius.md),
+                  child: InteractiveViewer(
+                    maxScale: 4,
+                    child: Image.asset(
+                      asset,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => Padding(
+                        padding: const EdgeInsets.all(HiSpace.lg),
+                        child: Text(AppLocalizations.of(context).movementGuideUnavailable,
+                            style: HiType.body.copyWith(color: HiColors.textTertiary)),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -1022,6 +1022,18 @@ abstract class AppLocalizations {
   /// **'Cap {cap}'**
   String wodDetailCap(String cap);
 
+  /// No description provided for @movementGuideA11y.
+  ///
+  /// In en, this message translates to:
+  /// **'See the movement explanation:'**
+  String get movementGuideA11y;
+
+  /// No description provided for @movementGuideUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Image unavailable.'**
+  String get movementGuideUnavailable;
+
   /// No description provided for @wodDetailLoads.
   ///
   /// In en, this message translates to:
