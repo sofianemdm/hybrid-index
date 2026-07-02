@@ -32,11 +32,11 @@ const WODS: Array<{
   { id: "run_1k", name: "1 km Course", scoreType: "time", requiresEquipment: false, targetAttributes: ["speed", "engine"] },
   { id: "run_400", name: "400 m Course", scoreType: "time", requiresEquipment: false, targetAttributes: ["speed", "engine"] },
   { id: "max_pushups", name: "Max pompes strictes", scoreType: "reps", requiresEquipment: false, targetAttributes: ["strength", "muscular_endurance"] },
-  { id: "max_air_squats_2min", name: "Max air squats en 2 min", scoreType: "reps", requiresEquipment: false, targetAttributes: ["muscular_endurance", "power"] },
+  { id: "max_air_squats_2min", name: "Max squats en 2 min", scoreType: "reps", requiresEquipment: false, targetAttributes: ["muscular_endurance", "power"] },
   { id: "burpees_7min", name: "Test burpees 7 min", scoreType: "reps", requiresEquipment: false, targetAttributes: ["engine", "muscular_endurance", "power", "hybrid"] },
   { id: "ergo_skill", name: "Machine & Mur", scoreType: "time", requiresEquipment: true, targetAttributes: ["strength", "muscular_endurance", "engine", "power"] },
   { id: "run_free_distance", name: "Course distance libre", scoreType: "time", requiresEquipment: false, targetAttributes: ["engine", "speed"] },
-  { id: "max_air_squats", name: "Max air squats (une série)", scoreType: "reps", requiresEquipment: false, targetAttributes: ["muscular_endurance", "strength"] },
+  { id: "max_air_squats", name: "Max squats (une série)", scoreType: "reps", requiresEquipment: false, targetAttributes: ["muscular_endurance", "strength"] },
   { id: "max_strict_pullups", name: "Max tractions strictes (une série)", scoreType: "reps", requiresEquipment: true, targetAttributes: ["strength", "muscular_endurance"] },
   { id: "squat_1rm", name: "Squat 1RM (charge max, 1 rép)", scoreType: "load", requiresEquipment: true, targetAttributes: ["strength", "power"] },
   // Épreuves « Autre » (réelles, jouables, rangées à part de l'écran Séances).

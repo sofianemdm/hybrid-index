@@ -372,7 +372,7 @@ export const WODS: ReadonlyArray<WodDefinition> = [
   },
   {
     id: "max_air_squats_2min",
-    name: "Max air squats en 2 min",
+    name: "Max squats en 2 min",
     scoreType: "reps",
     requiresEquipment: false,
     isBenchmark: true,
@@ -439,7 +439,7 @@ export const WODS: ReadonlyArray<WodDefinition> = [
     // Max squats à vide en UNE série, à l'échec (≠ max_air_squats_2min plafonné). Endurance
     // musculaire dominante + Force estimée (proxy bodyweight, analogie D2). sport-science 20 juin.
     id: "max_air_squats",
-    name: "Max air squats (une série, à l'échec)",
+    name: "Max squats (une série, à l'échec)",
     scoreType: "reps",
     requiresEquipment: false,
     isBenchmark: true,

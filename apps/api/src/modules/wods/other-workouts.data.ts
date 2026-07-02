@@ -60,7 +60,7 @@ export const OTHER_WORKOUTS: OtherWorkout[] = [
     category: "crossfit",
     format: "1,6 km course · 100 tractions · 200 pompes · 300 squats · 1,6 km course (gilet 9/6 kg)",
     description:
-      "Hero WOD : 1,6 km de course, puis 100 tractions, 200 pompes, 300 air squats (souvent fractionnés librement), "
+      "Hero WOD : 1,6 km de course, puis 100 tractions, 200 pompes, 300 squats (souvent fractionnés librement), "
       + "puis 1,6 km de course — classiquement avec un gilet lesté (9 kg H / 6 kg F).",
     records: [
       { athlete: "Alec Blenis", sex: "male", note: "32:41 · record (avec gilet)", source: "alecblenis.com" },

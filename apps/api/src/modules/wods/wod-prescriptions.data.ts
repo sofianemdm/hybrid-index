@@ -208,18 +208,18 @@ export const WOD_PRESCRIPTIONS: Record<string, WodPrescription> = {
   cindy: {
     scalable: false, // AMRAP 100 % poids de corps : rien à scaler → pas de Rx/Allégé
     summary:
-      "AMRAP 20 minutes au poids du corps : tractions, pompes, air squats. Test d'endurance " +
+      "AMRAP 20 minutes au poids du corps : tractions, pompes, squats. Test d'endurance " +
       "musculaire et de moteur — combien de tours peux-tu enchaîner ?",
     format: "AMRAP 20 min",
     timeCapSec: 1200,
     blocks: [
       { reps: "5", movement: "Tractions" },
       { reps: "10", movement: "Pompes" },
-      { reps: "15", movement: "Air squats" },
+      { reps: "15", movement: "Squats" },
     ],
     weights: [],
     scoringNote:
-      "Tu enregistres ton nombre total de tours (un tour = 5 tractions + 10 pompes + 15 air squats).",
+      "Tu enregistres ton nombre total de tours (un tour = 5 tractions + 10 pompes + 15 squats).",
   },
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -237,7 +237,7 @@ export const WOD_PRESCRIPTIONS: Record<string, WodPrescription> = {
       { reps: "200 m", movement: "Course" },
       { reps: "15", movement: "Burpees" },
       { reps: "20", movement: "Pompes" },
-      { reps: "30", movement: "Air squats" },
+      { reps: "30", movement: "Squats" },
       { reps: "5", movement: "Wall walks" },
       { reps: "200 m", movement: "Course" },
     ],
@@ -248,14 +248,14 @@ export const WOD_PRESCRIPTIONS: Record<string, WodPrescription> = {
   benchmark_zero: {
     scalable: false, // 100 % poids de corps (burpees/pompes/squats) : rien à scaler → pas de Rx/Allégé
     summary:
-      "La séance test 100 % sans matériel : burpees, pompes et air squats en dégressif, sans rien " +
+      "La séance test 100 % sans matériel : burpees, pompes et squats en dégressif, sans rien " +
       "d'autre que ton corps. Conçue pour mesurer ton hybride où que tu sois.",
     format: "21-15-9, pour le temps",
     timeCapSec: 900,
     blocks: [
       { reps: "21-15-9", movement: "Burpees" },
       { reps: "21-15-9", movement: "Pompes" },
-      { reps: "42-30-18", movement: "Air squats", detail: "le double des autres mouvements" },
+      { reps: "42-30-18", movement: "Squats", detail: "le double des autres mouvements" },
     ],
     weights: [],
     scoringNote: SCORE_TIME,
@@ -323,16 +323,16 @@ export const WOD_PRESCRIPTIONS: Record<string, WodPrescription> = {
   },
 
   // ─────────────────────────────────────────────────────────────────────────
-  // 13. Max air squats en 2 min (sans matériel).
+  // 13. Max squats en 2 min (sans matériel).
   // ─────────────────────────────────────────────────────────────────────────
   max_air_squats_2min: {
     scalable: false, // poids de corps NON adaptable : aucune charge à alléger → pas de Rx/Allégé
     summary:
-      "Maximum d'air squats en 2 minutes. Test de puissance et d'endurance musculaire des jambes " +
+      "Maximum de squats en 2 minutes. Test de puissance et d'endurance musculaire des jambes " +
       "sur effort court et intense.",
     format: "AMRAP 2 min, pour le nombre",
     timeCapSec: 120,
-    blocks: [{ reps: "Max en 2 min", movement: "Air squats" }],
+    blocks: [{ reps: "Max en 2 min", movement: "Squats" }],
     weights: [],
     scoringNote: SCORE_REPS,
   },
@@ -388,15 +388,15 @@ export const WOD_PRESCRIPTIONS: Record<string, WodPrescription> = {
   },
 
   // ─────────────────────────────────────────────────────────────────────────
-  // 17. Max air squats (une série, sans matériel).
+  // 17. Max squats (une série, sans matériel).
   // ─────────────────────────────────────────────────────────────────────────
   max_air_squats: {
     scalable: false, // poids de corps NON adaptable : aucune charge à alléger → pas de Rx/Allégé
     summary:
-      "Maximum d'air squats en une seule série non-stop, sans repos. Test d'endurance musculaire " +
+      "Maximum de squats en une seule série non-stop, sans repos. Test d'endurance musculaire " +
       "des jambes et de résistance mentale.",
     format: "Une série jusqu'à l'arrêt, pour le nombre",
-    blocks: [{ reps: "Max", movement: "Air squats", detail: "une série non-stop" }],
+    blocks: [{ reps: "Max", movement: "Squats", detail: "une série non-stop" }],
     weights: [],
     scoringNote: SCORE_REPS,
   },
@@ -437,7 +437,7 @@ export const WOD_PRESCRIPTIONS: Record<string, WodPrescription> = {
       { reps: "1,6 km", movement: "Course" },
       { reps: "100", movement: "Tractions" },
       { reps: "200", movement: "Pompes" },
-      { reps: "300", movement: "Air squats" },
+      { reps: "300", movement: "Squats" },
       { reps: "1,6 km", movement: "Course" },
     ],
     weights: [{ movement: "Gilet lesté", rxMale: 9, rxFemale: 6, scaledMale: 0, scaledFemale: 0, unit: "kg", note: "0 = sans gilet" }],
@@ -495,11 +495,11 @@ export const WOD_PRESCRIPTIONS: Record<string, WodPrescription> = {
     timeCapSec: 720,
     blocks: [
       { reps: "400 m", movement: "Course" },
-      { reps: "20", movement: "Air squats" },
+      { reps: "20", movement: "Squats" },
       { reps: "15", movement: "Burpees" },
     ],
     weights: [],
-    scoringNote: "Tu enregistres ton total de répétitions (air squats + burpees). La course est imposée mais ne compte pas dans le score.",
+    scoringNote: "Tu enregistres ton total de répétitions (squats + burpees). La course est imposée mais ne compte pas dans le score.",
   },
   league_grind_squats: {
     scalable: false,
@@ -510,7 +510,7 @@ export const WOD_PRESCRIPTIONS: Record<string, WodPrescription> = {
     timeCapSec: 720,
     blocks: [
       { reps: "40", movement: "Fentes marchées", detail: "20 par jambe" },
-      { reps: "30", movement: "Air squats" },
+      { reps: "30", movement: "Squats" },
       { reps: "20", movement: "Sit-ups" },
       { reps: "16", movement: "Pistol squats", detail: "8 par jambe — assisté autorisé" },
     ],
@@ -540,7 +540,7 @@ export const WOD_PRESCRIPTIONS: Record<string, WodPrescription> = {
     timeCapSec: 900,
     blocks: [
       { reps: "400 m", movement: "Course" },
-      { reps: "40", movement: "Air squats" },
+      { reps: "40", movement: "Squats" },
       { reps: "30", movement: "Sit-ups" },
       { reps: "20", movement: "Burpees" },
       { reps: "10", movement: "Wall walks" },

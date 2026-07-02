@@ -19,8 +19,8 @@ const List<WodCatalogItem> wodCatalog = [
   WodCatalogItem(id: 'run_1k', name: '1 km Course', scoreType: 'time', requiresEquipment: false),
   WodCatalogItem(id: 'run_400', name: '400 m Course', scoreType: 'time', requiresEquipment: false),
   WodCatalogItem(id: 'max_pushups', name: 'Max pompes strictes (une série)', scoreType: 'reps', requiresEquipment: false),
-  WodCatalogItem(id: 'max_air_squats', name: 'Max air squats (une série)', scoreType: 'reps', requiresEquipment: false),
-  WodCatalogItem(id: 'max_air_squats_2min', name: 'Max air squats (2 min)', scoreType: 'reps', requiresEquipment: false),
+  WodCatalogItem(id: 'max_air_squats', name: 'Max squats (une série)', scoreType: 'reps', requiresEquipment: false),
+  WodCatalogItem(id: 'max_air_squats_2min', name: 'Max squats (2 min)', scoreType: 'reps', requiresEquipment: false),
   WodCatalogItem(id: 'burpees_7min', name: 'Test burpees (7 min)', scoreType: 'reps', requiresEquipment: false),
   WodCatalogItem(id: 'ergo_skill', name: 'Machine & Mur', scoreType: 'time', requiresEquipment: true),
 ];
