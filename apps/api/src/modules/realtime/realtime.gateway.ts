@@ -81,7 +81,8 @@ export class RealtimeGateway implements OnGatewayInit, OnGatewayConnection, OnGa
     }
 
     // 2) Token (query `?token=`).
-    let token: string | null = null;
+    // Toujours assigné dans le try/catch → pas d'initialiseur (lint no-useless-assignment).
+    let token: string | null;
     try {
       const url = new URL(request.url ?? "", "http://localhost");
       token = url.searchParams.get("token");

@@ -505,7 +505,8 @@ export class WodsService {
       }
     }
 
-    let levels: unknown = null;
+    // Toujours assigné ci-dessous (try/catch des DEUX branches) → pas d'initialiseur (lint no-useless-assignment).
+    let levels: unknown;
     if (wod.isCustom) {
       // WOD communautaire : pas de barème officiel → on REJOUE l'estimation (par sexe) à partir des
       // mouvements enregistrés pour fournir les paliers champion / intermédiaire / débutant
