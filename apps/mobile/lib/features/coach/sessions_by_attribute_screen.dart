@@ -9,6 +9,7 @@ import '../../widgets/error_retry.dart';
 import '../../widgets/hi_skeleton.dart';
 import '../wods/wod_detail_screen.dart';
 import 'coach_library_screen.dart';
+import '../../config/feature_flags.dart';
 
 /// Les ÉPREUVES (WODs loguables) qui comptent pour le score d'un attribut, triées par contribution
 /// (celle qui compte le plus en haut). On y arrive depuis le menu Séances (6 axes) et le radar Accueil.
@@ -94,7 +95,8 @@ class _SessionsByAttributeScreenState extends ConsumerState<SessionsByAttributeS
                   const SizedBox(height: HiSpace.md),
                   // Renvoi vers les séances GUIDÉES du coach pour cet axe (entraînements clés en
                   // main), distinctes des ÉPREUVES à loguer listées ci-dessous.
-                  _guidedLink(color),
+                  // Bibliothèque du coach MASQUÉE (kCoachLibraryEnabled=false) — code conservé.
+                  if (kCoachLibraryEnabled) _guidedLink(color),
                   const SizedBox(height: HiSpace.lg),
                   _section(t.sessionsToLog),
                   if (wods.isEmpty)

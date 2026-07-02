@@ -12,6 +12,7 @@ import 'other_workouts_screen.dart';
 import '../history/history_screen.dart';
 import '../coach/sessions_by_attribute_screen.dart';
 import '../coach/coach_library_screen.dart';
+import '../../config/feature_flags.dart';
 
 /// Onglet WOD : catalogue des WODs (15 références + communautaires à venir).
 class WodTab extends ConsumerStatefulWidget {
@@ -77,7 +78,8 @@ class _WodTabState extends ConsumerState<WodTab> {
                 // Séance de la semaine = le WOD imposé de la Ligue du mois (unifié) + séances par axe.
                 _weeklySection(),
                 // Séances GUIDÉES du coach (entraînements clés en main, distincts des épreuves à loguer).
-                _coachLibraryCard(context),
+                // Bibliothèque du coach MASQUÉE (kCoachLibraryEnabled=false) — code conservé.
+                if (kCoachLibraryEnabled) _coachLibraryCard(context),
                 const SizedBox(height: HiSpace.lg),
                 _section(t.sessionsByFocus),
                 Padding(

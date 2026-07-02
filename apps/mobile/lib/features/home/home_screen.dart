@@ -26,6 +26,7 @@ import 'rival_card.dart';
 import 'weekly_recap_card.dart';
 import '../avatar/dice_avatar_screen.dart';
 import '../coach/coach_library_screen.dart';
+import '../../config/feature_flags.dart';
 import '../coach/sessions_by_attribute_screen.dart';
 import '../history/history_screen.dart';
 import '../progression/progression_screen.dart';
@@ -326,17 +327,18 @@ class HomeScreen extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: HiSpace.lg),
-        // CTA principal unique (un seul élément plein par écran de repos).
-        HiButton(
-          label: t.homeCoachCta,
-          icon: Icons.fitness_center_rounded,
-          // Entrée « Coach : progresser sur un axe » → directement la BIBLIOTHÈQUE du coach
-          // (séances guidées clés en main), et non l'ancien écran de WODs par axe.
-          onPressed: () => Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const CoachLibraryScreen()),
+        // CTA principal → BIBLIOTHÈQUE du coach. MASQUÉ (kCoachLibraryEnabled=false) — code conservé,
+        // on tape les axes du radar ci-dessus pour accéder aux séances par axe.
+        if (kCoachLibraryEnabled) ...[
+          HiButton(
+            label: t.homeCoachCta,
+            icon: Icons.fitness_center_rounded,
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const CoachLibraryScreen()),
+            ),
           ),
-        ),
-        const SizedBox(height: HiSpace.sm),
+          const SizedBox(height: HiSpace.sm),
+        ],
         // Actions secondaires discrètes (fantômes) sur une ligne.
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
