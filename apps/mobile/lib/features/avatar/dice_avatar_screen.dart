@@ -99,7 +99,10 @@ class _DiceAvatarEditorState extends State<DiceAvatarEditor> {
   Widget build(BuildContext context) {
     final preview = _build();
     final cat = _categories[_cat];
-    return Column(
+    // Scroll global : aperçu + onglets + options tiennent dans un seul défilement → toutes les
+    // formes/couleurs restent atteignables même sur petit écran (plus de zone d'options écrasée).
+    return SingleChildScrollView(
+      child: Column(
       children: [
         const SizedBox(height: HiSpace.sm),
         Align(
@@ -137,10 +140,11 @@ class _DiceAvatarEditorState extends State<DiceAvatarEditor> {
           ),
         ),
         const SizedBox(height: HiSpace.md),
-        // Options de la catégorie active.
-        Expanded(child: _optionsArea(cat)),
+        // Options de la catégorie active (grille non-scrollante → portée par le scroll global).
+        _optionsArea(cat),
+        const SizedBox(height: HiSpace.md),
       ],
-    );
+    ));
   }
 
   Widget _optionsArea(DiceCategory cat) {
@@ -194,6 +198,8 @@ class _DiceAvatarEditorState extends State<DiceAvatarEditor> {
   Widget _colorGrid(DiceCategory cat) {
     return GridView.count(
       crossAxisCount: 6,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: HiSpace.lg),
       mainAxisSpacing: 14,
       crossAxisSpacing: 14,
@@ -206,7 +212,7 @@ class _DiceAvatarEditorState extends State<DiceAvatarEditor> {
     final beardOff = _options['facialHair'] == 'none';
     return Column(
       children: [
-        Expanded(child: _thumbGrid(cat)),
+        _thumbGrid(cat),
         Padding(
           padding: const EdgeInsets.fromLTRB(HiSpace.lg, HiSpace.sm, HiSpace.lg, HiSpace.md),
           child: Opacity(
@@ -233,6 +239,8 @@ class _DiceAvatarEditorState extends State<DiceAvatarEditor> {
   Widget _thumbGrid(DiceCategory cat) {
     return GridView.count(
       crossAxisCount: 4,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: HiSpace.lg),
       mainAxisSpacing: 12,
       crossAxisSpacing: 12,

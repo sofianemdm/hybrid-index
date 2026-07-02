@@ -22,21 +22,8 @@ export class GoogleTokenVerifier {
       const payload = ticket.getPayload();
       if (!payload?.sub || !payload.email) throw new Error("payload incomplet");
       return { sub: payload.sub, email: payload.email };
-    } catch (e) {
-      // Diagnostic TEMPORAIRE : décode l'audience du token (sans vérifier la signature) pour repérer
-      // un décalage `aud` (token) vs `GOOGLE_CLIENT_ID` (serveur). À retirer une fois Google OK.
-      let aud = "?";
-      try {
-        const p = idToken.split(".")[1];
-        aud = String(JSON.parse(Buffer.from(p, "base64").toString("utf8")).aud ?? "?");
-      } catch {
-        /* token illisible */
-      }
-      const reason = e instanceof Error ? e.message : String(e);
-      throw new UnauthorizedException({
-        code: "UNAUTHENTICATED",
-        message: `Token Google invalide. [aud=${aud} | attendu=${this.clientId} | raison=${reason}]`,
-      });
+    } catch {
+      throw new UnauthorizedException({ code: "UNAUTHENTICATED", message: "Token Google invalide." });
     }
   }
 }
