@@ -23,6 +23,9 @@ plugins {
     id("org.jetbrains.kotlin.android") version "2.3.20" apply false
     // Plugin Google Services : lit android/app/google-services.json (config Firebase de l'app).
     id("com.google.gms.google-services") version "4.4.2" apply false
+    // Plugin Crashlytics : injecte le build ID (obligatoire, sinon le SDK refuse de reporter) et
+    // uploade les symboles. 3.0.7 minimum : la 3.0.6 plantait avec AGP 9 (issue firebase#7652).
+    id("com.google.firebase.crashlytics") version "3.0.7" apply false
 }
 
 include(":app")

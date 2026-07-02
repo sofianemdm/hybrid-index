@@ -1,3 +1,8 @@
+import 'dart:ui' show PlatformDispatcher;
+
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart' show kIsWeb, kReleaseMode, debugPrint;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -14,7 +19,11 @@ import 'theme/app_theme.dart';
 import 'theme/tokens.dart';
 import 'widgets/celebration.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  // Crash reporting (Crashlytics) : toute erreur non gérée de l'APK est reportée à la console
+  // Firebase (ligne exacte, modèle d'appareil, version) au lieu de disparaître en silence.
+  await _initCrashReporting();
   // Garde-fou global : tout widget qui plante au build est remplacé par un message propre
   // (plus jamais le gros rouge « Unexpected null value » chez l'utilisateur). Wrappé dans une
   // Directionality pour fonctionner même hors d'un MaterialApp.
@@ -43,6 +52,25 @@ void main() {
     );
   };
   runApp(const ProviderScope(child: HybridIndexApp()));
+}
+
+/// Branche Crashlytics — UNIQUEMENT sur l'APK release (jamais web, jamais debug : les sessions de
+/// dev ne polluent pas les rapports). Best-effort : un échec d'init ne bloque JAMAIS le démarrage.
+Future<void> _initCrashReporting() async {
+  if (kIsWeb || !kReleaseMode) return;
+  try {
+    // Firebase peut déjà avoir été initialisé (ou le sera par PushService, qui se garde aussi).
+    if (Firebase.apps.isEmpty) await Firebase.initializeApp();
+    // Erreurs du framework Flutter (build/layout/gesture) → rapport fatal.
+    FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+    // Erreurs asynchrones hors framework (futures non attendues, zones) → rapport fatal.
+    PlatformDispatcher.instance.onError = (error, stack) {
+      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+      return true; // consommée : pas de double-report ni de kill du process par le handler défaut
+    };
+  } catch (e) {
+    debugPrint('[crash] Crashlytics indisponible (app démarre normalement) : $e');
+  }
 }
 
 /// Résout le code de langue ('fr' / 'en') à transmettre au backend pour les push localisés.

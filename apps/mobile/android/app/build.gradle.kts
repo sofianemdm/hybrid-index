@@ -4,6 +4,8 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
     // Active la config Firebase (google-services.json) pour cette app Android.
     id("com.google.gms.google-services")
+    // Crash reporting (Crashlytics) : build ID + upload des symboles au build release.
+    id("com.google.firebase.crashlytics")
 }
 
 android {

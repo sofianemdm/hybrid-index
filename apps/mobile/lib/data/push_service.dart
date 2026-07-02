@@ -64,7 +64,11 @@ class PushService {
       return;
     }
     try {
-      await Firebase.initializeApp(); // lit la config native (google-services.json)
+      // Peut déjà être initialisé par le crash reporting (main.dart) → garde anti « duplicate app »
+      // (sinon l'exception court-circuitait TOUT le setup push : token jamais enregistré).
+      if (Firebase.apps.isEmpty) {
+        await Firebase.initializeApp(); // lit la config native (google-services.json)
+      }
       // Handler des push reçus app en arrière-plan / tuée (data-only) : doit être branché AVANT
       // toute réception. Fonction top-level @pragma('vm:entry-point') (isolate dédié, sans UI).
       FirebaseMessaging.onBackgroundMessage(firebaseBgHandler);
