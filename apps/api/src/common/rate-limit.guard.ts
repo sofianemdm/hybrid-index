@@ -72,6 +72,13 @@ export class RateLimitGuard implements CanActivate {
       for (const [k, v] of this.memoryCounters) {
         if (v.resetAt <= now) this.memoryCounters.delete(k);
       }
+      // Plafond DUR (revue 02/07) : si tout est encore actif (attaque distribuée pendant une panne
+      // Redis prolongée), éviction FIFO — la Map ne dépasse jamais 10k entrées, quoi qu'il arrive.
+      while (this.memoryCounters.size > 10_000) {
+        const oldest = this.memoryCounters.keys().next().value;
+        if (oldest === undefined) break;
+        this.memoryCounters.delete(oldest);
+      }
     }
     const entry = this.memoryCounters.get(key);
     if (!entry || entry.resetAt <= now) {
