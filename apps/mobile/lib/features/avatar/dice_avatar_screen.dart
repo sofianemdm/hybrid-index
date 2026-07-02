@@ -99,10 +99,9 @@ class _DiceAvatarEditorState extends State<DiceAvatarEditor> {
   Widget build(BuildContext context) {
     final preview = _build();
     final cat = _categories[_cat];
-    // Scroll global : aperçu + onglets + options tiennent dans un seul défilement → toutes les
-    // formes/couleurs restent atteignables même sur petit écran (plus de zone d'options écrasée).
-    return SingleChildScrollView(
-      child: Column(
+    // Aperçu + onglets FIXES en haut, options juste en dessous (Expanded) → la palette de couleurs /
+    // les formes apparaissent immédiatement sous l'avatar, sans avoir à scroller.
+    return Column(
       children: [
         const SizedBox(height: HiSpace.sm),
         Align(
@@ -125,26 +124,28 @@ class _DiceAvatarEditorState extends State<DiceAvatarEditor> {
             key: ValueKey('${_seed}_${_options.values.join('-')}'),
             config: preview,
             rank: widget.rank,
-            size: 130,
+            size: 110,
           ),
         ),
-        const SizedBox(height: HiSpace.md),
-        // Onglets de catégorie — Wrap : passent à la ligne (jamais coupés hors écran).
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: HiSpace.lg),
-          child: Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            alignment: WrapAlignment.center,
-            children: [for (var i = 0; i < _categories.length; i++) _catChip(i)],
+        const SizedBox(height: HiSpace.sm),
+        // Onglets sur UNE seule ligne horizontale DÉFILANTE (compacts) : ils ne repoussent plus les
+        // options vers le bas → la palette/les formes restent juste sous l'avatar. Tous accessibles
+        // en faisant glisser la rangée horizontalement.
+        SizedBox(
+          height: 40,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: HiSpace.lg),
+            itemCount: _categories.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 8),
+            itemBuilder: (_, i) => Center(child: _catChip(i)),
           ),
         ),
-        const SizedBox(height: HiSpace.md),
-        // Options de la catégorie active (grille non-scrollante → portée par le scroll global).
-        _optionsArea(cat),
-        const SizedBox(height: HiSpace.md),
+        const SizedBox(height: HiSpace.sm),
+        // Options de la catégorie active : JUSTE sous l'avatar, occupent le reste et défilent si besoin.
+        Expanded(child: _optionsArea(cat)),
       ],
-    ));
+    );
   }
 
   Widget _optionsArea(DiceCategory cat) {
@@ -198,8 +199,6 @@ class _DiceAvatarEditorState extends State<DiceAvatarEditor> {
   Widget _colorGrid(DiceCategory cat) {
     return GridView.count(
       crossAxisCount: 6,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: HiSpace.lg),
       mainAxisSpacing: 14,
       crossAxisSpacing: 14,
@@ -212,7 +211,7 @@ class _DiceAvatarEditorState extends State<DiceAvatarEditor> {
     final beardOff = _options['facialHair'] == 'none';
     return Column(
       children: [
-        _thumbGrid(cat),
+        Expanded(child: _thumbGrid(cat)),
         Padding(
           padding: const EdgeInsets.fromLTRB(HiSpace.lg, HiSpace.sm, HiSpace.lg, HiSpace.md),
           child: Opacity(
@@ -239,8 +238,6 @@ class _DiceAvatarEditorState extends State<DiceAvatarEditor> {
   Widget _thumbGrid(DiceCategory cat) {
     return GridView.count(
       crossAxisCount: 4,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: HiSpace.lg),
       mainAxisSpacing: 12,
       crossAxisSpacing: 12,
