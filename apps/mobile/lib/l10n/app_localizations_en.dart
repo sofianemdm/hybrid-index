@@ -523,6 +523,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get movementGuideUnavailable => 'Image unavailable.';
 
   @override
+  String get movementGuideZoomHint => 'Pinch to zoom';
+
+  @override
   String get wodDetailLoads => 'LOADS';
 
   @override

@@ -1040,6 +1040,12 @@ abstract class AppLocalizations {
   /// **'Image unavailable.'**
   String get movementGuideUnavailable;
 
+  /// No description provided for @movementGuideZoomHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Pinch to zoom'**
+  String get movementGuideZoomHint;
+
   /// No description provided for @wodDetailLoads.
   ///
   /// In en, this message translates to:

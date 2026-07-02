@@ -186,6 +186,7 @@
   "wodDetailCap": "Cap {cap}",
   "movementGuideA11y": "See the movement explanation:",
   "movementGuideUnavailable": "Image unavailable.",
+  "movementGuideZoomHint": "Pinch to zoom",
   "@wodDetailCap": {
     "placeholders": {
       "cap": {

@@ -554,53 +554,68 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
   void _showMovementGuide(String name, String asset) {
     showDialog<void>(
       context: context,
-      barrierColor: Colors.black.withValues(alpha: 0.75),
-      builder: (ctx) => Dialog(
-        backgroundColor: HiColors.bgElevated,
-        insetPadding: const EdgeInsets.all(HiSpace.lg),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(HiRadius.lg)),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(HiSpace.md, HiSpace.sm, HiSpace.sm, 0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(name,
-                        style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
+      barrierColor: Colors.black.withValues(alpha: 0.88),
+      builder: (ctx) {
+        final size = MediaQuery.of(ctx).size;
+        return Dialog(
+          backgroundColor: HiColors.bgElevated,
+          // Dialog quasi plein écran → l'image s'affiche EN GRAND (bien plus lisible).
+          insetPadding: const EdgeInsets.all(HiSpace.sm),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(HiRadius.lg)),
+          child: SizedBox(
+            width: size.width,
+            height: size.height * 0.9,
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(HiSpace.md, HiSpace.sm, HiSpace.sm, 0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(name,
+                            style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.close_rounded, color: HiColors.textSecondary),
+                        onPressed: () => Navigator.of(ctx).pop(),
+                        tooltip: MaterialLocalizations.of(ctx).closeButtonTooltip,
+                      ),
+                    ],
                   ),
-                  IconButton(
-                    icon: Icon(Icons.close_rounded, color: HiColors.textSecondary),
-                    onPressed: () => Navigator.of(ctx).pop(),
-                    tooltip: MaterialLocalizations.of(ctx).closeButtonTooltip,
-                  ),
-                ],
-              ),
-            ),
-            Flexible(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(HiSpace.md, 0, HiSpace.md, HiSpace.md),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(HiRadius.md),
-                  child: InteractiveViewer(
-                    maxScale: 4,
-                    child: Image.asset(
-                      asset,
-                      fit: BoxFit.contain,
-                      errorBuilder: (_, __, ___) => Padding(
-                        padding: const EdgeInsets.all(HiSpace.lg),
-                        child: Text(AppLocalizations.of(context).movementGuideUnavailable,
-                            style: HiType.body.copyWith(color: HiColors.textTertiary)),
+                ),
+                // Image en GRAND : occupe toute la hauteur dispo (Expanded), zoomable au pincement.
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: HiSpace.sm),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(HiRadius.md),
+                      child: InteractiveViewer(
+                        minScale: 1,
+                        maxScale: 5,
+                        child: SizedBox.expand(
+                          child: Image.asset(
+                            asset,
+                            fit: BoxFit.contain,
+                            errorBuilder: (_, __, ___) => Center(
+                              child: Text(AppLocalizations.of(ctx).movementGuideUnavailable,
+                                  style: HiType.body.copyWith(color: HiColors.textTertiary)),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: HiSpace.sm),
+                  child: Text(AppLocalizations.of(ctx).movementGuideZoomHint,
+                      style: HiType.caption.copyWith(color: HiColors.textTertiary)),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 

@@ -525,6 +525,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get movementGuideUnavailable => 'Image indisponible.';
 
   @override
+  String get movementGuideZoomHint => 'Pince pour zoomer';
+
+  @override
   String get wodDetailLoads => 'CHARGES';
 
   @override

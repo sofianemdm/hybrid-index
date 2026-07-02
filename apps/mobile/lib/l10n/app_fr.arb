@@ -165,6 +165,7 @@
   "wodDetailCap": "Cap {cap}",
   "movementGuideA11y": "Voir l'explication du mouvement :",
   "movementGuideUnavailable": "Image indisponible.",
+  "movementGuideZoomHint": "Pince pour zoomer",
   "wodDetailLoads": "CHARGES",
   "wodDetailRx": "RX : ",
   "wodDetailLight": "Léger : ",
