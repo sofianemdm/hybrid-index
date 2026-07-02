@@ -24,6 +24,27 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            <!-- Deep links Flutter (go_router) : l'app s'ouvre sur l'écran de l'URL. -->
+            <meta-data
+                android:name="flutter_deeplinking_enabled"
+                android:value="true" />
+            <!-- App Links : un lien https du site ouvre l'APK sur le bon écran (ex.
+                 https://hybrid-index.netlify.app/seance/fran). La vérification automatique
+                 (autoVerify) exigera un assetlinks.json sur le domaine (lot invitations). -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="hybrid-index.netlify.app" />
+            </intent-filter>
+            <!-- Schéma propriétaire de repli (athleteleague://seance/fran) : marche sans
+                 vérification de domaine — utile pour les tests et les liens internes. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="athleteleague" />
+            </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->

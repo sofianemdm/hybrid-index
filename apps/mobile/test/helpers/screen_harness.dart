@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:hybrid_index/app.dart';
+import 'package:hybrid_index/core/app_router.dart';
 import 'package:hybrid_index/data/api_client.dart';
 import 'package:hybrid_index/data/models.dart';
 import 'package:hybrid_index/data/session.dart';
@@ -259,6 +260,39 @@ Future<void> pumpAppScreen(
     ),
   );
   // Laisse les Futures (fixtures) se résoudre et l'UI se stabiliser — bornes fixes, déterministes.
+  for (var i = 0; i < 8; i++) {
+    await tester.pump(const Duration(milliseconds: 120));
+  }
+}
+
+/// Monte l'app COMPLÈTE derrière le routeur (deep links) : `initialLocation` simule l'ouverture
+/// de l'app par une URL (notification, lien d'invitation, App Link Android).
+Future<void> pumpAppAtLocation(
+  WidgetTester tester,
+  String initialLocation, {
+  required ApiClient api,
+  double width = 400,
+  double height = 800,
+}) async {
+  await tester.binding.setSurfaceSize(Size(width, height));
+  tester.view.devicePixelRatio = 1.0;
+  addTearDown(() => tester.binding.setSurfaceSize(null));
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [
+        apiClientProvider.overrideWithValue(api),
+        sessionProvider.overrideWith((ref) => _TestSession(ref)),
+        inboxBadgeProvider.overrideWith((ref) => Stream<int>.value(0)),
+      ],
+      child: MaterialApp.router(
+        routerConfig: buildAppRouter(initialLocation: initialLocation),
+        locale: const Locale('fr'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        theme: buildHiTheme(Brightness.dark),
+      ),
+    ),
+  );
   for (var i = 0; i < 8; i++) {
     await tester.pump(const Duration(milliseconds: 120));
   }

@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app.dart';
+import 'core/app_router.dart';
 import 'data/analytics.dart';
 import 'data/locale_mode.dart';
 import 'data/push_service.dart';
@@ -131,9 +132,12 @@ class _HybridIndexAppState extends ConsumerState<HybridIndexApp> with WidgetsBin
   Widget build(BuildContext context) {
     final themeMode = ref.watch(themeModeProvider);
     final locale = ref.watch(localeProvider);
-    return MaterialApp(
+    // MaterialApp.router (go_router) : les écrans clés ont une ADRESSE (/seance/fran, /profil/:id,
+    // /conversation/:id, /ligue) → deep links, App Links Android, URLs web réelles. La clé du
+    // Navigator (taps FCM) vit désormais dans le routeur (appRouter → appNavigatorKey).
+    return MaterialApp.router(
       title: 'Athlete League',
-      navigatorKey: appNavigatorKey, // routage des taps sur notifications FCM (sans contexte d'écran)
+      routerConfig: appRouter,
       scaffoldMessengerKey: appMessengerKey, // bannière in-app si une notif arrive app au premier plan
       debugShowCheckedModeBanner: false,
       theme: buildHiTheme(Brightness.light),
@@ -148,7 +152,6 @@ class _HybridIndexAppState extends ConsumerState<HybridIndexApp> with WidgetsBin
         HiColors.active = Theme.of(context).brightness == Brightness.light ? kHiLight : kHiDark;
         return child!;
       },
-      home: const AuthGate(),
     );
   }
 }
