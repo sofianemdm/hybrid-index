@@ -7,6 +7,7 @@ import '../../app.dart'; // avatarProvider + myProfileProvider
 import '../../data/api_client.dart';
 import '../../data/dicebear.dart';
 import '../../data/models.dart';
+import '../../widgets/net_avatar_image.dart';
 import '../../data/session.dart';
 import '../../theme/haptics.dart';
 import '../../theme/tokens.dart';
@@ -256,13 +257,16 @@ class _DiceAvatarEditorState extends State<DiceAvatarEditor> {
               ),
             ),
             child: ClipOval(
-              child: Image.network(
+              // Cache disque sur mobile : rouvrir l'éditeur n'exige plus de re-télécharger toutes
+              // les vignettes (elles s'affichent instantanément dès la 2e visite).
+              child: NetAvatarImage(
                 avataaarsUrl(options: opts, seed: _seed, size: 120),
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const SizedBox(),
-                loadingBuilder: (ctx, child, p) => p == null
-                    ? child
-                    : Center(child: SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: HiColors.brandPrimary))),
+                placeholder: (_) => Center(
+                    child: SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: HiColors.brandPrimary))),
+                error: (_) => const SizedBox(),
               ),
             ),
           ),

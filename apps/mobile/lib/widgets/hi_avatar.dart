@@ -7,6 +7,7 @@ import '../data/models.dart';
 import '../theme/cosmetics.dart';
 import '../data/dicebear.dart';
 import '../theme/tokens.dart';
+import 'net_avatar_image.dart';
 
 /// Palettes de l'avatar (indices stockés côté serveur).
 class AvatarPalettes {
@@ -103,17 +104,16 @@ class HiAvatar extends StatelessWidget {
                 : null,
           ),
           child: ClipOval(
-            child: Image.network(
+            // Cache DISQUE sur mobile (NetAvatarImage) : l'avatar n'est plus re-téléchargé à chaque
+            // rebuild/écran (classements, feed, Ligue…) — affichage instantané dès le 2e passage.
+            child: NetAvatarImage(
               (config.diceOptions != null && config.diceOptions!.isNotEmpty)
                   ? avataaarsUrl(options: config.diceOptions!, seed: config.diceSeed ?? 'athlete', size: (size * 2).round())
                   : diceBearUrl(style: config.diceStyle ?? kDiceBearDefaultStyle, seed: config.diceSeed ?? 'athlete', size: (size * 2).round()),
               width: size,
               height: size,
-              fit: BoxFit.cover,
-              gaplessPlayback: true,
-              errorBuilder: (_, __, ___) => Container(color: HiColors.bgElevated2),
-              loadingBuilder: (ctx, child, progress) =>
-                  progress == null ? child : Container(color: HiColors.bgElevated2),
+              placeholder: (_) => Container(color: HiColors.bgElevated2),
+              error: (_) => Container(color: HiColors.bgElevated2),
             ),
           ),
         ),
