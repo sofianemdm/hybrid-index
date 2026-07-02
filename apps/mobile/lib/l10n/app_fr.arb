@@ -438,6 +438,8 @@
   "publicProfileNoIndex": "Pas encore d’Index.",
   "publicProfileComparison": "Comparaison",
   "publicProfileTheirRadar": "Son radar",
+  "publicProfileHistoryTitle": "Historique des séances",
+  "publicProfileHistoryEmpty": "Cet athlète n'a pas encore enregistré de séance.",
   "publicProfileYourRadar": "Ton radar",
   "publicProfileCompareAhead": "{diff} points d'avance pour toi (toi {mine} · {other}).",
   "publicProfileCompareBehind": "{diff} points à reprendre (toi {mine} · {other}).",

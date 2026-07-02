@@ -1442,6 +1442,13 @@ class AppLocalizationsFr extends AppLocalizations {
   String get publicProfileTheirRadar => 'Son radar';
 
   @override
+  String get publicProfileHistoryTitle => 'Historique des séances';
+
+  @override
+  String get publicProfileHistoryEmpty =>
+      'Cet athlète n\'a pas encore enregistré de séance.';
+
+  @override
   String get publicProfileYourRadar => 'Ton radar';
 
   @override

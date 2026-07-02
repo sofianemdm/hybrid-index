@@ -1432,6 +1432,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get publicProfileTheirRadar => 'Their radar';
 
   @override
+  String get publicProfileHistoryTitle => 'Session history';
+
+  @override
+  String get publicProfileHistoryEmpty =>
+      'This athlete hasn\'t logged any session yet.';
+
+  @override
   String get publicProfileYourRadar => 'Your radar';
 
   @override

@@ -14,4 +14,10 @@ export class ProfilesController {
   get(@Param("userId") userId: string, @CurrentUser() viewer: AuthenticatedUser | undefined): Promise<unknown> {
     return this.profiles.publicProfile(userId, viewer?.userId);
   }
+
+  /** Historique de séances public de l'athlète (50 derniers résultats). Tout est public. */
+  @Get(":userId/results")
+  results(@Param("userId") userId: string): Promise<unknown[]> {
+    return this.profiles.publicResults(userId);
+  }
 }

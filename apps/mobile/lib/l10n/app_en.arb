@@ -606,6 +606,8 @@
   "publicProfileNoIndex": "No Index yet.",
   "publicProfileComparison": "Comparison",
   "publicProfileTheirRadar": "Their radar",
+  "publicProfileHistoryTitle": "Session history",
+  "publicProfileHistoryEmpty": "This athlete hasn't logged any session yet.",
   "publicProfileYourRadar": "Your radar",
   "publicProfileCompareAhead": "You're ahead by {diff} points (you {mine} · them {other}).",
   "@publicProfileCompareAhead": {

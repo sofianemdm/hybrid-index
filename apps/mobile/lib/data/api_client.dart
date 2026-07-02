@@ -268,6 +268,12 @@ class ApiClient {
     return PublicProfile.fromJson(j);
   }
 
+  /// Historique de séances public d'un athlète (50 derniers résultats).
+  Future<List<WodResultItem>> publicResults(String userId) async {
+    final j = await _send('GET', '/v1/profiles/$userId/results') as List<dynamic>;
+    return j.map((e) => WodResultItem.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
   // --- Engagement / RGPD ---
   Future<StreakState> streak() async {
     final j = await _send('GET', '/v1/me/streak') as Map<String, dynamic>;

@@ -2546,6 +2546,18 @@ abstract class AppLocalizations {
   /// **'Their radar'**
   String get publicProfileTheirRadar;
 
+  /// No description provided for @publicProfileHistoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Session history'**
+  String get publicProfileHistoryTitle;
+
+  /// No description provided for @publicProfileHistoryEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'This athlete hasn\'t logged any session yet.'**
+  String get publicProfileHistoryEmpty;
+
   /// No description provided for @publicProfileYourRadar.
   ///
   /// In en, this message translates to:

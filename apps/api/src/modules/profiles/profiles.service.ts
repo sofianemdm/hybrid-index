@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
+import { ratingFromInternal } from "@hybrid-index/scoring-core";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { ProfileScoringService } from "../profile/profile-scoring.service";
 import { LeaderboardService } from "../leaderboard/leaderboard.service";
@@ -63,5 +64,26 @@ export class ProfilesService {
       activeCosmetics: cosmeticsFor(new Set(badges.map((b) => b.badgeId))),
       clubs, // noms des clubs de l'athlète (peut être vide)
     };
+  }
+
+  /** Historique de séances PUBLIC d'un athlète (tout est public) : ses 50 derniers résultats,
+   *  du plus récent au plus ancien. Même forme que `GET /v1/results` (l'app réutilise WodResultItem). */
+  async publicResults(userId: string): Promise<unknown[]> {
+    const rows = await this.prisma.wodResult.findMany({
+      where: { userId },
+      orderBy: { performedAt: "desc" },
+      take: 50,
+      include: { wod: { select: { name: true, scoreType: true } } },
+    });
+    return rows.map((r) => ({
+      id: r.id,
+      wodId: r.wodId,
+      wodName: r.wod.name,
+      scoreType: r.wod.scoreType,
+      rawResult: Number(r.rawResult),
+      subScore: r.subScore == null ? null : Math.round(ratingFromInternal(r.subScore)),
+      percentile: r.percentile === null ? null : Number(r.percentile),
+      performedAt: r.performedAt.toISOString(),
+    }));
   }
 }

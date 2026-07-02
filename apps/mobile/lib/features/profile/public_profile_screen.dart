@@ -10,6 +10,9 @@ import '../../theme/tokens.dart';
 import '../community/comments_sheet.dart';
 import '../community/feed_post_card.dart';
 import '../messaging/chat_screen.dart';
+import '../../data/wod_catalog.dart';
+import '../wods/wod_format.dart';
+import '../wods/wod_detail_screen.dart';
 import '../../theme/cosmetics.dart';
 import '../../widgets/error_retry.dart';
 import '../../widgets/hi_avatar.dart';
@@ -347,6 +350,9 @@ class PublicProfileScreen extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(height: HiSpace.lg),
+                    // Historique de séances de l'athlète, juste sous son radar.
+                    _SessionHistory(userId: p.userId),
+                    const SizedBox(height: HiSpace.lg),
                     // « Mur » de l'athlète : ses publications (réutilise la carte du fil Communauté).
                     _ProfileWall(userId: p.userId, isMe: p.isMe),
                   ],
@@ -531,6 +537,107 @@ class _ProfileWallState extends ConsumerState<_ProfileWall> {
             ),
         ],
       ],
+    );
+  }
+}
+
+/// Historique de séances PUBLIC d'un athlète, affiché sous son radar (ses derniers résultats loggés).
+class _SessionHistory extends ConsumerStatefulWidget {
+  final String userId;
+  const _SessionHistory({required this.userId});
+  @override
+  ConsumerState<_SessionHistory> createState() => _SessionHistoryState();
+}
+
+class _SessionHistoryState extends ConsumerState<_SessionHistory> {
+  late Future<List<WodResultItem>> _future;
+
+  @override
+  void initState() {
+    super.initState();
+    _future = ref.read(apiClientProvider).publicResults(widget.userId);
+  }
+
+  WodCatalogItem? _catalog(String wodId) {
+    for (final w in wodCatalog) {
+      if (w.id == wodId) return w;
+    }
+    return null;
+  }
+
+  String _name(String wodId) =>
+      _catalog(wodId)?.name ?? (wodId == 'run_free_distance' ? AppLocalizations.of(context).historyRun : wodId);
+
+  String _formatResult(WodResultItem r) {
+    final type = _catalog(r.wodId)?.scoreType ?? (r.wodId == 'run_free_distance' ? 'time' : 'reps');
+    if (type == 'time') return formatDuration(r.rawResult.round());
+    if (type == 'load') return '${r.rawResult.round()} kg';
+    if (type == 'distance') return '${r.rawResult.round()} m';
+    return '${r.rawResult.round()} reps';
+  }
+
+  String _date(DateTime d) =>
+      '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(HiSpace.md),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(t.publicProfileHistoryTitle, style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
+            const SizedBox(height: HiSpace.sm),
+            FutureBuilder<List<WodResultItem>>(
+              future: _future,
+              builder: (context, snap) {
+                if (snap.connectionState == ConnectionState.waiting) {
+                  return const HiListSkeleton(count: 3, itemHeight: 56);
+                }
+                if (snap.hasError) {
+                  return Text(t.commonGenericError, style: HiType.caption.copyWith(color: HiColors.textTertiary));
+                }
+                final items = snap.data ?? const <WodResultItem>[];
+                if (items.isEmpty) {
+                  return Text(t.publicProfileHistoryEmpty, style: HiType.body.copyWith(color: HiColors.textTertiary));
+                }
+                return Column(children: [for (final r in items) _row(r)]);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _row(WodResultItem r) {
+    return InkWell(
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => WodDetailScreen(wodId: r.wodId, wodName: _name(r.wodId))),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: HiSpace.sm),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(_name(r.wodId),
+                      style: HiType.body.copyWith(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
+                  const SizedBox(height: 2),
+                  Text('${_formatResult(r)} · ${_date(r.performedAt)}',
+                      style: HiType.caption.copyWith(color: HiColors.textSecondary)),
+                ],
+              ),
+            ),
+            if (r.subScore != null)
+              Text('${r.subScore}', style: HiType.numericM.copyWith(color: HiColors.brandPrimary)),
+          ],
+        ),
+      ),
     );
   }
 }
