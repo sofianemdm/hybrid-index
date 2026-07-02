@@ -12,17 +12,17 @@ const String _base = 'assets/movements/';
 String? movementGuideAsset(String movementLabel) {
   final s = _normalize(movementLabel);
   // Composés/spécifiques d'abord (« wall ball » vs « wall walk »).
-  if (s.contains('wall walk')) return '${_base}wall_walk.png';
-  if (s.contains('wall ball')) return '${_base}wall_ball.png';
-  if (s.contains('thruster')) return '${_base}thruster.png';
-  if (s.contains('snatch') || s.contains('arrach')) return '${_base}snatch.png';
+  if (s.contains('wall walk')) return '${_base}wall_walk.jpg';
+  if (s.contains('wall ball')) return '${_base}wall_ball.jpg';
+  if (s.contains('thruster')) return '${_base}thruster.jpg';
+  if (s.contains('snatch') || s.contains('arrach')) return '${_base}snatch.jpg';
   if (s.contains('epaule') || (s.contains('clean') && s.contains('jerk'))) {
-    return '${_base}clean_and_jerk.png';
+    return '${_base}clean_and_jerk.jpg';
   }
-  if (s.contains('kettlebell') || s.contains('swing')) return '${_base}kettlebell_swing.png';
-  if (s.contains('releves de jambes') || s.contains('toes')) return '${_base}toes_to_bar.png';
+  if (s.contains('kettlebell') || s.contains('swing')) return '${_base}kettlebell_swing.jpg';
+  if (s.contains('releves de jambes') || s.contains('toes')) return '${_base}toes_to_bar.jpg';
   // « burpee » mais PAS « burpee broad jump » (mouvement différent, non illustré).
-  if (s.contains('burpee') && !s.contains('broad')) return '${_base}burpee.png';
+  if (s.contains('burpee') && !s.contains('broad')) return '${_base}burpee.jpg';
   return null;
 }
 
