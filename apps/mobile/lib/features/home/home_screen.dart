@@ -29,6 +29,7 @@ import '../coach/coach_library_screen.dart';
 import '../../config/feature_flags.dart';
 import '../coach/sessions_by_attribute_screen.dart';
 import '../history/history_screen.dart';
+import '../log/log_wod_screen.dart';
 import '../progression/progression_screen.dart';
 import '../notifications/notifications_screen.dart';
 import '../settings/settings_screen.dart';
@@ -195,6 +196,11 @@ class HomeScreen extends ConsumerWidget {
         // (translation négative → on lit « Index + grade » comme un seul bloc).
         // Tap sur l'Index → écran Progression (courbe + radar + badges). La Progression vit désormais
         // dans le header de l'Accueil (pattern Strava), plus dans la barre d'onglets (4 onglets).
+        // Onboarding « passé » sans aucune info (bouton « Je n'ai aucune de ces infos ») → aucun
+        // attribut mesuré (radarCoverage == 0) : pas de carte joueur, on affiche l'état vide + CTA.
+        if (p.index.radarCoverage == 0)
+          _noIndexHero(context, ref)
+        else
         Semantics(
           button: true,
           // Résumé parlé du héros : « <nom>, Index X, rang Y. Touchez pour voir votre progression. »
@@ -254,7 +260,7 @@ class HomeScreen extends ConsumerWidget {
         // dit PLUS que l'Index est une estimation ni quelles séances faire pour le révéler. On le
         // réintroduit SOUS la carte, uniquement tant que l'Index est incomplet/estimé (le widget
         // se masque tout seul sinon → SizedBox.shrink).
-        if (p.index.radarCoverage < 6 || p.index.isEstimated) ...[
+        if (p.index.radarCoverage > 0 && (p.index.radarCoverage < 6 || p.index.isEstimated)) ...[
           const SizedBox(height: HiSpace.md),
           EstimationBlock(profile: p),
         ],
@@ -365,6 +371,36 @@ class HomeScreen extends ConsumerWidget {
   }
 
   /// Bandeau « fraîcheur » : un ou plusieurs axes datent → on propose un re-test, ton positif.
+  /// État « aucun Index » : l'utilisateur est entré via « Je n'ai aucune de ces infos ». Pas de carte
+  /// joueur (rien à afficher) → encart clair qui invite à faire une séance pour révéler son Index.
+  Widget _noIndexHero(BuildContext context, WidgetRef ref) {
+    final t = AppLocalizations.of(context);
+    return HiCard(
+      child: Column(
+        children: [
+          Icon(Icons.radar_rounded, size: 44, color: HiColors.textTertiary),
+          const SizedBox(height: HiSpace.sm),
+          Text(t.homeNoIndexTitle,
+              textAlign: TextAlign.center, style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
+          const SizedBox(height: 6),
+          Text(t.homeNoIndexBody,
+              textAlign: TextAlign.center, style: HiType.body.copyWith(color: HiColors.textSecondary)),
+          const SizedBox(height: HiSpace.md),
+          HiButton(
+            label: t.homeNoIndexCta,
+            icon: Icons.fitness_center_rounded,
+            onPressed: () async {
+              await Navigator.of(context).push(
+                MaterialPageRoute<bool>(builder: (_) => const LogWodScreen()),
+              );
+              ref.invalidate(myProfileProvider); // au retour : si une séance a été loggée, l'Index apparaît
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _freshnessBanner(BuildContext context, List<RadarAttribute> stale) {
     final t = AppLocalizations.of(context);
     final names = stale.map((a) => HiLabels.attribute(a.attribute)).join(', ');

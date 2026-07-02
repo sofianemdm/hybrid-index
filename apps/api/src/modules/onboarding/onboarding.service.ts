@@ -55,9 +55,31 @@ export class OnboardingService {
   }
 
   /** Persiste les efforts d'onboarding et renvoie l'Index révélé (désormais durable). */
+  /** Onboarding « passé » : l'utilisateur entre dans l'app SANS aucun effort (bouton « Je n'ai
+   *  aucune de ces info »). Aucun Index n'est calculé ; on marque juste l'onboarding comme fait,
+   *  pour ne pas le renvoyer indéfiniment à l'écran de reveal. Le profil reste VIDE (hors classement,
+   *  cf. getMyProfile) jusqu'à ce qu'il logue une séance. */
+  async skip(userId: string): Promise<void> {
+    const profile = await this.prisma.profile.findUnique({ where: { userId } });
+    if (!profile) throw new NotFoundException({ code: "NOT_FOUND", message: "Profil introuvable." });
+    await this.markOnboarded(userId);
+  }
+
+  /** Pose le drapeau `consents.onboarded = true` (merge non destructif du JSON de consentements). */
+  private async markOnboarded(userId: string): Promise<void> {
+    const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { consents: true } });
+    const consents =
+      typeof user?.consents === "object" && user.consents !== null
+        ? (user.consents as Record<string, unknown>)
+        : {};
+    if (consents.onboarded === true) return;
+    await this.prisma.user.update({ where: { id: userId }, data: { consents: { ...consents, onboarded: true } } });
+  }
+
   async complete(userId: string, req: OnboardingCompleteRequest): Promise<PersistedProfile> {
     const profile = await this.prisma.profile.findUnique({ where: { userId } });
     if (!profile) throw new NotFoundException({ code: "NOT_FOUND", message: "Profil introuvable." });
+    await this.markOnboarded(userId); // reveal réussi = onboarding fait (cohérent avec le skip)
 
     const efforts = this.toEfforts(req);
     if (efforts.length === 0) {

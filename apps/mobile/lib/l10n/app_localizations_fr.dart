@@ -310,6 +310,13 @@ class AppLocalizationsFr extends AppLocalizations {
   String get onbNeedEffort => 'Ajoute une course, des pompes ou des squats.';
 
   @override
+  String get onbNoInfoSkip => 'Je n\'ai aucune de ces infos';
+
+  @override
+  String get onbNoInfoSkipHint =>
+      'Continue sans Index — tu le révéleras plus tard en faisant une séance.';
+
+  @override
   String get onbRunNeedsBoth =>
       'Distance (0,4–42 km) et temps requis pour la course.';
 
@@ -1719,6 +1726,16 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get homeProfileUnavailable => 'Profil indisponible.';
+
+  @override
+  String get homeNoIndexTitle => 'Ton Athlete Index n\'est pas encore révélé';
+
+  @override
+  String get homeNoIndexBody =>
+      'Fais une séance et enregistre ton résultat pour révéler ton Index et débloquer ton radar.';
+
+  @override
+  String get homeNoIndexCta => 'Faire une séance';
 
   @override
   String get homeRadarTitle => 'TON RADAR';

@@ -32,4 +32,12 @@ export class OnboardingController {
   ): Promise<PersistedProfile> {
     return this.onboarding.complete(user.userId, body);
   }
+
+  /** « Je n'ai aucune de ces info » : entre dans l'app SANS Index (marque juste l'onboarding fait). */
+  @Post("skip")
+  @UseGuards(JwtAuthGuard)
+  async skip(@CurrentUser() user: AuthenticatedUser): Promise<{ ok: true }> {
+    await this.onboarding.skip(user.userId);
+    return { ok: true };
+  }
 }

@@ -113,6 +113,11 @@ class ApiClient {
     return Profile.fromJson(j);
   }
 
+  /// « Je n'ai aucune de ces infos » : entre dans l'app sans Index (onboarding marqué fait).
+  Future<void> onboardingSkip() async {
+    await _send('POST', '/v1/onboarding/skip');
+  }
+
   // --- Profil / résultats ---
   Future<Profile?> myProfile() async {
     try {

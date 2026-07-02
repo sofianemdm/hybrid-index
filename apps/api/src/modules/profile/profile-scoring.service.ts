@@ -78,6 +78,16 @@ function confidenceFor(coverage: number, isEstimated: boolean): string {
   return "low";
 }
 
+/** Vrai si l'utilisateur a validé OU passé l'onboarding (drapeau `consents.onboarded`). Sert à
+ *  distinguer « jamais onboardé » (→ écran d'onboarding) de « onboardé sans Index » (→ app, profil vide). */
+function isOnboarded(consents: unknown): boolean {
+  return (
+    typeof consents === "object" &&
+    consents !== null &&
+    (consents as Record<string, unknown>).onboarded === true
+  );
+}
+
 /**
  * Recalcule (no-drop, autorité = score-service) le HYBRID INDEX et le radar d'un utilisateur
  * à partir de TOUS ses résultats persistés, puis persiste index + attributs et met à jour
@@ -363,6 +373,40 @@ export class ProfileScoringService {
     await this.redis.remove(sex, userId).catch(() => undefined);
   }
 
+  /** Profil VIDE d'un utilisateur onboardé sans aucun effort loggé (bouton « Je n'ai aucune de ces
+   *  info »). Pas d'Index (plancher, non mesuré), radar entièrement verrouillé, HORS classement
+   *  (aucune leaguePosition). L'UI affiche l'état « Index pas encore révélé ». */
+  private async buildEmptyProfile(sex: string, goal: string): Promise<PersistedProfile> {
+    const radar = ATTRIBUTE_KEYS.map((attribute) => ({
+      attribute,
+      score: 0,
+      unlocked: false,
+      isEstimated: false,
+      isStale: false,
+    }));
+    const socialProof = await this.buildSocialProof(sex, goal, radar, 0);
+    const floorOvr = Math.round(ratingFromInternal(0));
+    return {
+      index: {
+        value: floorOvr,
+        rating: null, // non mesuré
+        internal: 0,
+        percentile: 0,
+        rank: rankFromIndex(floorOvr),
+        isProvisional: true,
+        isEstimated: true,
+        radarCoverage: 0, // 0 = aucun attribut mesuré → l'UI montre « Index pas encore révélé »
+        rankProgress: rankProgress(floorOvr),
+      },
+      radar,
+      socialProof,
+      rival: null,
+      gains: [],
+      weakest: null,
+      // leaguePosition / leagueTotal volontairement omis → hors classement tant qu'aucun effort.
+    };
+  }
+
   /** Construit la preuve sociale (population toujours ; app seulement si top 30% ET ligue ≥ 200). */
   private async buildSocialProof(
     sex: string,
@@ -550,12 +594,19 @@ export class ProfileScoringService {
   }
 
   async getMyProfile(userId: string): Promise<PersistedProfile | null> {
-    const [profile, index, scores] = await Promise.all([
+    const [profile, index, scores, user] = await Promise.all([
       this.prisma.profile.findUnique({ where: { userId }, select: { sex: true, goal: true } }),
       this.prisma.hybridIndex.findUnique({ where: { userId } }),
       this.prisma.attributeScore.findMany({ where: { userId } }),
+      this.prisma.user.findUnique({ where: { id: userId }, select: { consents: true } }),
     ]);
-    if (!index || !profile) return null;
+    if (!profile) return null;
+    // Onboarding « passé » (bouton « Je n'ai aucune de ces info ») : l'utilisateur est ENTRÉ dans
+    // l'app sans aucun effort → pas d'Index, hors classement, mais on ne le renvoie PAS à l'onboarding.
+    // On renvoie un profil VIDE (radar verrouillé) plutôt qu'un 404, tant qu'il n'a rien loggé.
+    if (!index) {
+      return isOnboarded(user?.consents) ? this.buildEmptyProfile(profile.sex, profile.goal) : null;
+    }
 
     const byAttr = new Map(scores.map((s) => [s.attribute, s]));
     const radar = ATTRIBUTE_KEYS.map((attribute) => {

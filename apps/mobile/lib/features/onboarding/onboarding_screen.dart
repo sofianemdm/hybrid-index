@@ -151,6 +151,26 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     }
   }
 
+  /// « Je n'ai aucune de ces infos » : on entre dans l'app SANS Index. On garde l'avatar créé, on
+  /// marque l'onboarding comme fait côté serveur, puis on invalide le profil → l'AuthGate (app.dart)
+  /// bascule vers l'app (profil vide, hors classement). L'utilisateur révélera son Index plus tard.
+  Future<void> _skip() async {
+    setState(() => _submitting = true);
+    try {
+      final api = ref.read(apiClientProvider);
+      await api.updateAvatar(_avatar);
+      ref.invalidate(avatarProvider);
+      await api.onboardingSkip();
+      ref.invalidate(myProfileProvider); // gate → HomeShell (profil vide)
+    } on ApiException catch (e) {
+      _toast(e.message);
+    } catch (e) {
+      _toast('$e');
+    } finally {
+      if (mounted) setState(() => _submitting = false);
+    }
+  }
+
   void _toast(String m) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m)));
 
   @override
@@ -288,6 +308,20 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           label: AppLocalizations.of(context).onbRevealCta,
           loading: _submitting,
           onPressed: _hasInput ? _reveal : null,
+        ),
+        const SizedBox(height: HiSpace.sm),
+        // Échappatoire : entrer dans l'app SANS aucune info (donc sans Index), à révéler plus tard.
+        HiGhostButton(
+          label: AppLocalizations.of(context).onbNoInfoSkip,
+          onPressed: _submitting ? null : _skip,
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: HiSpace.md),
+          child: Text(
+            AppLocalizations.of(context).onbNoInfoSkipHint,
+            textAlign: TextAlign.center,
+            style: HiType.caption.copyWith(color: HiColors.textTertiary),
+          ),
         ),
         const SizedBox(height: HiSpace.lg),
       ];

@@ -650,6 +650,18 @@ abstract class AppLocalizations {
   /// **'Add a run, push-ups or squats.'**
   String get onbNeedEffort;
 
+  /// No description provided for @onbNoInfoSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'I don\'t have any of this info'**
+  String get onbNoInfoSkip;
+
+  /// No description provided for @onbNoInfoSkipHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue without an Index — reveal it later by doing a workout.'**
+  String get onbNoInfoSkipHint;
+
   /// No description provided for @onbRunNeedsBoth.
   ///
   /// In en, this message translates to:
@@ -3019,6 +3031,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Profile unavailable.'**
   String get homeProfileUnavailable;
+
+  /// No description provided for @homeNoIndexTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Athlete Index isn\'t revealed yet'**
+  String get homeNoIndexTitle;
+
+  /// No description provided for @homeNoIndexBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Do a workout and log your result to reveal your Index and unlock your radar.'**
+  String get homeNoIndexBody;
+
+  /// No description provided for @homeNoIndexCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Do a workout'**
+  String get homeNoIndexCta;
 
   /// No description provided for @homeRadarTitle.
   ///
