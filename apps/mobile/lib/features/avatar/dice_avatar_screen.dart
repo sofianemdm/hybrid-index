@@ -130,17 +130,16 @@ class _DiceAvatarEditorState extends State<DiceAvatarEditor> {
           ),
         ),
         const SizedBox(height: HiSpace.sm),
-        // Onglets sur UNE seule ligne horizontale DÉFILANTE (compacts) : ils ne repoussent plus les
-        // options vers le bas → la palette/les formes restent juste sous l'avatar. Tous accessibles
-        // en faisant glisser la rangée horizontalement.
-        SizedBox(
-          height: 40,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: HiSpace.lg),
-            itemCount: _categories.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 8),
-            itemBuilder: (_, i) => Center(child: _catChip(i)),
+        // Onglets en GRILLE (Wrap) : TOUTES les catégories visibles d'un coup, sur 2 lignes —
+        // le défilement horizontal cachait Lunettes/Yeux/Bouche/Sourcils et personne ne devinait
+        // qu'il fallait glisser (retour utilisateur 03/07).
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: HiSpace.lg),
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            alignment: WrapAlignment.center,
+            children: [for (var i = 0; i < _categories.length; i++) _catChip(i)],
           ),
         ),
         const SizedBox(height: HiSpace.sm),
@@ -163,8 +162,9 @@ class _DiceAvatarEditorState extends State<DiceAvatarEditor> {
         setState(() => _cat = i);
       },
       child: Container(
+        // PAS d'alignment ici : dans un Wrap, un Container aligne s'etend a toute la largeur
+        // (chips empilees pleine ligne). Le padding centre deja le texte.
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        alignment: Alignment.center,
         decoration: BoxDecoration(
           gradient: active ? HiColors.brandGradient : null,
           color: active ? null : HiColors.bgElevated2,
