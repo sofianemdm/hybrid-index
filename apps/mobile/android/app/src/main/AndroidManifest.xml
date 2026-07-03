@@ -29,13 +29,15 @@
                 android:name="flutter_deeplinking_enabled"
                 android:value="true" />
             <!-- App Links : un lien https du site ouvre l'APK sur le bon écran (ex.
-                 https://hybrid-index.netlify.app/seance/fran). La vérification automatique
-                 (autoVerify) exigera un assetlinks.json sur le domaine (lot invitations). -->
+                 https://scintillating-rolypoly-582e42.netlify.app/seance/fran — le VRAI domaine
+                 de prod, ex-hybrid-index.netlify.app qui n'a jamais existé). La vérification
+                 automatique (autoVerify) s'activera quand web/.well-known/assetlinks.json
+                 portera l'empreinte SHA-256 de la clé de release (voir ce fichier). -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="https" android:host="hybrid-index.netlify.app" />
+                <data android:scheme="https" android:host="scintillating-rolypoly-582e42.netlify.app" />
             </intent-filter>
             <!-- Schéma propriétaire de repli (athleteleague://seance/fran) : marche sans
                  vérification de domaine — utile pour les tests et les liens internes. -->

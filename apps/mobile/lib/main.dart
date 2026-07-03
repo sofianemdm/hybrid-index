@@ -21,6 +21,7 @@ import 'l10n/app_localizations.dart';
 import 'theme/app_theme.dart';
 import 'theme/tokens.dart';
 import 'widgets/celebration.dart';
+import 'widgets/update_gate.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -180,7 +181,8 @@ class _HybridIndexAppState extends ConsumerState<HybridIndexApp> with WidgetsBin
       // AVANT que le sous-arbre ne se construise.
       builder: (context, child) {
         HiColors.active = Theme.of(context).brightness == Brightness.light ? kHiLight : kHiDark;
-        return child!;
+        // Garde de mise à jour forcée (inerte en dev/web : BUILD_NUMBER absent → 0).
+        return UpdateGate(child: child!);
       },
     );
   }

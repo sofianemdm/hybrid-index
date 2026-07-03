@@ -24,6 +24,10 @@ class Env {
   /// inactif »). Activable via --dart-define=PUSH_ENABLED=true une fois les credentials FCM en place.
   static const bool pushEnabled = bool.fromEnvironment('PUSH_ENABLED', defaultValue: false);
 
+  /// Numéro de build de l'APK/AAB (posé par le workflow : --dart-define=BUILD_NUMBER=<run_number>).
+  /// 0 en dev/web/tests → la garde de mise à jour forcée (UpdateGate) est inerte.
+  static const int buildNumber = int.fromEnvironment('BUILD_NUMBER', defaultValue: 0);
+
   /// Analytics (PostHog) : vide = inactif (les events sont seulement journalisés). Fournir la clé
   /// projet via --dart-define=POSTHOG_KEY=... pour activer l'envoi réel.
   static const String posthogKey = String.fromEnvironment('POSTHOG_KEY', defaultValue: '');

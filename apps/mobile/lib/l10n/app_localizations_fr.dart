@@ -245,6 +245,16 @@ class AppLocalizationsFr extends AppLocalizations {
       'Code invalide ou expiré. Redemande un code si besoin.';
 
   @override
+  String get updateRequiredTitle => 'Mise à jour nécessaire';
+
+  @override
+  String get updateRequiredBody =>
+      'Cette version de l\'app n\'est plus compatible. Mets-la à jour pour continuer — ton compte et tes scores sont intacts.';
+
+  @override
+  String get updateRequiredCta => 'Mettre à jour';
+
+  @override
   String get authPassword => 'Mot de passe (8+)';
 
   @override

@@ -15,6 +15,7 @@ import { CoachModule } from "./modules/coach/coach.module";
 import { EngagementModule } from "./modules/engagement/engagement.module";
 import { EndgameModule } from "./modules/endgame/endgame.module";
 import { WodsModule } from "./modules/wods/wods.module";
+import { MetaModule } from "./modules/meta/meta.module";
 import { SocialModule } from "./modules/social/social.module";
 import { ProgressModule } from "./modules/progress/progress.module";
 import { ModerationModule } from "./modules/moderation/moderation.module";
@@ -51,6 +52,7 @@ import { RealtimeModule } from "./modules/realtime/realtime.module";
     WodsModule,
     FeedbackModule,
     RealtimeModule,
+    MetaModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_GUARD, useClass: RateLimitGuard }],

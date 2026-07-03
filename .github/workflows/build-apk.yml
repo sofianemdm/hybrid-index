@@ -57,6 +57,7 @@ jobs:
           flutter build apk --release --split-per-abi
           --dart-define=API_BASE_URL=https://api-production-9a50.up.railway.app
           --dart-define=PUSH_ENABLED=true
+          --dart-define=BUILD_NUMBER=${{ github.run_number }}
 
       - name: Publier les APK (téléchargeables dans les Artifacts du run)
         uses: actions/upload-artifact@v4
@@ -76,6 +77,7 @@ jobs:
           flutter build appbundle --release
           --dart-define=API_BASE_URL=https://api-production-9a50.up.railway.app
           --dart-define=PUSH_ENABLED=true
+          --dart-define=BUILD_NUMBER=${{ github.run_number }}
 
       - name: Publier l'AAB (à téléverser dans la Play Console)
         uses: actions/upload-artifact@v4

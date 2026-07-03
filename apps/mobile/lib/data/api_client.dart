@@ -191,6 +191,12 @@ class ApiClient {
     return (token: j['token'] as String, user: AuthUser.fromJson(j['user'] as Map<String, dynamic>));
   }
 
+  /// Métadonnées app (mise à jour forcée) : build minimum supporté + URL du store.
+  Future<({int minBuild, String storeUrl})> appMeta() async {
+    final j = await _send('GET', '/v1/meta/app') as Map<String, dynamic>;
+    return (minBuild: (j['minBuild'] as num?)?.toInt() ?? 0, storeUrl: j['storeUrl'] as String? ?? '');
+  }
+
   Future<Map<String, dynamic>> me() async => await _send('GET', '/v1/me') as Map<String, dynamic>;
 
   Future<void> updateMe(Map<String, dynamic> payload) async => await _send('PATCH', '/v1/me', payload);

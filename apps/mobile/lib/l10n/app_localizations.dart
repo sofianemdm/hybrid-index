@@ -494,6 +494,24 @@ abstract class AppLocalizations {
   /// **'Invalid or expired code. Request a new one if needed.'**
   String get authForgotInvalid;
 
+  /// No description provided for @updateRequiredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Update required'**
+  String get updateRequiredTitle;
+
+  /// No description provided for @updateRequiredBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This version of the app is no longer supported. Update it to continue — your account and scores are safe.'**
+  String get updateRequiredBody;
+
+  /// No description provided for @updateRequiredCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Update now'**
+  String get updateRequiredCta;
+
   /// No description provided for @authPassword.
   ///
   /// In en, this message translates to:

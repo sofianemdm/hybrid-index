@@ -242,6 +242,16 @@ class AppLocalizationsEn extends AppLocalizations {
       'Invalid or expired code. Request a new one if needed.';
 
   @override
+  String get updateRequiredTitle => 'Update required';
+
+  @override
+  String get updateRequiredBody =>
+      'This version of the app is no longer supported. Update it to continue — your account and scores are safe.';
+
+  @override
+  String get updateRequiredCta => 'Update now';
+
+  @override
   String get authPassword => 'Password (8+)';
 
   @override
