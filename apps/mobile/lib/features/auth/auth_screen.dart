@@ -84,14 +84,21 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       await ref.read(sessionProvider.notifier).loginWithGoogle(idToken);
       // AuthGate prend le relais (onboarding ou home).
     } on ApiException catch (e) {
-      if (e.details?['needsProfile'] == true) {
+      // Première connexion Google : le serveur réclame le profil (par le flag OU le code/status
+      // du endpoint). On accepte plusieurs signatures pour être robuste aux variations de réponse.
+      final needsProfile = e.details?['needsProfile'] == true ||
+          e.code == 'VALIDATION_ERROR' && e.status == 400;
+      if (needsProfile) {
         if (!mounted) return;
         Navigator.of(context).push(MaterialPageRoute(builder: (_) => GoogleProfileScreen(idToken: idToken)));
+      } else if (e.code == 'AGE_RESTRICTED') {
+        _toast(t.ageRestricted);
       } else {
-        _toast(e.code == 'AGE_RESTRICTED' ? t.ageRestricted : e.message);
+        // Diagnostic précis (temporaire) : on affiche code + statut + message réel du serveur.
+        _toast('Google KO — code=${e.code} statut=${e.status} : ${e.message}');
       }
     } catch (e) {
-      _toast('$e');
+      _toast('Google exception : $e');
     }
   }
 
