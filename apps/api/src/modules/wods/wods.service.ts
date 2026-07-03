@@ -6,6 +6,7 @@ import { ScoreClient } from "../../infra/score-client/score-client.service";
 import { ProfileScoringService, type PersistedProfile } from "../profile/profile-scoring.service";
 import { FeedEventsService } from "../social/feed-events.service";
 import { ProgressService } from "../progress/progress.service";
+import { LeaguePointsService } from "../league/league-points.service";
 import { SCORING_VERSION_UUID } from "../../common/constants";
 import type { LogWodResultRequest } from "./create-wod.dto";
 import { ovrSub } from "./wod-constants";
@@ -21,6 +22,7 @@ export class WodsService {
     private readonly profileScoring: ProfileScoringService,
     private readonly feedEvents: FeedEventsService,
     private readonly progress: ProgressService,
+    private readonly leaguePoints: LeaguePointsService,
   ) {}
 
   /** Logue un résultat sur un WOD (officiel → barème ; custom → moteur d'estimation), puis
@@ -146,6 +148,21 @@ export class WodsService {
           performedAt: created.performedAt,
         })
       .catch(() => undefined);
+
+    // Points de LIGUE mensuelle — best-effort, pas sur un rejeu. C'est LA voie utilisée par
+    // l'app mobile : sans cet appel, faire le « WOD de la semaine » ne donnait AUCUN point
+    // (seule l'autre voie, ResultsService.log, créditait la Ligue — bug vécu le 03/07 sur
+    // La Flèche : l'utilisateur n'apparaissait jamais au classement du mois).
+    if (!existing)
+      await this.leaguePoints
+        .awardForResult(userId, created.sex, {
+          wodResultId: created.id,
+          wodId,
+          subScore,
+          performedAt: created.performedAt,
+          review: created.review,
+        })
+        .catch(() => undefined);
 
     return {
       result: { id: created.id, wodId, rawResult: body.rawResult, subScore: ovrSub(subScore), rxCompliant: created.rxCompliant },

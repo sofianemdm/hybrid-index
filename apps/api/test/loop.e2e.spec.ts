@@ -654,14 +654,15 @@ describe("api — boucle complète persistée (e2e réel)", () => {
       .expect(200);
     expect(before.body.allowed).toBe(true);
 
-    // Séparation stricte par âge : un mineur (14 ans) ↔ adulte → refus « age » même sans lien.
+    // Séparation stricte par âge : un mineur (16 ans — l'age-gate d'inscription est passé à
+    // 15 ans le 03/07, un 14 ans ne peut PLUS s'inscrire) ↔ adulte → refus « age » sans lien.
     const minor = await request(api.getHttpServer())
       .post("/v1/auth/register")
       .send({
         email: `e2e_minor_${stamp}@test.local`,
         password: "motdepasse123",
         displayName: `E2EMinor${stamp}`,
-        dateOfBirth: "2012-03-03",
+        dateOfBirth: "2010-03-03",
         sex: "male",
         goal: "all_round",
       })

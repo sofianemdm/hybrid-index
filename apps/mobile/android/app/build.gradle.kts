@@ -50,11 +50,9 @@ android {
                 signingConfigs.getByName("release")
             else
                 signingConfigs.getByName("debug")
-            // R8 : code Java/Kotlin minifié + ressources Android inutilisées retirées.
-            // (Le code Dart est déjà tree-shaké par Flutter ; ceci couvre la couche native.)
-            isMinifyEnabled = true
-            isShrinkResources = true
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
+            // R8 minify : TENTÉ le 03/07 puis RETIRÉ — le build CI échouait (pas de logs
+            // détaillés accessibles, pas de SDK local pour reproduire). Gain modeste (~1-3 Mo) ;
+            // à retenter un jour AVEC les logs du run pour écrire les règles proguard qui manquent.
         }
     }
 }

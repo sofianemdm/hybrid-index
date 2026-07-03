@@ -237,4 +237,18 @@ describe("api — mode Ligue (e2e réel)", () => {
     expect(wr2!.review).toBe("pending_review");
     expect(await prisma.leaguePoints.count({ where: { wodResultId: wr!.id } })).toBe(0);
   });
+
+  it("ROUTE DE L'APP (/v1/wods/:id/results) : le WOD de la semaine crédite AUSSI la Ligue", async () => {
+    // Bug vécu 03/07 (La Flèche) : cette voie de log — LA seule utilisée par le mobile —
+    // n'appelait pas LeaguePointsService : faire la séance de la semaine ne donnait AUCUN point.
+    const res = await request(api.getHttpServer())
+      .post(`/v1/wods/${IMPOSED_WOD}/results`)
+      .set("authorization", `Bearer ${token}`)
+      .send({ rawResult: 300, idempotencyKey: `e2e_league_approute_${stamp}` })
+      .expect(201);
+    const wodResultId = res.body.result.id as string;
+    const row = await prisma.leaguePoints.findUnique({ where: { wodResultId } });
+    expect(row).toBeTruthy();
+    expect(row!.points).toBe(leagueWeekPoints(row!.subScore));
+  });
 });
