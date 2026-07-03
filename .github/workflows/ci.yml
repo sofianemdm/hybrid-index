@@ -43,7 +43,10 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm lint
       # Bloquant : la justesse du HYBRID INDEX est non négociable (CLAUDE.md règle 4).
-      - run: pnpm test
+      # Reporter github-actions : chaque test en échec devient une ANNOTATION lisible sans
+      # ouvrir les logs. maxWorkers borné : 45 suites e2e (2 apps Nest chacune) sur un runner
+      # 4 vCPU saturent la machine → timeouts fantômes.
+      - run: pnpm test -- --maxWorkers=2 --reporters=default --reporters=github-actions
 
   mobile:
     name: Mobile (Flutter — analyze · test)

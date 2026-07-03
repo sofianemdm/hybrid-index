@@ -1,3 +1,7 @@
+// Fichier WEB UNIQUEMENT (import conditionnel depuis web_download.dart) : dart:html y est
+// légitime. `flutter analyze` traite les infos comme fatales en CI → on les neutralise ICI,
+// avec cette justification. Migration package:web possible plus tard, sans urgence.
+// ignore_for_file: deprecated_member_use, avoid_web_libraries_in_flutter
 import 'dart:html' as html;
 import 'dart:typed_data';
 
