@@ -452,7 +452,7 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(AppLocalizations.of(context).wodDetailChallenge,
-              style: HiType.titleM.copyWith(color: HiColors.textPrimary, fontSize: 18, fontWeight: FontWeight.w800)),
+              style: HiType.titleM.copyWith(color: HiColors.textPrimary, fontWeight: FontWeight.w800)),
           const SizedBox(height: HiSpace.sm),
           Wrap(
             spacing: HiSpace.sm,
@@ -527,7 +527,7 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
             child: Text(b.reps,
                 softWrap: false,
                 overflow: TextOverflow.clip,
-                style: HiType.body.copyWith(color: HiColors.brandPrimary, fontSize: 14, fontWeight: FontWeight.w800)),
+                style: HiType.label.copyWith(color: HiColors.brandPrimary, fontWeight: FontWeight.w800)),
           ),
           Expanded(
             child: Column(
@@ -538,8 +538,8 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
                   children: [
                     Flexible(
                       child: Text(b.movement,
-                          style: HiType.body
-                              .copyWith(color: HiColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600)),
+                          style: HiType.label
+                              .copyWith(color: HiColors.textPrimary)),
                     ),
                     // Petit « info » cliquable → image expliquant le mouvement (si un guide existe).
                     if (guide != null) _movementInfoButton(b.movement, guide),
@@ -653,13 +653,13 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
           const SizedBox(height: 2),
           RichText(
             text: TextSpan(children: [
-              TextSpan(text: AppLocalizations.of(context).wodDetailRx, style: TextStyle(color: HiColors.textTertiary, fontSize: 12, fontWeight: FontWeight.w600)),
-              TextSpan(text: fmt(rx), style: TextStyle(color: HiColors.brandPrimary, fontSize: 13, fontWeight: FontWeight.w800)),
-              TextSpan(text: '   ·   ', style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
-              TextSpan(text: AppLocalizations.of(context).wodDetailLight, style: TextStyle(color: HiColors.textTertiary, fontSize: 12, fontWeight: FontWeight.w600)),
-              TextSpan(text: fmt(scaled), style: TextStyle(color: HiColors.textSecondary, fontSize: 13, fontWeight: FontWeight.w700)),
+              TextSpan(text: AppLocalizations.of(context).wodDetailRx, style: HiType.caption.copyWith(color: HiColors.textTertiary, fontWeight: FontWeight.w600)),
+              TextSpan(text: fmt(rx), style: HiType.label.copyWith(color: HiColors.brandPrimary, fontWeight: FontWeight.w800)),
+              TextSpan(text: '   ·   ', style: HiType.caption.copyWith(color: HiColors.textTertiary)),
+              TextSpan(text: AppLocalizations.of(context).wodDetailLight, style: HiType.caption.copyWith(color: HiColors.textTertiary, fontWeight: FontWeight.w600)),
+              TextSpan(text: fmt(scaled), style: HiType.label.copyWith(color: HiColors.textSecondary, fontWeight: FontWeight.w700)),
               if (w.note != null && w.note!.isNotEmpty)
-                TextSpan(text: '  (${w.note})', style: TextStyle(color: HiColors.textTertiary, fontSize: 11)),
+                TextSpan(text: '  (${w.note})', style: HiType.caption.copyWith(color: HiColors.textTertiary)),
             ]),
           ),
         ],

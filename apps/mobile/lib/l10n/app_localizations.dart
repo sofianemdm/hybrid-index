@@ -3332,6 +3332,18 @@ abstract class AppLocalizations {
   /// **'Do a workout'**
   String get homeNoIndexCta;
 
+  /// No description provided for @homeSectionLeague.
+  ///
+  /// In en, this message translates to:
+  /// **'YOUR LEAGUE'**
+  String get homeSectionLeague;
+
+  /// No description provided for @homeSectionProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'YOUR PROGRESS'**
+  String get homeSectionProgress;
+
   /// No description provided for @homeRadarTitle.
   ///
   /// In en, this message translates to:
@@ -3389,13 +3401,13 @@ abstract class AppLocalizations {
   /// No description provided for @homeAddQuickTitle.
   ///
   /// In en, this message translates to:
-  /// **'Add a session quickly'**
+  /// **'Quick session'**
   String get homeAddQuickTitle;
 
   /// No description provided for @homeAddQuickSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Pick a reference session'**
+  /// **'A reference session'**
   String get homeAddQuickSubtitle;
 
   /// No description provided for @homeBuildSessionTitle.

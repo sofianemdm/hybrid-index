@@ -54,8 +54,20 @@ flutter:
           weight: 600
         - asset: assets/fonts/Rajdhani-Bold.ttf
           weight: 700
-    # Inter est une police VARIABLE (axe wght 100–900) : un seul fichier couvre tous les poids
-    # utilisés par HiType (w500→w800). NE PAS remplacer par un static Regular (écraserait tout en 400).
+    # Inter en 6 poids STATIQUES (instanciés depuis la variable font via fonttools, P0.1 audit
+    # design 03/07) : garantit des graisses réelles w400→w900 sur tous les moteurs (pas de gras
+    # synthétisé/aplati). Ne pas revenir au seul fichier variable Inter.ttf.
     - family: Inter
       fonts:
-        - asset: assets/fonts/Inter.ttf
+        - asset: assets/fonts/Inter-400.ttf
+          weight: 400
+        - asset: assets/fonts/Inter-500.ttf
+          weight: 500
+        - asset: assets/fonts/Inter-600.ttf
+          weight: 600
+        - asset: assets/fonts/Inter-700.ttf
+          weight: 700
+        - asset: assets/fonts/Inter-800.ttf
+          weight: 800
+        - asset: assets/fonts/Inter-900.ttf
+          weight: 900

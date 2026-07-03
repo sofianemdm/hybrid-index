@@ -10,6 +10,8 @@ import '../../data/ui_state.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/haptics.dart';
 import '../../theme/tokens.dart';
+import '../../widgets/hi_ambient_background.dart';
+import '../../widgets/hi_nav_icons.dart';
 import '../leaderboard/leaderboard_screen.dart';
 import '../log/log_wod_screen.dart';
 import '../messaging/realtime_banner.dart';
@@ -67,9 +69,9 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w800, fontSize: 15)),
+                    Text(title, style: HiType.bodyStrong.copyWith(color: HiColors.textPrimary, fontWeight: FontWeight.w800)),
                     const SizedBox(height: 2),
-                    Text(subtitle, style: TextStyle(color: HiColors.textTertiary, fontSize: 12)),
+                    Text(subtitle, style: HiType.caption.copyWith(color: HiColors.textTertiary)),
                   ],
                 ),
               ),
@@ -83,21 +85,36 @@ class _HomeShellState extends ConsumerState<HomeShell> {
 
   Future<void> _openLog() async {
     final t = AppLocalizations.of(context);
-    final choice = await showDialog<String>(
+    // Bottom-sheet (et plus un Dialog centré) : plus pouce-friendly, rayon héros + poignée.
+    final choice = await showModalBottomSheet<String>(
       context: context,
-      builder: (ctx) => Dialog(
-        backgroundColor: HiColors.bgElevated,
-        insetPadding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(HiRadius.lg)),
+      backgroundColor: HiColors.bgElevated,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(HiRadius.xxl)),
+      ),
+      builder: (ctx) => SafeArea(
+        top: false,
         child: Padding(
-          padding: const EdgeInsets.all(HiSpace.lg),
+          padding: const EdgeInsets.fromLTRB(HiSpace.lg, HiSpace.sm, HiSpace.lg, HiSpace.lg),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // Poignée (grabber) : signale « ça se tire vers le bas ».
+              Center(
+                child: Container(
+                  width: 36,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: HiSpace.md),
+                  decoration: BoxDecoration(
+                    color: HiColors.strokeStrong,
+                    borderRadius: BorderRadius.circular(HiRadius.pill),
+                  ),
+                ),
+              ),
               Text(t.homeAddSessionTitle,
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: HiColors.textPrimary, fontWeight: FontWeight.w800, fontSize: 18)),
+                  style: HiType.titleM.copyWith(color: HiColors.textPrimary, fontWeight: FontWeight.w800)),
               const SizedBox(height: HiSpace.lg),
               _choiceCard(ctx,
                   icon: Icons.timer_outlined,
@@ -130,7 +147,11 @@ class _HomeShellState extends ConsumerState<HomeShell> {
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
     final tab = ref.watch(homeTabProvider);
-    return Scaffold(
+    return HiAmbientBackground(
+      heroHalo: true,
+      child: Scaffold(
+      // Le fond vit dans HiAmbientBackground (dégradé ambiant) → Scaffold transparent.
+      backgroundColor: Colors.transparent,
       extendBody: true, // le contenu glisse sous la barre translucide
       body: Stack(
         children: [
@@ -160,7 +181,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                           const Icon(Icons.cloud_off_rounded, size: 14, color: Colors.black87),
                           const SizedBox(width: 6),
                           Text(AppLocalizations.of(context).offlineBanner,
-                              style: const TextStyle(color: Colors.black87, fontSize: 12, fontWeight: FontWeight.w700)),
+                              style: HiType.caption.copyWith(color: Colors.black87, fontWeight: FontWeight.w700)),
                         ],
                       ),
                     )
@@ -170,6 +191,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
         ],
       ),
       bottomNavigationBar: _notchedNav(t),
+      ),
     );
   }
 
@@ -177,18 +199,19 @@ class _HomeShellState extends ConsumerState<HomeShell> {
   /// centré par `Center` sur toute la largeur (= centre exact de l'écran) — plus de FAB ni d'encoche
   /// dont le placement dépendait de la géométrie du Scaffold. Centrage garanti, indépendant des items.
   Widget _notchedNav(AppLocalizations t) {
-    final tabs = <(IconData, IconData, String, int)>[
-      (Icons.bolt_outlined, Icons.bolt_rounded, t.navHome, kHomeTabIndex),
-      (Icons.fitness_center_outlined, Icons.fitness_center_rounded, t.navSessions, kSessionsTabIndex),
-      (Icons.groups_outlined, Icons.groups_rounded, t.navCommunity, kCommunityTabIndex),
-      (Icons.leaderboard_outlined, Icons.leaderboard_rounded, t.navLeaderboard, kLeaderboardTabIndex),
+    // Glyphes PROPRIÉTAIRES (hi_nav_icons.dart) : éclair, haltère, anneau de groupe, podium.
+    final tabs = <(HiNavGlyph, String, int)>[
+      (HiNavGlyph.bolt, t.navHome, kHomeTabIndex),
+      (HiNavGlyph.dumbbell, t.navSessions, kSessionsTabIndex),
+      (HiNavGlyph.community, t.navCommunity, kCommunityTabIndex),
+      (HiNavGlyph.podium, t.navLeaderboard, kLeaderboardTabIndex),
     ];
     return SafeArea(
       top: false,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(HiSpace.md, 0, HiSpace.md, HiSpace.sm),
         child: SizedBox(
-          height: 72,
+          height: 76,
           child: Stack(
             clipBehavior: Clip.none,
             children: [
@@ -202,13 +225,13 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                   child: BackdropFilter(
                     filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
                     child: Container(
-                      height: 60,
+                      height: 64,
                       color: HiColors.bgElevated2.withValues(alpha: 0.86),
                       child: Row(
                         children: [
                           Expanded(child: _navItem(tabs[0])),
                           Expanded(child: _navItem(tabs[1])),
-                          const SizedBox(width: 64), // emplacement du bouton central
+                          const SizedBox(width: 68), // emplacement du bouton central
                           Expanded(child: _navItem(tabs[2])),
                           Expanded(child: _navItem(tabs[3])),
                         ],
@@ -260,12 +283,12 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     );
   }
 
-  Widget _navItem((IconData, IconData, String, int) tab) {
-    final i = tab.$4;
+  Widget _navItem((HiNavGlyph, String, int) tab) {
+    final i = tab.$3;
     final active = ref.watch(homeTabProvider) == i;
     final color = active ? HiColors.brandPrimary : HiColors.textTertiary;
     return Semantics(
-      label: tab.$3,
+      label: tab.$2,
       selected: active,
       button: true,
       child: GestureDetector(
@@ -281,14 +304,14 @@ class _HomeShellState extends ConsumerState<HomeShell> {
               scale: active ? 1.0 : 0.9,
               duration: HiMotion.fast,
               curve: Curves.easeOut,
-              child: Icon(active ? tab.$2 : tab.$1, color: color, size: 23),
+              child: HiNavIcon(glyph: tab.$1, active: active, color: color, size: 23),
             ),
             const SizedBox(height: 2),
-            Text(tab.$3,
+            Text(tab.$2,
                 maxLines: 1,
                 overflow: TextOverflow.clip,
-                style: HiType.caption.copyWith(
-                    color: color, fontSize: 10, fontWeight: active ? FontWeight.w700 : FontWeight.w500)),
+                style: HiType.navLabel.copyWith(
+                    color: color, fontWeight: active ? FontWeight.w700 : FontWeight.w500)),
           ],
         ),
       ),

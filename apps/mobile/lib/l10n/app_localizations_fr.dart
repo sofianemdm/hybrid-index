@@ -1911,6 +1911,12 @@ class AppLocalizationsFr extends AppLocalizations {
   String get homeNoIndexCta => 'Faire une séance';
 
   @override
+  String get homeSectionLeague => 'TA LIGUE';
+
+  @override
+  String get homeSectionProgress => 'TA PROGRESSION';
+
+  @override
   String get homeRadarTitle => 'TON RADAR';
 
   @override
@@ -1941,10 +1947,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get homeAddSessionTitle => 'Ajouter une séance';
 
   @override
-  String get homeAddQuickTitle => 'Ajouter une séance rapidement';
+  String get homeAddQuickTitle => 'Séance rapide';
 
   @override
-  String get homeAddQuickSubtitle => 'Choisis une séance de référence';
+  String get homeAddQuickSubtitle => 'Une séance de référence';
 
   @override
   String get homeBuildSessionTitle => 'Construire une séance';

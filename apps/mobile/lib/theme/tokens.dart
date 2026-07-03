@@ -6,13 +6,14 @@ import 'package:flutter/material.dart';
 /// Les tokens d'accès restent `HiColors.x` (getters) → on bascule la palette à l'exécution.
 /// Voir [kHiDark] / [kHiLight].
 class HiPalette {
-  final Color bgBase, bgElevated, bgElevated2, bgElevatedHi, strokeSubtle, strokeStrong, strokeBrand;
+  final Color bgBase, bgAmbient, bgElevated, bgElevated2, bgElevatedHi, strokeSubtle, strokeStrong, strokeBrand;
   final Color brandPrimary, brandPrimaryBright, brandPrimaryDeep, brandSecondary, brandSecondaryText, accentVictory;
   final Color textPrimary, textSecondary, textTertiary, textOnBrand;
   final Color success, error, warn, info;
   final Color attrEngine, attrSpeed, attrStrength, attrPower, attrEndurance, attrHybrid, attrLocked;
   const HiPalette({
     required this.bgBase,
+    required this.bgAmbient,
     required this.bgElevated,
     required this.bgElevated2,
     required this.bgElevatedHi,
@@ -47,6 +48,9 @@ class HiPalette {
 /// l'Index « flotte ». `accentVictory` (lime) n'apparaît JAMAIS en UI de repos.
 const kHiDark = HiPalette(
   bgBase: Color(0xFF090B11),
+  // Centre du dégradé ambiant (fond signé) : bleu nuit à peine plus clair que bgBase, pour une
+  // profondeur perceptible sans jamais concurrencer les surfaces élevées.
+  bgAmbient: Color(0xFF0E1420),
   bgElevated: Color(0xFF11151F),
   bgElevated2: Color(0xFF1A1F2D),
   bgElevatedHi: Color(0xFF232A3B),
@@ -72,7 +76,9 @@ const kHiDark = HiPalette(
   // plus premium ; le cyan signature reste la couleur dominante de l'app.
   attrEngine: Color(0xFFEB7A5E),
   attrSpeed: Color(0xFFE6C758),
-  attrStrength: Color(0xFFEA6389),
+  // Magenta FROID (ex-0xFFEA6389, rose trop proche de error 0xFFFF5470) : la Force ne peut plus
+  // être confondue avec un état d'erreur.
+  attrStrength: Color(0xFFE0559C),
   attrPower: Color(0xFF9D6CE0),
   attrEndurance: Color(0xFF45D6C0),
   attrHybrid: Color(0xFF5BD49B),
@@ -83,6 +89,8 @@ const kHiDark = HiPalette(
 /// plein soleil/salle (les études montrent que le dark mode est le pire en extérieur).
 const kHiLight = HiPalette(
   bgBase: Color(0xFFEEF1F7),
+  // Équivalent clair du fond ambiant : un blanc bleuté à peine plus lumineux que bgBase.
+  bgAmbient: Color(0xFFF6F8FC),
   bgElevated: Color(0xFFFFFFFF),
   bgElevated2: Color(0xFFE4E9F2),
   bgElevatedHi: Color(0xFFD8DEEA),
@@ -108,7 +116,8 @@ const kHiLight = HiPalette(
   info: Color(0xFF1F6FD6),
   attrEngine: Color(0xFFE04A28),
   attrSpeed: Color(0xFFB58600),
-  attrStrength: Color(0xFFD8255C),
+  // Magenta froid (ex-0xFFD8255C, trop proche de error 0xFFD32F4A) — même logique qu'en sombre.
+  attrStrength: Color(0xFFC02380),
   attrPower: Color(0xFF7A3FE0),
   attrEndurance: Color(0xFF0E9E84),
   attrHybrid: Color(0xFF0E9E66),
@@ -123,6 +132,7 @@ class HiColors {
   static void setBrightness(Brightness b) => active = b == Brightness.light ? kHiLight : kHiDark;
 
   static Color get bgBase => active.bgBase;
+  static Color get bgAmbient => active.bgAmbient;
   static Color get bgElevated => active.bgElevated;
   static Color get bgElevated2 => active.bgElevated2;
   static Color get bgElevatedHi => active.bgElevatedHi;
@@ -419,6 +429,8 @@ class HiType {
       TextStyle(fontFamily: _data, fontSize: 88, fontWeight: FontWeight.w700, letterSpacing: -1.5, height: 0.92, fontFeatures: _tabular);
   static const TextStyle displayL =
       TextStyle(fontFamily: _data, fontSize: 56, fontWeight: FontWeight.w700, letterSpacing: -1.0, height: 0.95, fontFeatures: _tabular);
+  static const TextStyle displayS =
+      TextStyle(fontFamily: _data, fontSize: 40, fontWeight: FontWeight.w700, letterSpacing: -0.5, height: 1.0, fontFeatures: _tabular);
   static const TextStyle numericL =
       TextStyle(fontFamily: _data, fontSize: 34, fontWeight: FontWeight.w700, letterSpacing: -0.5, height: 1.0, fontFeatures: _tabular);
   static const TextStyle numericM =
@@ -427,6 +439,7 @@ class HiType {
       TextStyle(fontFamily: _data, fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 2.5, height: 1.0);
 
   // ---- Corps / UI (Inter) ----
+  static const TextStyle titleXL = TextStyle(fontFamily: _body, fontSize: 26, fontWeight: FontWeight.w800, letterSpacing: -0.3, height: 1.15);
   static const TextStyle titleL = TextStyle(fontFamily: _body, fontSize: 22, fontWeight: FontWeight.w800, letterSpacing: -0.2, height: 1.15);
   static const TextStyle titleM = TextStyle(fontFamily: _body, fontSize: 17, fontWeight: FontWeight.w700, letterSpacing: -0.1, height: 1.2);
   static const TextStyle body = TextStyle(fontFamily: _body, fontSize: 15, fontWeight: FontWeight.w500, height: 1.4);
@@ -434,4 +447,6 @@ class HiType {
   static const TextStyle label = TextStyle(fontFamily: _body, fontSize: 13, fontWeight: FontWeight.w600, letterSpacing: 0.2, height: 1.3);
   static const TextStyle caption = TextStyle(fontFamily: _body, fontSize: 12, fontWeight: FontWeight.w500, letterSpacing: 0.2, height: 1.3);
   static const TextStyle button = TextStyle(fontFamily: _body, fontSize: 16, fontWeight: FontWeight.w700, letterSpacing: 0.3, height: 1.0);
+  /// Label de la bottom-nav (11 pt : lisible sans concurrencer les icônes).
+  static const TextStyle navLabel = TextStyle(fontFamily: _body, fontSize: 11, fontWeight: FontWeight.w500, height: 1.0);
 }

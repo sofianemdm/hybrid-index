@@ -1896,6 +1896,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeNoIndexCta => 'Do a workout';
 
   @override
+  String get homeSectionLeague => 'YOUR LEAGUE';
+
+  @override
+  String get homeSectionProgress => 'YOUR PROGRESS';
+
+  @override
   String get homeRadarTitle => 'YOUR RADAR';
 
   @override
@@ -1926,10 +1932,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeAddSessionTitle => 'Add a session';
 
   @override
-  String get homeAddQuickTitle => 'Add a session quickly';
+  String get homeAddQuickTitle => 'Quick session';
 
   @override
-  String get homeAddQuickSubtitle => 'Pick a reference session';
+  String get homeAddQuickSubtitle => 'A reference session';
 
   @override
   String get homeBuildSessionTitle => 'Build a session';

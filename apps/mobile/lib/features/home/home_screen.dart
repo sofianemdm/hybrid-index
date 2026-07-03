@@ -280,7 +280,11 @@ class HomeScreen extends ConsumerWidget {
               },
               orElse: () => const SizedBox.shrink(),
             ),
-        const SizedBox(height: HiSpace.lg),
+        // Respiration marquée après le bloc héros (carte + estimation) : l'œil quitte le point
+        // focal avant d'attaquer les sections. Puis intertitres de section (audit design 03/07) :
+        // « TA LIGUE » (rival + preuve sociale) et « TA PROGRESSION » (récap + radar).
+        const SizedBox(height: HiSpace.xl),
+        if (p.leaguePosition != null || p.socialProof != null) _sectionHeader(t.homeSectionLeague),
         // Rival amical (ou état meneur) — la comparaison sociale, ton bienveillant.
         if (p.leaguePosition != null) ...[
           RivalCard(
@@ -293,6 +297,12 @@ class HomeScreen extends ConsumerWidget {
           ),
           const SizedBox(height: HiSpace.md),
         ],
+        if (p.socialProof != null) ...[
+          SocialProofCard(proof: p.socialProof!),
+          const SizedBox(height: HiSpace.md),
+        ],
+        if (p.leaguePosition != null || p.socialProof != null) const SizedBox(height: HiSpace.sm),
+        _sectionHeader(t.homeSectionProgress),
         // Récap « Ta semaine » (affiché seulement s'il y a du contenu).
         ref.watch(weeklyRecapProvider).maybeWhen(
               data: (r) => r != null && r.hasContent
@@ -306,10 +316,6 @@ class HomeScreen extends ConsumerWidget {
         // Fraîcheur : incite au re-test sans culpabiliser (le score ne baisse jamais).
         if (stale.isNotEmpty) ...[
           _freshnessBanner(context, stale),
-          const SizedBox(height: HiSpace.md),
-        ],
-        if (p.socialProof != null) ...[
-          SocialProofCard(proof: p.socialProof!),
           const SizedBox(height: HiSpace.md),
         ],
         // Radar (touchable → coach de l'axe).
@@ -376,6 +382,17 @@ class HomeScreen extends ConsumerWidget {
   }
 
   /// Bandeau « fraîcheur » : un ou plusieurs axes datent → on propose un re-test, ton positif.
+  /// Intertitre de section de l'Accueil (rythme éditorial : l'œil scanne par blocs nommés).
+  Widget _sectionHeader(String label) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: HiSpace.sm),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Text(label, style: HiType.overline.copyWith(color: HiColors.textTertiary)),
+      ),
+    );
+  }
+
   /// État « aucun Index » : l'utilisateur est entré via « Je n'ai aucune de ces infos ». Pas de carte
   /// joueur (rien à afficher) → encart clair qui invite à faire une séance pour révéler son Index.
   Widget _noIndexHero(BuildContext context, WidgetRef ref) {

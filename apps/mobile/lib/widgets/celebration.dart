@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show SystemSound, SystemSoundType;
 import '../l10n/app_localizations.dart';
 import '../theme/haptics.dart';
 import '../theme/tokens.dart';
@@ -41,6 +42,13 @@ class Celebration {
     }
 
     HiHaptics.celebrate();
+    // Son UI natif sur la « forte » UNIQUEMENT (une par session, cf. anti-fatigue) : complète
+    // confettis + haptique. SystemSound respecte le mode silencieux du téléphone. Best-effort.
+    if (eff == CelebrationIntensity.strong) {
+      try {
+        SystemSound.play(SystemSoundType.click);
+      } catch (_) {}
+    }
     await showGeneralDialog<void>(
       context: context,
       barrierDismissible: true,

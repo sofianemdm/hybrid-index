@@ -7,6 +7,7 @@ import '../../data/models.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/haptics.dart';
 import '../../theme/tokens.dart';
+import '../../widgets/hi_ambient_background.dart';
 import '../../widgets/hi_button.dart';
 import '../../widgets/hi_card.dart';
 import '../../widgets/index_ring.dart';
@@ -69,7 +70,10 @@ class _RevealScreenState extends ConsumerState<RevealScreen> {
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
     final idx = widget.profile.index;
-    return Scaffold(
+    return HiAmbientBackground(
+      heroHalo: true,
+      child: Scaffold(
+      backgroundColor: Colors.transparent,
       body: GestureDetector(
         onTap: _step < 4 ? _skip : null,
         behavior: HitTestBehavior.opaque,
@@ -193,6 +197,7 @@ class _RevealScreenState extends ConsumerState<RevealScreen> {
             ),
           ),
         ),
+      ),
       ),
     );
   }
