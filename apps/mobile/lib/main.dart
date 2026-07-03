@@ -10,6 +10,7 @@ import 'app.dart';
 import 'core/app_router.dart';
 import 'data/analytics.dart';
 import 'data/locale_mode.dart';
+import 'data/outbox.dart';
 import 'data/push_service.dart';
 import 'data/realtime_service.dart';
 import 'data/session.dart';
@@ -110,7 +111,29 @@ class _HybridIndexAppState extends ConsumerState<HybridIndexApp> with WidgetsBin
     // Service WebSocket temps réel : on l'INSTANCIE ici (provider paresseux) pour activer ses
     // écoutes session/lifecycle. Purement additif — le polling REST reste en repli si le WS échoue.
     Future.microtask(() => ref.read(realtimeServiceProvider));
+    // OUTBOX : restaure le compteur puis tente la synchro des séances mises en attente hors ligne.
+    Future.microtask(() async {
+      await Outbox.restoreCount();
+      await _flushOutbox();
+    });
     Analytics.capture('app_open');
+  }
+
+  /// Rejoue la file hors-ligne ; si des séances partent, rafraîchit le profil et prévient.
+  Future<void> _flushOutbox() async {
+    try {
+      final synced = await Outbox(ref.read(apiClientProvider)).flush();
+      if (synced > 0) {
+        ref.invalidate(myProfileProvider);
+        // Contexte RE-résolu APRÈS les await (clé globale du navigator) → pas de trou async réel.
+        final ctx = appNavigatorKey.currentContext;
+        if (ctx != null) {
+          appMessengerKey.currentState
+              // ignore: use_build_context_synchronously
+              ?.showSnackBar(SnackBar(content: Text(AppLocalizations.of(ctx).outboxSynced(synced))));
+        }
+      }
+    } catch (_) {/* best-effort : retentera au prochain passage au premier plan */}
   }
 
   @override
@@ -125,7 +148,10 @@ class _HybridIndexAppState extends ConsumerState<HybridIndexApp> with WidgetsBin
     // suspendent leur poll réseau en arrière-plan et le reprennent au retour au premier plan.
     ref.read(appLifecycleProvider.notifier).state = state;
     // Nouveau « passage » dans l'app → on ré-autorise une célébration FORTE (anti-fatigue : 1/session).
-    if (state == AppLifecycleState.resumed) Celebration.resetSession();
+    if (state == AppLifecycleState.resumed) {
+      Celebration.resetSession();
+      _flushOutbox(); // retour au premier plan = le réseau est peut-être revenu → synchro outbox
+    }
   }
 
   @override

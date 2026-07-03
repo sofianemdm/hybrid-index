@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app.dart';
 import '../../data/analytics.dart';
 import '../../data/api_client.dart';
+import '../../data/outbox.dart';
 import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../data/ui_state.dart';
@@ -56,6 +57,8 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
   // Clé d'idempotence STABLE pour cette saisie : un double-tap ou un retry réseau réutilise la même
   // clé → le serveur dédoublonne (pas de double comptage, audit BUG-014).
   final String _idempotencyKey = 'log-${DateTime.now().microsecondsSinceEpoch}-${UniqueKey()}';
+  /// Copie du payload construit dans le try — accessible du catch (mise en file OUTBOX hors ligne).
+  Map<String, dynamic>? _payloadForOutbox;
 
   bool get _isTime => widget.scoreType == 'time';
   bool get _isFreeRun => widget.wodId == 'run_free_distance';
@@ -134,7 +137,7 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
         predScoreType = pred?.scoreType ?? widget.scoreType;
       } catch (_) {/* prédiction indispo → message neutre */}
 
-      final payload = <String, dynamic>{
+      final payload = _payloadForOutbox = <String, dynamic>{
         'rawResult': raw,
         'rxCompliant': _rx,
         'idempotencyKey': _idempotencyKey,
@@ -205,6 +208,17 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
         Navigator.of(context).popUntil((r) => r.isFirst);
       }
     } on ApiException catch (e) {
+      // HORS LIGNE → le résultat part dans l'OUTBOX (rejoué automatiquement au retour du réseau,
+      // même idempotencyKey = zéro doublon). Le score sera calculé à la synchro (heure serveur).
+      if (e.code == 'NETWORK' || e.code == 'TIMEOUT') {
+        await Outbox(ref.read(apiClientProvider)).enqueue(widget.wodId, _payloadForOutbox!);
+        if (mounted) {
+          _toast(t.outboxQueued);
+          ref.read(homeTabProvider.notifier).state = 0;
+          Navigator.of(context).popUntil((r) => r.isFirst);
+        }
+        return;
+      }
       _toast(e.code == 'WOD_RESULT_OUT_OF_BOUNDS' ? t.wreOutOfBounds : e.message);
     } catch (e) {
       _toast('$e');
