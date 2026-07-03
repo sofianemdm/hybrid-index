@@ -2,7 +2,7 @@ import { Body, Controller, Post } from "@nestjs/common";
 import { ZodValidationPipe } from "../../common/zod-validation.pipe";
 import { RateLimit } from "../../common/rate-limit.guard";
 import { AuthService } from "./auth.service";
-import { type AuthResponse, ForgotPasswordRequest, GoogleAuthRequest, LoginRequest, RegisterRequest, ResetPasswordRequest } from "./auth.dto";
+import { AppleAuthRequest, type AuthResponse, ForgotPasswordRequest, GoogleAuthRequest, LoginRequest, RegisterRequest, ResetPasswordRequest } from "./auth.dto";
 
 @Controller("v1/auth")
 export class AuthController {
@@ -35,6 +35,15 @@ export class AuthController {
   @Post("reset")
   reset(@Body(new ZodValidationPipe(ResetPasswordRequest)) body: ResetPasswordRequest): Promise<{ ok: true }> {
     return this.auth.resetPassword(body);
+  }
+
+  /** Connexion / inscription via Apple (nécessite APPLE_BUNDLE_ID côté serveur). */
+  @RateLimit({ limit: 20, windowSec: 900 })
+  @Post("apple")
+  apple(
+    @Body(new ZodValidationPipe(AppleAuthRequest)) body: AppleAuthRequest,
+  ): Promise<AuthResponse & { isNew: boolean }> {
+    return this.auth.apple(body);
   }
 
   /** Connexion / inscription via Google (nécessite GOOGLE_CLIENT_ID côté serveur). */

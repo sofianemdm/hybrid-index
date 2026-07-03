@@ -39,6 +39,22 @@ export const GoogleAuthRequest = z.object({
 });
 export type GoogleAuthRequest = z.infer<typeof GoogleAuthRequest>;
 
+/** Connexion Apple : mêmes règles que Google (profil requis à la PREMIÈRE connexion — Apple ne
+ *  fournit ni la date de naissance ni le sexe). L'email vit DANS l'identityToken. */
+export const AppleAuthRequest = z.object({
+  identityToken: z.string().min(1),
+  profile: z
+    .object({
+      displayName: z.string().min(2).max(24),
+      dateOfBirth: z.coerce.date(),
+      sex: Sex,
+      goal: Goal.default("all_round"),
+      equipmentPref: EquipmentPref.default("equipped"),
+    })
+    .optional(),
+});
+export type AppleAuthRequest = z.infer<typeof AppleAuthRequest>;
+
 /** Demande de réinitialisation : réponse TOUJOURS identique (pas d'énumération d'emails). */
 export const ForgotPasswordRequest = z.object({
   email: z.string().email(),

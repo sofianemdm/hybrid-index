@@ -7,11 +7,14 @@ import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/hi_button.dart';
 
-/// Complément de profil à la PREMIÈRE connexion Google (Google ne fournit pas date de naissance,
-/// sexe ni objectif — nécessaires à l'age-gating et au scoring).
+/// Complément de profil à la PREMIÈRE connexion sociale (Google/Apple : ces fournisseurs ne
+/// donnent ni date de naissance, ni sexe — nécessaires à l'age-gating et au scoring).
 class GoogleProfileScreen extends ConsumerStatefulWidget {
   final String idToken;
-  const GoogleProfileScreen({super.key, required this.idToken});
+
+  /// 'google' (défaut) ou 'apple' : choisit l'endpoint de connexion à la soumission.
+  final String provider;
+  const GoogleProfileScreen({super.key, required this.idToken, this.provider = 'google'});
 
   @override
   ConsumerState<GoogleProfileScreen> createState() => _GoogleProfileScreenState();
@@ -53,12 +56,18 @@ class _GoogleProfileScreenState extends ConsumerState<GoogleProfileScreen> {
     }
     setState(() => _loading = true);
     try {
-      await ref.read(sessionProvider.notifier).loginWithGoogle(widget.idToken, profile: {
+      final profile = {
         'displayName': _displayName.text.trim(),
         'dateOfBirth': _dob!.toIso8601String().split('T').first,
         'sex': _sex,
         'equipmentPref': _equipment,
-      });
+      };
+      final session = ref.read(sessionProvider.notifier);
+      if (widget.provider == 'apple') {
+        await session.loginWithApple(widget.idToken, profile: profile);
+      } else {
+        await session.loginWithGoogle(widget.idToken, profile: profile);
+      }
       if (!mounted) return;
       Navigator.of(context).popUntil((r) => r.isFirst); // AuthGate prend le relais
     } on ApiException catch (e) {

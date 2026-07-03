@@ -6,6 +6,7 @@ import { AuthService } from "./auth.service";
 import { JwtAuthGuard } from "./jwt-auth.guard";
 import { OptionalJwtAuthGuard } from "./optional-jwt-auth.guard";
 import { GoogleTokenVerifier } from "./google-verifier";
+import { AppleTokenVerifier } from "./apple-verifier";
 import { AuthTokenService } from "./auth-token.service";
 
 /**
@@ -32,7 +33,7 @@ function resolveJwtSecret(): string {
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, AuthTokenService, JwtAuthGuard, OptionalJwtAuthGuard, GoogleTokenVerifier],
+  providers: [AuthService, AuthTokenService, JwtAuthGuard, OptionalJwtAuthGuard, GoogleTokenVerifier, AppleTokenVerifier],
   exports: [AuthTokenService, JwtAuthGuard, OptionalJwtAuthGuard, JwtModule],
 })
 export class AuthModule {}

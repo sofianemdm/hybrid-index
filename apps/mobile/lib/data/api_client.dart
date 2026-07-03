@@ -184,6 +184,13 @@ class ApiClient {
     return (token: j['token'] as String, user: AuthUser.fromJson(j['user'] as Map<String, dynamic>));
   }
 
+  /// Connexion Apple : `profile` requis seulement à la première connexion.
+  Future<({String token, AuthUser user})> appleAuth(String identityToken, Map<String, dynamic>? profile) async {
+    final body = <String, dynamic>{'identityToken': identityToken, if (profile != null) 'profile': profile};
+    final j = await _send('POST', '/v1/auth/apple', body) as Map<String, dynamic>;
+    return (token: j['token'] as String, user: AuthUser.fromJson(j['user'] as Map<String, dynamic>));
+  }
+
   Future<Map<String, dynamic>> me() async => await _send('GET', '/v1/me') as Map<String, dynamic>;
 
   Future<void> updateMe(Map<String, dynamic> payload) async => await _send('PATCH', '/v1/me', payload);

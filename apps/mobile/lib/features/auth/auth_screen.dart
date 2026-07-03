@@ -8,6 +8,7 @@ import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/hi_button.dart';
 import 'google_button.dart';
+import 'apple_button.dart';
 import 'google_profile_screen.dart';
 import 'forgot_password_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -86,6 +87,24 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       if (e.details?['needsProfile'] == true) {
         if (!mounted) return;
         Navigator.of(context).push(MaterialPageRoute(builder: (_) => GoogleProfileScreen(idToken: idToken)));
+      } else {
+        _toast(e.code == 'AGE_RESTRICTED' ? t.ageRestricted : e.message);
+      }
+    } catch (e) {
+      _toast('$e');
+    }
+  }
+
+  Future<void> _handleApple(String identityToken) async {
+    final t = AppLocalizations.of(context);
+    try {
+      await ref.read(sessionProvider.notifier).loginWithApple(identityToken);
+      // AuthGate prend le relais (onboarding ou home).
+    } on ApiException catch (e) {
+      if (e.details?['needsProfile'] == true) {
+        if (!mounted) return;
+        Navigator.of(context).push(MaterialPageRoute(
+            builder: (_) => GoogleProfileScreen(idToken: identityToken, provider: 'apple')));
       } else {
         _toast(e.code == 'AGE_RESTRICTED' ? t.ageRestricted : e.message);
       }
@@ -259,6 +278,17 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     const SizedBox(height: HiSpace.md),
                     Center(
                       child: GoogleSignInButton(onToken: _handleGoogle, onError: _toast),
+                    ),
+                    const SizedBox(height: HiSpace.md),
+                  ],
+                  // Sign in with Apple : uniquement iOS/macOS (exigé par l'App Store dès qu'un
+                  // autre login social existe ; SizedBox.shrink ailleurs).
+                  if (AppleSignInButton.supported) ...[
+                    Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 280),
+                        child: AppleSignInButton(onToken: _handleApple, onError: _toast),
+                      ),
                     ),
                     const SizedBox(height: HiSpace.md),
                   ],

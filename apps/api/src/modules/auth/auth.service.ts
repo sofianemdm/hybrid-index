@@ -12,7 +12,8 @@ import { randomInt } from "node:crypto";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { MailService } from "../../infra/mail/mail.service";
 import { GoogleTokenVerifier } from "./google-verifier";
-import type { AuthResponse, ForgotPasswordRequest, GoogleAuthRequest, LoginRequest, RegisterRequest, ResetPasswordRequest } from "./auth.dto";
+import { AppleTokenVerifier } from "./apple-verifier";
+import type { AppleAuthRequest, AuthResponse, ForgotPasswordRequest, GoogleAuthRequest, LoginRequest, RegisterRequest, ResetPasswordRequest } from "./auth.dto";
 
 export interface JwtPayload {
   sub: string;
@@ -25,6 +26,7 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwt: JwtService,
     private readonly googleVerifier: GoogleTokenVerifier,
+    private readonly appleVerifier: AppleTokenVerifier,
     private readonly mail: MailService,
   ) {}
 
@@ -221,6 +223,81 @@ export class AuthService {
           ageVerified: true,
           consents: { tos: true, provider: "google", acceptedAt: new Date().toISOString() },
           identities: { create: { provider: "google", providerSubject: sub } },
+          profile: {
+            create: {
+              displayName,
+              sex: req.profile.sex,
+              goal: req.profile.goal,
+              equipmentPref: req.profile.equipmentPref,
+            },
+          },
+        },
+      });
+    } catch (e) {
+      throw this.uniqueViolation(e);
+    }
+    return { ...this.sign(user.id, email, displayName), isNew: true };
+  }
+
+  /**
+   * Connexion / inscription « Sign in with Apple » — miroir exact du flux Google :
+   * identité connue → connexion ; email existant → liaison ; sinon création (profil requis,
+   * age-gate). Particularités Apple : l'email vit dans l'identityToken (relais privé possible)
+   * et peut être ABSENT d'un token de reconnexion — l'identité (sub) suffit alors.
+   */
+  async apple(req: AppleAuthRequest): Promise<AuthResponse & { isNew: boolean }> {
+    const { sub, email } = await this.appleVerifier.verify(req.identityToken);
+
+    // 1) Identité Apple déjà connue → connexion (l'email du token peut manquer : on a celui du compte).
+    const identity = await this.prisma.authIdentity.findUnique({
+      where: { provider_providerSubject: { provider: "apple", providerSubject: sub } },
+      include: { user: { include: { profile: true } } },
+    });
+    if (identity) {
+      return {
+        ...this.sign(identity.userId, identity.user.email ?? email ?? "", identity.user.profile?.displayName ?? ""),
+        isNew: false,
+      };
+    }
+
+    // Sans identité connue, l'email est indispensable (liaison ou création de compte).
+    if (!email) {
+      throw new UnauthorizedException({ code: "UNAUTHENTICATED", message: "Token Apple sans email." });
+    }
+
+    // 2) Compte email existant → on lie l'identité Apple.
+    const existingUser = await this.prisma.user.findUnique({ where: { email }, include: { profile: true } });
+    if (existingUser) {
+      await this.prisma.authIdentity.create({
+        data: { userId: existingUser.id, provider: "apple", providerSubject: sub },
+      });
+      return { ...this.sign(existingUser.id, email, existingUser.profile?.displayName ?? ""), isNew: false };
+    }
+
+    // 3) Nouveau compte : profil requis (date de naissance pour l'age-gate, sexe pour le scoring).
+    if (!req.profile) {
+      throw new BadRequestException({
+        code: "VALIDATION_ERROR",
+        message: "Première connexion Apple : profil requis.",
+        details: { needsProfile: true },
+      });
+    }
+    if (!isOldEnough(req.profile.dateOfBirth, new Date())) {
+      throw new ForbiddenException({ code: "AGE_RESTRICTED", message: `Âge minimum requis : ${MIN_AGE_YEARS} ans.` });
+    }
+    const displayName = req.profile.displayName.trim();
+    const nameTaken = await this.prisma.profile.findUnique({ where: { displayName } });
+    if (nameTaken) throw new ConflictException({ code: "CONFLICT", message: "Ce pseudo est déjà pris." });
+
+    let user;
+    try {
+      user = await this.prisma.user.create({
+        data: {
+          email,
+          dateOfBirth: req.profile.dateOfBirth,
+          ageVerified: true,
+          consents: { tos: true, provider: "apple", acceptedAt: new Date().toISOString() },
+          identities: { create: { provider: "apple", providerSubject: sub } },
           profile: {
             create: {
               displayName,
