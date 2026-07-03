@@ -62,7 +62,7 @@ class _GoogleProfileScreenState extends ConsumerState<GoogleProfileScreen> {
       if (!mounted) return;
       Navigator.of(context).popUntil((r) => r.isFirst); // AuthGate prend le relais
     } on ApiException catch (e) {
-      _toast(e.code == 'AGE_RESTRICTED' ? 'Tu dois avoir au moins 13 ans.' : e.message);
+      _toast(e.code == 'AGE_RESTRICTED' ? 'Tu dois avoir au moins 15 ans.' : e.message);
     } catch (e) {
       _toast('$e');
     } finally {

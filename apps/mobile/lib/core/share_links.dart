@@ -14,3 +14,7 @@ String wodLink(String wodId) => '$kAppWebBase/seance/$wodId';
 
 /// Lien vers le profil public d'un athlète.
 String profileLink(String userId) => '$kAppWebBase/profil/$userId';
+
+/// Pages légales publiques (hébergées avec la version web ; URLs déclarées aux stores).
+String legalPrivacyUrl() => '$kAppWebBase/legal/confidentialite.html';
+String legalTermsUrl() => '$kAppWebBase/legal/cgu.html';

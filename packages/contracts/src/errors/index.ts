@@ -14,7 +14,7 @@ export const ErrorCode = z.enum([
   "WOD_RESULT_OUT_OF_BOUNDS", // 422 (hors bornes physiologiques, refusé)
   "WOD_RESULT_ANOMALY", // 422 (accepté mais flaggé, exclu des classements)
   "SCORE_SERVICE_UNAVAILABLE", // 503 (résultat stocké, score en attente)
-  "AGE_RESTRICTED", // 403 (< 13 ans, décision D4)
+  "AGE_RESTRICTED", // 403 (< 15 ans, décision D4 relevée 03/07)
   "RATE_LIMITED", // 429
   "INTERNAL", // 500
 ]);

@@ -62,3 +62,22 @@ jobs:
           name: athlete-league-apk
           path: apps/mobile/build/app/outputs/flutter-apk/app-release.apk
           if-no-files-found: error
+
+      # Le Play Store n'accepte QUE le format AAB (App Bundle), pas l'APK. Même signature/clé
+      # que l'APK ci-dessus. À téléverser tel quel dans la Play Console (test fermé puis prod).
+      - name: Build AAB (App Bundle pour le Play Store)
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: >
+          flutter build appbundle --release
+          --dart-define=API_BASE_URL=https://api-production-9a50.up.railway.app
+          --dart-define=PUSH_ENABLED=true
+
+      - name: Publier l'AAB (à téléverser dans la Play Console)
+        uses: actions/upload-artifact@v4
+        with:
+          name: athlete-league-aab
+          path: apps/mobile/build/app/outputs/bundle/release/app-release.aab
+          if-no-files-found: error

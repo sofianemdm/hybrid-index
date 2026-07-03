@@ -629,7 +629,7 @@ abstract class AppLocalizations {
   /// No description provided for @ageRestricted.
   ///
   /// In en, this message translates to:
-  /// **'You must be at least 13.'**
+  /// **'You must be at least 15.'**
   String get ageRestricted;
 
   /// No description provided for @homeProjection.
@@ -973,6 +973,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Customize my avatar'**
   String get settingsCustomizeAvatar;
+
+  /// No description provided for @legalPrivacyLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy policy'**
+  String get legalPrivacyLink;
+
+  /// No description provided for @legalTermsLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms of use'**
+  String get legalTermsLink;
+
+  /// No description provided for @authLegalNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'By creating an account, you accept:'**
+  String get authLegalNotice;
 
   /// No description provided for @settingsPrivacy.
   ///

@@ -9,8 +9,10 @@ import '../../theme/tokens.dart';
 import '../../widgets/hi_button.dart';
 import 'google_button.dart';
 import 'google_profile_screen.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../core/share_links.dart';
 
-/// Connexion / inscription. L'inscription pose l'age-gate (13+) et le profil de base.
+/// Connexion / inscription. L'inscription pose l'age-gate (15+) et le profil de base.
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
 
@@ -203,6 +205,33 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     loading: _loading,
                     onPressed: _submit,
                   ),
+                  // Mention légale (exigence stores) : CGU + politique de confidentialité,
+                  // consultables AVANT la création du compte.
+                  if (_register) ...[
+                    const SizedBox(height: HiSpace.sm),
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        Text(t.authLegalNotice,
+                            style: HiType.caption.copyWith(color: HiColors.textTertiary)),
+                        TextButton(
+                          style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(horizontal: 6), minimumSize: Size.zero),
+                          onPressed: () => launchUrl(Uri.parse(legalTermsUrl()), mode: LaunchMode.externalApplication),
+                          child: Text('CGU', style: HiType.caption.copyWith(color: HiColors.brandPrimary)),
+                        ),
+                        Text('·', style: HiType.caption.copyWith(color: HiColors.textTertiary)),
+                        TextButton(
+                          style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(horizontal: 6), minimumSize: Size.zero),
+                          onPressed: () => launchUrl(Uri.parse(legalPrivacyUrl()), mode: LaunchMode.externalApplication),
+                          child: Text(t.legalPrivacyLink,
+                              style: HiType.caption.copyWith(color: HiColors.brandPrimary)),
+                        ),
+                      ],
+                    ),
+                  ],
                   const SizedBox(height: HiSpace.md),
                   if (Env.googleEnabled) ...[
                     Row(children: [

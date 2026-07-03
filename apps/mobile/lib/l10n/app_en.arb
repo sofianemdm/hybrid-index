@@ -96,7 +96,7 @@
   "authDateOfBirth": "Date of birth",
   "authChoose": "Choose…",
   "authOr": "or",
-  "ageRestricted": "You must be at least 13.",
+  "ageRestricted": "You must be at least 15.",
   "homeProjection": "At this rate: {grade}+ in ~{weeks} wk.",
   "@homeProjection": {
     "placeholders": {
@@ -165,6 +165,9 @@
   "themeLight": "Light",
   "themeDark": "Dark",
   "settingsCustomizeAvatar": "Customize my avatar",
+  "legalPrivacyLink": "Privacy policy",
+  "legalTermsLink": "Terms of use",
+  "authLegalNotice": "By creating an account, you accept:",
   "settingsPrivacy": "Data & privacy (GDPR)",
   "settingsExport": "Export my data",
   "settingsDeleteAccount": "Delete my account",

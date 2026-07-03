@@ -1,10 +1,11 @@
 /**
- * Age-gating (décision D4) : âge minimum 13 ans à l'inscription.
- * Logique PURE et partagée (api + plus tard contrôle en base via CHECK). Sujet juridique sensible
- * (§18 RGPD/mineurs) — à faire valider par un juriste avant lancement public.
+ * Age-gating (décision D4, relevé 13→15 le 03/07/2026 pour le lancement public) : âge minimum
+ * 15 ans à l'inscription = âge du consentement numérique en France (loi n° 2018-493, art. 45 RGPD).
+ * En dessous de 15 ans il faudrait recueillir l'accord parental — mécanisme qu'on ne construit pas.
+ * Logique PURE et partagée (api + mobile). À faire valider par un juriste avant lancement public.
  */
 
-export const MIN_AGE_YEARS = 13;
+export const MIN_AGE_YEARS = 15;
 
 /** Vrai si `dateOfBirth` correspond à un âge ≥ `minYears` à la date `now`. */
 export function isOldEnough(dateOfBirth: Date, now: Date, minYears: number = MIN_AGE_YEARS): boolean {

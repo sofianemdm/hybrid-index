@@ -18,6 +18,7 @@ import '../../widgets/hi_button.dart';
 import '../../widgets/hi_skeleton.dart';
 import '../../widgets/bug_report.dart';
 import '../avatar/dice_avatar_screen.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// Paramètres : modifier pseudo / objectif / matériel. Un changement d'objectif
 /// recalcule l'Index (pondération par objectif) côté serveur.
@@ -264,6 +265,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       Divider(color: HiColors.strokeSubtle),
                       const SizedBox(height: HiSpace.md),
                       Text(t.settingsPrivacy, style: TextStyle(color: HiColors.textSecondary, fontSize: 13)),
+                      const SizedBox(height: HiSpace.sm),
+                      // Textes légaux publics (mêmes URLs que celles déclarées aux stores).
+                      Wrap(
+                        alignment: WrapAlignment.center,
+                        children: [
+                          TextButton(
+                            onPressed: () => launchUrl(Uri.parse(legalPrivacyUrl()), mode: LaunchMode.externalApplication),
+                            child: Text(t.legalPrivacyLink, style: TextStyle(color: HiColors.brandPrimary)),
+                          ),
+                          TextButton(
+                            onPressed: () => launchUrl(Uri.parse(legalTermsUrl()), mode: LaunchMode.externalApplication),
+                            child: Text(t.legalTermsLink, style: TextStyle(color: HiColors.brandPrimary)),
+                          ),
+                        ],
+                      ),
                       const SizedBox(height: HiSpace.sm),
                       OutlinedButton.icon(
                         style: OutlinedButton.styleFrom(

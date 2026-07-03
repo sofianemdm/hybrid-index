@@ -313,7 +313,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get authOr => 'ou';
 
   @override
-  String get ageRestricted => 'Tu dois avoir au moins 13 ans.';
+  String get ageRestricted => 'Tu dois avoir au moins 15 ans.';
 
   @override
   String homeProjection(int grade, int weeks) {
@@ -503,6 +503,15 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get settingsCustomizeAvatar => 'Personnaliser mon avatar';
+
+  @override
+  String get legalPrivacyLink => 'Politique de confidentialité';
+
+  @override
+  String get legalTermsLink => 'Conditions d\'utilisation (CGU)';
+
+  @override
+  String get authLegalNotice => 'En créant un compte, tu acceptes :';
 
   @override
   String get settingsPrivacy => 'Données & confidentialité (RGPD)';
