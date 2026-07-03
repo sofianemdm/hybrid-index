@@ -159,13 +159,16 @@ export class SocialService {
 
     // Filtre des événements selon le scope : 'following' = liste explicite ; 'all' = tous les
     // acteurs actifs, hors utilisateurs bloqués (dans un sens OU l'autre).
+    // Les montées de rang ne sont PLUS émises (03/07) ; on filtre aussi celles déjà en base.
+    const noRankUp = { type: { not: "rank_up" as const } };
     const eventWhere =
       scope === "following"
-        ? { actorId: { in: actorIds }, visibility: "public" as const }
+        ? { actorId: { in: actorIds }, visibility: "public" as const, ...noRankUp }
         : {
             visibility: "public" as const,
             actor: { is: { status: "active" } },
             ...(blocked.length ? { actorId: { notIn: blocked } } : {}),
+            ...noRankUp,
           };
 
     const [events, postItems] = await Promise.all([

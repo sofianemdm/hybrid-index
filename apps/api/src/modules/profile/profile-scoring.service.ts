@@ -10,7 +10,6 @@ import { NEXT_RANK_CLOSE_THRESHOLD } from "../engagement/notifications.data";
 import { SCORING_VERSION_UUID } from "../../common/constants";
 import { confidenceFor, ProfileViewService, toPersistedProfile, weakestOf, type PersistedProfile } from "./profile-view.service";
 
-const RANK_ORDER = ["rookie", "bronze", "silver", "gold", "platinum", "diamond", "elite"];
 
 /** Preuve sociale à deux populations (cf. spec gamification). Jamais mélangées. */
 // Types + helpers de VUE (PersistedProfile, SocialProof, toPersistedProfile, confidenceFor,
@@ -322,7 +321,6 @@ export class ProfileScoringService {
     const idx = computed.index;
     // Le rang est calculé sur la note d'AFFICHAGE /100 (idx.ratingInt), pas la valeur interne /1000.
     const rank = rankFromIndex(idx.ratingInt ?? 40);
-    const before = await this.prisma.profile.findUnique({ where: { userId }, select: { rank: true } });
     // Snapshot de position dans la ligue (athlètes du même sexe au-dessus + 1) — autoritatif Postgres.
     const above = await this.prisma.hybridIndex.count({
       where: { value: { gt: idx.value }, user: { profile: { sex: sex as never } } },
@@ -410,10 +408,9 @@ export class ProfileScoringService {
         .catch(() => undefined);
     }
 
-    // Événement de feed : montée de rang (uniquement vers le haut).
-    if (before && RANK_ORDER.indexOf(rank) > RANK_ORDER.indexOf(before.rank)) {
-      await this.feedEvents.emit(userId, "rank_up", { rank, from: before.rank, index: idx.value });
-    }
+    // Montée de rang : PLUS AUCUN post dans le feed communautaire (décision humaine 03/07 —
+    // c'est un moment perso, célébré dans l'app, pas une annonce publique). L'événement
+    // « rank_up » n'est plus émis, et le feed filtre les anciens (social.service).
   }
 
 }
