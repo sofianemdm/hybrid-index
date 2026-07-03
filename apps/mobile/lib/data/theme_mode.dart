@@ -4,13 +4,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 const _kThemePrefKey = 'hi_theme_mode';
 
-/// Mode de thème choisi par l'utilisateur. Défaut = système (recommandation NN/g : suivre l'OS,
-/// proposer les deux ; le clair est utile en plein soleil/salle où le sombre est le pire).
+/// Mode de thème choisi par l'utilisateur. Défaut = SOMBRE (décision humaine 03/07 : l'app est
+/// pensée en sombre — landing, cartes, reveal — et suivre l'OS donnait un thème clair incohérent
+/// sur les écrans hors de la landing). Toujours modifiable dans les Réglages (sombre/clair/système).
 class ThemeModeNotifier extends Notifier<ThemeMode> {
   @override
   ThemeMode build() {
     _restore();
-    return ThemeMode.system;
+    return ThemeMode.dark;
   }
 
   Future<void> _restore() async {
@@ -18,10 +19,11 @@ class ThemeModeNotifier extends Notifier<ThemeMode> {
     final v = prefs.getString(_kThemePrefKey);
     if (v == 'light') {
       state = ThemeMode.light;
-    } else if (v == 'dark') {
-      state = ThemeMode.dark;
-    } else {
+    } else if (v == 'system') {
       state = ThemeMode.system;
+    } else {
+      // 'dark' OU aucune préférence enregistrée → sombre par défaut.
+      state = ThemeMode.dark;
     }
   }
 
