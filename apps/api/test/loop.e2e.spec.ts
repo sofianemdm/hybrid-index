@@ -442,12 +442,18 @@ describe("api — boucle complète persistée (e2e réel)", () => {
   });
 
   it("follow : suivre un athlète + apparaître dans following", async () => {
-    const lb = (await request(api.getHttpServer()).get("/v1/leaderboard?sex=male&limit=5").set("authorization", `Bearer ${token}`)).body;
-    const other = lb.entries.find((e: { isMe: boolean }) => !e.isMe);
-    if (!other) return;
-    await request(api.getHttpServer()).post(`/v1/follow/${other.userId}`).set("authorization", `Bearer ${token}`).expect(201);
+    // Cible créée PAR CE TEST : un user pioché au classement peut appartenir à une suite parallèle
+    // et être supprimé (afterAll) entre la lecture et le follow → 400 flaky (base partagée).
+    const stamp2 = Date.now();
+    const reg = await request(api.getHttpServer())
+      .post("/v1/auth/register")
+      .send({ email: `e2e_followee_${stamp2}@test.local`, password: "motdepasse123", displayName: `Followee${stamp2}`, dateOfBirth: "1994-04-04", sex: "male", goal: "all_round", equipmentPref: "both" })
+      .expect(201);
+    const otherId: string = reg.body.user.id;
+    await request(api.getHttpServer()).post(`/v1/follow/${otherId}`).set("authorization", `Bearer ${token}`).expect(201);
     const following = (await request(api.getHttpServer()).get("/v1/me/following").set("authorization", `Bearer ${token}`)).body;
-    expect(following.some((a: { userId: string }) => a.userId === other.userId)).toBe(true);
+    expect(following.some((a: { userId: string }) => a.userId === otherId)).toBe(true);
+    await prisma.user.deleteMany({ where: { id: otherId } }).catch(() => undefined);
   });
 
   it("explore : recherche d'athlètes filtrée par sexe (Hommes)", async () => {

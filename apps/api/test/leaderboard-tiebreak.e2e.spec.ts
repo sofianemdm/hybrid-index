@@ -92,9 +92,13 @@ describe("api — classement tie-break déterministe (e2e réel)", () => {
   });
 
   it("l'ordre des ex æquo est stable et identique sur plusieurs lectures", async () => {
+    // On ne compare que NOS athlètes : la base de test est partagée entre suites PARALLÈLES —
+    // d'autres users s'insèrent entre deux lectures. Le contrat testé (ordre total stable des
+    // ex æquo, tie-break userId asc) porte sur notre cohorte, pas sur la liste globale.
+    const mine = (order: string[]) => order.filter((u) => ids.includes(u));
     const order1 = (await lb.leaderboard("male", 100)).entries.map((e) => e.userId);
     const order2 = (await lb.leaderboard("male", 100)).entries.map((e) => e.userId);
-    expect(order1).toEqual(order2); // déterministe
+    expect(mine(order1)).toEqual(mine(order2)); // déterministe
 
     // Parmi mes 3 ex æquo, l'ordre suit userId asc (tie-break).
     const tied = ids.slice(1);
@@ -104,12 +108,20 @@ describe("api — classement tie-break déterministe (e2e réel)", () => {
   });
 
   it("« ma position » coïncide avec la ligne isMe dans la liste (pas de divergence sur ex æquo)", async () => {
+    // Liste et « me » = deux lectures : un INSERT concurrent (suites parallèles, base partagée)
+    // peut les faire diverger transitoirement. Une vraie divergence d'ex æquo (le bug visé) est
+    // PERSISTANTE → retry borné : la course s'évapore, le bug réel ferait toujours échouer.
     for (const id of ids) {
-      const board = await lb.leaderboard("male", 100, id);
-      const myEntry = board.entries.find((e) => e.isMe);
-      expect(myEntry).toBeTruthy();
-      expect(board.me).not.toBeNull();
-      expect(board.me!.position).toBe(myEntry!.position);
+      let ok = false;
+      for (let attempt = 0; attempt < 3 && !ok; attempt++) {
+        const board = await lb.leaderboard("male", 100, id);
+        const myEntry = board.entries.find((e) => e.isMe);
+        expect(myEntry).toBeTruthy();
+        expect(board.me).not.toBeNull();
+        ok = board.me!.position === myEntry!.position;
+        if (!ok && attempt === 2) expect(board.me!.position).toBe(myEntry!.position);
+      }
+      expect(ok).toBe(true);
     }
   });
 
