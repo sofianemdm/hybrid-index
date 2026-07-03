@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/api_client.dart';
 import '../../data/session.dart';
+import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/hi_button.dart';
 
@@ -36,14 +37,14 @@ class _GoogleProfileScreenState extends ConsumerState<GoogleProfileScreen> {
       initialDate: DateTime(now.year - 20, now.month, now.day),
       firstDate: DateTime(1940),
       lastDate: now,
-      helpText: 'Date de naissance',
+      helpText: AppLocalizations.of(context).authBirthdate,
     );
     if (picked != null) setState(() => _dob = picked);
   }
 
   Future<void> _submit() async {
     if (_displayName.text.trim().length < 2) {
-      _toast('Choisis un pseudo (2 caractères min).');
+      _toast(AppLocalizations.of(context).gpUsernameMin);
       return;
     }
     if (_dob == null) {
@@ -73,8 +74,9 @@ class _GoogleProfileScreenState extends ConsumerState<GoogleProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Compléter mon profil'), backgroundColor: Colors.transparent, elevation: 0),
+      appBar: AppBar(title: Text(t.gpTitle), backgroundColor: Colors.transparent, elevation: 0),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(HiSpace.lg),
@@ -83,33 +85,32 @@ class _GoogleProfileScreenState extends ConsumerState<GoogleProfileScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text('Encore quelques infos pour finaliser ton compte Google.',
-                    style: TextStyle(color: HiColors.textSecondary)),
+                Text(t.gpSubtitle, style: TextStyle(color: HiColors.textSecondary)),
                 const SizedBox(height: HiSpace.lg),
                 TextField(
                   controller: _displayName,
-                  decoration: const InputDecoration(labelText: 'Pseudo', prefixIcon: Icon(Icons.person_outline)),
+                  decoration: InputDecoration(labelText: t.authUsername, prefixIcon: const Icon(Icons.person_outline)),
                 ),
                 const SizedBox(height: HiSpace.md),
                 InkWell(
                   onTap: _pickDob,
                   borderRadius: BorderRadius.circular(HiRadius.md),
                   child: InputDecorator(
-                    decoration: const InputDecoration(labelText: 'Date de naissance', prefixIcon: Icon(Icons.cake_outlined)),
+                    decoration: InputDecoration(labelText: t.authBirthdate, prefixIcon: const Icon(Icons.cake_outlined)),
                     child: Text(
-                      _dob == null ? 'Choisir…' : _dob!.toIso8601String().split('T').first,
+                      _dob == null ? t.authPickDate : _dob!.toIso8601String().split('T').first,
                       style: TextStyle(color: _dob == null ? HiColors.textTertiary : HiColors.textPrimary),
                     ),
                   ),
                 ),
                 const SizedBox(height: HiSpace.lg),
-                _choices('Sexe (classement équitable)', const {'male': 'Homme', 'female': 'Femme'}, _sex,
+                _choices(t.authSexLabel, {'male': t.authSexMale, 'female': t.authSexFemale}, _sex,
                     (v) => setState(() => _sex = v)),
                 const SizedBox(height: HiSpace.md),
-                _choices('Matériel', const {'none': 'Sans matériel', 'equipped': 'Équipé (salle de sport)'}, _equipment,
-                    (v) => setState(() => _equipment = v)),
+                _choices(t.gpEquipmentShort, {'none': t.authEquipmentNone, 'equipped': t.authEquipmentEquipped},
+                    _equipment, (v) => setState(() => _equipment = v)),
                 const SizedBox(height: HiSpace.xl),
-                HiButton(label: 'Créer mon compte', loading: _loading, onPressed: _submit),
+                HiButton(label: t.authCreateAccount, loading: _loading, onPressed: _submit),
               ],
             ),
           ),

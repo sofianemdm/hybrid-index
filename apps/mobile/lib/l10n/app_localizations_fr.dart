@@ -186,6 +186,95 @@ class AppLocalizationsFr extends AppLocalizations {
   String get authPassword => 'Mot de passe (8+)';
 
   @override
+  String get authEmail => 'Email';
+
+  @override
+  String get authBirthdate => 'Date de naissance';
+
+  @override
+  String get authPickDate => 'Choisir…';
+
+  @override
+  String get authSexLabel => 'Sexe (sert au classement équitable)';
+
+  @override
+  String get authSexMale => 'Homme';
+
+  @override
+  String get authSexFemale => 'Femme';
+
+  @override
+  String get authEquipmentLabel =>
+      'Matériel (modifiable plus tard) — « Équipé » donne accès aussi aux séances sans matériel';
+
+  @override
+  String get authEquipmentNone => 'Sans matériel';
+
+  @override
+  String get authEquipmentEquipped => 'Équipé (salle de sport)';
+
+  @override
+  String get gpTitle => 'Compléter mon profil';
+
+  @override
+  String get gpSubtitle =>
+      'Encore quelques infos pour finaliser ton compte Google.';
+
+  @override
+  String get gpUsernameMin => 'Choisis un pseudo (2 caractères min).';
+
+  @override
+  String get gpEquipmentShort => 'Matériel';
+
+  @override
+  String get avatarSurpriseMe => 'Surprends-moi';
+
+  @override
+  String get avatarColorLabel => 'Couleur';
+
+  @override
+  String get avatarForgeTitle => 'Forge ton athlète';
+
+  @override
+  String get avatarValidate => 'Valider mon athlète';
+
+  @override
+  String get avatarReadyTitle => 'Ton athlète est prêt !';
+
+  @override
+  String get avatarReadyBody => 'Il portera tes couleurs au classement.';
+
+  @override
+  String get settingsExportOk => 'Données exportées 📥';
+
+  @override
+  String get settingsExportUnsupported => 'Export non supporté ici.';
+
+  @override
+  String get prWallTitle => 'Mes records';
+
+  @override
+  String get prWallError => 'Records indisponibles.';
+
+  @override
+  String get prWallEmpty =>
+      'Aucun record pour l\'instant.\nLogue une séance : ton premier record t\'attend !';
+
+  @override
+  String get gainsNoNewRecord =>
+      'Pas de nouveau record cette fois — mais chaque séance compte pour ta régularité.';
+
+  @override
+  String get radarInsightBalanced =>
+      'Athlète complet — ton radar est remarquablement équilibré. Tu incarnes l\'esprit hybride.';
+
+  @override
+  String get radarNotAssessed => 'non évalué';
+
+  @override
+  String get radarEstimated => 'estimé';
+
+  @override
   String get authDateOfBirth => 'Date de naissance';
 
   @override

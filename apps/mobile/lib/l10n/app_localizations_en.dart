@@ -183,6 +183,95 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authPassword => 'Password (8+)';
 
   @override
+  String get authEmail => 'Email';
+
+  @override
+  String get authBirthdate => 'Date of birth';
+
+  @override
+  String get authPickDate => 'Pick…';
+
+  @override
+  String get authSexLabel => 'Sex (used for fair ranking)';
+
+  @override
+  String get authSexMale => 'Male';
+
+  @override
+  String get authSexFemale => 'Female';
+
+  @override
+  String get authEquipmentLabel =>
+      'Equipment (changeable later) — \"Equipped\" also unlocks equipment-free sessions';
+
+  @override
+  String get authEquipmentNone => 'No equipment';
+
+  @override
+  String get authEquipmentEquipped => 'Equipped (gym)';
+
+  @override
+  String get gpTitle => 'Complete my profile';
+
+  @override
+  String get gpSubtitle =>
+      'A few more details to finish setting up your Google account.';
+
+  @override
+  String get gpUsernameMin => 'Pick a username (min 2 characters).';
+
+  @override
+  String get gpEquipmentShort => 'Equipment';
+
+  @override
+  String get avatarSurpriseMe => 'Surprise me';
+
+  @override
+  String get avatarColorLabel => 'Color';
+
+  @override
+  String get avatarForgeTitle => 'Forge your athlete';
+
+  @override
+  String get avatarValidate => 'Confirm my athlete';
+
+  @override
+  String get avatarReadyTitle => 'Your athlete is ready!';
+
+  @override
+  String get avatarReadyBody => 'It will carry your colors in the rankings.';
+
+  @override
+  String get settingsExportOk => 'Data exported 📥';
+
+  @override
+  String get settingsExportUnsupported => 'Export not supported here.';
+
+  @override
+  String get prWallTitle => 'My records';
+
+  @override
+  String get prWallError => 'Records unavailable.';
+
+  @override
+  String get prWallEmpty =>
+      'No records yet.\nLog a session: your first record awaits!';
+
+  @override
+  String get gainsNoNewRecord =>
+      'No new record this time — but every session builds your consistency.';
+
+  @override
+  String get radarInsightBalanced =>
+      'Complete athlete — your radar is remarkably balanced. You embody the hybrid spirit.';
+
+  @override
+  String get radarNotAssessed => 'not assessed';
+
+  @override
+  String get radarEstimated => 'estimated';
+
+  @override
   String get authDateOfBirth => 'Date of birth';
 
   @override

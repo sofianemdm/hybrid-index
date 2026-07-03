@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models.dart';
 import '../../data/session.dart';
+import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/hi_skeleton.dart';
 
@@ -37,7 +38,7 @@ class _PrWallScreenState extends ConsumerState<PrWallScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Mes records'),
+        title: Text(AppLocalizations.of(context).prWallTitle),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -60,16 +61,13 @@ class _PrWallScreenState extends ConsumerState<PrWallScreen> {
               }
               if (snap.hasError) {
                 return _centered(
-                  'Records indisponibles.',
-                  TextButton(onPressed: _reload, child: const Text('Réessayer')),
+                  AppLocalizations.of(context).prWallError,
+                  TextButton(onPressed: _reload, child: Text(AppLocalizations.of(context).commonRetry)),
                 );
               }
               final prs = snap.data ?? const <PrItem>[];
               if (prs.isEmpty) {
-                return _centered(
-                  'Aucun record pour l\'instant.\nLogue une séance : ton premier record t\'attend !',
-                  null,
-                );
+                return _centered(AppLocalizations.of(context).prWallEmpty, null);
               }
               return ListView.separated(
                 padding: const EdgeInsets.fromLTRB(HiSpace.lg, HiSpace.lg, HiSpace.lg, 96),

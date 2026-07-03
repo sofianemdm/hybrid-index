@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../data/models.dart';
+import '../l10n/app_localizations.dart';
 import '../theme/tokens.dart';
 
 /// A21 — « Radar Insight » : traduit le radar en une phrase actionnable, juste sous le radar.
@@ -29,7 +30,7 @@ class RadarInsight extends StatelessWidget {
     if (balanced) {
       icon = Icons.workspace_premium_rounded;
       accent = HiColors.brandSecondaryText;
-      text = 'Athlète complet — ton radar est remarquablement équilibré. Tu incarnes l\'esprit hybride.';
+      text = AppLocalizations.of(context).radarInsightBalanced;
     } else {
       icon = Icons.insights_rounded;
       accent = HiColors.brandPrimary;

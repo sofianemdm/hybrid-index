@@ -148,7 +148,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   if (_register) ...[
                     TextField(
                       controller: _displayName,
-                      decoration: const InputDecoration(labelText: 'Pseudo', prefixIcon: Icon(Icons.person_outline)),
+                      decoration: InputDecoration(labelText: t.authUsername, prefixIcon: const Icon(Icons.person_outline)),
                     ),
                     const SizedBox(height: HiSpace.md),
                   ],
@@ -156,7 +156,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     controller: _email,
                     keyboardType: TextInputType.emailAddress,
                     textInputAction: TextInputAction.next,
-                    decoration: const InputDecoration(labelText: 'Email', prefixIcon: Icon(Icons.mail_outline)),
+                    decoration: InputDecoration(labelText: t.authEmail, prefixIcon: const Icon(Icons.mail_outline)),
                   ),
                   const SizedBox(height: HiSpace.md),
                   TextField(
@@ -167,7 +167,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     onSubmitted: (_) {
                       if (!_loading) _submit();
                     },
-                    decoration: const InputDecoration(labelText: 'Mot de passe (8+)', prefixIcon: Icon(Icons.lock_outline)),
+                    decoration: InputDecoration(labelText: t.authPassword, prefixIcon: const Icon(Icons.lock_outline)),
                   ),
                   if (_register) ...[
                     const SizedBox(height: HiSpace.md),
@@ -175,24 +175,24 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       onTap: _pickDob,
                       borderRadius: BorderRadius.circular(HiRadius.md),
                       child: InputDecorator(
-                        decoration: const InputDecoration(labelText: 'Date de naissance', prefixIcon: Icon(Icons.cake_outlined)),
+                        decoration: InputDecoration(labelText: t.authBirthdate, prefixIcon: const Icon(Icons.cake_outlined)),
                         child: Text(
-                          _dob == null ? 'Choisir…' : _dob!.toIso8601String().split('T').first,
+                          _dob == null ? t.authPickDate : _dob!.toIso8601String().split('T').first,
                           style: TextStyle(color: _dob == null ? HiColors.textTertiary : HiColors.textPrimary),
                         ),
                       ),
                     ),
                     const SizedBox(height: HiSpace.lg),
                     _ChoiceRow(
-                      label: 'Sexe (sert au classement équitable)',
-                      options: const {'male': 'Homme', 'female': 'Femme'},
+                      label: t.authSexLabel,
+                      options: {'male': t.authSexMale, 'female': t.authSexFemale},
                       value: _sex,
                       onChanged: (v) => setState(() => _sex = v),
                     ),
                     const SizedBox(height: HiSpace.md),
                     _ChoiceRow(
-                      label: 'Matériel (modifiable plus tard) — « Équipé » donne accès aussi aux séances sans matériel',
-                      options: const {'none': 'Sans matériel', 'equipped': 'Équipé (salle de sport)'},
+                      label: t.authEquipmentLabel,
+                      options: {'none': t.authEquipmentNone, 'equipped': t.authEquipmentEquipped},
                       value: _equipment,
                       onChanged: (v) => setState(() => _equipment = v),
                     ),

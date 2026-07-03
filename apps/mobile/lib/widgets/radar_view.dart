@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../data/models.dart';
+import '../l10n/app_localizations.dart';
 import '../theme/haptics.dart';
 import '../theme/tokens.dart';
 
@@ -57,7 +58,7 @@ class _RadarViewState extends State<RadarView> with SingleTickerProviderStateMix
   /// Résumé lisible des 6 attributs pour le lecteur d'écran (le CustomPaint est décoratif).
   String _radarSemanticLabel() {
     final parts = widget.radar
-        .map((a) => '${HiLabels.attribute(a.attribute)} ${a.unlocked ? a.score : 'non évalué'}')
+        .map((a) => '${HiLabels.attribute(a.attribute)} ${a.unlocked ? a.score : AppLocalizations.of(context).radarNotAssessed}')
         .join(', ');
     return 'Radar des attributs : $parts';
   }
@@ -112,7 +113,7 @@ class _RadarViewState extends State<RadarView> with SingleTickerProviderStateMix
           if (a.isEstimated)
             Padding(
               padding: const EdgeInsets.only(right: 8),
-              child: Text('estimé', style: HiType.caption.copyWith(color: HiColors.warn)),
+              child: Text(AppLocalizations.of(context).radarEstimated, style: HiType.caption.copyWith(color: HiColors.warn)),
             ),
           Text(a.unlocked ? '${a.score}' : '—', style: HiType.numericM.copyWith(color: HiColors.textPrimary, fontSize: 16)),
           if (widget.onTapAttribute != null) ...[

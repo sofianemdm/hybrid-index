@@ -21,10 +21,9 @@ class AvatarPalettes {
     Color(0xFFB22222), Color(0xFFBFBFBF), Color(0xFF6A4E9C), Color(0xFF2E8B57),
   ];
   static const hairStyleLabels = ['Chauve', 'Court', 'Mi-long', 'Long', 'Piquant', 'Afro'];
-  static const beardStyleLabels = ['Aucune', 'Barbe naissante', 'Barbe pleine', 'Bouc', 'Moustache'];
-
+  // (Les listes de libellés beardStyleLabels/backgroundLabels — héritage de l'ancien éditeur —
+  // n'étaient plus référencées nulle part : supprimées au nettoyage i18n du 03/07.)
   /// Fonds d'avatar (index 0 = neutre). Couleurs sobres, cohérentes avec le thème sombre.
-  static const backgroundLabels = ['Neutre', 'Ardoise', 'Cyan', 'Violet', 'Or', 'Émeraude', 'Rubis', 'Nuit'];
   static const background = <Color>[
     Color(0xFF20283A), Color(0xFF334155), Color(0xFF0E7490), Color(0xFF6D28D9),
     Color(0xFFB7791F), Color(0xFF047857), Color(0xFFB91C1C), Color(0xFF0B1220),

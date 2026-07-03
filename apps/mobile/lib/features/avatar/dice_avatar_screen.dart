@@ -7,6 +7,7 @@ import '../../app.dart'; // avatarProvider + myProfileProvider
 import '../../data/api_client.dart';
 import '../../data/dicebear.dart';
 import '../../data/models.dart';
+import '../../l10n/app_localizations.dart';
 import '../../widgets/net_avatar_image.dart';
 import '../../data/session.dart';
 import '../../theme/haptics.dart';
@@ -110,7 +111,7 @@ class _DiceAvatarEditorState extends State<DiceAvatarEditor> {
           child: TextButton.icon(
             onPressed: _surprise,
             icon: const Icon(Icons.casino_rounded, size: 18),
-            label: const Text('Surprends-moi'),
+            label: Text(AppLocalizations.of(context).avatarSurpriseMe),
           ),
         ),
         // Aperçu live (pop à chaque changement).
@@ -219,7 +220,7 @@ class _DiceAvatarEditorState extends State<DiceAvatarEditor> {
             opacity: beardOff ? 0.4 : 1, // sans effet visible tant qu'aucune barbe n'est choisie
             child: Row(
               children: [
-                Text('Couleur',
+                Text(AppLocalizations.of(context).avatarColorLabel,
                     style: TextStyle(color: HiColors.textSecondary, fontWeight: FontWeight.w600)),
                 const SizedBox(width: 14),
                 for (final o in kBeardColors)
@@ -321,8 +322,8 @@ class _DiceAvatarScreenState extends ConsumerState<DiceAvatarScreen> {
       HiHaptics.celebrate();
       await Celebration.show(
         context,
-        title: 'Ton athlète est prêt !',
-        subtitle: 'Il portera tes couleurs au classement.',
+        title: AppLocalizations.of(context).avatarReadyTitle,
+        subtitle: AppLocalizations.of(context).avatarReadyBody,
         intensity: CelebrationIntensity.medium,
       );
       if (!mounted) return;
@@ -340,7 +341,7 @@ class _DiceAvatarScreenState extends ConsumerState<DiceAvatarScreen> {
     final rank = ref.watch(myProfileProvider).value?.index.rank ?? 'rookie';
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Forge ton athlète'),
+        title: Text(AppLocalizations.of(context).avatarForgeTitle),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -370,7 +371,7 @@ class _DiceAvatarScreenState extends ConsumerState<DiceAvatarScreen> {
                         onPressed: _saving ? null : _save,
                         child: _saving
                             ? SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: HiColors.textOnBrand))
-                            : const Text('Valider mon athlète'),
+                            : Text(AppLocalizations.of(context).avatarValidate),
                       ),
                     ),
                   ),

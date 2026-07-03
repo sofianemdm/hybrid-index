@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../data/models.dart';
+import '../l10n/app_localizations.dart';
 import '../theme/tokens.dart';
 
 /// Feedback de compétence : « +X sur tel attribut », avec mise en avant du point faible.
@@ -14,7 +15,7 @@ class AttributeGains extends StatelessWidget {
   Widget build(BuildContext context) {
     if (gains.isEmpty) {
       return Text(
-        'Pas de nouveau record cette fois — mais chaque séance compte pour ta régularité.',
+        AppLocalizations.of(context).gainsNoNewRecord,
         textAlign: TextAlign.center,
         style: HiType.body.copyWith(color: HiColors.textSecondary, fontSize: 14),
       );

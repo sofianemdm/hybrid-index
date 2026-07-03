@@ -416,6 +416,174 @@ abstract class AppLocalizations {
   /// **'Password (8+)'**
   String get authPassword;
 
+  /// No description provided for @authEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get authEmail;
+
+  /// No description provided for @authBirthdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Date of birth'**
+  String get authBirthdate;
+
+  /// No description provided for @authPickDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick…'**
+  String get authPickDate;
+
+  /// No description provided for @authSexLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Sex (used for fair ranking)'**
+  String get authSexLabel;
+
+  /// No description provided for @authSexMale.
+  ///
+  /// In en, this message translates to:
+  /// **'Male'**
+  String get authSexMale;
+
+  /// No description provided for @authSexFemale.
+  ///
+  /// In en, this message translates to:
+  /// **'Female'**
+  String get authSexFemale;
+
+  /// No description provided for @authEquipmentLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Equipment (changeable later) — \"Equipped\" also unlocks equipment-free sessions'**
+  String get authEquipmentLabel;
+
+  /// No description provided for @authEquipmentNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No equipment'**
+  String get authEquipmentNone;
+
+  /// No description provided for @authEquipmentEquipped.
+  ///
+  /// In en, this message translates to:
+  /// **'Equipped (gym)'**
+  String get authEquipmentEquipped;
+
+  /// No description provided for @gpTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete my profile'**
+  String get gpTitle;
+
+  /// No description provided for @gpSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A few more details to finish setting up your Google account.'**
+  String get gpSubtitle;
+
+  /// No description provided for @gpUsernameMin.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a username (min 2 characters).'**
+  String get gpUsernameMin;
+
+  /// No description provided for @gpEquipmentShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Equipment'**
+  String get gpEquipmentShort;
+
+  /// No description provided for @avatarSurpriseMe.
+  ///
+  /// In en, this message translates to:
+  /// **'Surprise me'**
+  String get avatarSurpriseMe;
+
+  /// No description provided for @avatarColorLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Color'**
+  String get avatarColorLabel;
+
+  /// No description provided for @avatarForgeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Forge your athlete'**
+  String get avatarForgeTitle;
+
+  /// No description provided for @avatarValidate.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm my athlete'**
+  String get avatarValidate;
+
+  /// No description provided for @avatarReadyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your athlete is ready!'**
+  String get avatarReadyTitle;
+
+  /// No description provided for @avatarReadyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'It will carry your colors in the rankings.'**
+  String get avatarReadyBody;
+
+  /// No description provided for @settingsExportOk.
+  ///
+  /// In en, this message translates to:
+  /// **'Data exported 📥'**
+  String get settingsExportOk;
+
+  /// No description provided for @settingsExportUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Export not supported here.'**
+  String get settingsExportUnsupported;
+
+  /// No description provided for @prWallTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My records'**
+  String get prWallTitle;
+
+  /// No description provided for @prWallError.
+  ///
+  /// In en, this message translates to:
+  /// **'Records unavailable.'**
+  String get prWallError;
+
+  /// No description provided for @prWallEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No records yet.\nLog a session: your first record awaits!'**
+  String get prWallEmpty;
+
+  /// No description provided for @gainsNoNewRecord.
+  ///
+  /// In en, this message translates to:
+  /// **'No new record this time — but every session builds your consistency.'**
+  String get gainsNoNewRecord;
+
+  /// No description provided for @radarInsightBalanced.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete athlete — your radar is remarkably balanced. You embody the hybrid spirit.'**
+  String get radarInsightBalanced;
+
+  /// No description provided for @radarNotAssessed.
+  ///
+  /// In en, this message translates to:
+  /// **'not assessed'**
+  String get radarNotAssessed;
+
+  /// No description provided for @radarEstimated.
+  ///
+  /// In en, this message translates to:
+  /// **'estimated'**
+  String get radarEstimated;
+
   /// No description provided for @authDateOfBirth.
   ///
   /// In en, this message translates to:

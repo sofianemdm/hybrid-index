@@ -80,7 +80,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: Text(t.historyTitle), backgroundColor: Colors.transparent, elevation: 0, actions: [IconButton(icon: const Icon(Icons.emoji_events_rounded), tooltip: 'Mes records', onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const PrWallScreen())))]),
+      appBar: AppBar(title: Text(t.historyTitle), backgroundColor: Colors.transparent, elevation: 0, actions: [IconButton(icon: const Icon(Icons.emoji_events_rounded), tooltip: t.prWallTitle, onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const PrWallScreen())))]),
       body: SafeArea(
         child: FutureBuilder<List<WodResultItem>>(
           future: _future,
