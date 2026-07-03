@@ -19,10 +19,9 @@ import '../../theme/cosmetics.dart';
 import '../../widgets/error_retry.dart';
 import '../../widgets/hi_avatar.dart';
 import '../../widgets/hi_skeleton.dart';
-import '../../widgets/index_ring.dart';
 import '../../widgets/radar_view.dart';
 import '../../widgets/overlay_radar.dart';
-import '../../widgets/rank_badge.dart';
+import '../share/share_card_screen.dart';
 
 /// Bouton Suivre / Suivi (toggle).
 class _FollowButton extends ConsumerStatefulWidget {
@@ -314,12 +313,28 @@ class PublicProfileScreen extends ConsumerWidget {
                       ),
                     ],
                     const SizedBox(height: HiSpace.lg),
+                    // CARTE JOUEUR complète (demande humaine 03/07) à la place de l'ancien anneau
+                    // Index : on voit l'athlète comme sur l'Accueil. Construite depuis les données
+                    // publiques (index + radar + avatar) ; pas de badges exposés pour autrui.
                     if (p.index != null)
-                      IndexRing(value: p.index!.value, percentile: p.index!.percentile, size: 200)
+                      Center(
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.topCenter,
+                          child: ExcludeSemantics(
+                            child: RepaintBoundary(
+                              child: PlayerCard(
+                                profile: Profile(index: p.index!, radar: p.radar),
+                                name: p.displayName,
+                                sex: p.sex,
+                                avatar: p.avatar,
+                              ),
+                            ),
+                          ),
+                        ),
+                      )
                     else
                       Text(t.publicProfileNoIndex, style: HiType.body.copyWith(color: HiColors.textTertiary)),
-                    const SizedBox(height: HiSpace.md),
-                    RankBadge(rank: p.rank, ovr: p.index?.value, fontSize: 14),
                     const SizedBox(height: HiSpace.xs),
                     // Partage externe du profil (lien profond /profil/:id) — aussi pour SON propre profil.
                     TextButton.icon(
