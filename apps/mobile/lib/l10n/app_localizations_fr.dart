@@ -34,6 +34,35 @@ class AppLocalizationsFr extends AppLocalizations {
   String get settingsInviteFriend => 'Inviter un ami';
 
   @override
+  String get offlineBanner => 'Hors ligne — dernières données connues';
+
+  @override
+  String get outboxQueued =>
+      'Pas de réseau : séance mise en attente, elle s\'enverra toute seule. ⏳';
+
+  @override
+  String outboxSynced(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n séances en attente synchronisées ✓',
+      one: 'Séance en attente synchronisée ✓',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String outboxPending(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n séances en attente de synchro',
+      one: '1 séance en attente de synchro',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get clubFeedTitle => 'Fil du club';
 
   @override

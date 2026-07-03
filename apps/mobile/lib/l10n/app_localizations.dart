@@ -146,6 +146,30 @@ abstract class AppLocalizations {
   /// **'Invite a friend'**
   String get settingsInviteFriend;
 
+  /// No description provided for @offlineBanner.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline — showing last known data'**
+  String get offlineBanner;
+
+  /// No description provided for @outboxQueued.
+  ///
+  /// In en, this message translates to:
+  /// **'No network: session queued, it will send automatically. ⏳'**
+  String get outboxQueued;
+
+  /// No description provided for @outboxSynced.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, one{Queued session synced ✓} other{{n} queued sessions synced ✓}}'**
+  String outboxSynced(int n);
+
+  /// No description provided for @outboxPending.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, one{1 session awaiting sync} other{{n} sessions awaiting sync}}'**
+  String outboxPending(int n);
+
   /// No description provided for @clubFeedTitle.
   ///
   /// In en, this message translates to:

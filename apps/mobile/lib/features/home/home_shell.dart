@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app.dart';
+import '../../data/api_client.dart' show apiOffline;
 import '../../data/session.dart';
 import '../../data/ui_state.dart';
 import '../../l10n/app_localizations.dart';
@@ -141,6 +142,31 @@ class _HomeShellState extends ConsumerState<HomeShell> {
           // Observateur temps réel (sans rendu) : affiche le bandeau « Nouveau message de X » quand
           // un DM arrive hors de la conversation ouverte. Monté ici → vivant sur tous les onglets.
           const RealtimeBanner(),
+          // Bandeau « hors ligne » : visible quand une lecture a été servie depuis le cache local
+          // (réseau indisponible). Disparaît seul au premier appel réussi.
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: ValueListenableBuilder<bool>(
+              valueListenable: apiOffline,
+              builder: (context, offline, _) => offline
+                  ? Container(
+                      color: HiColors.warn.withValues(alpha: 0.92),
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.cloud_off_rounded, size: 14, color: Colors.black87),
+                          const SizedBox(width: 6),
+                          Text(AppLocalizations.of(context).offlineBanner,
+                              style: const TextStyle(color: Colors.black87, fontSize: 12, fontWeight: FontWeight.w700)),
+                        ],
+                      ),
+                    )
+                  : const SizedBox.shrink(),
+            ),
+          ),
         ],
       ),
       bottomNavigationBar: _notchedNav(t),

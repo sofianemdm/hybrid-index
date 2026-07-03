@@ -1,9 +1,32 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/foundation.dart' show ValueNotifier;
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../core/env.dart';
 import 'models.dart';
+
+/// Vrai quand la dernière lecture a été servie depuis le CACHE (réseau indisponible) → l'UI
+/// affiche le bandeau « hors ligne ». Redevient false au premier appel réseau réussi.
+final ValueNotifier<bool> apiOffline = ValueNotifier<bool>(false);
+
+/// Lectures mises en cache sur l'appareil (dernière réponse réussie) : les données « à moi »
+/// et les classements — consultables hors ligne. JAMAIS les écritures.
+const List<String> _cacheableGetPrefixes = [
+  '/v1/me/profile',
+  '/v1/me/history',
+  '/v1/me/streak',
+  '/v1/me/weekly-recap',
+  '/v1/me/badges',
+  '/v1/results',
+  '/v1/leaderboard',
+  '/v1/league/',
+  '/v1/feed',
+  '/v1/wods',
+];
+
+bool _isCacheablePath(String path) => _cacheableGetPrefixes.any(path.startsWith);
 
 /// Erreur API normalisée (envelope { error: { code, message, details } }).
 class ApiException implements Exception {
@@ -39,6 +62,22 @@ class ApiClient {
         'content-type': 'application/json',
         if (_token != null) 'authorization': 'Bearer $_token',
       };
+
+  /// Dernière réponse connue pour une lecture whitelistée — ou null. Pose `apiOffline` à true
+  /// quand un repli est servi (l'UI affiche le bandeau « hors ligne »).
+  Future<dynamic> _readCache(String method, String path) async {
+    if (method != 'GET' || !_isCacheablePath(path)) return null;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final text = prefs.getString('apicache:$path');
+      if (text == null) return null;
+      final decoded = jsonDecode(text);
+      apiOffline.value = true;
+      return decoded;
+    } catch (_) {
+      return null;
+    }
+  }
 
   Future<http.Response> _request(String method, Uri uri, String jsonBody) {
     switch (method) {
@@ -78,15 +117,20 @@ class ApiClient {
           await Future<void>.delayed(const Duration(milliseconds: 300));
           continue;
         }
+        final cached = await _readCache(method, path);
+        if (cached != null) return cached; // hors ligne → dernières données connues
         throw ApiException('TIMEOUT', 'Connexion trop lente. Vérifie ton réseau et réessaie.', 0);
       } catch (_) {
         if (attempt < attempts) {
           await Future<void>.delayed(const Duration(milliseconds: 300));
           continue;
         }
+        final cached = await _readCache(method, path);
+        if (cached != null) return cached; // hors ligne → dernières données connues
         throw ApiException('NETWORK', 'Serveur injoignable. L\'API tourne-t-elle sur $_baseUrl ?', 0);
       }
     }
+    apiOffline.value = false; // le réseau répond → fin de l'état hors ligne
 
     final text = res.body.isEmpty ? '{}' : res.body;
     // Réponse non-JSON (ex. page HTML d'un proxy/504) → erreur normalisée plutôt qu'un crash de parsing.
@@ -95,6 +139,12 @@ class ApiClient {
       decoded = jsonDecode(text);
     } on FormatException {
       throw ApiException('BAD_RESPONSE', 'Réponse serveur illisible (${res.statusCode}).', res.statusCode);
+    }
+    // Cache hors-ligne : mémorise la dernière réponse RÉUSSIE des lectures whitelistées.
+    if (res.statusCode >= 200 && res.statusCode < 300 && method == 'GET' && _isCacheablePath(path)) {
+      SharedPreferences.getInstance()
+          .then((p) => p.setString('apicache:$path', text))
+          .catchError((Object _) => false); // best-effort : un échec de cache n'affecte jamais l'appel
     }
     if (res.statusCode >= 200 && res.statusCode < 300) {
       return decoded;

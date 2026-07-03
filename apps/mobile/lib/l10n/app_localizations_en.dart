@@ -33,6 +33,35 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsInviteFriend => 'Invite a friend';
 
   @override
+  String get offlineBanner => 'Offline — showing last known data';
+
+  @override
+  String get outboxQueued =>
+      'No network: session queued, it will send automatically. ⏳';
+
+  @override
+  String outboxSynced(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n queued sessions synced ✓',
+      one: 'Queued session synced ✓',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String outboxPending(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n sessions awaiting sync',
+      one: '1 session awaiting sync',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get clubFeedTitle => 'Club feed';
 
   @override
