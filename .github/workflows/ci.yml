@@ -51,11 +51,17 @@ jobs:
           set -o pipefail
           pnpm --dir apps/api test -- --maxWorkers=2 --reporters=default --reporters=github-actions 2>&1 | tee api-test.log
 
-      # Diagnostic : suites/tests en échec remontés en ANNOTATIONS publiques du run.
+      # Diagnostic : le log remonte en ANNOTATIONS publiques quoi qu'il arrive (les filtres
+      # « intelligents » ratent des cas — pnpm crie en MAJUSCULES, jest met des couleurs ANSI).
       - name: Diagnostic (annotations si échec)
         if: failure()
         run: |
-          grep -E "✕|✗|●|FAIL |Timeout|Error:|error" api-test.log | head -30 | while IFS= read -r l; do echo "::error::API-TEST: $l"; done
+          if [ -f api-test.log ]; then
+            sed -e 's/\[[0-9;]*m//g' api-test.log | grep -iE "✕|✗|●|FAIL|Timeout|error" | head -25 | while IFS= read -r l; do echo "::error::API-TEST: $l"; done
+            sed -e 's/\[[0-9;]*m//g' api-test.log | tail -15 | while IFS= read -r l; do echo "::error::API-TAIL: $l"; done
+          else
+            echo "::error::API-TEST: api-test.log ABSENT (echec avant jest)"
+          fi
 
   mobile:
     name: Mobile (Flutter — analyze · test)
