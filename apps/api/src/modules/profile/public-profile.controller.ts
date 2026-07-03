@@ -2,11 +2,11 @@ import { Controller, Get, Param, UseGuards } from "@nestjs/common";
 import { CurrentUser } from "../auth/current-user.decorator";
 import { OptionalJwtAuthGuard } from "../auth/optional-jwt-auth.guard";
 import type { AuthenticatedUser } from "../auth/jwt-auth.guard";
-import { ProfilesService } from "./profiles.service";
+import { PublicProfileService } from "./public-profile.service";
 
 @Controller("v1/profiles")
-export class ProfilesController {
-  constructor(private readonly profiles: ProfilesService) {}
+export class PublicProfileController {
+  constructor(private readonly profiles: PublicProfileService) {}
 
   /** Profil public d'un athlète (radar, Index, rang, position). Tout est public. */
   @Get(":userId")
