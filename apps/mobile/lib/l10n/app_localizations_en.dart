@@ -2460,122 +2460,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get archetypeMuscularEndurance => 'RELENTLESS';
 
   @override
-  String get rfFarBetterTitle1 => 'Outstanding performance';
-
-  @override
-  String rfFarBetterBody1(String gain) {
-    return 'You beat your prediction by $gain. This isn\'t luck: it\'s your work paying off. Note what you did well today.';
-  }
-
-  @override
-  String get rfFarBetterTitle2 => 'You blew past the ceiling';
-
-  @override
-  String rfFarBetterBody2(String gain) {
-    return '$gain above what we expected from you. Your real level just pulled ahead of the model. Keep doing exactly this.';
-  }
-
-  @override
-  String get rfFarBetterTitle3 => 'Well above target';
-
-  @override
-  String rfFarBetterBody3(String gain) {
-    return 'Prediction smashed by $gain. A session like this is concrete proof that your preparation pays off.';
-  }
-
-  @override
-  String get rfBetterTitle1 => 'Above target';
-
-  @override
-  String rfBetterBody1(String gain) {
-    return '$gain better than your prediction. You\'re progressing in the right direction, and it shows.';
-  }
-
-  @override
-  String get rfBetterTitle2 => 'Solid. You\'re taking the lead';
-
-  @override
-  String rfBetterBody2(String gain) {
-    return 'You beat what was expected by $gain. Keep this pace — that\'s exactly how you climb.';
-  }
-
-  @override
-  String get rfBetterTitle3 => 'Better than expected';
-
-  @override
-  String rfBetterBody3(String gain) {
-    return '+$gain over the prediction. Small gap, real progress: build on it next session.';
-  }
-
-  @override
-  String get rfOnTargetTitle1 => 'Right on target';
-
-  @override
-  String rfOnTargetBody1(String metric) {
-    return 'You hit exactly the $metric predicted for you. Reaching your target is already a win: your level and your performance are aligned.';
-  }
-
-  @override
-  String get rfOnTargetTitle2 => 'Goal reached';
-
-  @override
-  String get rfOnTargetBody2 =>
-      'You matched the prediction to the letter. That\'s controlled consistency — the foundation of all real progress.';
-
-  @override
-  String get rfOnTargetTitle3 => 'Bullseye';
-
-  @override
-  String get rfOnTargetBody3 =>
-      'You delivered the performance expected for your level. Solid and reliable: now aim one notch higher.';
-
-  @override
-  String get rfBelowTitle1 => 'Session in the books';
-
-  @override
-  String get rfBelowBody1 =>
-      'A bit below your target today, but you finished it — and that\'s what counts. We know you can do better: the next one will be stronger.';
-
-  @override
-  String get rfBelowTitle2 => 'Well done, it\'s logged';
-
-  @override
-  String rfBelowBody2(String wodName) {
-    return 'Not your best day on $wodName, but every rep counts toward your progress. You\'ve got the room to climb back above.';
-  }
-
-  @override
-  String get rfBelowTitle3 => 'You did the work';
-
-  @override
-  String get rfBelowBody3 =>
-      'Result a little under your prediction, but what matters is that you showed up. We\'re sure you can do better next time.';
-
-  @override
-  String get rfWayBelowTitle1 => 'Bad day, it happens';
-
-  @override
-  String rfWayBelowBody1(String wodName) {
-    return 'Far from your usual level today — and that\'s okay. The body has its off days. Rest up, and come back to retry $wodName fresh: you\'re worth far more than this.';
-  }
-
-  @override
-  String get rfWayBelowTitle2 => 'It wasn\'t your day';
-
-  @override
-  String rfWayBelowBody2(String wodName) {
-    return 'This performance doesn\'t reflect what you\'re capable of. Fatigue, sleep, a busy day: it all counts. Come back to $wodName when you\'re at your best.';
-  }
-
-  @override
-  String get rfWayBelowTitle3 => 'Let\'s file this session away';
-
-  @override
-  String rfWayBelowBody3(String wodName) {
-    return 'Just an off day. Finishing it anyway already takes mental strength. Recover well and retry $wodName rested — you\'ll do far better.';
-  }
-
-  @override
   String get rfNoPredictionTitle1 => 'Result saved';
 
   @override
@@ -2588,12 +2472,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get rfNoPredictionBody2 =>
       'Every saved result brings your full Index closer and fills out your attribute radar.';
-
-  @override
-  String get rfMetricTime => 'time';
-
-  @override
-  String get rfMetricScore => 'score';
 
   @override
   String get commonOk => 'OK';

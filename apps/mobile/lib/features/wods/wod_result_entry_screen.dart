@@ -127,16 +127,6 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
     }
     setState(() => _loading = true);
     try {
-      // Prédiction AVANT d'enregistrer : on compare la perf au niveau d'AVANT ce résultat (sinon le
-      // log mettrait à jour le niveau et fausserait la comparaison). Best-effort ; null = pas d'estim.
-      num? predictedBefore;
-      String predScoreType = widget.scoreType;
-      try {
-        final pred = await ref.read(apiClientProvider).wodPrediction(widget.wodId);
-        predictedBefore = pred?.predictedRaw;
-        predScoreType = pred?.scoreType ?? widget.scoreType;
-      } catch (_) {/* prédiction indispo → message neutre */}
-
       final payload = _payloadForOutbox = <String, dynamic>{
         'rawResult': raw,
         'rxCompliant': _rx,
@@ -170,16 +160,10 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
             },
           );
         } else {
-          // Message MOTIVANT : compare la perf au temps/score PRÉDIT pour l'utilisateur (5 paliers,
-          // ton scientifique/encourageant). Plein écran si on bat/atteint la cible ; dialogue calme si
-          // en dessous (jamais de fanfare sur une contre-perf) ; encouragement neutre si pas de prédiction.
-          await ResultFeedback.from(
-            loc: t,
-            actual: raw,
-            predicted: predictedBefore,
-            scoreType: predScoreType,
-            wodName: widget.wodName,
-          ).show(context);
+          // Encouragement NEUTRE (dialogue calme, fermé par l'utilisateur). Les ESTIMATIONS ont été
+          // retirées du produit (décision 01/07) : plus jamais de « X % mieux que l'estimation »,
+          // ni de fenêtre qui disparaît toute seule (c'était la Celebration auto-fermante).
+          await ResultFeedback.from(loc: t).show(context);
         }
         // Moment de réussite (PR / montée de bande) → demande d'avis natif (OS-plafonné, no-op web).
         if (hasGains || profile.bandCelebration != null) {

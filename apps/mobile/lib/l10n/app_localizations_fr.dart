@@ -2478,122 +2478,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get archetypeMuscularEndurance => 'INFATIGABLE';
 
   @override
-  String get rfFarBetterTitle1 => 'Performance d\'exception';
-
-  @override
-  String rfFarBetterBody1(String gain) {
-    return 'Tu as battu ta prédiction de $gain. Ce n\'est pas la chance : c\'est ton travail qui parle. Note ce que tu as fait de bien aujourd\'hui.';
-  }
-
-  @override
-  String get rfFarBetterTitle2 => 'Tu as explosé le plafond';
-
-  @override
-  String rfFarBetterBody2(String gain) {
-    return '$gain au-dessus de ce qu\'on attendait de toi. Ton niveau réel vient de prendre de l\'avance sur le modèle. Continue exactement comme ça.';
-  }
-
-  @override
-  String get rfFarBetterTitle3 => 'Bien au-dessus de la cible';
-
-  @override
-  String rfFarBetterBody3(String gain) {
-    return 'Prédiction pulvérisée de $gain. Ce genre de séance, c\'est la preuve concrète que ta préparation paie.';
-  }
-
-  @override
-  String get rfBetterTitle1 => 'Au-dessus de la cible';
-
-  @override
-  String rfBetterBody1(String gain) {
-    return '$gain de mieux que ta prédiction. Tu progresses dans la bonne direction, et ça se voit.';
-  }
-
-  @override
-  String get rfBetterTitle2 => 'Solide. Tu prends le dessus';
-
-  @override
-  String rfBetterBody2(String gain) {
-    return 'Tu as dépassé ce qui était attendu de $gain. Garde ce rythme, c\'est exactement comme ça qu\'on monte.';
-  }
-
-  @override
-  String get rfBetterTitle3 => 'Mieux que prévu';
-
-  @override
-  String rfBetterBody3(String gain) {
-    return '+$gain sur la prédiction. Petit écart, vraie progression : capitalise dessus à ta prochaine séance.';
-  }
-
-  @override
-  String get rfOnTargetTitle1 => 'Pile dans la cible';
-
-  @override
-  String rfOnTargetBody1(String metric) {
-    return 'Tu as fait exactement le $metric prévu pour toi. Atteindre sa cible, c\'est déjà une réussite : ton niveau et ta perf sont alignés.';
-  }
-
-  @override
-  String get rfOnTargetTitle2 => 'Objectif atteint';
-
-  @override
-  String get rfOnTargetBody2 =>
-      'Tu as tenu la prédiction au plus juste. C\'est de la régularité maîtrisée — la base de toute vraie progression.';
-
-  @override
-  String get rfOnTargetTitle3 => 'Dans le mille';
-
-  @override
-  String get rfOnTargetBody3 =>
-      'Tu as réalisé la perf attendue pour ton niveau. Solide et fiable : maintenant, vise un cran au-dessus.';
-
-  @override
-  String get rfBelowTitle1 => 'Séance dans la boîte';
-
-  @override
-  String get rfBelowBody1 =>
-      'Un peu en dessous de ta cible aujourd\'hui, mais tu l\'as terminée — et c\'est ça qui compte. On sait que tu peux faire mieux : la prochaine sera meilleure.';
-
-  @override
-  String get rfBelowTitle2 => 'Bravo, c\'est noté';
-
-  @override
-  String rfBelowBody2(String wodName) {
-    return 'Pas ton meilleur jour sur $wodName, mais chaque répétition compte dans ta progression. Tu as la marge pour repasser au-dessus.';
-  }
-
-  @override
-  String get rfBelowTitle3 => 'Tu as fait le travail';
-
-  @override
-  String get rfBelowBody3 =>
-      'Résultat un peu sous ta prédiction, mais l\'important c\'est que tu sois venu(e). On est sûrs que tu peux faire mieux la prochaine fois.';
-
-  @override
-  String get rfWayBelowTitle1 => 'Mauvais jour, ça arrive';
-
-  @override
-  String rfWayBelowBody1(String wodName) {
-    return 'Loin de ton niveau habituel aujourd\'hui — et ce n\'est pas grave. Le corps a ses jours sans. Repose-toi, et reviens retenter $wodName en forme : tu vaux bien mieux que ça.';
-  }
-
-  @override
-  String get rfWayBelowTitle2 => 'Ce n\'était pas ton jour';
-
-  @override
-  String rfWayBelowBody2(String wodName) {
-    return 'Cette perf ne reflète pas ce dont tu es capable. Fatigue, sommeil, journée chargée : ça compte. Reviens sur $wodName quand tu seras au top.';
-  }
-
-  @override
-  String get rfWayBelowTitle3 => 'On range cette séance';
-
-  @override
-  String rfWayBelowBody3(String wodName) {
-    return 'Jour sans, tout simplement. L\'avoir terminée malgré tout, c\'est déjà du mental. Récupère bien et retente $wodName reposé(e) — tu feras nettement mieux.';
-  }
-
-  @override
   String get rfNoPredictionTitle1 => 'Résultat enregistré';
 
   @override
@@ -2606,12 +2490,6 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get rfNoPredictionBody2 =>
       'Chaque résultat enregistré rapproche ton Index complet et enrichit ton radar d\'attributs.';
-
-  @override
-  String get rfMetricTime => 'temps';
-
-  @override
-  String get rfMetricScore => 'score';
 
   @override
   String get commonOk => 'OK';

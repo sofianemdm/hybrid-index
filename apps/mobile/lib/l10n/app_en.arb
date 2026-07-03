@@ -11,20 +11,68 @@
   "offlineBanner": "Offline — showing last known data",
   "outboxQueued": "No network: session queued, it will send automatically. ⏳",
   "outboxSynced": "{n, plural, one{Queued session synced ✓} other{{n} queued sessions synced ✓}}",
-  "@outboxSynced": { "placeholders": { "n": { "type": "int" } } },
+  "@outboxSynced": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "outboxPending": "{n, plural, one{1 session awaiting sync} other{{n} sessions awaiting sync}}",
-  "@outboxPending": { "placeholders": { "n": { "type": "int" } } },
+  "@outboxPending": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "clubFeedTitle": "Club feed",
   "clubFeedPost": "Post",
   "clubFeedEmpty": "No posts yet. Start the conversation!",
   "shareInviteMessage": "Join me on Athlete League 💪 One score for your fitness, a radar of your strengths, and a monthly league. {link}",
-  "@shareInviteMessage": { "placeholders": { "link": { "type": "String" } } },
+  "@shareInviteMessage": {
+    "placeholders": {
+      "link": {
+        "type": "String"
+      }
+    }
+  },
   "shareWodMessage": "Come challenge me on {wodName} 💪 {link}",
-  "@shareWodMessage": { "placeholders": { "wodName": { "type": "String" }, "link": { "type": "String" } } },
+  "@shareWodMessage": {
+    "placeholders": {
+      "wodName": {
+        "type": "String"
+      },
+      "link": {
+        "type": "String"
+      }
+    }
+  },
   "shareWodMessageWithBest": "I scored {best} on {wodName} — come beat me 💪 {link}",
-  "@shareWodMessageWithBest": { "placeholders": { "best": { "type": "String" }, "wodName": { "type": "String" }, "link": { "type": "String" } } },
+  "@shareWodMessageWithBest": {
+    "placeholders": {
+      "best": {
+        "type": "String"
+      },
+      "wodName": {
+        "type": "String"
+      },
+      "link": {
+        "type": "String"
+      }
+    }
+  },
   "shareProfileMessage": "Check out {name}'s profile on Athlete League: {link}",
-  "@shareProfileMessage": { "placeholders": { "name": { "type": "String" }, "link": { "type": "String" } } },
+  "@shareProfileMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "link": {
+        "type": "String"
+      }
+    }
+  },
   "shareTooltip": "Share",
   "settingsEquipmentLabel": "Equipment — \"Equipped\" also unlocks equipment-free sessions",
   "settingsEquipmentNone": "No equipment",
@@ -38,7 +86,13 @@
   "sessionsLeagueDoIt": "Do this session",
   "sessionsCountsMost": "Counts a lot",
   "sessionsAttributeHeader": "Workouts that count toward your {attribute} score",
-  "@sessionsAttributeHeader": { "placeholders": { "attribute": { "type": "String" } } },
+  "@sessionsAttributeHeader": {
+    "placeholders": {
+      "attribute": {
+        "type": "String"
+      }
+    }
+  },
   "leaderboardIntro": "The ranking of every athlete in your league (your sex), sorted by Athlete Index — normalized by sex for fairness. Climb by improving your score.",
   "commonRetry": "Retry",
   "commonGenericError": "Something went wrong. Please try again.",
@@ -86,7 +140,6 @@
   "authEquipmentLabel": "Equipment (changeable later) — \"Equipped\" also unlocks equipment-free sessions",
   "authEquipmentNone": "No equipment",
   "authEquipmentEquipped": "Equipped (gym)",
-  "authCreateAccount": "Create my account",
   "gpTitle": "Complete my profile",
   "gpSubtitle": "A few more details to finish setting up your Google account.",
   "gpUsernameMin": "Pick a username (min 2 characters).",
@@ -113,8 +166,12 @@
   "homeProjection": "At this rate: {grade}+ in ~{weeks} wk.",
   "@homeProjection": {
     "placeholders": {
-      "grade": { "type": "int" },
-      "weeks": { "type": "int" }
+      "grade": {
+        "type": "int"
+      },
+      "weeks": {
+        "type": "int"
+      }
     }
   },
   "commonContinue": "Continue",
@@ -124,19 +181,49 @@
   "wreIndexClimbs": "Your Athlete Index is climbing.",
   "wreShareFeat": "Share my achievement",
   "wreBadgeUnlocked": "Badge unlocked: {name}",
-  "@wreBadgeUnlocked": { "placeholders": { "name": { "type": "String" } } },
+  "@wreBadgeUnlocked": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "wreBadgesUnlocked": "{count} new badges unlocked!",
-  "@wreBadgesUnlocked": { "placeholders": { "count": { "type": "int" } } },
+  "@wreBadgesUnlocked": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "wreSeeMyBadges": "See my badges",
   "wreProgressTitle": "You're progressing 💪",
   "wreOutOfBounds": "Result outside plausible bounds.",
   "wreYourTime": "Your time",
   "wreYourResult": "Your result ({unit})",
-  "@wreYourResult": { "placeholders": { "unit": { "type": "String" } } },
+  "@wreYourResult": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
   "wreBandUp": "🚀 You're entering the top {percent}% of the fittest!",
-  "@wreBandUp": { "placeholders": { "percent": { "type": "int" } } },
+  "@wreBandUp": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
   "wreOvertookTitle": "You passed {name}!",
-  "@wreOvertookTitle": { "placeholders": { "name": { "type": "String" } } },
+  "@wreOvertookTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "wreOvertookSubtitle": "A new rival in sight",
   "wreUnitTime": "time",
   "wreDistanceLabel": "Distance covered (meters)",
@@ -228,7 +315,11 @@
   "wodDetailYou": "You: ",
   "wodDetailBeatRecord": "You already did {best} on this workout — beat your record!",
   "@wodDetailBeatRecord": {
-    "placeholders": { "best": { "type": "String" } }
+    "placeholders": {
+      "best": {
+        "type": "String"
+      }
+    }
   },
   "wodDetailPoints": "{n} pts",
   "@wodDetailPoints": {
@@ -250,7 +341,11 @@
   "wodRoundsTitle": "ROUND BY ROUND, IN ORDER",
   "wodRoundsHint": "Do ALL the movements of round 1 (in order), then move on to round 2, then round 3. The clock runs from start to finish.",
   "wodRoundsRound": "Round {n}",
-  "@wodRoundsRound": { "placeholders": { "n": {} } },
+  "@wodRoundsRound": {
+    "placeholders": {
+      "n": {}
+    }
+  },
   "wodDetailCap": "Cap {cap}",
   "movementGuideA11y": "See the movement explanation:",
   "movementGuideUnavailable": "Image unavailable.",
@@ -396,40 +491,112 @@
   "commentKudosTooltip": "Like",
   "commentReply": "Reply",
   "commentReplyHint": "Reply to {name}…",
-  "@commentReplyHint": { "placeholders": { "name": { "type": "String" } } },
+  "@commentReplyHint": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "commentRepliesShow": "Show {count, plural, one{reply} other{{count} replies}}",
-  "@commentRepliesShow": { "placeholders": { "count": { "type": "int" } } },
+  "@commentRepliesShow": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "commentRepliesHide": "Hide replies",
   "a11yCommentKudos": "Like, {count}",
-  "@a11yCommentKudos": { "placeholders": { "count": { "type": "int" } } },
+  "@a11yCommentKudos": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "a11yMention": "Mention of {name}, open profile",
-  "@a11yMention": { "placeholders": { "name": { "type": "String" } } },
+  "@a11yMention": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "profileWallTitle": "Posts",
   "profileWallEmpty": "This athlete hasn't posted anything yet.",
   "profileWallEmptyMine": "You haven't posted anything yet. Share a result or a message from Community.",
   "composerMentionHint": "Mention someone with @",
   "notifPostKudos": "Your post got a like 👍",
   "notifPostKudosBody": "{count, plural, one{1 person liked} other{{count} people liked}} your post.",
-  "@notifPostKudosBody": { "placeholders": { "count": { "type": "int" } } },
+  "@notifPostKudosBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "notifComment": "New comment",
   "notifCommentBody": "{name} commented on your post.",
-  "@notifCommentBody": { "placeholders": { "name": { "type": "String" } } },
+  "@notifCommentBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "notifCommentKudos": "Your comment got a like 👍",
   "notifCommentKudosBody": "{count, plural, one{1 person liked} other{{count} people liked}} your comment.",
-  "@notifCommentKudosBody": { "placeholders": { "count": { "type": "int" } } },
+  "@notifCommentKudosBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "notifReply": "New reply",
   "notifReplyBody": "{name} replied to your comment.",
-  "@notifReplyBody": { "placeholders": { "name": { "type": "String" } } },
+  "@notifReplyBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "notifMention": "You were mentioned",
   "notifMentionBody": "{name} mentioned you.",
-  "@notifMentionBody": { "placeholders": { "name": { "type": "String" } } },
+  "@notifMentionBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "timeAgoNow": "just now",
   "timeAgoMinutes": "{n} min ago",
-  "@timeAgoMinutes": { "placeholders": { "n": { "type": "int" } } },
+  "@timeAgoMinutes": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "timeAgoHours": "{n} h ago",
-  "@timeAgoHours": { "placeholders": { "n": { "type": "int" } } },
+  "@timeAgoHours": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "timeAgoDays": "{n} d ago",
-  "@timeAgoDays": { "placeholders": { "n": { "type": "int" } } },
+  "@timeAgoDays": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "communityMsgPr": "🏆 New record — {wodName}",
   "@communityMsgPr": {
     "placeholders": {
@@ -516,21 +683,45 @@
   "chatStatusSent": "Sent",
   "chatStatusRead": "Read",
   "chatTyping": "{name} is typing…",
-  "@chatTyping": { "placeholders": { "name": { "type": "String" } } },
+  "@chatTyping": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "chatNewMessage": "New message",
   "newMessageBannerTitle": "New message from {name}",
-  "@newMessageBannerTitle": { "placeholders": { "name": { "type": "String" } } },
+  "@newMessageBannerTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "newMessageBannerOpen": "Open",
   "newMessageSenderFallback": "an athlete",
   "chatViewProfile": "View profile",
   "chatBlock": "Block",
   "chatBlockConfirmTitle": "Block {name}?",
-  "@chatBlockConfirmTitle": { "placeholders": { "name": { "type": "String" } } },
+  "@chatBlockConfirmTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "chatBlockConfirmBody": "You won't be able to message each other anymore. You can unblock them later.",
   "chatBlockCancel": "Cancel",
   "chatBlockConfirm": "Block",
   "chatBlocked": "{name} has been blocked.",
-  "@chatBlocked": { "placeholders": { "name": { "type": "String" } } },
+  "@chatBlocked": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "dmReasonAge": "Private messages are only possible between accounts in the same age range.",
   "dmReasonBlocked": "Can't message this user.",
   "dmReasonUnavailable": "This account is no longer available.",
@@ -554,19 +745,58 @@
   "notificationsNewMessagesBody": "Open your conversations.",
   "feedWeekAlmostTitle": "One workout to go",
   "feedWeekAlmostBody": "One workout and your week is validated ({count}/{goal}).",
-  "@feedWeekAlmostBody": { "placeholders": { "count": { "type": "int" }, "goal": { "type": "int" } } },
+  "@feedWeekAlmostBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "goal": {
+        "type": "int"
+      }
+    }
+  },
   "feedWeekValidatedTitle": "Week validated",
   "feedWeekValidatedBody": "{streak, plural, one{Current streak: 1 week. Keep it up!} other{Current streak: {streak} weeks. Keep it up!}}",
-  "@feedWeekValidatedBody": { "placeholders": { "streak": { "type": "int" } } },
+  "@feedWeekValidatedBody": {
+    "placeholders": {
+      "streak": {
+        "type": "int"
+      }
+    }
+  },
   "feedNextRankTitle": "Rank {rank} is close",
-  "@feedNextRankTitle": { "placeholders": { "rank": { "type": "String" } } },
+  "@feedNextRankTitle": {
+    "placeholders": {
+      "rank": {
+        "type": "String"
+      }
+    }
+  },
   "feedNextRankBody": "{points, plural, one{Just 1 point to go.} other{Just {points} points to go.}}",
-  "@feedNextRankBody": { "placeholders": { "points": { "type": "int" } } },
+  "@feedNextRankBody": {
+    "placeholders": {
+      "points": {
+        "type": "int"
+      }
+    }
+  },
   "feedRankOvertakenTitle": "{count, plural, one{An athlete passed you} other{{count} athletes passed you}}",
-  "@feedRankOvertakenTitle": { "placeholders": { "count": { "type": "int" } } },
+  "@feedRankOvertakenTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "feedRankOvertakenBody": "Reclaim your spot on the leaderboard.",
   "feedWodOvertakenTitle": "{count, plural, one{An athlete beat your time} other{Beaten on {count} workouts}}",
-  "@feedWodOvertakenTitle": { "placeholders": { "count": { "type": "int" } } },
+  "@feedWodOvertakenTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "feedWodOvertakenBody": "Go defend your scores.",
   "notificationSettingsTitle": "Notification settings",
   "notificationSettingsComingSoon": "Push notifications are coming soon. Your preferences below will apply as soon as they go live.",
@@ -1068,37 +1298,59 @@
   "socialProofA11yHumanityApp": "Social proof. {humanity} {app}",
   "@socialProofA11yHumanityApp": {
     "placeholders": {
-      "humanity": { "type": "Object" },
-      "app": { "type": "Object" }
+      "humanity": {
+        "type": "Object"
+      },
+      "app": {
+        "type": "Object"
+      }
     }
   },
   "socialProofA11yHumanity": "Social proof. {humanity}",
   "@socialProofA11yHumanity": {
     "placeholders": {
-      "humanity": { "type": "Object" }
+      "humanity": {
+        "type": "Object"
+      }
     }
   },
   "recapA11y": "Your week: {sessions, plural, one{{sessions} session} other{{sessions} sessions}}, {delta, plural, =0{no Index gain} one{plus {delta} Index} other{plus {delta} Index}}, {streak, plural, one{{streak} week streak} other{{streak} weeks streak}}.",
   "@recapA11y": {
     "placeholders": {
-      "sessions": { "type": "int" },
-      "delta": { "type": "int" },
-      "streak": { "type": "int" }
+      "sessions": {
+        "type": "int"
+      },
+      "delta": {
+        "type": "int"
+      },
+      "streak": {
+        "type": "int"
+      }
     }
   },
   "gradeA11y": "{title}, based on {coverage}/6 attributes. {sessions, plural, =0{Keep logging sessions.} one{Complete {sessions} recommended session to reveal your real Index.} other{Complete {sessions} recommended sessions to reveal your real Index.}}",
   "@gradeA11y": {
     "placeholders": {
-      "title": { "type": "Object" },
-      "coverage": { "type": "int" },
-      "sessions": { "type": "int" }
+      "title": {
+        "type": "Object"
+      },
+      "coverage": {
+        "type": "int"
+      },
+      "sessions": {
+        "type": "int"
+      }
     }
   },
   "gradeSessionA11y": "Recommended session: {name}. Unlocks {covers}. Tap to open the details.",
   "@gradeSessionA11y": {
     "placeholders": {
-      "name": { "type": "Object" },
-      "covers": { "type": "Object" }
+      "name": {
+        "type": "Object"
+      },
+      "covers": {
+        "type": "Object"
+      }
     }
   },
   "revealYourIndex": "YOUR ATHLETE INDEX",
@@ -1107,7 +1359,9 @@
   "revealEstimateBody": "Your starting Index is based on {coverage}/6 attributes. Log a few more sessions to unlock all 6 and reveal your true Athlete Index.",
   "@revealEstimateBody": {
     "placeholders": {
-      "coverage": { "type": "int" }
+      "coverage": {
+        "type": "int"
+      }
     }
   },
   "revealRadar": "YOUR RADAR",
@@ -1136,9 +1390,15 @@
   "shareCardA11y": "{name}'s card, Athlete Index {ovr}, archetype {archetype}",
   "@shareCardA11y": {
     "placeholders": {
-      "name": { "type": "Object" },
-      "ovr": { "type": "Object" },
-      "archetype": { "type": "Object" }
+      "name": {
+        "type": "Object"
+      },
+      "ovr": {
+        "type": "Object"
+      },
+      "archetype": {
+        "type": "Object"
+      }
     }
   },
   "shareCardOvrEstimated": "ESTIMATED LEVEL",
@@ -1148,7 +1408,9 @@
   "shareCardRevealCta": "{n, plural, one{1 session} other{{n} sessions}} left to reveal your real card",
   "@shareCardRevealCta": {
     "placeholders": {
-      "n": { "type": "int" }
+      "n": {
+        "type": "int"
+      }
     }
   },
   "shareCardRevealConfirm": "Log real sessions to lock in your card",
@@ -1157,10 +1419,18 @@
   "shareCardA11yUnderConstruction": "{name}'s card in progress. Estimated level {ovr}. {n, plural, =0{Log real sessions to lock it in.} one{1 session left to reveal your real card.} other{{n} sessions left to reveal your real card.}} {coverage} of 6 attributes measured.",
   "@shareCardA11yUnderConstruction": {
     "placeholders": {
-      "name": { "type": "String" },
-      "ovr": { "type": "int" },
-      "n": { "type": "int" },
-      "coverage": { "type": "int" }
+      "name": {
+        "type": "String"
+      },
+      "ovr": {
+        "type": "int"
+      },
+      "n": {
+        "type": "int"
+      },
+      "coverage": {
+        "type": "int"
+      }
     }
   },
   "leaderboardTitle": "League",
@@ -1215,53 +1485,10 @@
   "archetypePower": "EXPLOSIVE",
   "archetypeSpeed": "SPEED",
   "archetypeMuscularEndurance": "RELENTLESS",
-  "rfFarBetterTitle1": "Outstanding performance",
-  "rfFarBetterBody1": "You beat your prediction by {gain}. This isn't luck: it's your work paying off. Note what you did well today.",
-  "@rfFarBetterBody1": { "placeholders": { "gain": { "type": "String" } } },
-  "rfFarBetterTitle2": "You blew past the ceiling",
-  "rfFarBetterBody2": "{gain} above what we expected from you. Your real level just pulled ahead of the model. Keep doing exactly this.",
-  "@rfFarBetterBody2": { "placeholders": { "gain": { "type": "String" } } },
-  "rfFarBetterTitle3": "Well above target",
-  "rfFarBetterBody3": "Prediction smashed by {gain}. A session like this is concrete proof that your preparation pays off.",
-  "@rfFarBetterBody3": { "placeholders": { "gain": { "type": "String" } } },
-  "rfBetterTitle1": "Above target",
-  "rfBetterBody1": "{gain} better than your prediction. You're progressing in the right direction, and it shows.",
-  "@rfBetterBody1": { "placeholders": { "gain": { "type": "String" } } },
-  "rfBetterTitle2": "Solid. You're taking the lead",
-  "rfBetterBody2": "You beat what was expected by {gain}. Keep this pace — that's exactly how you climb.",
-  "@rfBetterBody2": { "placeholders": { "gain": { "type": "String" } } },
-  "rfBetterTitle3": "Better than expected",
-  "rfBetterBody3": "+{gain} over the prediction. Small gap, real progress: build on it next session.",
-  "@rfBetterBody3": { "placeholders": { "gain": { "type": "String" } } },
-  "rfOnTargetTitle1": "Right on target",
-  "rfOnTargetBody1": "You hit exactly the {metric} predicted for you. Reaching your target is already a win: your level and your performance are aligned.",
-  "@rfOnTargetBody1": { "placeholders": { "metric": { "type": "String" } } },
-  "rfOnTargetTitle2": "Goal reached",
-  "rfOnTargetBody2": "You matched the prediction to the letter. That's controlled consistency — the foundation of all real progress.",
-  "rfOnTargetTitle3": "Bullseye",
-  "rfOnTargetBody3": "You delivered the performance expected for your level. Solid and reliable: now aim one notch higher.",
-  "rfBelowTitle1": "Session in the books",
-  "rfBelowBody1": "A bit below your target today, but you finished it — and that's what counts. We know you can do better: the next one will be stronger.",
-  "rfBelowTitle2": "Well done, it's logged",
-  "rfBelowBody2": "Not your best day on {wodName}, but every rep counts toward your progress. You've got the room to climb back above.",
-  "@rfBelowBody2": { "placeholders": { "wodName": { "type": "String" } } },
-  "rfBelowTitle3": "You did the work",
-  "rfBelowBody3": "Result a little under your prediction, but what matters is that you showed up. We're sure you can do better next time.",
-  "rfWayBelowTitle1": "Bad day, it happens",
-  "rfWayBelowBody1": "Far from your usual level today — and that's okay. The body has its off days. Rest up, and come back to retry {wodName} fresh: you're worth far more than this.",
-  "@rfWayBelowBody1": { "placeholders": { "wodName": { "type": "String" } } },
-  "rfWayBelowTitle2": "It wasn't your day",
-  "rfWayBelowBody2": "This performance doesn't reflect what you're capable of. Fatigue, sleep, a busy day: it all counts. Come back to {wodName} when you're at your best.",
-  "@rfWayBelowBody2": { "placeholders": { "wodName": { "type": "String" } } },
-  "rfWayBelowTitle3": "Let's file this session away",
-  "rfWayBelowBody3": "Just an off day. Finishing it anyway already takes mental strength. Recover well and retry {wodName} rested — you'll do far better.",
-  "@rfWayBelowBody3": { "placeholders": { "wodName": { "type": "String" } } },
   "rfNoPredictionTitle1": "Result saved",
   "rfNoPredictionBody1": "Nice session, it's in the books. Every saved result grows your Athlete Index — keep it up.",
   "rfNoPredictionTitle2": "Logged, keep going",
   "rfNoPredictionBody2": "Every saved result brings your full Index closer and fills out your attribute radar.",
-  "rfMetricTime": "time",
-  "rfMetricScore": "score",
   "commonOk": "OK",
   "leagueScreenTitle": "League of the month",
   "leagueRivalTitle": "Your rival in the league",
@@ -1272,7 +1499,13 @@
   "leagueHeaderWomen": "WOMEN'S LEAGUE",
   "leagueLastDay": "Last day of the season",
   "leagueEndsIn": "{days, plural, one{Ends in {days} day} other{Ends in {days} days}}",
-  "@leagueEndsIn": { "placeholders": { "days": { "type": "int" } } },
+  "@leagueEndsIn": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
   "leaguePointsReset": "Points reset to zero every month.",
   "leagueExplainerTitle": "What is the League of the month?",
   "leagueExplainerBody": "Every month, a new season. You're ranked AUTOMATICALLY among athletes of your sex. Do the imposed workout of the week: you score points based on your performance. League points reset to zero every month.",
@@ -1284,11 +1517,23 @@
   "leagueStandingsEmpty": "Nobody has scored yet this month. Be the first!",
   "leagueMyPosition": "MY POSITION",
   "leaguePts": "{points} pts",
-  "@leaguePts": { "placeholders": { "points": { "type": "int" } } },
+  "@leaguePts": {
+    "placeholders": {
+      "points": {
+        "type": "int"
+      }
+    }
+  },
   "leagueDoWodToEnter": "Do the workout to enter the ranking",
   "leagueThisMonth": "this month",
   "leagueRowYou": "{name} (me)",
-  "@leagueRowYou": { "placeholders": { "name": { "type": "String" } } },
+  "@leagueRowYou": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "leagueSegmentMen": "Men",
   "leagueSegmentWomen": "Women",
   "leagueHowItWorksTitle": "How does it work?",
@@ -1296,18 +1541,51 @@
   "leagueHowItWorksReset": "Points reset to zero at the start of every month. Everyone restarts equal.",
   "leagueHowItWorksIndex": "Your performances on the League workouts also count toward your Athlete Index. Only the League POINTS reset to zero every month.",
   "leagueWodCountdownDaysHours": "{days}d {hours}h left to do it",
-  "@leagueWodCountdownDaysHours": { "placeholders": { "days": { "type": "int" }, "hours": { "type": "int" } } },
+  "@leagueWodCountdownDaysHours": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      },
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
   "leagueWodCountdownHours": "{hours}h left to do it",
-  "@leagueWodCountdownHours": { "placeholders": { "hours": { "type": "int" } } },
+  "@leagueWodCountdownHours": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
   "leagueWodCountdownLastHour": "Last hour to do it!",
   "leagueWodCountdownExpired": "Workout of the week over",
   "leagueRevealTitle": "Season {month} — results",
-  "@leagueRevealTitle": { "placeholders": { "month": { "type": "String" } } },
+  "@leagueRevealTitle": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
   "leagueRevealPodium": "PODIUM",
   "leagueRevealYouFinished": "You finished {rank}",
-  "@leagueRevealYouFinished": { "placeholders": { "rank": { "type": "String" } } },
+  "@leagueRevealYouFinished": {
+    "placeholders": {
+      "rank": {
+        "type": "String"
+      }
+    }
+  },
   "leagueRevealRankOrdinal": "{ordinal}",
-  "@leagueRevealRankOrdinal": { "placeholders": { "ordinal": { "type": "String" } } },
+  "@leagueRevealRankOrdinal": {
+    "placeholders": {
+      "ordinal": {
+        "type": "String"
+      }
+    }
+  },
   "leagueRevealNotRanked": "You weren't ranked this season.",
   "leagueRevealNewSeason": "A new season has begun — go for it!",
   "leagueRevealClose": "Let's go",
@@ -1315,53 +1593,191 @@
   "leagueRevealMovedDown": "You slipped down the ranking",
   "leagueRevealStable": "You held your position",
   "notificationsJoinedClub": "You joined {clubName}!",
-  "@notificationsJoinedClub": { "placeholders": { "clubName": { "type": "String" } } },
+  "@notificationsJoinedClub": {
+    "placeholders": {
+      "clubName": {
+        "type": "String"
+      }
+    }
+  },
   "notificationsClubInviteTitle": "Club invitation",
   "notificationsClubInviteMembers": "{clubName} · {count, plural, one{{count} member} other{{count} members}}",
-  "@notificationsClubInviteMembers": { "placeholders": { "clubName": { "type": "String" }, "count": { "type": "int" } } },
+  "@notificationsClubInviteMembers": {
+    "placeholders": {
+      "clubName": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "notificationsJoin": "Join",
   "notificationsDecline": "Decline",
   "a11ySend": "Send message",
   "a11yRetryMessage": "Resend message",
   "a11yUnreadCount": "{count, plural, one{{count} unread message} other{{count} unread messages}}",
-  "@a11yUnreadCount": { "placeholders": { "count": { "type": "int" } } },
+  "@a11yUnreadCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "a11yDecrease": "Decrease",
   "a11yIncrease": "Increase",
   "a11yDailyCapValue": "{count, plural, one{{count} notification per day} other{{count} notifications per day}}",
-  "@a11yDailyCapValue": { "placeholders": { "count": { "type": "int" } } },
+  "@a11yDailyCapValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "a11yLeagueMyPosition": "You are {position} with {points} points",
-  "@a11yLeagueMyPosition": { "placeholders": { "position": { "type": "int" }, "points": { "type": "int" } } },
+  "@a11yLeagueMyPosition": {
+    "placeholders": {
+      "position": {
+        "type": "int"
+      },
+      "points": {
+        "type": "int"
+      }
+    }
+  },
   "a11yLeagueRow": "Position {position}, {name}, {points} points",
-  "@a11yLeagueRow": { "placeholders": { "position": { "type": "int" }, "name": { "type": "String" }, "points": { "type": "int" } } },
+  "@a11yLeagueRow": {
+    "placeholders": {
+      "position": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      },
+      "points": {
+        "type": "int"
+      }
+    }
+  },
   "a11yPodiumPlace": "{ordinal} place: {name}, {points} points",
-  "@a11yPodiumPlace": { "placeholders": { "ordinal": { "type": "String" }, "name": { "type": "String" }, "points": { "type": "int" } } },
+  "@a11yPodiumPlace": {
+    "placeholders": {
+      "ordinal": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      },
+      "points": {
+        "type": "int"
+      }
+    }
+  },
   "a11yRemoveMovementNamed": "Remove {name}",
-  "@a11yRemoveMovementNamed": { "placeholders": { "name": { "type": "String" } } },
+  "@a11yRemoveMovementNamed": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "a11yAmountField": "Amount for {movement} in {unit}",
-  "@a11yAmountField": { "placeholders": { "movement": { "type": "String" }, "unit": { "type": "String" } } },
+  "@a11yAmountField": {
+    "placeholders": {
+      "movement": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
   "a11yLoadField": "Load in kilograms for {movement}",
-  "@a11yLoadField": { "placeholders": { "movement": { "type": "String" } } },
+  "@a11yLoadField": {
+    "placeholders": {
+      "movement": {
+        "type": "String"
+      }
+    }
+  },
   "a11yEstimateBadge": "Estimated values, indicative",
   "a11yFlagshipDone": "{name}, done, score {score} out of 100",
-  "@a11yFlagshipDone": { "placeholders": { "name": { "type": "String" }, "score": { "type": "int" } } },
+  "@a11yFlagshipDone": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "score": {
+        "type": "int"
+      }
+    }
+  },
   "a11yFlagshipTodo": "{name}, to do",
-  "@a11yFlagshipTodo": { "placeholders": { "name": { "type": "String" } } },
+  "@a11yFlagshipTodo": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "a11yUnlocked": "unlocked",
   "a11yLocked": "locked",
   "a11yBadge": "Badge {name}",
-  "@a11yBadge": { "placeholders": { "name": { "type": "String" } } },
+  "@a11yBadge": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "a11yHomeViewProgression": "View your progress",
   "a11yHomeEditAvatar": "Edit your avatar",
   "a11yHomeBetaInfo": "Beta version info",
   "a11yRivalChasing": "Your rival {name}, Index {ovr}, {gap, plural, one{1 point above you} other{{gap} points above you}}. Tap to view the leaderboard.",
-  "@a11yRivalChasing": { "placeholders": { "name": { "type": "String" }, "ovr": { "type": "int" }, "gap": { "type": "int" } } },
+  "@a11yRivalChasing": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "ovr": {
+        "type": "int"
+      },
+      "gap": {
+        "type": "int"
+      }
+    }
+  },
   "a11yRivalLeader": "You're leading your league. Tap to view the leaderboard.",
   "a11yCoachFilter": "Filter: {name}",
-  "@a11yCoachFilter": { "placeholders": { "name": { "type": "String" } } },
+  "@a11yCoachFilter": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "a11yCoachSession": "Session {name}, {duration} minutes, intensity {intensity}",
-  "@a11yCoachSession": { "placeholders": { "name": { "type": "String" }, "duration": { "type": "int" }, "intensity": { "type": "String" } } },
+  "@a11yCoachSession": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "duration": {
+        "type": "int"
+      },
+      "intensity": {
+        "type": "String"
+      }
+    }
+  },
   "a11ySessionWod": "Challenge {name}",
-  "@a11ySessionWod": { "placeholders": { "name": { "type": "String" } } },
+  "@a11ySessionWod": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "guidedTimerStart": "Start",
   "guidedTimerPause": "Pause",
   "guidedTimerResume": "Resume",
@@ -1372,7 +1788,13 @@
   "guidedTimerCountdownLabel": "COUNTDOWN",
   "guidedTimerStopwatchLabel": "STOPWATCH",
   "a11yGuidedTimerValue": "Timer: {value}",
-  "@a11yGuidedTimerValue": { "placeholders": { "value": { "type": "String" } } },
+  "@a11yGuidedTimerValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
   "coachSessionGuidedMode": "Guided mode",
   "guidedPhaseWork": "Work",
   "guidedPhaseRest": "Rest",
@@ -1380,13 +1802,46 @@
   "guidedStateRunning": "In progress",
   "guidedStatePaused": "Paused",
   "guidedRoundOf": "Round {current} / {total}",
-  "@guidedRoundOf": { "placeholders": { "current": { "type": "int" }, "total": { "type": "int" } } },
+  "@guidedRoundOf": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "guidedMinuteOf": "Minute {current} / {total}",
-  "@guidedMinuteOf": { "placeholders": { "current": { "type": "int" }, "total": { "type": "int" } } },
+  "@guidedMinuteOf": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "guidedSetOf": "Set {current} / {total}",
-  "@guidedSetOf": { "placeholders": { "current": { "type": "int" }, "total": { "type": "int" } } },
+  "@guidedSetOf": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "guidedRoundsDone": "Rounds: {count}",
-  "@guidedRoundsDone": { "placeholders": { "count": { "type": "int" } } },
+  "@guidedRoundsDone": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "guidedAddRound": "Round +1",
   "guidedSetDone": "Set done",
   "guidedSkip": "Skip",
@@ -1399,7 +1854,13 @@
   "guidedDone": "Workout complete",
   "guidedSaveResult": "Save my time",
   "guidedTotalTime": "Total time {time}",
-  "@guidedTotalTime": { "placeholders": { "time": { "type": "String" } } },
+  "@guidedTotalTime": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
   "guidedStreakCredited": "Streak credited 🔥",
   "guidedValidating": "Saving…",
   "guidedCreditFailed": "Couldn't save — retry",
@@ -1415,39 +1876,150 @@
   "a11yGuidedPhaseRest": "Rest",
   "a11yGuidedPhasePrepare": "Get ready",
   "a11yGuidedRound": "Round {n}",
-  "@a11yGuidedRound": { "placeholders": { "n": { "type": "int" } } },
+  "@a11yGuidedRound": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "a11yGuidedMinute": "Minute {n}",
-  "@a11yGuidedMinute": { "placeholders": { "n": { "type": "int" } } },
+  "@a11yGuidedMinute": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "a11yGuidedSet": "Set {n}",
-  "@a11yGuidedSet": { "placeholders": { "n": { "type": "int" } } },
+  "@a11yGuidedSet": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "a11yGuidedCountdown": "{n}",
-  "@a11yGuidedCountdown": { "placeholders": { "n": { "type": "int" } } },
+  "@a11yGuidedCountdown": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "a11yGuidedTimeValue": "Timer: {value}",
-  "@a11yGuidedTimeValue": { "placeholders": { "value": { "type": "String" } } },
+  "@a11yGuidedTimeValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
   "coachSessionMarkDone": "Mark as done",
   "coachSessionDoneTitle": "Session complete",
   "coachSessionDoneSubtitle": "Nice work. Keep your streak alive.",
   "coachSessionDoneToast": "Session “{name}” marked as done.",
-  "@coachSessionDoneToast": { "placeholders": { "name": { "type": "String" } } },
+  "@coachSessionDoneToast": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "coachSessionStreakCredited": "Session “{name}” done — streak credited.",
-  "@coachSessionStreakCredited": { "placeholders": { "name": { "type": "String" } } },
+  "@coachSessionStreakCredited": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "coachSessionSyncFailed": "Session saved locally. Couldn’t sync: your streak wasn’t updated. Try again when you’re back online.",
   "a11yHomePlayerCard": "{name}, Index {ovr}, rank {rank}. Tap to view your progress.",
-  "@a11yHomePlayerCard": { "placeholders": { "name": { "type": "String" }, "ovr": { "type": "int" }, "rank": { "type": "String" } } },
+  "@a11yHomePlayerCard": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "ovr": {
+        "type": "int"
+      },
+      "rank": {
+        "type": "String"
+      }
+    }
+  },
   "a11yHomeCoachCta": "Get a training session from the coach",
   "a11yLeaderboardRow": "Rank {position}, {name}, Index {ovr}",
-  "@a11yLeaderboardRow": { "placeholders": { "position": { "type": "int" }, "name": { "type": "String" }, "ovr": { "type": "int" } } },
+  "@a11yLeaderboardRow": {
+    "placeholders": {
+      "position": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      },
+      "ovr": {
+        "type": "int"
+      }
+    }
+  },
   "a11yLeaderboardRowMe": "Rank {position}, you, {name}, Index {ovr}",
-  "@a11yLeaderboardRowMe": { "placeholders": { "position": { "type": "int" }, "name": { "type": "String" }, "ovr": { "type": "int" } } },
+  "@a11yLeaderboardRowMe": {
+    "placeholders": {
+      "position": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      },
+      "ovr": {
+        "type": "int"
+      }
+    }
+  },
   "a11yLeaderboardTab": "{name} league",
-  "@a11yLeaderboardTab": { "placeholders": { "name": { "type": "String" } } },
+  "@a11yLeaderboardTab": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "a11yRevealResult": "Your Index is {ovr}, rank {rank}",
-  "@a11yRevealResult": { "placeholders": { "ovr": { "type": "int" }, "rank": { "type": "String" } } },
+  "@a11yRevealResult": {
+    "placeholders": {
+      "ovr": {
+        "type": "int"
+      },
+      "rank": {
+        "type": "String"
+      }
+    }
+  },
   "a11yRevealComputing": "Calculating your Index",
   "a11yOnbStep": "Step {current} of {total}",
-  "@a11yOnbStep": { "placeholders": { "current": { "type": "int" }, "total": { "type": "int" } } },
+  "@a11yOnbStep": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "a11yOnbContinue": "Continue to the next step",
   "a11yOnbReveal": "Reveal my Index",
   "a11yOnbEffortToggle": "{name}, {state, select, on{enabled} off{disabled} other{}}",
-  "@a11yOnbEffortToggle": { "placeholders": { "name": { "type": "String" }, "state": { "type": "String" } } }
+  "@a11yOnbEffortToggle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "state": {
+        "type": "String"
+      }
+    }
+  }
 }
