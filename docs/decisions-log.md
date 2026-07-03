@@ -34,8 +34,8 @@ Quand le meilleur effort d'un attribut sort de la fenêtre de fraîcheur (26 sem
 - **Impact :** lève la contradiction entre `architecture.md §A1` (décroissance par péremption) et
   `sport-science-scoring.md §5.2`. La lecture **sport-science (no-drop absolu)** prévaut.
 
-### D4 — Âge minimum 13 ans + mineurs « tout public »
-- Âge minimum à l'inscription : **13 ans** (age-gating).
+### D4 — Âge minimum 15 ans + mineurs « tout public »
+- Âge minimum à l'inscription : **15 ans** (age-gating).
 - L'onboarding **doit collecter date de naissance + consentement explicite à la publication
   publique** avant la création du profil/le reveal (corrige l'absence signalée dans
   `design-system.md` ; le modèle de données le prévoit déjà : `app.user.date_of_birth` CHECK ≥ 13,

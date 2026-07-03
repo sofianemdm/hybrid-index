@@ -3,7 +3,7 @@
 > **Statut :** livrable de conception (pas de code d'implémentation).
 > **Source de vérité :** `docs/cahier-des-charges.md` + `CLAUDE.md`. En cas de conflit, le cahier prime.
 > **Portée :** MVP « thin slice » (Phase 1), avec préparation explicite des phases ultérieures.
-> **Décisions imposées par l'humain appliquées telles quelles :** monorepo unique ; Service Score microservice **physiquement séparé** et **versionné** dès le MVP ; stack Flutter / NestJS / PostgreSQL / Redis ; auth email + Apple + Google ; FCM ; PostHog ; Sentry ; logging hors-ligne ; âge minimum 13 ans ; champ `visibility` prévu ; RGPD export + suppression.
+> **Décisions imposées par l'humain appliquées telles quelles :** monorepo unique ; Service Score microservice **physiquement séparé** et **versionné** dès le MVP ; stack Flutter / NestJS / PostgreSQL / Redis ; auth email + Apple + Google ; FCM ; PostHog ; Sentry ; logging hors-ligne ; âge minimum 15 ans ; champ `visibility` prévu ; RGPD export + suppression.
 
 ---
 
@@ -196,7 +196,7 @@ scoring_status     : 'draft' | 'active' | 'superseded'
 | id | uuid PK | |
 | email | citext UNIQUE NULL | null si compte uniquement Apple/Google sans email partagé |
 | password_hash | text NULL | argon2id ; null si OAuth pur |
-| date_of_birth | date NOT NULL | **age-gating ≥ 13 ans** (contrainte applicative + check sur âge) |
+| date_of_birth | date NOT NULL | **age-gating ≥ 15 ans** (contrainte applicative + check sur âge) |
 | age_verified | boolean NOT NULL default false | confirmé à l'inscription |
 | consents | jsonb NOT NULL | RGPD : `{publicProfile, analytics, marketing, acceptedAt, version}` |
 | status | text default 'active' | 'active' \| 'deactivated' \| 'deletion_requested' |
@@ -475,7 +475,7 @@ Index `index(user_id, computed_at)`. C'est la courbe affichée (écran Détail d
 | POST | `/auth/refresh` | `{refreshToken}` | `{tokens}` | `UNAUTHENTICATED` |
 | POST | `/auth/logout` | — | 204 | |
 
-> Age-gating : si OAuth et `dateOfBirth` inconnue, écran complémentaire qui appelle `PATCH /me/birthdate` ; refus si < 13 ans.
+> Age-gating : si OAuth et `dateOfBirth` inconnue, écran complémentaire qui appelle `PATCH /me/birthdate` ; refus si < 15 ans.
 
 #### Onboarding & avatar
 | Méthode | Chemin | Entrée | Réponse |
@@ -673,7 +673,7 @@ jobs:
 5. **« Score ne baisse jamais » modélisé** par : meilleur effort dans la fenêtre 26 sem. (`best_result_id`), et **no-drop dur sur l'Index** lors d'un recalcul de version (max(ancien, nouveau)).
 6. **Anti-triche** : bornes physiologiques (rejet 422) + détection d'anomalie (review='pending_review' → exclu des classements via `WHERE review='ok'`).
 7. **Offline-first** : Outbox SQLite (Drift), idempotency-key = local_id, `unique(user_id, idempotency_key)` serveur, `performed_at` réel → ordre indifférent, pas de résolution de conflit complexe (règle « meilleur effort » commutative).
-8. **RGPD/age-gating** : `date_of_birth` + CHECK ≥ 13 ans, consents jsonb, export + suppression différée. `visibility` présent partout (public au MVP, réversible).
+8. **RGPD/age-gating** : `date_of_birth` + CHECK ≥ 15 ans, consents jsonb, export + suppression différée. `visibility` présent partout (public au MVP, réversible).
 9. **Format d'erreur standard** unique (`{error:{code,message,details,traceId}}`) défini dans `packages/contracts`.
 
 **Alertes / incohérences signalées à l'humain (je ne tranche pas seul) :**

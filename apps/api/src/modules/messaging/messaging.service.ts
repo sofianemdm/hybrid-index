@@ -61,7 +61,7 @@ export class MessagingService implements OnModuleInit {
     if (await this.moderation.isBlockedBetween(me, other)) return { allowed: false, reason: "blocked" };
     // App 100 % publique : on peut écrire à n'importe quel compte actif, SANS se suivre ni partager
     // de club. On conserve uniquement les garde-fous de sécurité : blocage et compatibilité d'âge
-    // (protection des mineurs, cf. age-gating ≥ 13 ans) — jamais retirés.
+    // (protection des mineurs, cf. age-gating ≥ 15 ans) — jamais retirés.
     if (!dmAgeAllowed(meUser.dateOfBirth, otherUser.dateOfBirth, new Date())) return { allowed: false, reason: "age" };
     return { allowed: true };
   }
