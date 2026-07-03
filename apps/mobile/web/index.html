@@ -1,24 +1,12 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
   <base href="$FLUTTER_BASE_HREF">
 
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="Ta condition physique hybride, resumee en un seul score comparable : l’Athlete Index.">
+  <meta name="description" content="3 séances suffisent pour révéler ton Athlete Index, ta carte de joueur et ta place au classement. Gratuit, avec ou sans matériel.">
   <!-- Aperçu de lien (Open Graph + Twitter) : la carte de visite du site sur WhatsApp/Insta/Discord. -->
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Athlete League">
@@ -33,29 +21,501 @@
   <meta name="twitter:title" content="Athlete League — Ton corps a un score. Découvre-le.">
   <meta name="twitter:description" content="3 séances suffisent pour révéler ton Athlete Index, ta carte de joueur et ta place au classement.">
   <meta name="twitter:image" content="https://athlete-league.fr/og-image.png">
-  <meta name="theme-color" content="#0B0E14">
+  <meta name="theme-color" content="#090B11">
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Athlete League">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
-
-  <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
 
-  <title>Athlete League</title>
+  <title>Athlete League — Ton corps a un score</title>
   <link rel="manifest" href="manifest.json">
-</head>
-<body>
-  <!--
-    You can customize the "flutter_bootstrap.js" script.
-    This is useful to provide a custom configuration to the Flutter loader
-    or to give the user feedback during the initialization process.
 
-    For more details:
-    * https://docs.flutter.dev/platform-integration/web/initialization
-  -->
+  <!-- ============================================================================
+       LANDING « premier frame » (spec ui-ux-designer 03/07) : HTML/CSS pur, affichée
+       instantanément pendant que Flutter charge en fond. Un utilisateur déjà connecté
+       (localStorage flutter.hi_token) la saute automatiquement dès que l'app est prête.
+       Tokens = ceux de l'app (tokens.dart) : nuit #090B11, cyan #2BD4F5, Rajdhani/Inter.
+       ============================================================================ -->
+  <style>
+    @font-face{font-family:Rajdhani;src:url(fonts/Rajdhani-Bold.woff2) format('woff2');font-weight:700;font-display:swap}
+    @font-face{font-family:Rajdhani;src:url(fonts/Rajdhani-SemiBold.woff2) format('woff2');font-weight:600;font-display:swap}
+    @font-face{font-family:Inter;src:url(fonts/Inter-500.woff2) format('woff2');font-weight:500;font-display:swap}
+    @font-face{font-family:Inter;src:url(fonts/Inter-700.woff2) format('woff2');font-weight:700;font-display:swap}
+    @font-face{font-family:Inter;src:url(fonts/Inter-800.woff2) format('woff2');font-weight:800;font-display:swap}
+
+    :root{
+      --bg:#090B11; --surface:#11151F; --surface2:#1A1F2D;
+      --cyan:#2BD4F5; --cyan-hi:#6BECFF; --cyan-deep:#0A8FB3;
+      --txt:#F2F5FA; --txt2:#A7B0C0; --txt3:#7E8597;
+      --stroke:rgba(255,255,255,.10); --stroke-hi:rgba(255,255,255,.16);
+      --gold:#F3C13A; --gold-hi:#FFE27A;
+      --a-eng:#EB7A5E; --a-vit:#E6C758; --a-for:#E0559C; --a-pui:#9D6CE0; --a-res:#45D6C0; --a-hyb:#5BD49B;
+      --r-md:16px; --r-lg:20px; --r-xl:28px;
+    }
+    /* :where() = specificite ZERO : sans lui, la specificite de l'ID ecrasait margin/padding
+       de TOUTES les classes de la landing (gouttieres perdues -> debordements). */
+    :where(#hi-landing *){margin:0;padding:0;box-sizing:border-box}
+    #hi-landing{
+      position:fixed; inset:0; z-index:9999; overflow-y:auto; overflow-x:hidden;
+      -webkit-font-smoothing:antialiased;
+      font-family:Inter,system-ui,-apple-system,sans-serif; font-weight:500;
+      color:var(--txt); background:var(--bg);
+      background-image:
+        radial-gradient(120% 80% at 50% -10%, rgba(43,212,245,.10), transparent 60%),
+        radial-gradient(80% 60% at 85% 15%, rgba(124,92,255,.06), transparent 60%);
+      transition:opacity .42s cubic-bezier(.22,1,.36,1), transform .42s cubic-bezier(.22,1,.36,1);
+    }
+    #hi-landing.hi-out{opacity:0;transform:scale(.985);pointer-events:none}
+    .hi-wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+    .hi-raj{font-family:Rajdhani,'Arial Narrow',system-ui,sans-serif}
+
+    /* ---- Top bar ---- */
+    .hi-top{position:sticky;top:0;z-index:5;backdrop-filter:blur(14px);
+      background:rgba(9,11,17,.75);border-bottom:1px solid var(--stroke)}
+    .hi-top .hi-wrap{height:56px;display:flex;align-items:center;justify-content:space-between}
+    .hi-brand{display:flex;align-items:center;gap:10px;font:700 13px Rajdhani,'Arial Narrow',sans-serif;letter-spacing:3px;color:var(--txt)}
+    .hi-brand svg{width:26px;height:26px}
+    .hi-login{font:700 13px Inter,system-ui,sans-serif;color:var(--txt2);text-decoration:none;padding:12px 14px;border-radius:999px;
+      border:1px solid var(--stroke-hi);transition:color .2s,border-color .2s;cursor:pointer;background:none}
+    .hi-login:hover{color:var(--cyan-hi);border-color:rgba(43,212,245,.45)}
+
+    /* ---- Hero ---- */
+    .hi-hero{min-height:calc(100vh - 56px);display:flex;flex-direction:column;justify-content:center;
+      padding:48px 0 40px;position:relative}
+    .hi-hero .hi-wrap{display:flex;flex-direction:column;gap:36px;align-items:center;text-align:center}
+    /* PIÈGE flex : en colonne centrée, un enfant bloc prend la largeur de son max-width (440px)
+       et déborde d'un écran de 390px → on force la largeur du bloc de copy au conteneur. */
+    .hi-copy{width:100%;max-width:520px;display:flex;flex-direction:column;align-items:center}
+    .hi-sub{width:100%}
+    .hi-over{font:700 12px Rajdhani,'Arial Narrow',sans-serif;letter-spacing:2.5px;color:var(--cyan)}
+    .hi-h1{font:800 34px/1.08 Inter;letter-spacing:-.5px}
+    .hi-sub{font:500 16px/1.5 Inter;color:var(--txt2);max-width:440px}
+    .hi-sub b{color:var(--txt);font-weight:700}
+    .hi-micro{font:500 12px Inter,system-ui,sans-serif;color:var(--txt3);margin-top:10px}
+    .hi-scrollhint{margin-top:22px;color:var(--txt3);font-size:12px;display:flex;flex-direction:column;align-items:center;gap:4px}
+    .hi-scrollhint svg{width:16px;height:16px;animation:hi-bob 2s ease-in-out infinite}
+    @keyframes hi-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
+
+    /* ---- Bouton CTA ---- */
+    .hi-btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;height:56px;padding:0 30px;
+      border:0;border-radius:var(--r-md);cursor:pointer;
+      font:700 16px Inter,system-ui,sans-serif;letter-spacing:.3px;color:#04121A;
+      background:linear-gradient(135deg,var(--cyan),var(--cyan-deep));
+      box-shadow:0 8px 24px rgba(43,212,245,.35);
+      transition:transform .18s ease,box-shadow .18s ease;
+      animation:hi-glow 3s ease-in-out infinite}
+    .hi-btn:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(43,212,245,.5)}
+    .hi-btn:active{transform:scale(.98)}
+    .hi-btn:focus-visible{outline:2px solid var(--cyan-hi);outline-offset:3px}
+    .hi-btn[disabled]{opacity:.75;cursor:wait;animation:none}
+    @keyframes hi-glow{0%,100%{box-shadow:0 8px 24px rgba(43,212,245,.32)}50%{box-shadow:0 8px 30px rgba(43,212,245,.48)}}
+    .hi-spin{width:18px;height:18px;border-radius:50%;border:2.5px solid rgba(4,18,26,.25);
+      border-top-color:#04121A;animation:hi-rot .8s linear infinite;display:none}
+    @keyframes hi-rot{to{transform:rotate(360deg)}}
+    .hi-boot-msg{font:500 12px Inter,system-ui,sans-serif;color:var(--txt3);margin-top:10px;min-height:16px}
+
+    /* ---- Carte joueur (CSS pur, skin OR, fidèle à share_card_screen) ---- */
+    .hi-cardwrap{perspective:1100px}
+    .hi-card{width:290px;aspect-ratio:2/3;border-radius:var(--r-xl);padding:2px;margin:0 auto;
+      background:linear-gradient(135deg,var(--gold-hi),var(--gold),var(--gold-hi));
+      box-shadow:0 24px 60px rgba(0,0,0,.55),0 0 44px rgba(243,193,58,.20);
+      transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));
+      transition:transform .3s cubic-bezier(.22,1,.36,1);will-change:transform;
+      animation:hi-cardin .8s cubic-bezier(.22,1,.36,1) both}
+    @keyframes hi-cardin{from{opacity:0;transform:translateY(26px) rotateY(-10deg)}to{opacity:1;transform:translateY(0) rotateY(0)}}
+    .hi-card-in{border-radius:26px;height:100%;position:relative;overflow:hidden;
+      background:linear-gradient(150deg,#211B0E,#100C05);padding:20px 22px;
+      display:flex;flex-direction:column;text-align:left}
+    .hi-card-in::before{content:"";position:absolute;inset:0;pointer-events:none;
+      background:repeating-linear-gradient(-45deg,rgba(243,193,58,.045) 0 1px,transparent 1px 14px)}
+    .hi-sheen{position:absolute;top:-60%;left:-60%;width:34%;height:220%;transform:rotate(-24deg);
+      background:linear-gradient(90deg,transparent,rgba(255,255,255,.09),transparent);
+      animation:hi-sheenmove 3.4s linear infinite;pointer-events:none}
+    @keyframes hi-sheenmove{from{left:-60%}to{left:140%}}
+    .hi-ovr{font:700 72px/0.86 Rajdhani;letter-spacing:-2px;
+      background:linear-gradient(180deg,var(--gold-hi),var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent}
+    .hi-ovr-lab{font:600 10px Rajdhani,'Arial Narrow',sans-serif;letter-spacing:2.5px;color:rgba(243,193,58,.75);margin-top:4px}
+    .hi-card-head{display:flex;justify-content:space-between;align-items:flex-start}
+    .hi-ligue{font:600 10px Rajdhani,'Arial Narrow',sans-serif;letter-spacing:1.5px;color:rgba(243,193,58,.85);
+      border:1px solid rgba(243,193,58,.4);border-radius:8px;padding:5px 8px;text-align:center}
+    .hi-cardavatar{width:104px;height:104px;border-radius:50%;margin:14px auto 10px;position:relative;
+      background:radial-gradient(circle at 50% 35%,#232A3B,#141822);
+      border:2px solid rgba(243,193,58,.55);box-shadow:0 0 26px rgba(243,193,58,.28)}
+    .hi-cardavatar svg{position:absolute;inset:14px;color:rgba(243,193,58,.9)}
+    .hi-cardname{font:700 24px Rajdhani,'Arial Narrow',sans-serif;letter-spacing:4px;text-align:center;color:var(--txt)}
+    .hi-cardarch{font:600 10px Rajdhani,'Arial Narrow',sans-serif;letter-spacing:2px;color:rgba(243,193,58,.85);text-align:center;margin-top:2px}
+    .hi-bars{display:grid;grid-template-columns:1fr 1fr;gap:7px 18px;margin-top:16px}
+    .hi-bar{display:flex;align-items:center;gap:7px;font:600 10px Rajdhani,'Arial Narrow',sans-serif;letter-spacing:1px;color:var(--txt2)}
+    .hi-bar b{color:var(--txt);font:700 12px Rajdhani,'Arial Narrow',sans-serif;min-width:16px}
+    .hi-bar i{flex:1;height:5px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden;display:block}
+    .hi-bar i s{display:block;height:100%;border-radius:3px}
+    .hi-card-foot{margin-top:auto;display:flex;justify-content:space-between;align-items:center;
+      font:700 9px Rajdhani,'Arial Narrow',sans-serif;letter-spacing:2.5px;color:rgba(243,193,58,.6)}
+
+    /* ---- Sections ---- */
+    .hi-sec{padding:64px 0}
+    .hi-sec-t{font:800 26px/1.15 Inter;letter-spacing:-.3px;text-align:center}
+    .hi-sec-s{font:500 15px/1.5 Inter;color:var(--txt2);text-align:center;max-width:520px;margin:14px auto 0}
+    .hi-in{opacity:0;transform:translateY(24px);transition:opacity .48s cubic-bezier(.22,1,.36,1),transform .48s cubic-bezier(.22,1,.36,1)}
+    .hi-in.is-in{opacity:1;transform:none}
+
+    /* piliers */
+    .hi-pillars{display:grid;gap:14px;margin-top:34px}
+    .hi-pillar{background:var(--surface);border:1px solid var(--stroke);border-radius:var(--r-lg);padding:20px}
+    .hi-pillar h3{font:700 16px Inter,system-ui,sans-serif;display:flex;align-items:center;gap:10px}
+    .hi-pillar svg{width:20px;height:20px;color:var(--cyan)}
+    .hi-pillar p{font:500 14px/1.45 Inter;color:var(--txt2);margin-top:8px}
+
+    /* étapes */
+    .hi-steps{display:grid;gap:18px;margin-top:38px;max-width:560px;margin-left:auto;margin-right:auto}
+    .hi-step{display:flex;gap:18px;align-items:flex-start}
+    .hi-step .n{font:700 40px/1 Rajdhani;color:rgba(43,212,245,.55);min-width:56px}
+    .hi-step h3{font:700 17px Inter,system-ui,sans-serif}
+    .hi-step p{font:500 14px/1.45 Inter;color:var(--txt2);margin-top:4px}
+
+    /* radar chips */
+    .hi-chips{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:28px}
+    .hi-chip{font:600 13px Inter,system-ui,sans-serif;padding:9px 16px;border-radius:999px;border:1px solid var(--stroke-hi)}
+
+    /* ligue */
+    .hi-board{max-width:420px;margin:32px auto 0;background:var(--surface);border:1px solid var(--stroke);
+      border-radius:var(--r-lg);overflow:hidden}
+    .hi-row{display:flex;align-items:center;gap:14px;padding:14px 20px;border-top:1px solid var(--stroke)}
+    .hi-row:first-child{border-top:0}
+    .hi-row .pos{font:700 18px Rajdhani,'Arial Narrow',sans-serif;color:var(--txt3);min-width:36px}
+    .hi-row .who{flex:1;font:600 14px Inter,system-ui,sans-serif;color:var(--txt2)}
+    .hi-row .pts{font:700 20px Rajdhani,'Arial Narrow',sans-serif;color:var(--txt)}
+    .hi-row.you{background:rgba(43,212,245,.08)}
+    .hi-row.you .pos,.hi-row.you .who,.hi-row.you .pts{color:var(--cyan-hi)}
+
+    /* early adopter */
+    .hi-early{max-width:560px;margin:0 auto;text-align:center}
+    .hi-badge{display:inline-block;font:700 12px Rajdhani,'Arial Narrow',sans-serif;letter-spacing:2px;color:var(--cyan);
+      border:1px solid rgba(43,212,245,.4);border-radius:999px;padding:9px 18px;margin-top:22px}
+
+    /* témoignages — MASQUÉS tant qu'il n'y a pas de VRAIS avis validés par de vraies
+       personnes (faux avis = pratique commerciale trompeuse). Pour activer : passer
+       hiShowReviews à true ci-dessous et remplacer les citations. */
+    .hi-reviews{display:none;grid-template-columns:1fr;gap:14px;margin-top:34px}
+    .hi-reviews.on{display:grid}
+    .hi-review{background:var(--surface);border:1px solid var(--stroke);border-radius:var(--r-lg);padding:20px;text-align:left}
+    .hi-review p{font:500 14px/1.5 Inter;color:var(--txt)}
+    .hi-review footer{margin-top:12px;font:600 12px Inter,system-ui,sans-serif;color:var(--txt3)}
+    .hi-review footer b{color:var(--gold)}
+
+    /* CTA final */
+    .hi-final{text-align:center;padding:72px 0 84px}
+    .hi-final .hi-sec-t{font-size:28px}
+    .hi-final .hi-btn{margin-top:28px}
+    .hi-reassure{font:500 13px Inter,system-ui,sans-serif;color:var(--txt3);margin-top:14px}
+    .hi-alt{margin-top:20px;font:500 13px Inter,system-ui,sans-serif;color:var(--txt3)}
+    .hi-alt button{background:none;border:0;color:var(--cyan);font:700 13px Inter,system-ui,sans-serif;cursor:pointer;text-decoration:underline;padding:10px}
+
+    /* footer */
+    .hi-foot{background:#070910;border-top:1px solid var(--stroke);padding:34px 0 40px;text-align:center}
+    .hi-foot .hi-brand{justify-content:center}
+    .hi-foot .base{font:500 13px Inter,system-ui,sans-serif;color:var(--txt3);margin-top:8px}
+    .hi-foot nav{margin-top:18px;display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+    .hi-foot a{color:var(--txt2);font:500 13px Inter,system-ui,sans-serif;text-decoration:none;padding:10px 8px}
+    .hi-foot a:hover{color:var(--cyan-hi)}
+    .hi-foot .cc{font:500 12px Inter,system-ui,sans-serif;color:var(--txt3);margin-top:10px}
+
+    /* ---- Desktop ---- */
+    @media(min-width:880px){
+      .hi-hero .hi-wrap{flex-direction:row;text-align:left;justify-content:space-between;gap:48px}
+      .hi-hero .hi-copy{max-width:520px;align-items:flex-start}
+      .hi-h1{font-size:56px}
+      .hi-sub{font-size:19px}
+      .hi-sec-t{font-size:40px}
+      .hi-pillars{grid-template-columns:repeat(3,1fr)}
+      .hi-card{width:320px}
+      .hi-reviews{grid-template-columns:1fr 1fr}
+      .hi-final .hi-sec-t{font-size:44px}
+    }
+    /* ---- Reduced motion : tout statique ---- */
+    @media(prefers-reduced-motion:reduce){
+      .hi-in{opacity:1;transform:none;transition:none}
+      .hi-sheen,.hi-btn,.hi-scrollhint svg{animation:none}
+      .hi-card{animation:none;transform:none !important}
+    }
+  </style>
+</head>
+<body style="background:#090B11">
+
+  <div id="hi-landing">
+    <!-- A. Top bar -->
+    <header class="hi-top">
+      <div class="hi-wrap">
+        <div class="hi-brand">
+          <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9.5" stroke="#2BD4F5" stroke-width="2.4"/><path d="M13.2 4.5 7.8 12.4h3.7l-.5 6 5.6-8h-4z" fill="#2BD4F5"/></svg>
+          ATHLETE LEAGUE
+        </div>
+        <button class="hi-login" onclick="hiStart('login')">Se connecter</button>
+      </div>
+    </header>
+
+    <!-- B. Hero -->
+    <section class="hi-hero">
+      <div class="hi-wrap">
+        <div class="hi-copy">
+          <div class="hi-over">TON CORPS A UN SCORE</div>
+          <h1 class="hi-h1" style="margin-top:14px">Découvre ton<br>Athlete&nbsp;Index.</h1>
+          <p class="hi-sub" style="margin-top:18px">Trois entraînements suffisent. On transforme ta condition physique en <b>un seul score comparable</b> — et en une carte de joueur qui claque.</p>
+          <div style="margin-top:28px">
+            <button class="hi-btn" id="hi-cta1" onclick="hiStart('signup')">
+              <span class="hi-spin"></span><span class="lbl">Commencer gratuitement</span>
+            </button>
+            <div class="hi-boot-msg" id="hi-boot1"></div>
+            <div class="hi-micro">Gratuit. Avatar prêt en 30 secondes. Sans matériel obligatoire.</div>
+          </div>
+        </div>
+        <div class="hi-cardwrap">
+          <div class="hi-card" id="hi-card">
+            <div class="hi-card-in">
+              <div class="hi-sheen"></div>
+              <div class="hi-card-head">
+                <div>
+                  <div class="hi-ovr hi-raj" id="hi-ovr">84</div>
+                  <div class="hi-ovr-lab">ATHLETE INDEX</div>
+                </div>
+                <div class="hi-ligue">LIGUE<br>H</div>
+              </div>
+              <div class="hi-cardavatar">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a4.2 4.2 0 1 0 0-8.4 4.2 4.2 0 0 0 0 8.4Zm0 2.1c-3.9 0-7.2 2-7.2 4.5v1.2h14.4v-1.2c0-2.5-3.3-4.5-7.2-4.5Z"/></svg>
+              </div>
+              <div class="hi-cardname">ALEX</div>
+              <div class="hi-cardarch">HYBRIDE · TOP 12%</div>
+              <div class="hi-bars">
+                <span class="hi-bar">ENG <i><s style="width:86%;background:var(--a-eng)"></s></i><b>86</b></span>
+                <span class="hi-bar">FOR <i><s style="width:79%;background:var(--a-for)"></s></i><b>79</b></span>
+                <span class="hi-bar">PUI <i><s style="width:81%;background:var(--a-pui)"></s></i><b>81</b></span>
+                <span class="hi-bar">VIT <i><s style="width:82%;background:var(--a-vit)"></s></i><b>82</b></span>
+                <span class="hi-bar">RES <i><s style="width:88%;background:var(--a-res)"></s></i><b>88</b></span>
+                <span class="hi-bar">HYB <i><s style="width:85%;background:var(--a-hyb)"></s></i><b>85</b></span>
+              </div>
+              <div class="hi-card-foot"><span>◼◼◻◻◻</span><span>ATHLETE LEAGUE</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="hi-scrollhint" aria-hidden="true">
+        Voir comment ça marche
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+      </div>
+    </section>
+
+    <!-- C. Piliers -->
+    <section class="hi-sec">
+      <div class="hi-wrap">
+        <div class="hi-pillars">
+          <div class="hi-pillar hi-in">
+            <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Un score, pas un flou</h3>
+            <p>De 40 à 100. Normalisé par sexe. Le même barème pour tout le monde.</p>
+          </div>
+          <div class="hi-pillar hi-in">
+            <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l7 4v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V7z"/></svg>Une carte qui évolue</h3>
+            <p>Ton avatar monte en rang à mesure que tu progresses. Bronze, Or, Diamant, Élite.</p>
+          </div>
+          <div class="hi-pillar hi-in">
+            <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20v-6M10 20V8M16 20v-9M22 20H2"/></svg>Tu n'es plus seul</h3>
+            <p>Classement public, ligue mensuelle, un rival à ta taille. La compèt' commence.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- D. Comment ça marche -->
+    <section class="hi-sec">
+      <div class="hi-wrap">
+        <h2 class="hi-sec-t hi-in">Trois séances. Un Index.<br>C'est tout.</h2>
+        <div class="hi-steps">
+          <div class="hi-step hi-in"><span class="n hi-raj">01</span><div><h3>Crée ton avatar</h3><p>30 secondes. Pas de photo, pas de balance. Juste toi.</p></div></div>
+          <div class="hi-step hi-in"><span class="n hi-raj">02</span><div><h3>Fais 3 séances de référence</h3><p>Avec ou sans matériel. On note chaque perf sur 100.</p></div></div>
+          <div class="hi-step hi-in"><span class="n hi-raj">03</span><div><h3>Ton Index se révèle</h3><p>Radar de 6 attributs, rang, place dans la ligue. Le reveal fait plaisir.</p></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- E. Radar -->
+    <section class="hi-sec">
+      <div class="hi-wrap">
+        <h2 class="hi-sec-t hi-in">Six attributs. Une signature.</h2>
+        <p class="hi-sec-s hi-in">Ton radar montre qui tu es vraiment — et où tu peux frapper plus fort.</p>
+        <div class="hi-chips hi-in">
+          <span class="hi-chip" style="color:var(--a-eng)">Cardio</span>
+          <span class="hi-chip" style="color:var(--a-for)">Force</span>
+          <span class="hi-chip" style="color:var(--a-pui)">Puissance</span>
+          <span class="hi-chip" style="color:var(--a-vit)">Vitesse</span>
+          <span class="hi-chip" style="color:var(--a-res)">Endurance</span>
+          <span class="hi-chip" style="color:var(--a-hyb)">Hybride</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- F. Ligue -->
+    <section class="hi-sec">
+      <div class="hi-wrap">
+        <h2 class="hi-sec-t hi-in">Ta place se défend chaque mois.</h2>
+        <p class="hi-sec-s hi-in">Une ligue par sexe, remise à zéro tous les mois. Un rival choisi à ton niveau. Le classement, lui, est public.</p>
+        <div class="hi-board hi-in">
+          <div class="hi-row"><span class="pos hi-raj">#1</span><span class="who">— — —</span><span class="pts hi-raj">92</span></div>
+          <div class="hi-row"><span class="pos hi-raj">#2</span><span class="who">— — —</span><span class="pts hi-raj">88</span></div>
+          <div class="hi-row"><span class="pos hi-raj">#3</span><span class="who">— — —</span><span class="pts hi-raj">85</span></div>
+          <div class="hi-row you"><span class="pos hi-raj">#?</span><span class="who">Toi, peut-être.</span><span class="pts hi-raj">—</span></div>
+        </div>
+        <p class="hi-sec-s hi-in" style="margin-top:18px;font-size:13px;color:var(--txt3)">Ton rang bouge en direct. Ta carte le prouve.</p>
+      </div>
+    </section>
+
+    <!-- G. Early adopter (+ témoignages prêts, masqués tant que pas de VRAIS avis) -->
+    <section class="hi-sec">
+      <div class="hi-wrap">
+        <div class="hi-early hi-in">
+          <h2 class="hi-sec-t">L'app est neuve.<br>C'est ta chance.</h2>
+          <p class="hi-sec-s">Pas encore de millions d'utilisateurs — et c'est exactement pour ça qu'il faut venir maintenant. Les premiers arrivés prennent le haut du classement pendant que c'est encore ouvert.</p>
+          <span class="hi-badge">REJOINS LES PREMIERS ATHLÈTES</span>
+        </div>
+        <div class="hi-reviews" id="hi-reviews">
+          <div class="hi-review hi-in">
+            <p>« CITATION_REELLE_1 »</p>
+            <footer><b>PSEUDO_1</b> · RANG_1</footer>
+          </div>
+          <div class="hi-review hi-in">
+            <p>« CITATION_REELLE_2 »</p>
+            <footer><b>PSEUDO_2</b> · RANG_2</footer>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- H. CTA final -->
+    <section class="hi-final">
+      <div class="hi-wrap">
+        <h2 class="hi-sec-t hi-in">Alors, il vaut combien,<br>ton corps&nbsp;?</h2>
+        <button class="hi-btn hi-in" id="hi-cta2" onclick="hiStart('signup')">
+          <span class="hi-spin"></span><span class="lbl">Découvrir mon Index</span>
+        </button>
+        <div class="hi-boot-msg" id="hi-boot2"></div>
+        <p class="hi-reassure hi-in">Gratuit · 3 séances suffisent · Aucun matériel obligatoire</p>
+        <p class="hi-alt hi-in">J'ai déjà un compte → <button onclick="hiStart('login')">Se connecter</button></p>
+      </div>
+    </section>
+
+    <!-- I. Footer -->
+    <footer class="hi-foot">
+      <div class="hi-wrap">
+        <div class="hi-brand">
+          <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9.5" stroke="#2BD4F5" stroke-width="2.4"/><path d="M13.2 4.5 7.8 12.4h3.7l-.5 6 5.6-8h-4z" fill="#2BD4F5"/></svg>
+          ATHLETE LEAGUE
+        </div>
+        <div class="base">La condition physique, enfin comparable.</div>
+        <nav>
+          <a href="legal/cgu.html">Conditions</a>·
+          <a href="legal/confidentialite.html">Confidentialité</a>·
+          <a href="mailto:contact@athlete-league.fr">Contact</a>
+        </nav>
+        <div class="cc">© 2026 Athlete League</div>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // ============================ Landing ↔ Flutter ============================
+    // États : LANDING → (clic CTA) BOOTING → (hiOnFlutterReady) APP.
+    // Un revenant (jeton en localStorage) saute la landing dès que l'app est prête.
+    window.hiFlutterReady = false;
+    window.hiBooting = false;
+    window.hiIntent = null;
+    // SharedPreferences (web) préfixe ses clés par « flutter. ».
+    window.hiHasToken = false;
+    try { window.hiHasToken = !!localStorage.getItem('flutter.hi_token'); } catch (e) {}
+
+    function hiReveal() {
+      var l = document.getElementById('hi-landing');
+      if (!l || l.classList.contains('hi-out')) return;
+      l.classList.add('hi-out');
+      setTimeout(function () { l.style.display = 'none'; }, 460);
+    }
+    window.hiOnFlutterReady = function () {
+      window.hiFlutterReady = true;
+      if (window.hiBooting || window.hiHasToken) hiReveal();
+    };
+    window.hiStart = function (intent) {
+      window.hiIntent = intent || 'signup';
+      if (window.hiFlutterReady) { hiReveal(); return; }
+      window.hiBooting = true;
+      ['1', '2'].forEach(function (n) {
+        var b = document.getElementById('hi-cta' + n);
+        if (b) {
+          b.disabled = true;
+          b.querySelector('.hi-spin').style.display = 'inline-block';
+          b.querySelector('.lbl').textContent = 'Préparation…';
+        }
+        var m = document.getElementById('hi-boot' + n);
+        if (m) m.textContent = 'On prépare ton terrain de jeu…';
+      });
+      // Garde-fou : si l'app ne signale rien en 20 s (réseau très lent), on révèle quand même
+      // (le chargeur Flutter natif prend le relais) plutôt que de bloquer le visiteur.
+      setTimeout(function () { if (!window.hiFlutterReady) hiReveal(); }, 20000);
+    };
+
+    // Fondu-remonté au scroll (un seul IntersectionObserver, GPU only).
+    (function () {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      var io = new IntersectionObserver(function (es) {
+        es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); } });
+      }, { threshold: 0.15 });
+      document.querySelectorAll('.hi-in').forEach(function (el, i) {
+        el.style.transitionDelay = (i % 3) * 60 + 'ms';
+        io.observe(el);
+      });
+    })();
+
+    // Inclinaison 3D de la carte au survol (desktop) — GPU only, retour doux.
+    (function () {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      var c = document.getElementById('hi-card');
+      if (!c || !window.matchMedia('(hover: hover)').matches) return;
+      c.addEventListener('pointermove', function (e) {
+        var r = c.getBoundingClientRect();
+        c.style.setProperty('--ry', ((e.clientX - r.left) / r.width - 0.5) * 10 + 'deg');
+        c.style.setProperty('--rx', ((e.clientY - r.top) / r.height - 0.5) * -8 + 'deg');
+      });
+      c.addEventListener('pointerleave', function () {
+        c.style.setProperty('--rx', '0deg'); c.style.setProperty('--ry', '0deg');
+      });
+    })();
+
+    // Count-up de l'OVR 40 → 84 quand la carte entre à l'écran (dopamine du reveal).
+    (function () {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      var el = document.getElementById('hi-ovr');
+      if (!el) return;
+      var io = new IntersectionObserver(function (es) {
+        if (!es[0].isIntersecting) return;
+        io.disconnect();
+        var t0 = null;
+        function tick(ts) {
+          if (!t0) t0 = ts;
+          var p = Math.min(1, (ts - t0) / 1200);
+          var ease = 1 - Math.pow(2, -10 * p); // easeOutExpo
+          el.textContent = Math.round(40 + (84 - 40) * ease);
+          if (p < 1) requestAnimationFrame(tick); else el.textContent = '84';
+        }
+        requestAnimationFrame(tick);
+      }, { threshold: 0.4 });
+      io.observe(el);
+    })();
+
+    // Témoignages : NE PAS activer avec des citations inventées (illégal — pratique
+    // commerciale trompeuse). Quand 2 vrais avis existent (testeurs réels d'accord pour
+    // être cités) : remplacer CITATION_REELLE_*/PSEUDO_* ci-dessus puis décommenter :
+    // document.getElementById('hi-reviews').classList.add('on');
+  </script>
+
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

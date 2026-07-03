@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app.dart';
 import 'core/app_router.dart';
+import 'core/landing_bridge.dart';
 import 'data/analytics.dart';
 import 'data/locale_mode.dart';
 import 'data/outbox.dart';
@@ -59,6 +60,9 @@ Future<void> main() async {
     );
   };
   runApp(const ProviderScope(child: HybridIndexApp()));
+  // Web : prévient la landing statique (index.html) que l'app a peint son premier frame —
+  // elle se retire alors (tout de suite pour un connecté, au clic « Commencer » sinon).
+  WidgetsBinding.instance.addPostFrameCallback((_) => notifyLandingReady());
 }
 
 /// Branche Crashlytics — UNIQUEMENT sur l'APK release (jamais web, jamais debug : les sessions de
