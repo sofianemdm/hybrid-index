@@ -49,6 +49,8 @@ describe("api — boucle complète persistée (e2e réel)", () => {
   afterAll(async () => {
     // Nettoyage : Postgres (cascade) + entrée Redis orpheline.
     // L'historique d'Index (schéma scoring) n'a pas de cascade FK → nettoyage explicite.
+    // Utilisateurs auxiliaires de cohorte (explore) : nettoyage par motif d'email.
+    await prisma.user.deleteMany({ where: { email: { startsWith: "e2e_explore_" } } }).catch(() => undefined);
     for (const id of [userId, overtakerUserId, minorUserId]) {
       if (id) {
         await prisma.hybridIndexHistory.deleteMany({ where: { userId: id } }).catch(() => undefined);
@@ -457,6 +459,13 @@ describe("api — boucle complète persistée (e2e réel)", () => {
   });
 
   it("explore : recherche d'athlètes filtrée par sexe (Hommes)", async () => {
+    // COHORTE AUTONOME : sur une base NEUVE (CI), aucun autre homme n'existe à cet instant
+    // (l'explore exclut l'appelant) → le test crée l'athlète qu'il s'attend à trouver.
+    const exploreStamp = Date.now();
+    await request(api.getHttpServer())
+      .post("/v1/auth/register")
+      .send({ email: `e2e_explore_${exploreStamp}@test.local`, password: "motdepasse123", displayName: `Explo${exploreStamp % 1000000}`, dateOfBirth: "1993-03-03", sex: "male", goal: "all_round" })
+      .expect(201);
     const res = await request(api.getHttpServer())
       .get("/v1/explore?sex=male")
       .set("authorization", `Bearer ${token}`)
