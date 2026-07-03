@@ -264,6 +264,12 @@ export class PushService {
     return this.sendToUser(userId, this.compose("weekly-recap", { deltaIndex, sessions }, locale));
   }
 
+  /** Nouveau défi de la semaine (lundi) : « Fran — 7 jours pour poster ton score. » Gating complet. */
+  async notifyWeeklyChallenge(userId: string, wodName: string): Promise<void> {
+    const locale = await this.recipientLocale(userId);
+    return this.sendToUser(userId, this.compose("weekly-challenge", { wodName }, locale));
+  }
+
   /**
    * Nouveau message privé reçu (notification TRANSACTIONNELLE : non throttlée, opt-out respecté).
    * `senderName` = pseudo de l'expéditeur. `conversationId`/`senderId` sont placés dans `data` pour

@@ -28,11 +28,14 @@ export interface NotificationTrigger {
  * (cf. PUSH_COPY) ⇒ opt-out et cooldown s'appliquent réellement. Titres/corps ALIGNÉS sur PUSH_COPY.
  */
 export const NOTIFICATION_TRIGGERS: NotificationTrigger[] = [
-  { key: "rank-overtaken", trigger: "leaguePosition > snapshotPosition", title: "On t'a doublé au classement", body: "Reprends ta place — un bon WOD peut suffire.", priority: "medium", cooldown: "24h", category: "leaderboard" },
-  { key: "near-rank", trigger: "index_recomputed && pointsToNextRank <= NEXT_RANK_CLOSE_THRESHOLD", title: "Le prochain palier est tout proche", body: "Un bon WOD et tu y es.", priority: "medium", cooldown: "72h", category: "progression" },
+  { key: "rank-overtaken", trigger: "leaguePosition > snapshotPosition", title: "On t'a doublé au classement", body: "Reprends ta place — une bonne séance peut suffire.", priority: "medium", cooldown: "24h", category: "leaderboard" },
+  { key: "near-rank", trigger: "index_recomputed && pointsToNextRank <= NEXT_RANK_CLOSE_THRESHOLD", title: "Le prochain palier est tout proche", body: "Une bonne séance et tu y es.", priority: "medium", cooldown: "72h", category: "progression" },
   { key: "stale-attribute", trigger: "attribute_stale && unlocked", title: "Un de tes axes mérite un re-test", body: "Un attribut peut grimper. Quand tu veux.", priority: "low", cooldown: "7d", category: "progression" },
   { key: "kudos", trigger: "session_kudos_received", title: "On a réagi à ta perf", body: "Des athlètes ont salué ta séance.", priority: "medium", cooldown: "12h", category: "social" },
   { key: "weekly-recap", trigger: "weekly_cron && (sessions > 0 || deltaIndex > 0)", title: "Ta semaine en bref", body: "Ton récap de la semaine est prêt.", priority: "low", cooldown: "7d", category: "progression" },
+  // Le « réveil » du lundi : le nouveau défi tourne chaque semaine mais personne n'était prévenu —
+  // les utilisateurs peu actifs le rataient systématiquement. Gating complet (opt-out/quiet/cap/7d).
+  { key: "weekly-challenge", trigger: "weekly_cron && new_challenge", title: "Nouveau défi de la semaine", body: "Une nouvelle séance imposée t'attend — 7 jours pour poster ton score.", priority: "medium", cooldown: "7d", category: "progression" },
   // TRANSACTIONNEL : un DM 1-à-1 doit arriver « à la seconde » (jamais throttlé par quietHours /
   // dailyCap / cooldown), l'opt-out utilisateur restant respecté. cf. Incrément 2.
   { key: "new-message", trigger: "direct_message_received", title: "Nouveau message", body: "Ouvre la conversation pour répondre.", priority: "high", cooldown: "0", category: "social", transactional: true },
@@ -111,16 +114,16 @@ export interface PushCopyEntry {
 const PUSH_COPY: Record<string, Record<PushLocale, PushCopyEntry>> = {
   // Formulation UNIFIÉE avec le catalogue NOTIFICATION_TRIGGERS (« doublé » / « overtaken »).
   "rank-overtaken": {
-    fr: { title: "On t'a doublé au classement", body: () => "Reprends ta place — un bon WOD peut suffire. 👊" },
-    en: { title: "You've been overtaken in the ranking", body: () => "Take your spot back — one good WOD can do it. 👊" },
+    fr: { title: "On t'a doublé au classement", body: () => "Reprends ta place — une bonne séance peut suffire. 👊" },
+    en: { title: "You've been overtaken in the ranking", body: () => "Take your spot back — one good workout can do it. 👊" },
   },
   "stale-attribute": {
     fr: { title: "Un de tes axes mérite un re-test", body: (p) => `Ton ${p.attributeLabel} peut grimper. Quand tu veux.` },
     en: { title: "One of your areas deserves a re-test", body: (p) => `Your ${p.attributeLabel} can climb. Whenever you're ready.` },
   },
   "near-rank": {
-    fr: { title: "Le prochain palier est tout proche", body: (p) => `Plus que ${p.points} point${Number(p.points) > 1 ? "s" : ""} — un bon WOD et tu y es.` },
-    en: { title: "The next tier is within reach", body: (p) => `Just ${p.points} point${Number(p.points) > 1 ? "s" : ""} to go — one good WOD and you're there.` },
+    fr: { title: "Le prochain palier est tout proche", body: (p) => `Plus que ${p.points} point${Number(p.points) > 1 ? "s" : ""} — une bonne séance et tu y es.` },
+    en: { title: "The next tier is within reach", body: (p) => `Just ${p.points} point${Number(p.points) > 1 ? "s" : ""} to go — one good workout and you're there.` },
   },
   kudos: {
     fr: { title: "On a réagi à ta perf", body: (p) => `${p.count} athlète${Number(p.count) > 1 ? "s ont" : " a"} salué ta séance. 🔥` },
@@ -129,6 +132,10 @@ const PUSH_COPY: Record<string, Record<PushLocale, PushCopyEntry>> = {
   "weekly-recap": {
     fr: { title: "Ta semaine en bref", body: (p) => `+${p.deltaIndex} pts d'Index, ${p.sessions} séance${Number(p.sessions) > 1 ? "s" : ""}. Belle semaine. 📈` },
     en: { title: "Your week in a nutshell", body: (p) => `+${p.deltaIndex} Index pts, ${p.sessions} session${Number(p.sessions) > 1 ? "s" : ""}. Great week. 📈` },
+  },
+  "weekly-challenge": {
+    fr: { title: "Nouveau défi de la semaine", body: (p) => `${p.wodName} — 7 jours pour poster ton score. ⚔️` },
+    en: { title: "New challenge of the week", body: (p) => `${p.wodName} — 7 days to post your score. ⚔️` },
   },
   "new-message": {
     fr: { title: "Message de {senderName}", body: () => "Ouvre la conversation pour répondre." },

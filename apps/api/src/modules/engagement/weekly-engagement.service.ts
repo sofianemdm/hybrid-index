@@ -1,6 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { Cron } from "@nestjs/schedule";
 import { PrismaService } from "../../infra/prisma/prisma.service";
+import { ChallengeService } from "../challenge/challenge.service";
 import { EngagementService } from "./engagement.service";
 import { PushService } from "./push.service";
 import { attributeLabel, type PushLocale } from "./notifications.data";
@@ -23,6 +24,7 @@ export class WeeklyEngagementService {
     private readonly prisma: PrismaService,
     private readonly engagement: EngagementService,
     private readonly push: PushService,
+    private readonly challenge: ChallengeService,
   ) {}
 
   /** Lundi 09:00 (heure serveur). Récap hebdo + signal d'attribut stagnant pour les actifs opt-in. */
@@ -46,9 +48,20 @@ export class WeeklyEngagementService {
       take: WeeklyEngagementService.MAX_USERS_PER_RUN,
     });
 
+    // Défi de la semaine résolu UNE fois pour toute la passe (même WOD pour tout le monde).
+    // Best-effort : sans nom de défi, on n'envoie simplement pas cette notif.
+    let challengeName: string | null;
+    try {
+      const ch = (await this.challenge.current()) as { wodName?: string } | null;
+      challengeName = ch?.wodName ?? null;
+    } catch {
+      challengeName = null;
+    }
+
     let processed = 0;
     for (const { userId } of users) {
       try {
+        if (challengeName != null) await this.push.notifyWeeklyChallenge(userId, challengeName);
         await this.sendRecap(userId);
         await this.sendStaleAttribute(userId);
         processed += 1;

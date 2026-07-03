@@ -213,6 +213,7 @@ class PushService {
       case 'near-rank':
         goToTab(_Tab.leaderboard);
       case 'stale-attribute':
+      case 'weekly-challenge': // nouveau défi de la semaine → onglet Séances (le défi y vit)
         goToTab(_Tab.sessions);
       case 'weekly-recap':
         goToTab(_Tab.home);

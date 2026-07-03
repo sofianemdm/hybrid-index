@@ -1,4 +1,5 @@
 import { Module } from "@nestjs/common";
+import { ChallengeModule } from "../challenge/challenge.module";
 import { LeaderboardModule } from "../leaderboard/leaderboard.module";
 import { EngagementController } from "./engagement.controller";
 import { EngagementService } from "./engagement.service";
@@ -8,7 +9,7 @@ import { PushService } from "./push.service";
 import { WeeklyEngagementService } from "./weekly-engagement.service";
 
 @Module({
-  imports: [LeaderboardModule],
+  imports: [LeaderboardModule, ChallengeModule],
   controllers: [EngagementController],
   providers: [StreakService, BadgesService, EngagementService, PushService, WeeklyEngagementService],
   exports: [StreakService, BadgesService, PushService],

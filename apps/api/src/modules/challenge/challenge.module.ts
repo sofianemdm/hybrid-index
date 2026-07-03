@@ -5,5 +5,6 @@ import { ChallengeService } from "./challenge.service";
 @Module({
   controllers: [ChallengeController],
   providers: [ChallengeService],
+  exports: [ChallengeService], // consommé par le cron hebdo d'engagement (notif « nouveau défi »)
 })
 export class ChallengeModule {}
