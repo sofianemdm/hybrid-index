@@ -1,6 +1,7 @@
 name: Deploy Web (Netlify)
 
 # Reconstruit l'app Flutter Web et la redéploie sur Netlify à chaque modif du code mobile.
+# (Relance du 03/07 après déblocage des crédits Netlify.)
 # Résultat : le site (hybrid-index.netlify.app) a toujours la dernière version — il suffit de
 # rafraîchir la page pour mettre à jour (aucune installation).
 # Prérequis : 2 secrets GitHub à ajouter (Settings → Secrets and variables → Actions) :
