@@ -1,0 +1,35 @@
+name: Build iOS (non signé)
+
+# Compile l'app iOS dans le cloud (runner macOS) SANS signature — sert à valider que le projet
+# iOS compile avant d'avoir le compte Apple Developer. Lancement MANUEL uniquement (les minutes
+# macOS coûtent 10x les minutes Linux) : onglet "Actions" → "Build iOS (non signé)" → "Run workflow".
+# Quand le compte Apple existera : ajouter les secrets de signature + export .ipa + upload TestFlight.
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: apps/mobile
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.44.2"
+          channel: stable
+          cache: true
+
+      - name: Dépendances
+        run: flutter pub get
+
+      - name: Build iOS (release, sans signature)
+        run: >
+          flutter build ios --release --no-codesign
+          --dart-define=API_BASE_URL=https://api-production-9a50.up.railway.app
+          --dart-define=PUSH_ENABLED=true
+
+      - name: Résumé
+        run: echo "✓ L'app iOS compile. Prochaine étape — compte Apple Developer + signature + TestFlight."
