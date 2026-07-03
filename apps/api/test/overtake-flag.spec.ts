@@ -4,6 +4,7 @@ import type { ScoreClient } from "../src/infra/score-client/score-client.service
 import type { RedisService } from "../src/infra/redis/redis.service";
 import type { FeedEventsService } from "../src/modules/social/feed-events.service";
 import type { PushService } from "../src/modules/engagement/push.service";
+import type { ProfileViewService } from "../src/modules/profile/profile-view.service";
 
 /**
  * Lever #1 (cahier §4.3) — flag d'AUTO-DÉPASSEMENT renvoyé à l'auteur d'un résultat.
@@ -39,6 +40,7 @@ function makeService(opts: {
     {} as unknown as RedisService,
     {} as unknown as FeedEventsService,
     {} as unknown as PushService,
+    {} as unknown as ProfileViewService, // detectOvertake n'utilise pas la vue
   );
   const detect = (svc as unknown as { detectOvertake: Detect }).detectOvertake.bind(svc);
   return { detect };

@@ -3,7 +3,7 @@ import { CurrentUser } from "../auth/current-user.decorator";
 import { JwtAuthGuard, type AuthenticatedUser } from "../auth/jwt-auth.guard";
 import { ZodValidationPipe } from "../../common/zod-validation.pipe";
 import { PrismaService } from "../../infra/prisma/prisma.service";
-import { ProfileScoringService, type PersistedProfile } from "../profile/profile-scoring.service";
+import { ProfileViewService, type PersistedProfile } from "../profile/profile-view.service";
 import { cosmeticsFor } from "../engagement/badges.data";
 import { MeService } from "./me.service";
 import { UpdateAvatarRequest, UpdateMeRequest } from "./me.dto";
@@ -13,7 +13,7 @@ import { UpdateAvatarRequest, UpdateMeRequest } from "./me.dto";
 export class MeController {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly profileScoring: ProfileScoringService,
+    private readonly profileView: ProfileViewService,
     private readonly meService: MeService,
   ) {}
 
@@ -64,7 +64,7 @@ export class MeController {
   /** HYBRID INDEX + radar persistés (état vide tant qu'aucun effort loggé). */
   @Get("profile")
   async profile(@CurrentUser() user: AuthenticatedUser): Promise<PersistedProfile> {
-    const p = await this.profileScoring.getMyProfile(user.userId);
+    const p = await this.profileView.getMyProfile(user.userId);
     if (!p) {
       throw new NotFoundException({
         code: "NOT_FOUND",
@@ -77,6 +77,6 @@ export class MeController {
   /** Courbe de progression personnelle : série temporelle du HYBRID INDEX (H3). */
   @Get("history")
   history(@CurrentUser() user: AuthenticatedUser): Promise<unknown> {
-    return this.profileScoring.getHistory(user.userId);
+    return this.profileView.getHistory(user.userId);
   }
 }
