@@ -155,10 +155,15 @@ class _HomeShellState extends ConsumerState<HomeShell> {
       extendBody: true, // le contenu glisse sous la barre translucide
       body: Stack(
         children: [
-          IndexedStack(
+          // 4 onglets (Progression sortie de la barre → accessible via la carte Index de l'Accueil).
+          // _LazyIndexedStack : un onglet n'est CONSTRUIT qu'à sa première visite (démarrage à
+          // froid ~4× moins de travail : plus de fetch Communauté/Classement avant d'en avoir
+          // besoin) et ses animations sont GELÉES quand il est caché (TickerMode) — le reflet de
+          // la carte joueur ne consomme plus rien depuis les autres onglets. L'état des onglets
+          // visités est CONSERVÉ (même comportement perçu qu'IndexedStack).
+          _LazyIndexedStack(
             index: tab,
-            // 4 onglets (Progression sortie de la barre → accessible via la carte Index de l'Accueil).
-            children: const [HomeScreen(), WodTab(), CommunityTab(), LeaderboardScreen()],
+            builders: const [HomeScreen.new, WodTab.new, CommunityTab.new, LeaderboardScreen.new],
           ),
           // Observateur temps réel (sans rendu) : affiche le bandeau « Nouveau message de X » quand
           // un DM arrive hors de la conversation ouverte. Monté ici → vivant sur tous les onglets.
@@ -315,6 +320,38 @@ class _HomeShellState extends ConsumerState<HomeShell> {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// IndexedStack PARESSEUX : chaque enfant n'est construit qu'à sa première sélection, puis
+/// conservé (état/scroll intacts). Les enfants non visibles sont sous TickerMode(enabled:false)
+/// → toutes leurs animations (reflets, shimmers) s'arrêtent tant qu'ils sont cachés.
+class _LazyIndexedStack extends StatefulWidget {
+  const _LazyIndexedStack({required this.index, required this.builders});
+
+  final int index;
+  final List<Widget Function({Key? key})> builders;
+
+  @override
+  State<_LazyIndexedStack> createState() => _LazyIndexedStackState();
+}
+
+class _LazyIndexedStackState extends State<_LazyIndexedStack> {
+  late final List<bool> _built = List<bool>.filled(widget.builders.length, false);
+
+  @override
+  Widget build(BuildContext context) {
+    _built[widget.index] = true;
+    return IndexedStack(
+      index: widget.index,
+      children: [
+        for (var i = 0; i < widget.builders.length; i++)
+          TickerMode(
+            enabled: i == widget.index,
+            child: _built[i] ? widget.builders[i]() : const SizedBox.shrink(),
+          ),
+      ],
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'dart:async' show unawaited;
 import 'dart:ui' show PlatformDispatcher;
 
 import 'package:firebase_core/firebase_core.dart';
@@ -25,7 +26,10 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // Crash reporting (Crashlytics) : toute erreur non gérée de l'APK est reportée à la console
   // Firebase (ligne exacte, modèle d'appareil, version) au lieu de disparaître en silence.
-  await _initCrashReporting();
+  // NON bloquant (démarrage à froid plus court sur les téléphones lents) : les handlers sont
+  // branchés quelques ms après le premier frame — un crash DE démarrage resterait visible
+  // via l'ErrorWidget ci-dessous de toute façon.
+  unawaited(_initCrashReporting());
   // Garde-fou global : tout widget qui plante au build est remplacé par un message propre
   // (plus jamais le gros rouge « Unexpected null value » chez l'utilisateur). Wrappé dans une
   // Directionality pour fonctionner même hors d'un MaterialApp.
