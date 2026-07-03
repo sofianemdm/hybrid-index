@@ -720,6 +720,18 @@ class AppLocalizationsFr extends AppLocalizations {
   String get wodDetailChallenge => 'Le défi';
 
   @override
+  String get wodRoundsTitle => 'TOUR PAR TOUR, DANS L\'ORDRE';
+
+  @override
+  String get wodRoundsHint =>
+      'Fais TOUS les mouvements du tour 1 (dans l\'ordre), puis enchaîne le tour 2, puis le tour 3. Le chrono tourne du début à la fin.';
+
+  @override
+  String wodRoundsRound(Object n) {
+    return 'Tour $n';
+  }
+
+  @override
   String wodDetailCap(String cap) {
     return 'Cap $cap';
   }

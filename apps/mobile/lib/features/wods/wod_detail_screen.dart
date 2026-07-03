@@ -21,6 +21,27 @@ import 'wod_result_entry_screen.dart';
 import '../guided/guided_session_screen.dart';
 
 /// Fiche WOD : paliers de référence (champion/intermédiaire/occasionnel) + classement + « Faire cette séance ».
+/// Décompose les blocs en tours si AU MOINS un bloc porte un schéma dégressif « 21-15-9 ».
+/// Tour i = la i-ème valeur de chaque schéma ; un bloc à valeur unique (« 400 m ») se répète
+/// à chaque tour. Schémas de longueurs incohérentes → on n'affiche rien (jamais d'info fausse).
+/// Top-level (et non membre du State privé) pour être testé unitairement.
+List<List<String>>? roundsBreakdown(List<WodBlock> blocks) {
+  final scheme = RegExp(r'^\d+(-\d+)+$');
+  final lengths = {
+    for (final b in blocks)
+      if (scheme.hasMatch(b.reps.trim())) b.reps.trim().split('-').length,
+  };
+  if (lengths.length != 1) return null;
+  final n = lengths.first;
+  return List.generate(n, (i) {
+    return blocks.map((b) {
+      final r = b.reps.trim();
+      final rep = scheme.hasMatch(r) ? r.split('-')[i] : r;
+      return '$rep ${b.movement}';
+    }).toList();
+  });
+}
+
 class WodDetailScreen extends ConsumerStatefulWidget {
   final String wodId;
   final String wodName;
@@ -487,6 +508,10 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
           ],
           const SizedBox(height: HiSpace.md),
           ...p.blocks.map(_blockRow),
+          // Schéma dégressif (« 21-15-9 ») : illisible pour un débutant → déroulé EXPLICITE,
+          // tour par tour, avec la règle en une phrase. Généré automatiquement pour toute
+          // séance dont un bloc porte un schéma X-Y-Z (Fran, Benchmark Zéro, futures).
+          ..._roundByRound(p),
           if (p.weights.isNotEmpty) ...[
             Divider(color: HiColors.strokeSubtle, height: HiSpace.lg),
             Text(AppLocalizations.of(context).wodDetailLoads,
@@ -513,6 +538,58 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
         ],
       ),
     );
+  }
+
+  List<Widget> _roundByRound(WodPrescription p) {
+    final rounds = roundsBreakdown(p.blocks);
+    if (rounds == null) return const [];
+    final t = AppLocalizations.of(context);
+    return [
+      const SizedBox(height: HiSpace.sm),
+      Container(
+        padding: const EdgeInsets.all(HiSpace.md),
+        decoration: BoxDecoration(
+          color: HiColors.bgElevated2,
+          borderRadius: BorderRadius.circular(HiRadius.sm),
+          border: Border.all(color: HiColors.strokeSubtle),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(t.wodRoundsTitle, style: HiType.overline.copyWith(color: HiColors.textSecondary)),
+            const SizedBox(height: 4),
+            Text(t.wodRoundsHint, style: HiType.caption.copyWith(color: HiColors.textTertiary)),
+            const SizedBox(height: HiSpace.sm),
+            for (var i = 0; i < rounds.length; i++)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 62,
+                      padding: const EdgeInsets.symmetric(vertical: 2),
+                      decoration: BoxDecoration(
+                        color: HiColors.brandPrimary.withValues(alpha: 0.14),
+                        borderRadius: BorderRadius.circular(HiRadius.pill),
+                      ),
+                      child: Text(t.wodRoundsRound(i + 1),
+                          textAlign: TextAlign.center,
+                          style: HiType.caption.copyWith(
+                              color: HiColors.brandPrimary, fontWeight: FontWeight.w800)),
+                    ),
+                    const SizedBox(width: HiSpace.sm),
+                    Expanded(
+                      child: Text(rounds[i].join('  →  '),
+                          style: HiType.label.copyWith(color: HiColors.textPrimary, height: 1.5)),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
+    ];
   }
 
   Widget _blockRow(WodBlock b) {

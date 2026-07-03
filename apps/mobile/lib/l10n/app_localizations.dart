@@ -1364,6 +1364,24 @@ abstract class AppLocalizations {
   /// **'The challenge'**
   String get wodDetailChallenge;
 
+  /// No description provided for @wodRoundsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'ROUND BY ROUND, IN ORDER'**
+  String get wodRoundsTitle;
+
+  /// No description provided for @wodRoundsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Do ALL the movements of round 1 (in order), then move on to round 2, then round 3. The clock runs from start to finish.'**
+  String get wodRoundsHint;
+
+  /// No description provided for @wodRoundsRound.
+  ///
+  /// In en, this message translates to:
+  /// **'Round {n}'**
+  String wodRoundsRound(Object n);
+
   /// No description provided for @wodDetailCap.
   ///
   /// In en, this message translates to:

@@ -247,6 +247,10 @@
     }
   },
   "wodDetailChallenge": "The challenge",
+  "wodRoundsTitle": "ROUND BY ROUND, IN ORDER",
+  "wodRoundsHint": "Do ALL the movements of round 1 (in order), then move on to round 2, then round 3. The clock runs from start to finish.",
+  "wodRoundsRound": "Round {n}",
+  "@wodRoundsRound": { "placeholders": { "n": {} } },
   "wodDetailCap": "Cap {cap}",
   "movementGuideA11y": "See the movement explanation:",
   "movementGuideUnavailable": "Image unavailable.",

@@ -717,6 +717,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get wodDetailChallenge => 'The challenge';
 
   @override
+  String get wodRoundsTitle => 'ROUND BY ROUND, IN ORDER';
+
+  @override
+  String get wodRoundsHint =>
+      'Do ALL the movements of round 1 (in order), then move on to round 2, then round 3. The clock runs from start to finish.';
+
+  @override
+  String wodRoundsRound(Object n) {
+    return 'Round $n';
+  }
+
+  @override
   String wodDetailCap(String cap) {
     return 'Cap $cap';
   }
