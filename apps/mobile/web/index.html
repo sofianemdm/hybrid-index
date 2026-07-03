@@ -268,7 +268,7 @@
             <button class="hi-btn" id="hi-cta1" onclick="hiStart('signup')">
               <span class="hi-spin"></span><span class="lbl">Commencer gratuitement</span>
             </button>
-            <div class="hi-boot-msg" id="hi-boot1"></div>
+            <div class="hi-boot-msg" id="hi-boot1" aria-live="polite"></div>
             <div class="hi-micro">Gratuit. Avatar prêt en 30 secondes. Sans matériel obligatoire.</div>
           </div>
         </div>
@@ -398,7 +398,7 @@
         <button class="hi-btn hi-in" id="hi-cta2" onclick="hiStart('signup')">
           <span class="hi-spin"></span><span class="lbl">Découvrir mon Index</span>
         </button>
-        <div class="hi-boot-msg" id="hi-boot2"></div>
+        <div class="hi-boot-msg" id="hi-boot2" aria-live="polite"></div>
         <p class="hi-reassure hi-in">Gratuit · 3 séances suffisent · Aucun matériel obligatoire</p>
         <p class="hi-alt hi-in">J'ai déjà un compte → <button onclick="hiStart('login')">Se connecter</button></p>
       </div>
@@ -464,7 +464,13 @@
 
     // Fondu-remonté au scroll (un seul IntersectionObserver, GPU only).
     (function () {
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      // Sans IntersectionObserver (navigateur ancien / script bloqué) : tout visible d'emblée
+      // — la page doit rester lisible sans animation.
+      if (!('IntersectionObserver' in window) ||
+          window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        document.querySelectorAll('.hi-in').forEach(function (el) { el.classList.add('is-in'); });
+        return;
+      }
       var io = new IntersectionObserver(function (es) {
         es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); } });
       }, { threshold: 0.15 });
@@ -493,7 +499,7 @@
     (function () {
       if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
       var el = document.getElementById('hi-ovr');
-      if (!el) return;
+      if (!el || !('IntersectionObserver' in window)) return; // OVR reste affiché à 84
       var io = new IntersectionObserver(function (es) {
         if (!es[0].isIntersecting) return;
         io.disconnect();
