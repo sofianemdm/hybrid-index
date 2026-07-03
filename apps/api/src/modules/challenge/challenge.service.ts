@@ -3,7 +3,7 @@ import type { Sex } from "@prisma/client";
 import { ratingFromInternal } from "@hybrid-index/scoring-core";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { isoWeekKey, weekStart, addWeeks } from "../engagement/iso-week";
-import { FLAGSHIP_WOD_IDS } from "../wods/wods.service";
+import { FLAGSHIP_WOD_IDS } from "../wods/wod-constants";
 import { WOD_PRESCRIPTIONS } from "../wods/wod-prescriptions.data";
 
 /**

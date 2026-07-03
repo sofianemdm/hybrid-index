@@ -1,7 +1,8 @@
 import { BadRequestException, ConflictException, ForbiddenException, NotFoundException } from "@nestjs/common";
 import { CreateWodRequest } from "../src/modules/wods/create-wod.dto";
 import { EstimateWodRequest } from "../src/modules/wods/wod-estimate.dto";
-import { WodsService } from "../src/modules/wods/wods.service";
+import { WodCatalogService } from "../src/modules/wods/wod-catalog.service";
+import { WodBuilderService } from "../src/modules/wods/wod-builder.service";
 import { WOD_PRESCRIPTIONS } from "../src/modules/wods/wod-prescriptions.data";
 
 /** Un payload de base valide ; chaque test n'écrase que le champ qu'il vérifie. */
@@ -123,8 +124,8 @@ describe("EstimateWodRequest — bornes anti-abus/DoS (endpoint PUBLIC /estimate
   });
 });
 
-describe("WodsService.create — garde-fou anti-spam (rate limit applicatif)", () => {
-  const buildService = (recentCount: number): { service: WodsService; createMock: jest.Mock } => {
+describe("WodBuilderService.create — garde-fou anti-spam (rate limit applicatif)", () => {
+  const buildService = (recentCount: number): { service: WodBuilderService; createMock: jest.Mock } => {
     const createMock = jest.fn();
     const prisma = {
       wod: {
@@ -134,20 +135,16 @@ describe("WodsService.create — garde-fou anti-spam (rate limit applicatif)", (
       profile: { findUnique: jest.fn().mockResolvedValue({ sex: "male" }) },
     };
     const scoreClient = { computeEstimate: jest.fn().mockResolvedValue({ attributesAffected: ["hybrid"] }) };
-    const service = new WodsService(
-      prisma as never,
-      scoreClient as never,
-      {} as never,
-      {} as never,
-      {} as never,
-    );
+    // detail() (fiche renvoyée après création) est neutralisé : testé ailleurs.
+    const catalog = { detail: jest.fn().mockResolvedValue({}) };
+    const service = new WodBuilderService(prisma as never, scoreClient as never, catalog as never);
     return { service, createMock };
   };
 
   const body = baseBody() as never;
 
   it("refuse (RATE_LIMIT) au-delà du seuil horaire", async () => {
-    const { service, createMock } = buildService(WodsService.MAX_CUSTOM_WODS_PER_HOUR);
+    const { service, createMock } = buildService(WodBuilderService.MAX_CUSTOM_WODS_PER_HOUR);
     await expect(service.create("user-1", body)).rejects.toBeInstanceOf(BadRequestException);
     expect(createMock).not.toHaveBeenCalled();
     await service.create("user-1", body).catch((e: BadRequestException) => {
@@ -156,7 +153,7 @@ describe("WodsService.create — garde-fou anti-spam (rate limit applicatif)", (
   });
 
   it("laisse passer sous le seuil (n'atteint pas l'erreur de rate limit)", async () => {
-    const { service } = buildService(WodsService.MAX_CUSTOM_WODS_PER_HOUR - 1);
+    const { service } = buildService(WodBuilderService.MAX_CUSTOM_WODS_PER_HOUR - 1);
     // create() poursuit au-delà du garde-fou : il échouera plus loin (mocks partiels), mais JAMAIS
     // sur un RATE_LIMIT. On vérifie donc seulement que ce n'est pas une BadRequestException RATE_LIMIT.
     await service.create("user-1", body).catch((e: unknown) => {
@@ -167,17 +164,17 @@ describe("WodsService.create — garde-fou anti-spam (rate limit applicatif)", (
   });
 });
 
-describe("WodsService.update / remove — garde-fous propriété & custom", () => {
+describe("WodBuilderService.update / remove — garde-fous propriété & custom", () => {
   type WodRow = { id: string; isCustom: boolean; createdById: string | null };
 
   const buildService = (
     wod: WodRow | null,
     opts: { resultCount?: number } = {},
   ): {
-    service: WodsService;
+    service: WodBuilderService;
     updateMock: jest.Mock;
     deleteMock: jest.Mock;
-    detailMock: jest.SpyInstance;
+    detailMock: jest.Mock;
   } => {
     const updateMock = jest.fn().mockResolvedValue({ id: wod?.id });
     const deleteMock = jest.fn().mockResolvedValue({ id: wod?.id });
@@ -191,9 +188,9 @@ describe("WodsService.update / remove — garde-fous propriété & custom", () =
       profile: { findUnique: jest.fn().mockResolvedValue({ sex: "male" }) },
     };
     const scoreClient = { computeEstimate: jest.fn().mockResolvedValue({ attributesAffected: ["hybrid"] }) };
-    const service = new WodsService(prisma as never, scoreClient as never, {} as never, {} as never, {} as never);
     // detail() rejoue tout un pipeline d'estimation → on le neutralise (testé ailleurs).
-    const detailMock = jest.spyOn(service, "detail").mockResolvedValue({ id: wod?.id } as never);
+    const detailMock = jest.fn().mockResolvedValue({ id: wod?.id });
+    const service = new WodBuilderService(prisma as never, scoreClient as never, { detail: detailMock } as never);
     return { service, updateMock, deleteMock, detailMock };
   };
 
@@ -248,7 +245,7 @@ describe("WodsService.update / remove — garde-fous propriété & custom", () =
   });
 });
 
-describe("WodsService.detail — bloc `guided` (Mode guidé)", () => {
+describe("WodCatalogService.detail — bloc `guided` (Mode guidé)", () => {
   type WodRow = {
     id: string;
     name: string;
@@ -263,7 +260,7 @@ describe("WodsService.detail — bloc `guided` (Mode guidé)", () => {
     createdById: string | null;
   };
 
-  const buildService = (wod: WodRow): WodsService => {
+  const buildService = (wod: WodRow): WodCatalogService => {
     const prisma = {
       wod: { findUnique: jest.fn().mockResolvedValue(wod) },
       // detail() sans userId → pas de requête wodResult, mais on mock par sécurité.
@@ -271,7 +268,7 @@ describe("WodsService.detail — bloc `guided` (Mode guidé)", () => {
     };
     // getWodLevels jette → levels = null (le bloc guided n'en dépend pas, c'est ce qu'on isole).
     const scoreClient = { getWodLevels: jest.fn().mockRejectedValue(new Error("score down")) };
-    return new WodsService(prisma as never, scoreClient as never, {} as never, {} as never, {} as never);
+    return new WodCatalogService(prisma as never, scoreClient as never);
   };
 
   const officialRow = (over: Partial<WodRow> = {}): WodRow => ({
@@ -322,12 +319,12 @@ describe("WodsService.detail — bloc `guided` (Mode guidé)", () => {
 
   it("WOD introuvable → 404 (inchangé)", async () => {
     const prisma = { wod: { findUnique: jest.fn().mockResolvedValue(null) } };
-    const service = new WodsService(prisma as never, {} as never, {} as never, {} as never, {} as never);
+    const service = new WodCatalogService(prisma as never, {} as never);
     await expect(service.detail("ghost")).rejects.toBeInstanceOf(NotFoundException);
   });
 });
 
-describe("WodsService.detail — movementIds canoniques (guide des mouvements)", () => {
+describe("WodCatalogService.detail — movementIds canoniques (guide des mouvements)", () => {
   type Row = {
     id: string;
     name: string;
@@ -363,7 +360,7 @@ describe("WodsService.detail — movementIds canoniques (guide des mouvements)",
    * score-service. On mock cette réponse avec les IDs canoniques attendus (mêmes que ceux produits
    * par `blueprintMovementIds`, testés côté score-service) et on vérifie qu'ils ressortent tels quels.
    */
-  const benchmarkService = (id: string, movementIds: string[]): WodsService => {
+  const benchmarkService = (id: string, movementIds: string[]): WodCatalogService => {
     const prisma = {
       wod: { findUnique: jest.fn().mockResolvedValue(row({ id, name: id })) },
       wodResult: { findFirst: jest.fn(), findMany: jest.fn() },
@@ -377,7 +374,7 @@ describe("WodsService.detail — movementIds canoniques (guide des mouvements)",
         movementIds,
       }),
     };
-    return new WodsService(prisma as never, scoreClient as never, {} as never, {} as never, {} as never);
+    return new WodCatalogService(prisma as never, scoreClient as never);
   };
 
   it("fran → [thruster, pull_up]", async () => {
@@ -405,7 +402,7 @@ describe("WodsService.detail — movementIds canoniques (guide des mouvements)",
       wodResult: { findFirst: jest.fn(), findMany: jest.fn() },
     };
     const scoreClient = { getWodLevels: jest.fn().mockRejectedValue(new Error("down")) };
-    const service = new WodsService(prisma as never, scoreClient as never, {} as never, {} as never, {} as never);
+    const service = new WodCatalogService(prisma as never, scoreClient as never);
     const res = (await service.detail("fran")) as { movementIds: string[] };
     expect(res.movementIds).toEqual([]);
   });
@@ -431,7 +428,7 @@ describe("WodsService.detail — movementIds canoniques (guide des mouvements)",
     };
     // computeEstimate (paliers custom) peut échouer : detail() retombe sur levels=null, sans incidence.
     const scoreClient = { computeEstimate: jest.fn().mockRejectedValue(new Error("n/a")) };
-    const service = new WodsService(prisma as never, scoreClient as never, {} as never, {} as never, {} as never);
+    const service = new WodCatalogService(prisma as never, scoreClient as never);
     const res = (await service.detail("w-custom")) as { movementIds: string[] };
     expect(res.movementIds).toEqual(["burpee", "push_up"]);
   });

@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { ratingFromInternal } from "@hybrid-index/scoring-core";
 import { PrismaService } from "../../infra/prisma/prisma.service";
-import { FLAGSHIP_WOD_IDS } from "../wods/wods.service";
+import { FLAGSHIP_WOD_IDS } from "../wods/wod-constants";
 
 /**
  * Endgame : le GRAND CHELEM = réussir les 4 séances phares.

@@ -6,6 +6,8 @@ import { OptionalJwtAuthGuard } from "../auth/optional-jwt-auth.guard";
 import { JwtAuthGuard, type AuthenticatedUser } from "../auth/jwt-auth.guard";
 import { ClubsService } from "../clubs/clubs.service";
 import { WodsService } from "./wods.service";
+import { WodCatalogService } from "./wod-catalog.service";
+import { WodBuilderService } from "./wod-builder.service";
 import { EstimateWodRequest } from "./wod-estimate.dto";
 import { CreateWodRequest, LogWodResultRequest } from "./create-wod.dto";
 
@@ -14,26 +16,28 @@ import { CreateWodRequest, LogWodResultRequest } from "./create-wod.dto";
 export class WodsController {
   constructor(
     private readonly wods: WodsService,
+    private readonly wodCatalog: WodCatalogService,
+    private readonly builder: WodBuilderService,
     private readonly clubs: ClubsService,
   ) {}
 
   /** Catalogue des WODs. Public. */
   @Get()
   catalog(): Promise<unknown[]> {
-    return this.wods.catalog();
+    return this.wodCatalog.catalog();
   }
 
   /** Plan pour compléter l'Index : séances minimales couvrant les attributs encore non débloqués. */
   @Get("completion-plan")
   @UseGuards(JwtAuthGuard)
   completionPlan(@CurrentUser() user: AuthenticatedUser): Promise<unknown> {
-    return this.wods.completionPlan(user.userId);
+    return this.wodCatalog.completionPlan(user.userId);
   }
 
   /** Estimation ad-hoc d'un WOD décomposé (aperçu du builder). */
   @Post("estimate")
   estimate(@Body(new ZodValidationPipe(EstimateWodRequest)) body: EstimateWodRequest): Promise<unknown> {
-    return this.wods.estimate(body);
+    return this.builder.estimate(body);
   }
 
   /** Crée un WOD personnalisé (communautaire). */
@@ -43,7 +47,7 @@ export class WodsController {
     @CurrentUser() user: AuthenticatedUser,
     @Body(new ZodValidationPipe(CreateWodRequest)) body: CreateWodRequest,
   ): Promise<unknown> {
-    return this.wods.create(user.userId, body);
+    return this.builder.create(user.userId, body);
   }
 
   /** Édite un WOD personnalisé. Réservé au créateur d'un WOD `isCustom` (403 sinon). */
@@ -54,7 +58,7 @@ export class WodsController {
     @Param("id") id: string,
     @Body(new ZodValidationPipe(CreateWodRequest)) body: CreateWodRequest,
   ): Promise<unknown> {
-    return this.wods.update(user.userId, id, body);
+    return this.builder.update(user.userId, id, body);
   }
 
   /** Supprime un WOD personnalisé. Réservé au créateur d'un WOD `isCustom` (403 sinon) ; refusé si
@@ -62,7 +66,7 @@ export class WodsController {
   @Delete(":id")
   @UseGuards(JwtAuthGuard)
   remove(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string): Promise<unknown> {
-    return this.wods.remove(user.userId, id);
+    return this.builder.remove(user.userId, id);
   }
 
   /** Logue un résultat sur un WOD (officiel ou custom) → recalcule l'Index. */
@@ -79,14 +83,14 @@ export class WodsController {
   /** Fiche d'un WOD (paliers de référence + ton meilleur effort si connecté). */
   @Get(":id")
   detail(@Param("id") id: string, @CurrentUser() user: AuthenticatedUser | undefined): Promise<unknown> {
-    return this.wods.detail(id, user?.userId);
+    return this.wodCatalog.detail(id, user?.userId);
   }
 
   /** Prédiction « d'après ton niveau, tu ferais ~X » sur cette séance (réservé aux connectés). */
   @Get(":id/prediction")
   @UseGuards(JwtAuthGuard)
   prediction(@Param("id") id: string, @CurrentUser() user: AuthenticatedUser): Promise<unknown> {
-    return this.wods.prediction(id, user.userId);
+    return this.wodCatalog.prediction(id, user.userId);
   }
 
   /** Classement d'un WOD par sexe et variante (Rx par défaut, ou Scaled). */
@@ -103,6 +107,6 @@ export class WodsController {
       throw new BadRequestException({ code: "VALIDATION_ERROR", message: "Paramètre sex requis : male|female." });
     }
     const memberIds = clubId && user ? await this.clubs.memberIds(clubId, user.userId) : undefined;
-    return this.wods.leaderboard(id, sex.data, variant !== "scaled", user?.userId, memberIds);
+    return this.wodCatalog.leaderboard(id, sex.data, variant !== "scaled", user?.userId, memberIds);
   }
 }
