@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Splash : fond nuit de la marque (#090B11) + logo centré — fini le flash blanc au lancement. -->
+<!-- Splash : fond nuit de la marque + logo centre. android:drawable EXIGE une ressource
+     (un literal #hex casse aapt) -> @color/splash_background. -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:drawable="#FF090B11" />
+    <item android:drawable="@color/splash_background" />
     <item>
         <bitmap
             android:gravity="center"

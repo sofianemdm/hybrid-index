@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Fond du splash : nuit de la marque (#090B11), reference par launch_background.xml. -->
+    <color name="splash_background">#FF090B11</color>
+</resources>
