@@ -49,7 +49,7 @@ jobs:
       # maxWorkers borné : 45 suites e2e (2 apps Nest chacune) sur 4 vCPU → timeouts sinon.
       - run: |
           set -o pipefail
-          pnpm --dir apps/api test -- --maxWorkers=2 --reporters=default --reporters=github-actions 2>&1 | tee api-test.log
+          pnpm --dir apps/api test --maxWorkers=2 --reporters=default --reporters=github-actions 2>&1 | tee api-test.log
 
       # Diagnostic : le log remonte en ANNOTATIONS publiques quoi qu'il arrive (les filtres
       # « intelligents » ratent des cas — pnpm crie en MAJUSCULES, jest met des couleurs ANSI).
