@@ -10,7 +10,7 @@
   <!-- Aperçu de lien (Open Graph + Twitter) : la carte de visite du site sur WhatsApp/Insta/Discord. -->
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Athlete League">
-  <meta property="og:title" content="Athlete League — Ton corps a un score. Découvre-le.">
+  <meta property="og:title" content="Athlete League : ton corps a un score. Découvre-le.">
   <meta property="og:description" content="3 séances suffisent pour révéler ton Athlete Index, ta carte de joueur et ta place au classement. Gratuit, avec ou sans matériel.">
   <meta property="og:url" content="https://athlete-league.fr/">
   <meta property="og:image" content="https://athlete-league.fr/og-image.png">
@@ -18,7 +18,7 @@
   <meta property="og:image:height" content="630">
   <meta property="og:locale" content="fr_FR">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Athlete League — Ton corps a un score. Découvre-le.">
+  <meta name="twitter:title" content="Athlete League : ton corps a un score. Découvre-le.">
   <meta name="twitter:description" content="3 séances suffisent pour révéler ton Athlete Index, ta carte de joueur et ta place au classement.">
   <meta name="twitter:image" content="https://athlete-league.fr/og-image.png">
   <meta name="theme-color" content="#090B11">
@@ -30,7 +30,7 @@
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
   <link rel="icon" type="image/png" href="favicon.png"/>
 
-  <title>Athlete League — Ton corps a un score</title>
+  <title>Athlete League : ton corps a un score</title>
   <link rel="manifest" href="manifest.json">
 
   <!-- ============================================================================
@@ -263,7 +263,7 @@
         <div class="hi-copy">
           <div class="hi-over">TON CORPS A UN SCORE</div>
           <h1 class="hi-h1" style="margin-top:14px">Découvre ton<br>Athlete&nbsp;Index.</h1>
-          <p class="hi-sub" style="margin-top:18px">Trois entraînements suffisent. On transforme ta condition physique en <b>un seul score comparable</b> — et en une carte de joueur qui claque.</p>
+          <p class="hi-sub" style="margin-top:18px">Trois entraînements suffisent. On transforme ta condition physique en <b>un seul score comparable</b>, et en une carte de joueur qui claque.</p>
           <div style="margin-top:28px">
             <button class="hi-btn" id="hi-cta1" onclick="hiStart('signup')">
               <span class="hi-spin"></span><span class="lbl">Commencer gratuitement</span>
@@ -343,7 +343,7 @@
     <section class="hi-sec">
       <div class="hi-wrap">
         <h2 class="hi-sec-t hi-in">Six attributs. Une signature.</h2>
-        <p class="hi-sec-s hi-in">Ton radar montre qui tu es vraiment — et où tu peux frapper plus fort.</p>
+        <p class="hi-sec-s hi-in">Ton radar montre qui tu es vraiment, et où tu peux frapper plus fort.</p>
         <div class="hi-chips hi-in">
           <span class="hi-chip" style="color:var(--a-eng)">Cardio</span>
           <span class="hi-chip" style="color:var(--a-for)">Force</span>
@@ -361,23 +361,21 @@
         <h2 class="hi-sec-t hi-in">Ta place se défend chaque mois.</h2>
         <p class="hi-sec-s hi-in">Une ligue par sexe, remise à zéro tous les mois. Un rival choisi à ton niveau. Le classement, lui, est public.</p>
         <div class="hi-board hi-in">
-          <div class="hi-row"><span class="pos hi-raj">#1</span><span class="who">— — —</span><span class="pts hi-raj">92</span></div>
-          <div class="hi-row"><span class="pos hi-raj">#2</span><span class="who">— — —</span><span class="pts hi-raj">88</span></div>
-          <div class="hi-row"><span class="pos hi-raj">#3</span><span class="who">— — —</span><span class="pts hi-raj">85</span></div>
-          <div class="hi-row you"><span class="pos hi-raj">#?</span><span class="who">Toi, peut-être.</span><span class="pts hi-raj">—</span></div>
+          <div class="hi-row"><span class="pos hi-raj">#1</span><span class="who">· · ·</span><span class="pts hi-raj">92</span></div>
+          <div class="hi-row"><span class="pos hi-raj">#2</span><span class="who">· · ·</span><span class="pts hi-raj">88</span></div>
+          <div class="hi-row"><span class="pos hi-raj">#3</span><span class="who">· · ·</span><span class="pts hi-raj">85</span></div>
+          <div class="hi-row you"><span class="pos hi-raj">#?</span><span class="who">Toi, peut-être.</span><span class="pts hi-raj">?</span></div>
         </div>
         <p class="hi-sec-s hi-in" style="margin-top:18px;font-size:13px;color:var(--txt3)">Ton rang bouge en direct. Ta carte le prouve.</p>
       </div>
     </section>
 
-    <!-- G. Early adopter (+ témoignages prêts, masqués tant que pas de VRAIS avis) -->
-    <section class="hi-sec">
+    <!-- G. Témoignages : section entière MASQUÉE tant qu'il n'y a pas de VRAIS avis
+         (personnes réelles d'accord pour être citées). Activation : retirer style display:none
+         + remplacer les citations + décommenter la ligne dans le script. -->
+    <section class="hi-sec" id="hi-social" style="display:none">
       <div class="hi-wrap">
-        <div class="hi-early hi-in">
-          <h2 class="hi-sec-t">L'app est neuve.<br>C'est ta chance.</h2>
-          <p class="hi-sec-s">Pas encore de millions d'utilisateurs — et c'est exactement pour ça qu'il faut venir maintenant. Les premiers arrivés prennent le haut du classement pendant que c'est encore ouvert.</p>
-          <span class="hi-badge">REJOINS LES PREMIERS ATHLÈTES</span>
-        </div>
+        <h2 class="hi-sec-t hi-in">Ce qu'en disent les premiers athlètes</h2>
         <div class="hi-reviews" id="hi-reviews">
           <div class="hi-review hi-in">
             <p>« CITATION_REELLE_1 »</p>
@@ -516,9 +514,10 @@
       io.observe(el);
     })();
 
-    // Témoignages : NE PAS activer avec des citations inventées (illégal — pratique
+    // Témoignages : NE PAS activer avec des citations inventées (illégal, pratique
     // commerciale trompeuse). Quand 2 vrais avis existent (testeurs réels d'accord pour
     // être cités) : remplacer CITATION_REELLE_*/PSEUDO_* ci-dessus puis décommenter :
+    // document.getElementById('hi-social').style.display = '';
     // document.getElementById('hi-reviews').classList.add('on');
   </script>
 
