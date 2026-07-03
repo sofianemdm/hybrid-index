@@ -135,7 +135,19 @@ final Map<String, Object?> kWodDetailJson = {
     'scoringNote': 'Tu enregistres ton temps total.',
   },
   'myHistory': <Object?>[],
-  'references': <Object?>[],
+  // Référence à note LONGUE (cas marathon réel) : verrouille le layout de la ligne
+  // « World Record » (deux Text dynamiques côte à côte → tous deux flexibles, sinon la
+  // colonne de gauche s'écrase en une lettre par ligne — bug vécu le 03/07).
+  'references': [
+    {
+      'tier': 'record',
+      'sex': 'male',
+      'athlete': 'Sabastian Sawe',
+      'result': 7170,
+      'note': '1:59:30 · 1er marathon sub-2h, record du monde (Londres 2026)',
+      'source': 'World Athletics',
+    },
+  ],
   'movementIds': ['thruster', 'pull_up'],
 };
 

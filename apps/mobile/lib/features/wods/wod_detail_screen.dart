@@ -800,7 +800,13 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // PIÈGE Row : deux Text à contenu dynamique côte à côte doivent TOUS LES DEUX être
+          // flexibles. Ici la note (longue sur le marathon : « 1:59:30 · 1er marathon sub-2h… »)
+          // était un Text rigide : elle prenait toute la largeur et écrasait « World Record »
+          // à ~0 px → une lettre par ligne. Flexible des deux côtés = chacun sa moitié, et la
+          // note passe à la ligne proprement.
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -812,7 +818,12 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
               ],
             ),
           ),
-          Text(r.note, textAlign: TextAlign.right, style: HiType.body.copyWith(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
+          const SizedBox(width: HiSpace.sm),
+          Flexible(
+            child: Text(r.note,
+                textAlign: TextAlign.right,
+                style: HiType.body.copyWith(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
+          ),
         ],
       ),
     );
