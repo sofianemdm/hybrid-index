@@ -589,11 +589,19 @@ class _SessionHistoryState extends ConsumerState<_SessionHistory> {
     return null;
   }
 
-  String _name(String wodId) =>
-      _catalog(wodId)?.name ?? (wodId == 'run_free_distance' ? AppLocalizations.of(context).historyRun : wodId);
+  /// Nom : priorité au nom RÉEL envoyé par l'api (couvre les WODs hors catalogue — Ligue,
+  /// séances retirées : fini les « league_sprint_ladder » bruts). Catalogue en repli.
+  String _name(WodResultItem r) {
+    if (r.wodId == 'run_free_distance') return AppLocalizations.of(context).historyRun;
+    final api = r.wodName;
+    if (api != null && api.isNotEmpty) return api;
+    return _catalog(r.wodId)?.name ?? r.wodId;
+  }
 
   String _formatResult(WodResultItem r) {
-    final type = _catalog(r.wodId)?.scoreType ?? (r.wodId == 'run_free_distance' ? 'time' : 'reps');
+    final type = r.scoreType ??
+        _catalog(r.wodId)?.scoreType ??
+        (r.wodId == 'run_free_distance' ? 'time' : 'reps');
     if (type == 'time') return formatDuration(r.rawResult.round());
     if (type == 'load') return '${r.rawResult.round()} kg';
     if (type == 'distance') return '${r.rawResult.round()} m';
@@ -639,7 +647,7 @@ class _SessionHistoryState extends ConsumerState<_SessionHistory> {
   Widget _row(WodResultItem r) {
     return InkWell(
       onTap: () => Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => WodDetailScreen(wodId: r.wodId, wodName: _name(r.wodId))),
+        MaterialPageRoute(builder: (_) => WodDetailScreen(wodId: r.wodId, wodName: _name(r))),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: HiSpace.sm),
@@ -649,7 +657,7 @@ class _SessionHistoryState extends ConsumerState<_SessionHistory> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(_name(r.wodId),
+                  Text(_name(r),
                       style: HiType.body.copyWith(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
                   const SizedBox(height: 2),
                   Text('${_formatResult(r)} · ${_date(r.performedAt)}',

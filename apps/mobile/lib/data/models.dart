@@ -1014,12 +1014,20 @@ class FeedItem {
 class WodResultItem {
   final String id;
   final String wodId;
+
+  /// Nom RÉEL de la séance (base de données, via l'api) : couvre aussi les WODs masqués du
+  /// catalogue (Ligue, séances retirées) — sans lui, l'historique affichait l'id brut
+  /// (« league_sprint_ladder »). Null seulement face à une vieille api.
+  final String? wodName;
+  final String? scoreType;
   final double rawResult;
   final int? subScore;
   final DateTime performedAt;
   const WodResultItem({
     required this.id,
     required this.wodId,
+    this.wodName,
+    this.scoreType,
     required this.rawResult,
     required this.subScore,
     required this.performedAt,
@@ -1028,6 +1036,8 @@ class WodResultItem {
   factory WodResultItem.fromJson(Map<String, dynamic> j) => WodResultItem(
         id: j['id'] as String,
         wodId: j['wodId'] as String,
+        wodName: j['wodName'] as String?,
+        scoreType: j['scoreType'] as String?,
         rawResult: (j['rawResult'] as num).toDouble(),
         subScore: (j['subScore'] as num?)?.toInt(),
         performedAt: DateTime.parse(j['performedAt'] as String),
