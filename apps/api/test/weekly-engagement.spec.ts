@@ -2,6 +2,7 @@ import { WeeklyEngagementService } from "../src/modules/engagement/weekly-engage
 import type { PrismaService } from "../src/infra/prisma/prisma.service";
 import type { EngagementService, WeeklyRecap } from "../src/modules/engagement/engagement.service";
 import type { PushService } from "../src/modules/engagement/push.service";
+import type { ChallengeService } from "../src/modules/challenge/challenge.service";
 
 function recap(over: Partial<WeeklyRecap> = {}): WeeklyRecap {
   return {
@@ -40,7 +41,9 @@ describe("WeeklyEngagementService — cron hebdo de ré-engagement", () => {
       notifyStaleAttribute: jest.fn().mockResolvedValue(undefined),
     } as unknown as PushService;
 
-    const svc = new WeeklyEngagementService(prisma, engagement, push);
+    const svc = new WeeklyEngagementService(prisma, engagement, push, {
+      current: async () => null, // pas de défi dans ces scénarios → aucune notif défi envoyée
+    } as unknown as ChallengeService);
     const res = await svc.runOnce();
 
     expect(res).toEqual({ processed: 2 });
@@ -64,7 +67,9 @@ describe("WeeklyEngagementService — cron hebdo de ré-engagement", () => {
       notifyStaleAttribute: jest.fn().mockResolvedValue(undefined),
     } as unknown as PushService;
 
-    const svc = new WeeklyEngagementService(prisma, engagement, push);
+    const svc = new WeeklyEngagementService(prisma, engagement, push, {
+      current: async () => null, // pas de défi dans ces scénarios → aucune notif défi envoyée
+    } as unknown as ChallengeService);
     const res = await svc.runOnce();
 
     expect(res).toEqual({ processed: 1 });
@@ -87,7 +92,9 @@ describe("WeeklyEngagementService — cron hebdo de ré-engagement", () => {
       notifyStaleAttribute: jest.fn().mockResolvedValue(undefined),
     } as unknown as PushService;
 
-    const svc = new WeeklyEngagementService(prisma, engagement, push);
+    const svc = new WeeklyEngagementService(prisma, engagement, push, {
+      current: async () => null, // pas de défi dans ces scénarios → aucune notif défi envoyée
+    } as unknown as ChallengeService);
     const res = await svc.runOnce();
 
     // « boom » échoue (non compté), « ok » passe.

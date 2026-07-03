@@ -171,7 +171,9 @@ export class SocialService {
     const [events, postItems] = await Promise.all([
       this.prisma.feedEvent.findMany({
         where: eventWhere,
-        orderBy: { createdAt: "desc" },
+        // Tie-break id : des événements créés dans la MÊME milliseconde (rafale d'onboarding)
+        // sortaient dans un ordre ALÉATOIRE par requête → feed instable entre deux GET.
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
         take: FEED_LIMIT,
         include: {
           actor: {

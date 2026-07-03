@@ -422,15 +422,22 @@ describe("api — boucle complète persistée (e2e réel)", () => {
     const res = await request(api.getHttpServer()).get("/v1/feed").set("authorization", `Bearer ${token}`).expect(200);
     expect(Array.isArray(res.body)).toBe(true);
     expect(res.body.length).toBeGreaterThan(0);
-    expect(res.body[0].actor.isMe).toBe(true);
+    // `some` et non `[0]` : la base de test est PARTAGÉE entre suites parallèles — d'autres users
+    // publient en même temps. On teste le CONTRAT (mes événements sont là), pas un ordre de chance.
+    expect(res.body.some((e: { actor: { isMe: boolean } }) => e.actor.isMe)).toBe(true);
   });
 
   it("kudos : auto-kudos interdit (409)", async () => {
     const feed = (await request(api.getHttpServer()).get("/v1/feed").set("authorization", `Bearer ${token}`)).body;
+    // Cible MON événement (pas un post d'un autre user d'une suite parallèle).
+    const mine = feed.find(
+      (e: { actor: { isMe: boolean }; source?: string }) => e.actor.isMe && (e.source ?? "event") === "event",
+    );
+    expect(mine).toBeDefined();
     await request(api.getHttpServer())
       .post("/v1/reactions")
       .set("authorization", `Bearer ${token}`)
-      .send({ feedEventId: feed[0].id, emoji: "💪" })
+      .send({ feedEventId: mine.id, emoji: "💪" })
       .expect(409);
   });
 

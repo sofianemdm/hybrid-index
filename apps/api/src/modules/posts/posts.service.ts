@@ -291,7 +291,8 @@ export class PostsService {
         visibility: "public",
         ...(reportedIds.length ? { id: { notIn: reportedIds } } : {}),
       },
-      orderBy: { createdAt: "desc" },
+      // Tie-break id : ordre TOTAL stable (même createdAt possible en rafale) — curseur fiable.
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       take,
       ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
       include: {
