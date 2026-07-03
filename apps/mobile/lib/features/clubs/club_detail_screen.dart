@@ -9,6 +9,9 @@ import '../../widgets/error_retry.dart';
 import '../../widgets/hi_skeleton.dart';
 import '../../widgets/hi_button.dart';
 import '../../widgets/rank_badge.dart';
+import '../community/comments_sheet.dart';
+import '../community/feed_post_card.dart';
+import '../community/post_composer_screen.dart';
 import '../leaderboard/progress_board_screen.dart';
 import '../wods/wod_detail_screen.dart';
 
@@ -175,6 +178,10 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> {
                     style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
                 const SizedBox(height: HiSpace.sm),
                 ...d.roster.map(_rosterRow),
+                const SizedBox(height: HiSpace.lg),
+                // Fil du club : la vie sociale du club (posts des membres). Lecture pour tous,
+                // publication réservée aux membres (validée aussi côté serveur).
+                _ClubFeed(clubId: d.id, clubName: d.name, isMember: d.isMember),
                 if (d.isMember) ...[
                   const SizedBox(height: HiSpace.lg),
                   TextButton(
@@ -215,4 +222,101 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> {
               style: HiType.numericM.copyWith(color: HiColors.brandPrimary)),
         ]),
       );
+}
+
+/// Fil du CLUB : posts rattachés au club (réutilise la carte du fil Communauté). Publication
+/// réservée aux membres via le composeur en mode club (le serveur revalide l'appartenance).
+class _ClubFeed extends ConsumerStatefulWidget {
+  final String clubId;
+  final String clubName;
+  final bool isMember;
+  const _ClubFeed({required this.clubId, required this.clubName, required this.isMember});
+  @override
+  ConsumerState<_ClubFeed> createState() => _ClubFeedState();
+}
+
+class _ClubFeedState extends ConsumerState<_ClubFeed> {
+  late Future<PostPage> _future;
+
+  @override
+  void initState() {
+    super.initState();
+    _future = ref.read(apiClientProvider).clubPosts(widget.clubId);
+  }
+
+  void _refresh() => setState(() => _future = ref.read(apiClientProvider).clubPosts(widget.clubId));
+
+  Future<bool> _kudosNetwork(FeedActivity a, bool wantOn) async {
+    try {
+      final api = ref.read(apiClientProvider);
+      if (wantOn) {
+        await api.react(a.id, isPost: a.isPost);
+      } else {
+        await api.unreact(a.id, isPost: a.isPost);
+      }
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<void> _openComments(FeedActivity a) async {
+    await showCommentsSheet(context, post: a);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(t.clubFeedTitle, style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
+            ),
+            if (widget.isMember)
+              TextButton.icon(
+                icon: Icon(Icons.edit_outlined, size: 18, color: HiColors.brandPrimary),
+                label: Text(t.clubFeedPost, style: HiType.caption.copyWith(color: HiColors.brandPrimary)),
+                onPressed: () async {
+                  final posted = await Navigator.of(context).push<bool>(
+                    MaterialPageRoute(
+                        builder: (_) => PostComposerScreen(clubId: widget.clubId, clubName: widget.clubName)),
+                  );
+                  if (posted == true) _refresh();
+                },
+              ),
+          ],
+        ),
+        const SizedBox(height: HiSpace.sm),
+        FutureBuilder<PostPage>(
+          future: _future,
+          builder: (context, snap) {
+            if (snap.connectionState == ConnectionState.waiting) {
+              return const HiListSkeleton(count: 2, itemHeight: 88);
+            }
+            if (snap.hasError) {
+              return Text(t.commonGenericError, style: HiType.caption.copyWith(color: HiColors.textTertiary));
+            }
+            final items = snap.data?.items ?? const <FeedActivity>[];
+            if (items.isEmpty) {
+              return Text(t.clubFeedEmpty, style: HiType.body.copyWith(color: HiColors.textTertiary));
+            }
+            return Column(
+              children: [
+                for (final a in items)
+                  FeedPostCard(
+                    key: ValueKey(a.id),
+                    activity: a,
+                    onToggleKudos: _kudosNetwork,
+                    onOpenComments: a.isPost ? _openComments : null,
+                  ),
+              ],
+            );
+          },
+        ),
+      ],
+    );
+  }
 }

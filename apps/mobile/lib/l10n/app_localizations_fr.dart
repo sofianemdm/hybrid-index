@@ -34,6 +34,16 @@ class AppLocalizationsFr extends AppLocalizations {
   String get settingsInviteFriend => 'Inviter un ami';
 
   @override
+  String get clubFeedTitle => 'Fil du club';
+
+  @override
+  String get clubFeedPost => 'Publier';
+
+  @override
+  String get clubFeedEmpty =>
+      'Aucune publication pour l\'instant. Lance la conversation !';
+
+  @override
   String shareInviteMessage(String link) {
     return 'Rejoins-moi sur Athlete League 💪 Un seul score pour ta condition physique, un radar de tes forces, et une ligue chaque mois. $link';
   }

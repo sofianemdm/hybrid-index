@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Param, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Post, Query, UseGuards } from "@nestjs/common";
 import { z } from "zod";
 import { ZodValidationPipe } from "../../common/zod-validation.pipe";
 import { CurrentUser } from "../auth/current-user.decorator";
@@ -11,6 +11,7 @@ const CreatePost = z
     kind: z.enum(["text", "perf_share"]),
     body: z.string().max(500).optional(),
     wodResultId: z.string().uuid().optional(),
+    clubId: z.string().uuid().optional(), // fil de club (écriture réservée aux membres, cf. service)
   })
   .refine((d) => d.kind !== "perf_share" || !!d.wodResultId, { message: "wodResultId requis pour perf_share." });
 
@@ -38,6 +39,16 @@ export class PostsController {
   @Delete(":id")
   remove(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string): Promise<unknown> {
     return this.posts.delete(user.userId, id);
+  }
+
+  /** Fil d'un club (lecture ouverte à tous — « tout est public ») : { items, nextCursor }. */
+  @Get("club/:clubId")
+  clubFeed(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("clubId") clubId: string,
+    @Query("cursor") cursor?: string,
+  ): Promise<unknown> {
+    return this.posts.forClub(clubId, user.userId, 20, cursor);
   }
 
   /** Applaudir (kudos unifié 👏). L'emoji éventuellement envoyé par d'anciens clients est ignoré. */

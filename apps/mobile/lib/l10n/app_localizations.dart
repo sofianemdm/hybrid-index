@@ -146,6 +146,24 @@ abstract class AppLocalizations {
   /// **'Invite a friend'**
   String get settingsInviteFriend;
 
+  /// No description provided for @clubFeedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Club feed'**
+  String get clubFeedTitle;
+
+  /// No description provided for @clubFeedPost.
+  ///
+  /// In en, this message translates to:
+  /// **'Post'**
+  String get clubFeedPost;
+
+  /// No description provided for @clubFeedEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No posts yet. Start the conversation!'**
+  String get clubFeedEmpty;
+
   /// No description provided for @shareInviteMessage.
   ///
   /// In en, this message translates to:

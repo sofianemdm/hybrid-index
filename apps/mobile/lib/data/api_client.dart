@@ -423,13 +423,22 @@ class ApiClient {
       isPost ? _send('DELETE', '/v1/posts/$id/reactions') : _send('DELETE', '/v1/reactions/$id');
 
   /// Crée un post texte ou un partage de perf (perf_share référence un wodResultId).
-  Future<FeedActivity> createPost({required String kind, String? body, String? wodResultId}) async {
+  /// [clubId] : le post est rattaché au fil de ce club (réservé aux membres, validé côté serveur).
+  Future<FeedActivity> createPost({required String kind, String? body, String? wodResultId, String? clubId}) async {
     final j = await _send('POST', '/v1/posts', {
       'kind': kind,
       if (body != null && body.isNotEmpty) 'body': body,
       if (wodResultId != null) 'wodResultId': wodResultId,
+      if (clubId != null) 'clubId': clubId,
     }) as Map<String, dynamic>;
     return FeedActivity.fromJson(j);
+  }
+
+  /// Fil d'un club (posts rattachés au club), paginé.
+  Future<PostPage> clubPosts(String clubId, {String? cursor}) async {
+    final q = cursor != null ? '?cursor=$cursor' : '';
+    final j = await _send('GET', '/v1/posts/club/$clubId$q') as Map<String, dynamic>;
+    return PostPage.fromJson(j);
   }
 
   Future<List<MyResult>> myResults() async {

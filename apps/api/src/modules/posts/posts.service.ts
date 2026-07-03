@@ -25,6 +25,8 @@ export interface CreatePostInput {
   kind: "text" | "perf_share";
   body?: string;
   wodResultId?: string;
+  /** Fil de club : le post est aussi rattaché à ce club (réservé aux MEMBRES du club). */
+  clubId?: string;
 }
 
 /** Élément de feed normalisé (même forme qu'un FeedEvent côté client). */
@@ -94,12 +96,23 @@ export class PostsService {
       };
     }
 
+    // Post de CLUB : réservé aux membres (sinon n'importe qui écrirait dans n'importe quel fil).
+    if (input.clubId) {
+      const member = await this.prisma.clubMember.findUnique({
+        where: { clubId_userId: { clubId: input.clubId, userId: me } },
+      });
+      if (!member) {
+        throw new ForbiddenException({ code: "FORBIDDEN", message: "Réservé aux membres du club." });
+      }
+    }
+
     const post = await this.prisma.post.create({
       data: {
         authorId: me,
         kind: input.kind,
         body: body && body.length > 0 ? body : null,
         wodResultId: wodResultId ?? null,
+        clubId: input.clubId ?? null,
       },
       include: {
         author: {
@@ -225,6 +238,22 @@ export class PostsService {
     }
     // On lit `safeTake + 1` pour savoir s'il reste une page (curseur = id du dernier élément rendu).
     const rows = await this.queryFeedPosts({ authorId }, me, safeTake + 1, cursor);
+    const hasMore = rows.length > safeTake;
+    const items = hasMore ? rows.slice(0, safeTake) : rows;
+    return { items, nextCursor: hasMore ? items[items.length - 1].id : null };
+  }
+
+  /** Fil d'un CLUB : posts rattachés au club, paginés (createdAt desc). Lecture ouverte à tous
+   *  (« tout est public ») ; l'ÉCRITURE, elle, est réservée aux membres (cf. create). Réutilise la
+   *  sérialisation commune (auto-masquage / mes signalements appliqués par queryFeedPosts). */
+  async forClub(
+    clubId: string,
+    me: string,
+    take: number,
+    cursor?: string,
+  ): Promise<{ items: FeedPostItem[]; nextCursor: string | null }> {
+    const safeTake = Math.max(1, Math.min(take || 20, 50));
+    const rows = await this.queryFeedPosts({ clubId }, me, safeTake + 1, cursor);
     const hasMore = rows.length > safeTake;
     const items = hasMore ? rows.slice(0, safeTake) : rows;
     return { items, nextCursor: hasMore ? items[items.length - 1].id : null };

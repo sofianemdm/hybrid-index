@@ -13,7 +13,10 @@ import 'mention_suggestions.dart';
 /// Composer un post : message texte OU partage d'une perf (résultat de séance).
 /// Pas de photo pour l'instant (livré sans, branché plus tard).
 class PostComposerScreen extends ConsumerStatefulWidget {
-  const PostComposerScreen({super.key});
+  /// [clubId]/[clubName] : le post est publié dans le FIL DE CE CLUB (entrée « Publier dans le club »).
+  final String? clubId;
+  final String? clubName;
+  const PostComposerScreen({super.key, this.clubId, this.clubName});
 
   @override
   ConsumerState<PostComposerScreen> createState() => _PostComposerScreenState();
@@ -73,6 +76,7 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
             kind: _perfMode ? 'perf_share' : 'text',
             body: body,
             wodResultId: _perfMode ? _selected!.id : null,
+            clubId: widget.clubId,
           );
       if (mounted) Navigator.of(context).pop(true);
     } catch (e) {
@@ -86,7 +90,11 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: Text(t.composerTitle), backgroundColor: Colors.transparent, elevation: 0),
+      // En mode club, le titre nomme le fil de destination (clair : on ne poste pas dans le fil global).
+      appBar: AppBar(
+          title: Text(widget.clubName == null ? t.composerTitle : '${t.composerTitle} · ${widget.clubName}'),
+          backgroundColor: Colors.transparent,
+          elevation: 0),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(HiSpace.lg),
