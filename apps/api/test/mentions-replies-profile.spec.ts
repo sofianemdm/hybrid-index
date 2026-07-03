@@ -13,13 +13,15 @@ type AnyFn = jest.Mock;
 
 function makePrismaMock() {
   return {
+    // $transaction "batch" : exécute les promesses Prisma déjà construites (create/update mockés).
+    $transaction: jest.fn((ops: Promise<unknown>[]) => Promise.all(ops)),
     post: { create: jest.fn(), findUnique: jest.fn(), update: jest.fn(), findMany: jest.fn() },
     comment: { create: jest.fn(), findUnique: jest.fn(), findMany: jest.fn(), update: jest.fn(), delete: jest.fn() },
     commentReaction: { findMany: jest.fn().mockResolvedValue([]) },
     postReaction: { findMany: jest.fn().mockResolvedValue([]) },
     wodResult: { findMany: jest.fn().mockResolvedValue([]) },
     profile: { findMany: jest.fn().mockResolvedValue([]) },
-  } as Record<string, Record<string, AnyFn>>;
+  } as unknown as Record<string, Record<string, AnyFn>>; // unknown : $transaction (fn top-level) sort du gabarit table→méthodes
 }
 const redisOk = { rateLimit: jest.fn().mockResolvedValue(1) };
 

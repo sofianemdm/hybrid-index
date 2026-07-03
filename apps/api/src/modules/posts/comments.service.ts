@@ -99,18 +99,27 @@ export class CommentsService {
       parent = { authorId: parentRow.authorId };
     }
 
-    const comment = await this.prisma.comment.create({
+    // ATOMIQUE : création + incrément du compteur du parent dans UNE transaction. Avant, l'incrément
+    // était best-effort après coup → un échec laissait replyCount sous-compté pour toujours.
+    const createArgs = {
       data: { postId, authorId: me, body, parentId: parentId ?? null },
       include: {
         author: { include: { profile: { select: { displayName: true, rank: true } }, avatar: true } },
       },
-    });
+    };
+    const comment = parent == null
+        ? await this.prisma.comment.create(createArgs)
+        : (
+            await this.prisma.$transaction([
+              this.prisma.comment.create(createArgs),
+              this.prisma.comment.update({ where: { id: parentId }, data: { replyCount: { increment: 1 } } }),
+            ])
+          )[0];
 
     const authorName = comment.author.profile?.displayName ?? "Un athlète";
 
     if (parent) {
-      // Réponse : on incrémente le compteur du parent et on notifie SON auteur (hors auto-réponse).
-      await this.prisma.comment.update({ where: { id: parentId }, data: { replyCount: { increment: 1 } } }).catch(() => undefined);
+      // Réponse : notifie l'auteur du parent (hors auto-réponse). L'incrément est fait ci-dessus.
       if (parent.authorId !== me) {
         try {
           await this.push.notifyCommentReply(parent.authorId, authorName);
@@ -277,13 +286,25 @@ export class CommentsService {
   async delete(me: string, commentId: string): Promise<{ removed: true }> {
     const comment = await this.prisma.comment.findUnique({
       where: { id: commentId },
-      select: { authorId: true, post: { select: { authorId: true } } },
+      select: { authorId: true, parentId: true, post: { select: { authorId: true } } },
     });
     if (!comment) throw new NotFoundException({ code: "NOT_FOUND", message: "Commentaire introuvable." });
     if (comment.authorId !== me && comment.post.authorId !== me) {
       throw new ForbiddenException({ code: "FORBIDDEN", message: "Tu ne peux pas supprimer ce commentaire." });
     }
-    await this.prisma.comment.delete({ where: { id: commentId } });
+    // Suppression d'une RÉPONSE : décrément atomique du compteur du parent (symétrie du create —
+    // avant ce fix, replyCount surcomptait pour toujours après chaque suppression de réponse).
+    if (comment.parentId != null) {
+      await this.prisma.$transaction([
+        this.prisma.comment.delete({ where: { id: commentId } }),
+        this.prisma.comment.update({
+          where: { id: comment.parentId },
+          data: { replyCount: { decrement: 1 } },
+        }),
+      ]);
+    } else {
+      await this.prisma.comment.delete({ where: { id: commentId } });
+    }
     return { removed: true };
   }
 
