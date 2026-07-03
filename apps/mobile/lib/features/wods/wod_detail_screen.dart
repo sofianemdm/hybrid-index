@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../widgets/glossary_text.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:share_plus/share_plus.dart';
+
+import '../../core/share_links.dart';
 
 import '../../data/api_client.dart';
 import '../../data/models.dart';
@@ -162,6 +165,24 @@ class _WodDetailScreenState extends ConsumerState<WodDetailScreen> {
         elevation: 0,
         // Menu Éditer/Supprimer : visible UNIQUEMENT pour l'auteur d'un WOD custom (back: isMine).
         actions: [
+          // Partage externe : « viens battre mon score sur Fran » + lien profond (/seance/:id).
+          IconButton(
+            tooltip: t.shareTooltip,
+            icon: Icon(Icons.share_rounded, color: HiColors.textPrimary),
+            onPressed: () {
+              final d = _loaded;
+              final link = wodLink(widget.wodId);
+              final best = d?.myBestRaw;
+              final msg = best != null
+                  ? t.shareWodMessageWithBest(
+                      d!.scoreType == 'time' ? formatDuration(best.round()) : '${best.round()}',
+                      widget.wodName,
+                      link,
+                    )
+                  : t.shareWodMessage(widget.wodName, link);
+              Share.share(msg);
+            },
+          ),
           if (_loaded?.isMine == true)
             PopupMenuButton<String>(
               icon: Icon(Icons.more_vert, color: HiColors.textPrimary),

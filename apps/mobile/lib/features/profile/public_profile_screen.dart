@@ -13,6 +13,8 @@ import '../messaging/chat_screen.dart';
 import '../../data/wod_catalog.dart';
 import '../wods/wod_format.dart';
 import '../wods/wod_detail_screen.dart';
+import 'package:share_plus/share_plus.dart';
+import '../../core/share_links.dart';
 import '../../theme/cosmetics.dart';
 import '../../widgets/error_retry.dart';
 import '../../widgets/hi_avatar.dart';
@@ -318,6 +320,13 @@ class PublicProfileScreen extends ConsumerWidget {
                       Text(t.publicProfileNoIndex, style: HiType.body.copyWith(color: HiColors.textTertiary)),
                     const SizedBox(height: HiSpace.md),
                     RankBadge(rank: p.rank, ovr: p.index?.value, fontSize: 14),
+                    const SizedBox(height: HiSpace.xs),
+                    // Partage externe du profil (lien profond /profil/:id) — aussi pour SON propre profil.
+                    TextButton.icon(
+                      onPressed: () => Share.share(t.shareProfileMessage(p.displayName, profileLink(p.userId))),
+                      icon: Icon(Icons.share_rounded, size: 18, color: HiColors.textSecondary),
+                      label: Text(t.shareTooltip, style: HiType.caption.copyWith(color: HiColors.textSecondary)),
+                    ),
                     if (!p.isMe) ...[
                       const SizedBox(height: HiSpace.md),
                       _FollowButton(userId: p.userId, initial: p.isFollowing),

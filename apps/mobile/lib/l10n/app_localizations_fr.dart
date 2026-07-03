@@ -31,6 +31,32 @@ class AppLocalizationsFr extends AppLocalizations {
   String get settingsEmailLabel => 'Adresse e-mail';
 
   @override
+  String get settingsInviteFriend => 'Inviter un ami';
+
+  @override
+  String shareInviteMessage(String link) {
+    return 'Rejoins-moi sur Athlete League 💪 Un seul score pour ta condition physique, un radar de tes forces, et une ligue chaque mois. $link';
+  }
+
+  @override
+  String shareWodMessage(String wodName, String link) {
+    return 'Viens te mesurer à moi sur $wodName 💪 $link';
+  }
+
+  @override
+  String shareWodMessageWithBest(String best, String wodName, String link) {
+    return 'J\'ai fait $best sur $wodName — viens battre mon score 💪 $link';
+  }
+
+  @override
+  String shareProfileMessage(String name, String link) {
+    return 'Regarde le profil de $name sur Athlete League : $link';
+  }
+
+  @override
+  String get shareTooltip => 'Partager';
+
+  @override
   String get settingsEquipmentLabel =>
       'Matériel — « Équipé » donne aussi accès au sans-matériel';
 

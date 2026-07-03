@@ -1,0 +1,3 @@
+# Netlify SPA : toute URL profonde (/seance/fran, /profil/:id…) sert l'app Flutter,
+# qui route ensuite côté client (go_router). Sans ça : 404 sur les liens partagés.
+/*  /index.html  200

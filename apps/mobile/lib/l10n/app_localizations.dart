@@ -140,6 +140,42 @@ abstract class AppLocalizations {
   /// **'Email address'**
   String get settingsEmailLabel;
 
+  /// No description provided for @settingsInviteFriend.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite a friend'**
+  String get settingsInviteFriend;
+
+  /// No description provided for @shareInviteMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Join me on Athlete League 💪 One score for your fitness, a radar of your strengths, and a monthly league. {link}'**
+  String shareInviteMessage(String link);
+
+  /// No description provided for @shareWodMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Come challenge me on {wodName} 💪 {link}'**
+  String shareWodMessage(String wodName, String link);
+
+  /// No description provided for @shareWodMessageWithBest.
+  ///
+  /// In en, this message translates to:
+  /// **'I scored {best} on {wodName} — come beat me 💪 {link}'**
+  String shareWodMessageWithBest(String best, String wodName, String link);
+
+  /// No description provided for @shareProfileMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Check out {name}\'s profile on Athlete League: {link}'**
+  String shareProfileMessage(String name, String link);
+
+  /// No description provided for @shareTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get shareTooltip;
+
   /// No description provided for @settingsEquipmentLabel.
   ///
   /// In en, this message translates to:

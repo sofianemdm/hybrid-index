@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../app.dart';
+import '../../core/share_links.dart';
 import '../../data/analytics.dart';
 import '../../data/models.dart';
 import '../../data/session.dart';
@@ -49,7 +50,8 @@ class _ShareCardScreenState extends ConsumerState<ShareCardScreen> {
     try {
       final bytes = await _capture();
       if (bytes == null || !mounted) return;
-      final shareText = AppLocalizations.of(context).shareCardShareText;
+      // Le lien de l'app accompagne l'image : celui qui reçoit la carte peut nous rejoindre.
+      final shareText = '${AppLocalizations.of(context).shareCardShareText} ${inviteLink()}';
       await Share.shareXFiles(
         [XFile.fromData(bytes, name: 'athlete-index.png', mimeType: 'image/png')],
         text: shareText,

@@ -3,8 +3,10 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../app.dart';
+import '../../core/share_links.dart';
 import '../../data/api_client.dart';
 import '../../data/locale_mode.dart';
 import '../../data/session.dart';
@@ -207,6 +209,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ),
                       const SizedBox(height: HiSpace.xl),
                       HiButton(label: t.wreSave, loading: _saving, onPressed: _save),
+                      const SizedBox(height: HiSpace.lg),
+                      // Invitation externe : feuille de partage système (WhatsApp/SMS/…) + lien de l'app.
+                      OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          minimumSize: const Size.fromHeight(48),
+                          side: BorderSide(color: HiColors.brandPrimary.withValues(alpha: 0.6)),
+                          foregroundColor: HiColors.brandPrimary,
+                        ),
+                        icon: const Icon(Icons.person_add_alt_1_rounded),
+                        label: Text(t.settingsInviteFriend),
+                        onPressed: () => Share.share(t.shareInviteMessage(inviteLink())),
+                      ),
                       const SizedBox(height: HiSpace.lg),
                       OutlinedButton.icon(
                         style: OutlinedButton.styleFrom(

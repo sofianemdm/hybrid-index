@@ -30,6 +30,32 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsEmailLabel => 'Email address';
 
   @override
+  String get settingsInviteFriend => 'Invite a friend';
+
+  @override
+  String shareInviteMessage(String link) {
+    return 'Join me on Athlete League 💪 One score for your fitness, a radar of your strengths, and a monthly league. $link';
+  }
+
+  @override
+  String shareWodMessage(String wodName, String link) {
+    return 'Come challenge me on $wodName 💪 $link';
+  }
+
+  @override
+  String shareWodMessageWithBest(String best, String wodName, String link) {
+    return 'I scored $best on $wodName — come beat me 💪 $link';
+  }
+
+  @override
+  String shareProfileMessage(String name, String link) {
+    return 'Check out $name\'s profile on Athlete League: $link';
+  }
+
+  @override
+  String get shareTooltip => 'Share';
+
+  @override
   String get settingsEquipmentLabel =>
       'Equipment — \"Equipped\" also unlocks equipment-free sessions';
 
