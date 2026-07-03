@@ -166,6 +166,7 @@ model User {
   updatedAt           DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   identities        AuthIdentity[]
+  passwordResets    PasswordResetCode[]
   avatar            Avatar?
   profile           Profile?
   hybridIndex       HybridIndex?
@@ -538,6 +539,23 @@ model Report {
   @@index([targetType, targetId])
   @@index([status, createdAt])
   @@map("report")
+  @@schema("app")
+}
+
+/// Code de réinitialisation de mot de passe (6 chiffres, haché bcrypt, 15 min, 5 essais max).
+/// Une seule rangée active par utilisateur (les anciennes sont purgées à chaque demande).
+model PasswordResetCode {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  codeHash  String   @map("code_hash")
+  expiresAt DateTime @map("expires_at") @db.Timestamptz(6)
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("password_reset_code")
   @@schema("app")
 }
 

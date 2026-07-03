@@ -169,6 +169,14 @@ class ApiClient {
     return (token: j['token'] as String, user: AuthUser.fromJson(j['user'] as Map<String, dynamic>));
   }
 
+  /// « Mot de passe oublié » : envoie un code par email (réponse toujours ok, anti-énumération).
+  Future<void> forgotPassword(String email) async =>
+      _send('POST', '/v1/auth/forgot', {'email': email});
+
+  /// Réinitialise le mot de passe avec le code à 6 chiffres reçu par email.
+  Future<void> resetPassword(String email, String code, String newPassword) async =>
+      _send('POST', '/v1/auth/reset', {'email': email, 'code': code, 'newPassword': newPassword});
+
   /// Connexion Google : `profile` requis seulement à la première connexion.
   Future<({String token, AuthUser user})> googleAuth(String idToken, Map<String, dynamic>? profile) async {
     final body = <String, dynamic>{'idToken': idToken, if (profile != null) 'profile': profile};

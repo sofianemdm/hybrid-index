@@ -8,9 +8,11 @@ import {
 import { JwtService } from "@nestjs/jwt";
 import { isOldEnough, MIN_AGE_YEARS } from "@hybrid-index/contracts";
 import * as bcrypt from "bcryptjs";
+import { randomInt } from "node:crypto";
 import { PrismaService } from "../../infra/prisma/prisma.service";
+import { MailService } from "../../infra/mail/mail.service";
 import { GoogleTokenVerifier } from "./google-verifier";
-import type { AuthResponse, GoogleAuthRequest, LoginRequest, RegisterRequest } from "./auth.dto";
+import type { AuthResponse, ForgotPasswordRequest, GoogleAuthRequest, LoginRequest, RegisterRequest, ResetPasswordRequest } from "./auth.dto";
 
 export interface JwtPayload {
   sub: string;
@@ -23,7 +25,80 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwt: JwtService,
     private readonly googleVerifier: GoogleTokenVerifier,
+    private readonly mail: MailService,
   ) {}
+
+  /** Fenêtre de validité et nombre d'essais d'un code de réinitialisation. */
+  static readonly RESET_CODE_TTL_MS = 15 * 60 * 1000;
+  static readonly RESET_CODE_MAX_ATTEMPTS = 5;
+  /** Anti-spam : délai minimal entre deux demandes de code pour le même compte. */
+  static readonly RESET_REQUEST_COOLDOWN_MS = 60 * 1000;
+
+  /**
+   * « Mot de passe oublié » : génère un code à 6 chiffres (haché bcrypt en base, 15 min, 5 essais),
+   * l'envoie par email, et répond TOUJOURS { ok: true } — même si l'email est inconnu ou lié à un
+   * compte Google sans mot de passe (aucune énumération d'emails possible).
+   */
+  async forgotPassword(req: ForgotPasswordRequest): Promise<{ ok: true }> {
+    const email = req.email.toLowerCase().trim();
+    const user = await this.prisma.user.findUnique({ where: { email }, select: { id: true, passwordHash: true } });
+    // Compte inexistant OU compte social sans mot de passe → réponse identique, aucun envoi.
+    if (!user?.passwordHash) return { ok: true };
+
+    // Anti-spam : si un code a été émis il y a moins d'une minute, on ne renvoie rien (réponse
+    // identique — l'utilisateur pressé retape sa demande sans donner d'indice à un attaquant).
+    const last = await this.prisma.passwordResetCode.findFirst({
+      where: { userId: user.id },
+      orderBy: { createdAt: "desc" },
+      select: { createdAt: true },
+    });
+    if (last && Date.now() - last.createdAt.getTime() < AuthService.RESET_REQUEST_COOLDOWN_MS) {
+      return { ok: true };
+    }
+
+    const code = String(randomInt(0, 1_000_000)).padStart(6, "0");
+    const codeHash = await bcrypt.hash(code, 10);
+    // Un seul code actif par compte : purge des anciens puis création.
+    await this.prisma.$transaction([
+      this.prisma.passwordResetCode.deleteMany({ where: { userId: user.id } }),
+      this.prisma.passwordResetCode.create({
+        data: { userId: user.id, codeHash, expiresAt: new Date(Date.now() + AuthService.RESET_CODE_TTL_MS) },
+      }),
+    ]);
+    await this.mail.sendPasswordResetCode(email, code);
+    return { ok: true };
+  }
+
+  /**
+   * Réinitialise le mot de passe avec le code reçu par email. Erreur UNIQUE et générique
+   * (RESET_INVALID) quel que soit l'échec — email inconnu, code faux, expiré ou trop d'essais —
+   * pour ne rien révéler. Le compteur d'essais est incrémenté AVANT la comparaison (un code ne
+   * peut pas être brute-forcé : 5 essais max sur 15 minutes).
+   */
+  async resetPassword(req: ResetPasswordRequest): Promise<{ ok: true }> {
+    const invalid = new BadRequestException({ code: "RESET_INVALID", message: "Code invalide ou expiré." });
+    const email = req.email.toLowerCase().trim();
+    const user = await this.prisma.user.findUnique({ where: { email }, select: { id: true, passwordHash: true } });
+    if (!user?.passwordHash) throw invalid;
+
+    const row = await this.prisma.passwordResetCode.findFirst({
+      where: { userId: user.id },
+      orderBy: { createdAt: "desc" },
+    });
+    if (!row || row.expiresAt.getTime() < Date.now() || row.attempts >= AuthService.RESET_CODE_MAX_ATTEMPTS) {
+      throw invalid;
+    }
+    await this.prisma.passwordResetCode.update({ where: { id: row.id }, data: { attempts: { increment: 1 } } });
+    const match = await bcrypt.compare(req.code, row.codeHash);
+    if (!match) throw invalid;
+
+    const passwordHash = await bcrypt.hash(req.newPassword, 10);
+    await this.prisma.$transaction([
+      this.prisma.user.update({ where: { id: user.id }, data: { passwordHash } }),
+      this.prisma.passwordResetCode.deleteMany({ where: { userId: user.id } }),
+    ]);
+    return { ok: true };
+  }
 
   async register(req: RegisterRequest): Promise<AuthResponse> {
     // Age-gating (D4) : refus net avant toute écriture.

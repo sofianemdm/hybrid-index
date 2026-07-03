@@ -9,6 +9,7 @@ import '../../theme/tokens.dart';
 import '../../widgets/hi_button.dart';
 import 'google_button.dart';
 import 'google_profile_screen.dart';
+import 'forgot_password_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/share_links.dart';
 
@@ -171,6 +172,19 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     },
                     decoration: InputDecoration(labelText: t.authPassword, prefixIcon: const Icon(Icons.lock_outline)),
                   ),
+                  if (!_register)
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => ForgotPasswordScreen(initialEmail: _email.text.trim()),
+                          ),
+                        ),
+                        child: Text(t.authForgotLink,
+                            style: HiType.caption.copyWith(color: HiColors.brandPrimary)),
+                      ),
+                    ),
                   if (_register) ...[
                     const SizedBox(height: HiSpace.md),
                     InkWell(

@@ -434,6 +434,66 @@ abstract class AppLocalizations {
   /// **'Username'**
   String get authUsername;
 
+  /// No description provided for @authForgotLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Forgot password?'**
+  String get authForgotLink;
+
+  /// No description provided for @authForgotTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Forgot password'**
+  String get authForgotTitle;
+
+  /// No description provided for @authForgotIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your email: we\'ll send you a 6-digit code to choose a new password.'**
+  String get authForgotIntro;
+
+  /// No description provided for @authForgotSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send the code'**
+  String get authForgotSend;
+
+  /// No description provided for @authForgotSent.
+  ///
+  /// In en, this message translates to:
+  /// **'If an account exists for this email, the code is on its way. Check your spam folder.'**
+  String get authForgotSent;
+
+  /// No description provided for @authForgotCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Code received by email'**
+  String get authForgotCode;
+
+  /// No description provided for @authForgotNewPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'New password (8+)'**
+  String get authForgotNewPassword;
+
+  /// No description provided for @authForgotConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Change password'**
+  String get authForgotConfirm;
+
+  /// No description provided for @authForgotDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Password changed! You can sign in.'**
+  String get authForgotDone;
+
+  /// No description provided for @authForgotInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid or expired code. Request a new one if needed.'**
+  String get authForgotInvalid;
+
   /// No description provided for @authPassword.
   ///
   /// In en, this message translates to:

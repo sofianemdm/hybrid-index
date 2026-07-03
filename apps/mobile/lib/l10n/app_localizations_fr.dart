@@ -212,6 +212,39 @@ class AppLocalizationsFr extends AppLocalizations {
   String get authUsername => 'Pseudo';
 
   @override
+  String get authForgotLink => 'Mot de passe oublié ?';
+
+  @override
+  String get authForgotTitle => 'Mot de passe oublié';
+
+  @override
+  String get authForgotIntro =>
+      'Entre ton email : on t\'envoie un code à 6 chiffres pour choisir un nouveau mot de passe.';
+
+  @override
+  String get authForgotSend => 'Envoyer le code';
+
+  @override
+  String get authForgotSent =>
+      'Si un compte existe pour cet email, le code est parti. Pense à vérifier tes spams.';
+
+  @override
+  String get authForgotCode => 'Code reçu par email';
+
+  @override
+  String get authForgotNewPassword => 'Nouveau mot de passe (8+)';
+
+  @override
+  String get authForgotConfirm => 'Changer le mot de passe';
+
+  @override
+  String get authForgotDone => 'Mot de passe changé ! Tu peux te connecter.';
+
+  @override
+  String get authForgotInvalid =>
+      'Code invalide ou expiré. Redemande un code si besoin.';
+
+  @override
   String get authPassword => 'Mot de passe (8+)';
 
   @override

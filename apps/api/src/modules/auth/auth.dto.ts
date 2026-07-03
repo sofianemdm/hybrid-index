@@ -39,6 +39,21 @@ export const GoogleAuthRequest = z.object({
 });
 export type GoogleAuthRequest = z.infer<typeof GoogleAuthRequest>;
 
+/** Demande de réinitialisation : réponse TOUJOURS identique (pas d'énumération d'emails). */
+export const ForgotPasswordRequest = z.object({
+  email: z.string().email(),
+});
+export type ForgotPasswordRequest = z.infer<typeof ForgotPasswordRequest>;
+
+/** Réinitialisation : code à 6 chiffres reçu par email + nouveau mot de passe (mêmes règles
+ *  que l'inscription). */
+export const ResetPasswordRequest = z.object({
+  email: z.string().email(),
+  code: z.string().regex(/^\d{6}$/, "Code à 6 chiffres"),
+  newPassword: z.string().min(8, "8 caractères minimum"),
+});
+export type ResetPasswordRequest = z.infer<typeof ResetPasswordRequest>;
+
 export interface AuthResponse {
   token: string;
   user: { id: string; email: string; displayName: string };

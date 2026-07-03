@@ -2,7 +2,7 @@ import { Body, Controller, Post } from "@nestjs/common";
 import { ZodValidationPipe } from "../../common/zod-validation.pipe";
 import { RateLimit } from "../../common/rate-limit.guard";
 import { AuthService } from "./auth.service";
-import { type AuthResponse, GoogleAuthRequest, LoginRequest, RegisterRequest } from "./auth.dto";
+import { type AuthResponse, ForgotPasswordRequest, GoogleAuthRequest, LoginRequest, RegisterRequest, ResetPasswordRequest } from "./auth.dto";
 
 @Controller("v1/auth")
 export class AuthController {
@@ -20,6 +20,21 @@ export class AuthController {
   @Post("login")
   login(@Body(new ZodValidationPipe(LoginRequest)) body: LoginRequest): Promise<AuthResponse> {
     return this.auth.login(body);
+  }
+
+  /** « Mot de passe oublié » : envoie un code par email. Réponse TOUJOURS { ok: true }
+   *  (pas d'énumération d'emails). Anti-abus : 5 demandes / 15 min / IP. */
+  @RateLimit({ limit: 5, windowSec: 900 })
+  @Post("forgot")
+  forgot(@Body(new ZodValidationPipe(ForgotPasswordRequest)) body: ForgotPasswordRequest): Promise<{ ok: true }> {
+    return this.auth.forgotPassword(body);
+  }
+
+  /** Réinitialise le mot de passe avec le code reçu par email (erreur générique RESET_INVALID). */
+  @RateLimit({ limit: 10, windowSec: 900 })
+  @Post("reset")
+  reset(@Body(new ZodValidationPipe(ResetPasswordRequest)) body: ResetPasswordRequest): Promise<{ ok: true }> {
+    return this.auth.resetPassword(body);
   }
 
   /** Connexion / inscription via Google (nécessite GOOGLE_CLIENT_ID côté serveur). */
