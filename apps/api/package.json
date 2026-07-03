@@ -64,8 +64,10 @@
       "<rootDir>/test"
     ],
     "testRegex": ".*\\.spec\\.ts$",
+    "globalSetup": "<rootDir>/test/global-setup.ts",
     "setupFiles": [
-      "reflect-metadata"
+      "reflect-metadata",
+      "<rootDir>/test/test-env.ts"
     ],
     "moduleFileExtensions": [
       "ts",
