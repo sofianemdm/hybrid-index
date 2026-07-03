@@ -37,8 +37,14 @@ jobs:
 
       - name: Déployer sur Netlify
         run: |
-          npm i -g netlify-cli
-          netlify deploy --dir=build/web --prod --no-build
+          set -o pipefail
+          npm i -g netlify-cli 2>&1 | tail -2
+          netlify deploy --dir=build/web --prod --no-build 2>&1 | tee netlify.log
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+
+      - name: Diagnostic (annotations si échec)
+        if: failure()
+        run: |
+          grep -iE "error|failed|not found|unauthorized" netlify.log | head -20 | while IFS= read -r l; do echo "::error::NETLIFY: $l"; done

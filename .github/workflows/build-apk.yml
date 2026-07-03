@@ -53,11 +53,16 @@ jobs:
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         # --split-per-abi : un APK PAR architecture CPU au lieu d'un APK universel 3-en-1
         # (~ -45 % à télécharger). Sur un téléphone récent : prendre app-arm64-v8a-release.apk.
-        run: >
-          flutter build apk --release --split-per-abi
-          --dart-define=API_BASE_URL=https://api-production-9a50.up.railway.app
-          --dart-define=PUSH_ENABLED=true
-          --dart-define=BUILD_NUMBER=${{ github.run_number }}
+        run: |
+          set -o pipefail
+          flutter build apk --release --split-per-abi             --dart-define=API_BASE_URL=https://api-production-9a50.up.railway.app             --dart-define=PUSH_ENABLED=true             --dart-define=BUILD_NUMBER=${{ github.run_number }} 2>&1 | tee apk-build.log
+
+      # Diagnostic : en cas d'échec, les lignes d'erreur du log deviennent des ANNOTATIONS
+      # publiques du run (lisibles sans droits admin sur les logs).
+      - name: Diagnostic (annotations si échec)
+        if: failure()
+        run: |
+          grep -iE "error|FAILURE|Exception|what went wrong" apk-build.log | head -30 | while IFS= read -r l; do echo "::error::APK: $l"; done
 
       - name: Publier les APK (téléchargeables dans les Artifacts du run)
         uses: actions/upload-artifact@v4

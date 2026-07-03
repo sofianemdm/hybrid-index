@@ -43,10 +43,11 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm lint
       # Bloquant : la justesse du HYBRID INDEX est non négociable (CLAUDE.md règle 4).
-      # Reporter github-actions : chaque test en échec devient une ANNOTATION lisible sans
-      # ouvrir les logs. maxWorkers borné : 45 suites e2e (2 apps Nest chacune) sur un runner
-      # 4 vCPU saturent la machine → timeouts fantômes.
-      - run: pnpm test -- --maxWorkers=2 --reporters=default --reporters=github-actions
+      # Les flags jest ne vont QU'À l'api (turbo les passait aussi à vitest/contracts → crash).
+      - run: npx turbo run test --filter=!@hybrid-index/api
+      # Reporter github-actions : chaque test api en échec devient une ANNOTATION publique.
+      # maxWorkers borné : 45 suites e2e (2 apps Nest chacune) sur 4 vCPU → timeouts sinon.
+      - run: pnpm --dir apps/api test -- --maxWorkers=2 --reporters=default --reporters=github-actions
 
   mobile:
     name: Mobile (Flutter — analyze · test)
