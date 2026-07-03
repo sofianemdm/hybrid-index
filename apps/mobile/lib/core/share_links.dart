@@ -4,7 +4,10 @@
 library;
 
 /// Base publique de l'app (le site Netlify — même domaine que les App Links du manifest).
-const String kAppWebBase = 'https://hybrid-index.netlify.app';
+// URL RÉELLE du site Netlify de prod (cf. mémoire deploy-prod-topology) : `hybrid-index.netlify.app`
+// n'a JAMAIS existé — la renommer casserait CORS_ORIGINS + l'origine Google OAuth, donc on pointe
+// l'existante. Si un domaine propre arrive un jour (athleteleague.fr), changer ICI uniquement.
+const String kAppWebBase = 'https://scintillating-rolypoly-582e42.netlify.app';
 
 /// Lien d'invitation générique (page d'accueil).
 String inviteLink() => kAppWebBase;
