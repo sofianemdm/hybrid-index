@@ -25,6 +25,8 @@
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Athlete League">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
@@ -95,6 +97,26 @@
     .hi-sub{font:500 16px/1.5 Inter;color:var(--txt2);max-width:440px}
     .hi-sub b{color:var(--txt);font-weight:700}
     .hi-micro{font:500 12px Inter,system-ui,sans-serif;color:var(--txt3);margin-top:10px}
+    .hi-install{margin-top:16px;display:inline-flex;align-items:center;gap:8px;cursor:pointer;
+      padding:11px 18px;border-radius:12px;background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.14);color:var(--txt);
+      font:600 13px Inter,system-ui,sans-serif;transition:background .18s ease,border-color .18s ease,transform .12s ease}
+    .hi-install:hover{background:rgba(43,212,245,.10);border-color:rgba(43,212,245,.45)}
+    .hi-install:active{transform:scale(.97)}
+    .hi-install svg{color:var(--brand)}
+    .hi-sheet{position:fixed;inset:0;z-index:9999;display:none;align-items:flex-end;justify-content:center;
+      background:rgba(4,7,12,.72);backdrop-filter:blur(4px)}
+    .hi-sheet.on{display:flex}
+    .hi-sheet-in{background:#12161F;border:1px solid rgba(255,255,255,.10);border-radius:20px 20px 0 0;
+      width:100%;max-width:460px;padding:24px 22px calc(24px + env(safe-area-inset-bottom));
+      box-shadow:0 -12px 40px rgba(0,0,0,.5)}
+    .hi-sheet h3{font:700 18px Inter,system-ui,sans-serif;color:var(--txt);margin:0 0 6px}
+    .hi-sheet p{font:500 14px/1.55 Inter,system-ui,sans-serif;color:var(--txt2);margin:0 0 14px}
+    .hi-sheet .step{display:flex;align-items:center;gap:12px;margin:12px 0;color:var(--txt);font:500 14px Inter,system-ui,sans-serif}
+    .hi-sheet .num{flex:0 0 26px;width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;
+      justify-content:center;background:rgba(43,212,245,.14);color:var(--brand);font:700 13px Inter,system-ui,sans-serif}
+    .hi-sheet .close{margin-top:18px;width:100%;padding:13px;border-radius:12px;border:0;cursor:pointer;
+      background:var(--brand);color:#041019;font:700 14px Inter,system-ui,sans-serif}
     .hi-scrollhint{margin-top:22px;color:var(--txt3);font-size:12px;display:flex;flex-direction:column;align-items:center;gap:4px}
     .hi-scrollhint svg{width:16px;height:16px;animation:hi-bob 2s ease-in-out infinite}
     @keyframes hi-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
@@ -270,6 +292,10 @@
             </button>
             <div class="hi-boot-msg" id="hi-boot1" aria-live="polite"></div>
             <div class="hi-micro">Gratuit. Avatar prêt en 30 secondes. Sans matériel obligatoire.</div>
+            <button class="hi-install" id="hi-install" hidden onclick="hiInstall()">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+              Installer l'application
+            </button>
           </div>
         </div>
         <div class="hi-cardwrap">
@@ -514,6 +540,62 @@
         requestAnimationFrame(tick);
       }, { threshold: 0.4 });
       io.observe(el);
+    })();
+
+    // PWA : bouton « Installer l'application » + service worker minimal (installable, sans cache).
+    (function () {
+      var btn = document.getElementById('hi-install');
+      var standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+      var ua = navigator.userAgent || '';
+      // iPadOS récent se fait passer pour un Mac → on le détecte via le tactile.
+      var isIOS = /iphone|ipad|ipod/i.test(ua) || (/macintosh/i.test(ua) && 'ontouchend' in document);
+      var deferred = null;
+
+      // Enregistre le SW minimal (nécessaire au prompt d'installation Android + purge les vieux SW).
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('pwa-sw.js').catch(function () {});
+      }
+      if (standalone || !btn) return; // déjà installée (ou lancée depuis l'écran d'accueil) → rien à proposer
+
+      window.addEventListener('beforeinstallprompt', function (e) {
+        e.preventDefault(); deferred = e; btn.hidden = false; // Android/Chrome : on révèle le bouton
+      });
+      window.addEventListener('appinstalled', function () { btn.hidden = true; deferred = null; });
+      if (isIOS) btn.hidden = false; // iOS : jamais de prompt auto → on montre le bouton (instructions manuelles)
+
+      window.hiInstall = function () {
+        if (deferred) {
+          deferred.prompt();
+          deferred.userChoice.then(function () { deferred = null; btn.hidden = true; });
+          return;
+        }
+        openSheet(isIOS); // iOS, ou navigateur sans prompt : instructions manuelles
+      };
+
+      function openSheet(ios) {
+        var sheet = document.getElementById('hi-sheet');
+        if (!sheet) {
+          var steps = ios
+            ? '<div class="step"><span class="num">1</span>Appuie sur <b style="margin:0 4px">Partager</b> (l\'icône carrée avec une flèche ↑, en bas de Safari)</div>'
+              + '<div class="step"><span class="num">2</span>Fais défiler et choisis <b style="margin:0 4px">« Sur l\'écran d\'accueil »</b></div>'
+              + '<div class="step"><span class="num">3</span>Appuie sur <b style="margin:0 4px">Ajouter</b></div>'
+            : '<div class="step"><span class="num">1</span>Ouvre le menu <b style="margin:0 4px">⋮</b> de ton navigateur</div>'
+              + '<div class="step"><span class="num">2</span>Choisis <b style="margin:0 4px">« Installer l\'application »</b> (ou « Ajouter à l\'écran d\'accueil »)</div>';
+          sheet = document.createElement('div');
+          sheet.id = 'hi-sheet'; sheet.className = 'hi-sheet';
+          sheet.innerHTML = '<div class="hi-sheet-in">'
+            + '<h3>Installer Athlete League</h3>'
+            + '<p>Ajoute l\'app à ton écran d\'accueil : accès plein écran, comme une vraie appli, en un tap.</p>'
+            + steps
+            + '<button class="close" type="button">J\'ai compris</button>'
+            + '</div>';
+          document.body.appendChild(sheet);
+          sheet.addEventListener('click', function (e) {
+            if (e.target === sheet || e.target.classList.contains('close')) sheet.classList.remove('on');
+          });
+        }
+        sheet.classList.add('on');
+      }
     })();
 
     // Témoignages : NE PAS activer avec des citations inventées (illégal, pratique
