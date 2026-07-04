@@ -9,6 +9,7 @@ import 'data/session.dart';
 import 'features/auth/auth_screen.dart';
 import 'features/home/home_shell.dart';
 import 'features/onboarding/onboarding_screen.dart';
+import 'l10n/app_localizations.dart';
 import 'theme/tokens.dart';
 import 'widgets/error_retry.dart';
 
@@ -188,7 +189,27 @@ class AuthGate extends ConsumerWidget {
         final profile = ref.watch(myProfileProvider);
         return profile.when(
           loading: () => const _Splash(),
-          error: (e, _) => Scaffold(body: ErrorRetry(onRetry: () => ref.invalidate(myProfileProvider))),
+          // Erreur de chargement du profil : Réessayer + PORTE DE SORTIE « Se déconnecter »
+          // (sinon un jeton bloquant enferme l'utilisateur dans l'écran d'erreur à chaque visite).
+          error: (e, _) => Scaffold(
+            body: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Expanded(child: ErrorRetry(onRetry: () => ref.invalidate(myProfileProvider))),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 32),
+                  child: TextButton(
+                    onPressed: () async {
+                      await ref.read(sessionProvider.notifier).logout();
+                      ref.invalidate(myProfileProvider);
+                    },
+                    child: Text(AppLocalizations.of(context).settingsSignOut,
+                        style: TextStyle(color: HiColors.textTertiary)),
+                  ),
+                ),
+              ],
+            ),
+          ),
           data: (p) => p == null ? const OnboardingScreen() : const HomeShell(),
         );
     }
