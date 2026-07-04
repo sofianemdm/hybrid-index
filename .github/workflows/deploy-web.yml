@@ -38,7 +38,10 @@ jobs:
         # utilisateurs une ANCIENNE version cachee du code apres chaque deploiement (bug vecu 04/07 :
         # les correctifs n'atteignaient jamais le navigateur). Sans SW, chaque visite charge la
         # derniere version (cache navigateur standard, respecte les en-tetes).
-        run: flutter build web --release --pwa-strategy=none --dart-define=API_BASE_URL=https://api-production-9a50.up.railway.app
+        # PUSH_ENABLED=true : active les notifications web (FCM). Le SW `firebase-messaging-sw.js`
+        # (fourni dans web/) reste present malgre --pwa-strategy=none et gere push + installabilite
+        # SANS mettre en cache (donc pas de version perimee).
+        run: flutter build web --release --pwa-strategy=none --dart-define=API_BASE_URL=https://api-production-9a50.up.railway.app --dart-define=PUSH_ENABLED=true
 
       - name: Déployer sur Netlify
         run: |

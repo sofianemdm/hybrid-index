@@ -560,9 +560,9 @@
         return 'none';
       };
 
-      // Enregistre le SW minimal (nécessaire au prompt d'installation Android + purge les vieux SW).
+      // Enregistre le SW combiné (installabilité + push FCM en arrière-plan ; purge les vieux SW).
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('pwa-sw.js').catch(function () {});
+        navigator.serviceWorker.register('firebase-messaging-sw.js').catch(function () {});
       }
       if (standalone || !btn) return; // déjà installée (ou lancée depuis l'écran d'accueil) → rien à proposer
 

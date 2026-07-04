@@ -58,9 +58,14 @@ class PushService {
   final String? deviceLocale;
 
   Future<void> init() async {
-    // Garde-fou : inactif par défaut et toujours sur le web (préserve la version navigateur).
-    if (!Env.pushEnabled || kIsWeb) {
-      debugPrint('[push] inactif (pushEnabled=${Env.pushEnabled}, web=$kIsWeb).');
+    // Garde-fou : inactif par défaut (build sans `--dart-define=PUSH_ENABLED=true`).
+    if (!Env.pushEnabled) {
+      debugPrint('[push] inactif (pushEnabled=${Env.pushEnabled}).');
+      return;
+    }
+    // Web : chemin dédié (config Firebase web explicite + clé VAPID + service worker JS).
+    if (kIsWeb) {
+      await _initWeb();
       return;
     }
     try {
@@ -92,6 +97,57 @@ class PushService {
       _wireHandlers(messaging);
     } catch (e) {
       debugPrint('[push] init échouée: $e');
+    }
+  }
+
+  /// Push WEB (FCM). Firebase initialisé avec la config web EXPLICITE (le web ne lit pas
+  /// google-services.json), permission demandée, token récupéré avec la clé VAPID puis enregistré
+  /// côté serveur. Les messages en arrière-plan sont gérés par `web/firebase-messaging-sw.js` (JS) ;
+  /// ici on couvre le token + le premier plan (bannière + routage au tap). Config/VAPID = identifiants
+  /// PUBLICS côté client (pas des secrets), d'où leur présence en clair.
+  Future<void> _initWeb() async {
+    try {
+      if (Firebase.apps.isEmpty) {
+        await Firebase.initializeApp(
+          options: const FirebaseOptions(
+            apiKey: 'AIzaSyBF50kfZ_0taNdhwkRCa5Qcz5ZhWTMG0Ig',
+            authDomain: 'hybrid-index-ffe2c.firebaseapp.com',
+            projectId: 'hybrid-index-ffe2c',
+            storageBucket: 'hybrid-index-ffe2c.firebasestorage.app',
+            messagingSenderId: '702021189861',
+            appId: '1:702021189861:web:151fba59a8cee7574e940c',
+          ),
+        );
+      }
+      final messaging = FirebaseMessaging.instance;
+      final settings = await messaging.requestPermission();
+      if (settings.authorizationStatus == AuthorizationStatus.denied) {
+        debugPrint('[push web] permission refusée.');
+        return;
+      }
+      const vapidKey =
+          'BA9DE-Xud1q2OODTsb4ua4XxIOYRyB9tB0SQy84dlNa1rITEZ63ucZCgVsEHA4ATBCQ31_ItDfX5qAS__MCn1ek';
+      final token = await messaging.getToken(vapidKey: vapidKey);
+      if (token != null) {
+        try {
+          await _api.registerPushToken(token);
+        } catch (e) {
+          debugPrint('[push web] enregistrement token KO: $e');
+        }
+      }
+      messaging.onTokenRefresh.listen((t) {
+        _api.registerPushToken(t).catchError((Object e) {
+          debugPrint('[push web] refresh token KO: $e');
+          return false;
+        });
+      });
+      // Premier plan : bannière in-app + routage au tap (le SW JS gère l'arrière-plan).
+      FirebaseMessaging.onMessage.listen(_showForegroundBanner);
+      FirebaseMessaging.onMessageOpenedApp.listen(_route);
+      await _syncLocale();
+      debugPrint('[push web] actif (token enregistré).');
+    } catch (e) {
+      debugPrint('[push web] init échouée: $e');
     }
   }
 
