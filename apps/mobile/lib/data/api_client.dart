@@ -223,7 +223,14 @@ class ApiClient {
       final j = await _send('GET', '/v1/me/profile') as Map<String, dynamic>;
       return Profile.fromJson(j);
     } on ApiException catch (e) {
+      // DIAG TEMP : trace l'exception exacte de /me/profile (console navigateur).
+      // ignore: avoid_print
+      print('DIAG myProfile ApiException: status=${e.status} code=${e.code} msg=${e.message}');
       if (e.status == 404) return null; // pas encore d'Index
+      rethrow;
+    } catch (e) {
+      // ignore: avoid_print
+      print('DIAG myProfile NON-Api: ${e.runtimeType} : $e');
       rethrow;
     }
   }
