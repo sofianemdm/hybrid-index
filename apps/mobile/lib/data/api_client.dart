@@ -95,7 +95,7 @@ class ApiClient {
 
   /// Délai max par tentative : au-delà, l'appel échoue en « connexion trop lente » au lieu de
   /// rester bloqué INDÉFINIMENT (squelette de chargement éternel sur réseau mobile instable).
-  static const Duration _timeout = Duration(seconds: 10);
+  static const Duration _timeout = Duration(seconds: 20); // 20s : tolère un réveil à froid Railway
 
   Future<dynamic> _send(String method, String path, [Map<String, dynamic>? body]) async {
     final uri = Uri.parse('$_baseUrl$path');

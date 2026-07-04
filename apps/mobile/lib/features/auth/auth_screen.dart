@@ -65,9 +65,14 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       }
       // AuthGate prend le relais (onboarding ou home).
     } on ApiException catch (e) {
-      _toast(e.code == 'AGE_RESTRICTED' ? t.ageRestricted : e.message);
+      if (e.code == 'AGE_RESTRICTED') {
+        _toast(t.ageRestricted);
+      } else {
+        // Diagnostic précis (temporaire) : code + statut + URL réelle + message serveur.
+        _toast('Inscription KO — code=${e.code} statut=${e.status} base=${ref.read(apiClientProvider).baseUrl} · ${e.message}');
+      }
     } catch (e) {
-      _toast('$e');
+      _toast('Inscription exception : $e');
     } finally {
       if (mounted) setState(() => _loading = false);
     }
