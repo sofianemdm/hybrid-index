@@ -34,7 +34,11 @@ jobs:
         run: flutter pub get
 
       - name: Build web (pointé sur l'API de prod)
-        run: flutter build web --release --dart-define=API_BASE_URL=https://api-production-9a50.up.railway.app
+        # --pwa-strategy=none : PAS de service worker. Le SW par defaut (offline-first) servait aux
+        # utilisateurs une ANCIENNE version cachee du code apres chaque deploiement (bug vecu 04/07 :
+        # les correctifs n'atteignaient jamais le navigateur). Sans SW, chaque visite charge la
+        # derniere version (cache navigateur standard, respecte les en-tetes).
+        run: flutter build web --release --pwa-strategy=none --dart-define=API_BASE_URL=https://api-production-9a50.up.railway.app
 
       - name: Déployer sur Netlify
         run: |
