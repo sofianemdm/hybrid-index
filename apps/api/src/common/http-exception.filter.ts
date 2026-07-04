@@ -5,6 +5,7 @@ import type { ErrorCode } from "@hybrid-index/contracts";
 interface HttpResponse {
   status(code: number): HttpResponse;
   json(body: unknown): unknown;
+  setHeader(name: string, value: string): unknown;
 }
 
 const STATUS_TO_CODE: Record<number, ErrorCode> = {
@@ -54,6 +55,17 @@ export class HttpExceptionFilter implements ExceptionFilter {
       }
     }
 
+    // CRUCIAL (bug 04/07) : garantir `Cross-Origin-Resource-Policy: cross-origin` sur TOUTE réponse
+    // d'erreur. Sans lui (défaut helmet = same-origin, ou middleware helmet non appliqué sur le
+    // chemin d'exception), le NAVIGATEUR REFUSE que l'app Flutter Web (autre origine) LISE la réponse
+    // → XHR `onError` → le client remonte « serveur injoignable » alors que le 404/400 arrive bien.
+    // Vécu : un 404 « pas d'Index » (attendu à l'onboarding) bloquait TOUTE création de compte.
+    // On le pose ici EN DUR, indépendamment de l'ordre des middlewares (belt & suspenders).
+    try {
+      res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+    } catch {
+      /* certains transports (tests) n'exposent pas setHeader : sans effet, non bloquant */
+    }
     res.status(status).json({ error: { code, message, ...(details ? { details } : {}) } });
   }
 }
