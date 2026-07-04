@@ -1,6 +1,8 @@
-import { BadRequestException, Controller, Get, Query } from "@nestjs/common";
+import { BadRequestException, Controller, Get, Query, UseGuards } from "@nestjs/common";
 import { Sex } from "@hybrid-index/contracts";
-import { CurrentUser, type AuthenticatedUser } from "../../common/current-user.decorator";
+import { CurrentUser } from "../auth/current-user.decorator";
+import { type AuthenticatedUser } from "../auth/jwt-auth.guard";
+import { OptionalJwtAuthGuard } from "../auth/optional-jwt-auth.guard";
 import { ClubsService } from "../clubs/clubs.service";
 import { ProgressService } from "./progress.service";
 
@@ -13,6 +15,7 @@ export class ProgressController {
 
   /** Classement de progression de la semaine (par effort), ou filtré « Mon club » via `clubId`. */
   @Get("progress")
+  @UseGuards(OptionalJwtAuthGuard)
   async board(
     @Query("sex") sexParam: string,
     @Query("clubId") clubId: string | undefined,

@@ -1,7 +1,8 @@
-import { Body, Controller, Delete, Get, Patch, Post } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Patch, Post, UseGuards } from "@nestjs/common";
 import { z } from "zod";
 import { ZodValidationPipe } from "../../common/zod-validation.pipe";
-import { CurrentUser, type AuthenticatedUser } from "../../common/current-user.decorator";
+import { CurrentUser } from "../auth/current-user.decorator";
+import { JwtAuthGuard, type AuthenticatedUser } from "../auth/jwt-auth.guard";
 import { StreakService, type StreakState } from "./streak.service";
 import { BadgesService, type BadgeCard, type BadgeView } from "./badges.service";
 import { EngagementService, type FeedItem, type WeeklyRecap } from "./engagement.service";
@@ -23,6 +24,7 @@ const UpdateNotificationsRequest = z.object({
 });
 
 @Controller("v1/me")
+@UseGuards(JwtAuthGuard)
 export class EngagementController {
   constructor(
     private readonly streak: StreakService,

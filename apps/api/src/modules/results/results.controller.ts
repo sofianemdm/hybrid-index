@@ -1,10 +1,12 @@
-import { Body, Controller, Delete, Get, Param, Post } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Post, UseGuards } from "@nestjs/common";
 import { ZodValidationPipe } from "../../common/zod-validation.pipe";
-import { CurrentUser, type AuthenticatedUser } from "../../common/current-user.decorator";
+import { CurrentUser } from "../auth/current-user.decorator";
+import { JwtAuthGuard, type AuthenticatedUser } from "../auth/jwt-auth.guard";
 import { LogResultRequest } from "./results.dto";
 import { ResultsService, type LogResultResponse } from "./results.service";
 
 @Controller("v1/results")
+@UseGuards(JwtAuthGuard)
 export class ResultsController {
   constructor(private readonly results: ResultsService) {}
 

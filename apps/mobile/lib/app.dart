@@ -6,7 +6,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'data/models.dart';
 import 'data/realtime_service.dart';
 import 'data/session.dart';
+import 'features/auth/auth_screen.dart';
 import 'features/home/home_shell.dart';
+import 'features/onboarding/onboarding_screen.dart';
+import 'l10n/app_localizations.dart';
 import 'theme/tokens.dart';
 import 'widgets/error_retry.dart';
 
@@ -169,46 +172,47 @@ final inboxBadgeProvider = StreamProvider.autoDispose<int>((ref) async* {
   }
 });
 
-/// Point d'entrée logique. TEMPORAIRE (auth-rebuild) : la session est désormais toujours
-/// [AuthStatus.loggedIn] (shim factice, cf. data/session.dart). On route donc directement vers
-/// l'app via le profil. L'ancien aiguillage vers l'écran de connexion et l'onboarding a été retiré ;
-/// à reconstruire avec la nouvelle interface d'auth.
+/// Point d'entrée logique : décide quel écran montrer selon l'état d'auth + onboarding.
 class AuthGate extends ConsumerWidget {
   const AuthGate({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final profile = ref.watch(myProfileProvider);
-    return profile.when(
-      loading: () => const _Splash(),
-      error: (e, _) => Scaffold(
-        body: ErrorRetry(onRetry: () => ref.invalidate(myProfileProvider)),
-      ),
-      // Plus d'onboarding : si le profil est absent (null), placeholder en attendant la nouvelle
-      // interface de connexion / création de compte.
-      data: (p) => p == null ? const _AuthPlaceholder() : const HomeShell(),
-    );
-  }
-}
+    final status = ref.watch(sessionProvider.select((s) => s.status));
 
-/// TEMPORAIRE (auth-rebuild) : écran neutre affiché quand il n'y a pas encore de profil, en
-/// remplacement de l'ancien onboarding supprimé.
-class _AuthPlaceholder extends StatelessWidget {
-  const _AuthPlaceholder();
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Text(
-            'Connexion / création de compte à reconstruire',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: HiColors.textSecondary, fontSize: 15),
+    switch (status) {
+      case AuthStatus.loading:
+        return const _Splash();
+      case AuthStatus.loggedOut:
+        return const AuthScreen();
+      case AuthStatus.loggedIn:
+        final profile = ref.watch(myProfileProvider);
+        return profile.when(
+          loading: () => const _Splash(),
+          // Erreur de chargement du profil : Réessayer + PORTE DE SORTIE « Se déconnecter »
+          // (sinon un jeton bloquant enferme l'utilisateur dans l'écran d'erreur à chaque visite).
+          error: (e, _) => Scaffold(
+            body: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Expanded(child: ErrorRetry(onRetry: () => ref.invalidate(myProfileProvider))),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 32),
+                  child: TextButton(
+                    onPressed: () async {
+                      await ref.read(sessionProvider.notifier).logout();
+                      ref.invalidate(myProfileProvider);
+                    },
+                    child: Text(AppLocalizations.of(context).settingsSignOut,
+                        style: TextStyle(color: HiColors.textTertiary)),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      ),
-    );
+          data: (p) => p == null ? const OnboardingScreen() : const HomeShell(),
+        );
+    }
   }
 }
 

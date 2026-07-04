@@ -1,5 +1,6 @@
-import { Body, Controller, Get, NotFoundException, Patch } from "@nestjs/common";
-import { CurrentUser, type AuthenticatedUser } from "../../common/current-user.decorator";
+import { Body, Controller, Get, NotFoundException, Patch, UseGuards } from "@nestjs/common";
+import { CurrentUser } from "../auth/current-user.decorator";
+import { JwtAuthGuard, type AuthenticatedUser } from "../auth/jwt-auth.guard";
 import { ZodValidationPipe } from "../../common/zod-validation.pipe";
 import { PrismaService } from "../../infra/prisma/prisma.service";
 import { ProfileViewService, type PersistedProfile } from "../profile/profile-view.service";
@@ -8,6 +9,7 @@ import { MeService } from "./me.service";
 import { UpdateAvatarRequest, UpdateMeRequest } from "./me.dto";
 
 @Controller("v1/me")
+@UseGuards(JwtAuthGuard)
 export class MeController {
   constructor(
     private readonly prisma: PrismaService,

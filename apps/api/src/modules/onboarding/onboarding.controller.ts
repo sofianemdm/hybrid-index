@@ -1,8 +1,9 @@
-import { Body, Controller, Post } from "@nestjs/common";
+import { Body, Controller, Post, UseGuards } from "@nestjs/common";
 import { onboardingDto } from "@hybrid-index/contracts";
 import { ZodValidationPipe } from "../../common/zod-validation.pipe";
 import { RateLimit } from "../../common/rate-limit.guard";
-import { CurrentUser, type AuthenticatedUser } from "../../common/current-user.decorator";
+import { CurrentUser } from "../auth/current-user.decorator";
+import { JwtAuthGuard, type AuthenticatedUser } from "../auth/jwt-auth.guard";
 import { OnboardingService } from "./onboarding.service";
 import { OnboardingCompleteRequest } from "./onboarding-complete.dto";
 import type { PersistedProfile } from "../profile/profile-scoring.service";
@@ -24,6 +25,7 @@ export class OnboardingController {
 
   /** Finalise l'onboarding (authentifié) : persiste les efforts + l'Index révélé. */
   @Post("complete")
+  @UseGuards(JwtAuthGuard)
   complete(
     @CurrentUser() user: AuthenticatedUser,
     @Body(new ZodValidationPipe(OnboardingCompleteRequest)) body: OnboardingCompleteRequest,
@@ -33,6 +35,7 @@ export class OnboardingController {
 
   /** « Je n'ai aucune de ces info » : entre dans l'app SANS Index (marque juste l'onboarding fait). */
   @Post("skip")
+  @UseGuards(JwtAuthGuard)
   async skip(@CurrentUser() user: AuthenticatedUser): Promise<{ ok: true }> {
     await this.onboarding.skip(user.userId);
     return { ok: true };

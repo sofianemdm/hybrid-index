@@ -1,19 +1,13 @@
-// TEMPORAIRE (auth-rebuild) : session factice sans connexion réelle. À REMPLACER par la nouvelle auth.
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import 'analytics.dart';
 import 'api_client.dart';
 import 'models.dart';
+import 'ui_state.dart';
 
-/// Token de dev injecté dans [ApiClient] tant qu'il n'y a pas de vraie connexion.
-const _devToken = 'dev';
-
-/// Client API partagé (singleton applicatif). Reçoit d'emblée le token de dev
-/// (auth-rebuild) pour que les écrans qui appellent l'API continuent de fonctionner.
-final apiClientProvider = Provider<ApiClient>((ref) {
-  final client = ApiClient();
-  client.setToken(_devToken);
-  return client;
-});
+/// Client API partagé (singleton applicatif).
+final apiClientProvider = Provider<ApiClient>((ref) => ApiClient());
 
 /// Plan de séances pour compléter le radar (révéler le vrai Index). À invalider après tout log/suppression
 /// de résultat (les attributs débloqués changent). autoDispose : rechargé à l'ouverture de l'accueil.
@@ -37,46 +31,125 @@ class SessionState {
       );
 }
 
-/// TEMPORAIRE (auth-rebuild) : session factice.
-///
-/// Démarre DIRECTEMENT en [AuthStatus.loggedIn] avec un utilisateur placeholder. Aucune logique
-/// réseau ni persistance : les anciennes méthodes de connexion (register/login/google/apple) ont
-/// été retirées avec l'écran d'auth. Les méthodes conservées ([logout], [refreshMe]) sont des
-/// no-op non réseau, pour ne pas casser les appelants (réglages, etc.).
+const _kToken = 'hi_token';
+
+/// État d'authentification, persisté via shared_preferences.
 class SessionNotifier extends StateNotifier<SessionState> {
-  SessionNotifier(this._ref)
-      : super(const SessionState(
-          status: AuthStatus.loggedIn,
-          user: AuthUser(id: 'dev', email: 'dev@local', displayName: 'Dev'),
-        ));
+  SessionNotifier(this._ref) : super(const SessionState(status: AuthStatus.loading));
 
-  // ignore: unused_field
   final Ref _ref;
+  ApiClient get _api => _ref.read(apiClientProvider);
 
-  /// No-op : la restauration de session réelle sera reconstruite avec la nouvelle auth.
-  Future<void> bootstrap() async {}
-
-  /// Re-fetch /me après une modification de profil (objectif, pseudo…). Conservé car appelé par
-  /// les réglages ; tolérant si l'API n'est pas jointe.
-  Future<void> refreshMe() async {
-    if (state.status != AuthStatus.loggedIn || state.user == null) return;
+  Future<void> bootstrap() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString(_kToken);
+    if (token == null) {
+      state = const SessionState(status: AuthStatus.loggedOut);
+      return;
+    }
+    _api.setToken(token);
     try {
-      final me = await _ref.read(apiClientProvider).me();
-      state = state.copyWith(
+      final me = await _api.me();
+      Analytics.identify(me['id'] as String);
+      state = SessionState(
+        status: AuthStatus.loggedIn,
         user: AuthUser(
-          id: state.user!.id,
-          email: state.user!.email,
-          displayName: me['displayName'] as String? ?? state.user!.displayName,
+          id: me['id'] as String,
+          email: me['email'] as String? ?? '',
+          displayName: me['displayName'] as String? ?? '',
         ),
         sex: me['sex'] as String?,
         goal: me['goal'] as String?,
       );
-    } catch (_) {/* auth-rebuild : pas de session réelle, on ignore */}
+    } catch (_) {
+      Analytics.reset();
+      await prefs.remove(_kToken);
+      _api.setToken(null);
+      state = const SessionState(status: AuthStatus.loggedOut);
+    }
   }
 
-  /// No-op réseau : sans vraie auth, il n'y a rien à déconnecter. Conservé pour les appelants
-  /// (réglages). À REMPLACER par la vraie déconnexion avec la nouvelle auth.
-  Future<void> logout() async {}
+  Future<void> _persist(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kToken, token);
+    _api.setToken(token);
+  }
+
+  Future<void> register(Map<String, dynamic> payload) async {
+    final res = await _api.register(payload);
+    Analytics.identify(res.user.id);
+    await _persist(res.token);
+    state = SessionState(
+      status: AuthStatus.loggedIn,
+      user: res.user,
+      sex: payload['sex'] as String?,
+      goal: payload['goal'] as String?,
+    );
+  }
+
+  /// Connexion via Google. `profile` requis seulement à la première connexion (age-gate).
+  Future<void> loginWithApple(String identityToken, {Map<String, dynamic>? profile}) async {
+    final res = await _api.appleAuth(identityToken, profile);
+    Analytics.identify(res.user.id);
+    await _persist(res.token);
+    final me = await _api.me();
+    state = SessionState(
+      status: AuthStatus.loggedIn,
+      user: res.user,
+      sex: me['sex'] as String?,
+      goal: me['goal'] as String?,
+    );
+  }
+
+  Future<void> loginWithGoogle(String idToken, {Map<String, dynamic>? profile}) async {
+    final res = await _api.googleAuth(idToken, profile);
+    Analytics.identify(res.user.id);
+    await _persist(res.token);
+    final me = await _api.me();
+    state = SessionState(
+      status: AuthStatus.loggedIn,
+      user: res.user,
+      sex: me['sex'] as String?,
+      goal: me['goal'] as String?,
+    );
+  }
+
+  Future<void> login(String email, String password) async {
+    final res = await _api.login(email, password);
+    Analytics.identify(res.user.id);
+    await _persist(res.token);
+    final me = await _api.me();
+    state = SessionState(
+      status: AuthStatus.loggedIn,
+      user: res.user,
+      sex: me['sex'] as String?,
+      goal: me['goal'] as String?,
+    );
+  }
+
+  /// Re-fetch /me après une modification de profil (objectif, pseudo…).
+  Future<void> refreshMe() async {
+    if (state.status != AuthStatus.loggedIn || state.user == null) return;
+    final me = await _api.me();
+    state = state.copyWith(
+      user: AuthUser(
+        id: state.user!.id,
+        email: state.user!.email,
+        displayName: me['displayName'] as String? ?? state.user!.displayName,
+      ),
+      sex: me['sex'] as String?,
+      goal: me['goal'] as String?,
+    );
+  }
+
+  Future<void> logout() async {
+    Analytics.reset();
+    _ref.read(homeTabProvider.notifier).state = 0; // l'onglet ne doit pas « fuir » au compte suivant
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_kToken);
+    _api.setToken(null);
+    state = const SessionState(status: AuthStatus.loggedOut);
+  }
 }
 
 final sessionProvider = StateNotifierProvider<SessionNotifier, SessionState>((ref) => SessionNotifier(ref));

@@ -1,6 +1,8 @@
-import { BadRequestException, Controller, Get, Query } from "@nestjs/common";
+import { BadRequestException, Controller, Get, Query, UseGuards } from "@nestjs/common";
 import { Sex } from "@hybrid-index/contracts";
-import { CurrentUser, type AuthenticatedUser } from "../../common/current-user.decorator";
+import { CurrentUser } from "../auth/current-user.decorator";
+import { type AuthenticatedUser } from "../auth/jwt-auth.guard";
+import { OptionalJwtAuthGuard } from "../auth/optional-jwt-auth.guard";
 import { ChallengeService } from "./challenge.service";
 
 @Controller("v1/challenge")
@@ -15,6 +17,7 @@ export class ChallengeController {
 
   /** Classement du défi de la semaine (par sexe), résultats loggés cette semaine uniquement. */
   @Get("leaderboard")
+  @UseGuards(OptionalJwtAuthGuard)
   leaderboard(@Query("sex") sexParam: string, @CurrentUser() user: AuthenticatedUser | undefined): Promise<unknown> {
     const sex = Sex.safeParse(sexParam);
     if (!sex.success) {

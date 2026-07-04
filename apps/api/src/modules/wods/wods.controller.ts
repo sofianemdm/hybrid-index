@@ -1,7 +1,9 @@
-import { BadRequestException, Body, Controller, Delete, Get, Param, Patch, Post, Query } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from "@nestjs/common";
 import { Sex } from "@hybrid-index/contracts";
 import { ZodValidationPipe } from "../../common/zod-validation.pipe";
-import { CurrentUser, type AuthenticatedUser } from "../../common/current-user.decorator";
+import { CurrentUser } from "../auth/current-user.decorator";
+import { OptionalJwtAuthGuard } from "../auth/optional-jwt-auth.guard";
+import { JwtAuthGuard, type AuthenticatedUser } from "../auth/jwt-auth.guard";
 import { ClubsService } from "../clubs/clubs.service";
 import { WodsService } from "./wods.service";
 import { WodCatalogService } from "./wod-catalog.service";
@@ -10,6 +12,7 @@ import { EstimateWodRequest } from "./wod-estimate.dto";
 import { CreateWodRequest, LogWodResultRequest } from "./create-wod.dto";
 
 @Controller("v1/wods")
+@UseGuards(OptionalJwtAuthGuard)
 export class WodsController {
   constructor(
     private readonly wods: WodsService,
@@ -26,6 +29,7 @@ export class WodsController {
 
   /** Plan pour compléter l'Index : séances minimales couvrant les attributs encore non débloqués. */
   @Get("completion-plan")
+  @UseGuards(JwtAuthGuard)
   completionPlan(@CurrentUser() user: AuthenticatedUser): Promise<unknown> {
     return this.wodCatalog.completionPlan(user.userId);
   }
@@ -38,6 +42,7 @@ export class WodsController {
 
   /** Crée un WOD personnalisé (communautaire). */
   @Post()
+  @UseGuards(JwtAuthGuard)
   create(
     @CurrentUser() user: AuthenticatedUser,
     @Body(new ZodValidationPipe(CreateWodRequest)) body: CreateWodRequest,
@@ -47,6 +52,7 @@ export class WodsController {
 
   /** Édite un WOD personnalisé. Réservé au créateur d'un WOD `isCustom` (403 sinon). */
   @Patch(":id")
+  @UseGuards(JwtAuthGuard)
   update(
     @CurrentUser() user: AuthenticatedUser,
     @Param("id") id: string,
@@ -58,12 +64,14 @@ export class WodsController {
   /** Supprime un WOD personnalisé. Réservé au créateur d'un WOD `isCustom` (403 sinon) ; refusé si
    *  des résultats existent déjà (409). */
   @Delete(":id")
+  @UseGuards(JwtAuthGuard)
   remove(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string): Promise<unknown> {
     return this.builder.remove(user.userId, id);
   }
 
   /** Logue un résultat sur un WOD (officiel ou custom) → recalcule l'Index. */
   @Post(":id/results")
+  @UseGuards(JwtAuthGuard)
   logResult(
     @CurrentUser() user: AuthenticatedUser,
     @Param("id") id: string,
@@ -80,6 +88,7 @@ export class WodsController {
 
   /** Prédiction « d'après ton niveau, tu ferais ~X » sur cette séance (réservé aux connectés). */
   @Get(":id/prediction")
+  @UseGuards(JwtAuthGuard)
   prediction(@Param("id") id: string, @CurrentUser() user: AuthenticatedUser): Promise<unknown> {
     return this.wodCatalog.prediction(id, user.userId);
   }

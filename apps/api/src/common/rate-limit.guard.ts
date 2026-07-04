@@ -1,11 +1,13 @@
 import { type CanActivate, type ExecutionContext, HttpException, HttpStatus, Injectable, SetMetadata } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
+import { JwtService } from "@nestjs/jwt";
 import { RedisService } from "../infra/redis/redis.service";
 
 /** Sous-ensemble de la requête HTTP dont le guard a besoin (évite la dépendance aux types express). */
 interface HttpReq {
   headers: Record<string, string | string[] | undefined>;
   ip?: string;
+  user?: { userId?: string };
 }
 
 export interface RateLimitOptions {
@@ -30,6 +32,7 @@ export class RateLimitGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     private readonly redis: RedisService,
+    private readonly jwt: JwtService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -40,10 +43,10 @@ export class RateLimitGuard implements CanActivate {
 
     const req = context.switchToHttp().getRequest<HttpReq>();
     const handler = `${context.getClass().name}.${context.getHandler().name}`;
-    // TEMPORAIRE (auth-rebuild) : l'identité par utilisateur reposait sur le JWT (sub du Bearer).
-    // Auth retirée → on limite par IP dans tous les cas. TODO : rebrancher `by:'user'` sur la
-    // nouvelle auth (identifiant utilisateur validé) quand elle existera.
-    const identity = this.ip(req);
+    // `by:'user'` : ce guard global s'exécute AVANT le JwtAuthGuard, donc req.user n'est pas encore
+    // posé. On décode le sub du Bearer ICI (juste pour la clé — le JwtAuthGuard valide ensuite),
+    // sinon le quota par utilisateur retomberait sur l'IP (faux positifs derrière un NAT).
+    const identity = opts.by === "user" ? (this.userIdFromBearer(req) ?? this.ip(req)) : this.ip(req);
     const key = `${handler}:${identity}`;
 
     // Redis indisponible (null) → repli compteur EN MÉMOIRE (par instance). L'ancien comportement
@@ -84,6 +87,19 @@ export class RateLimitGuard implements CanActivate {
     }
     entry.count += 1;
     return entry.count;
+  }
+
+  /** sub du Bearer (clé de rate-limit par utilisateur). null si absent/invalide → repli IP. */
+  private userIdFromBearer(req: HttpReq): string | null {
+    const h = req.headers.authorization;
+    const header = Array.isArray(h) ? h[0] : h;
+    if (!header?.startsWith("Bearer ")) return null;
+    try {
+      const payload = this.jwt.verify<{ sub?: string }>(header.slice(7));
+      return payload.sub ?? null;
+    } catch {
+      return null;
+    }
   }
 
   private ip(req: HttpReq): string {

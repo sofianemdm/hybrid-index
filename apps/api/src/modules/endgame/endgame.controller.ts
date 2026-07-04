@@ -1,8 +1,10 @@
-import { Controller, Get } from "@nestjs/common";
-import { CurrentUser, type AuthenticatedUser } from "../../common/current-user.decorator";
+import { Controller, Get, UseGuards } from "@nestjs/common";
+import { CurrentUser } from "../auth/current-user.decorator";
+import { JwtAuthGuard, type AuthenticatedUser } from "../auth/jwt-auth.guard";
 import { EndgameService } from "./endgame.service";
 
 @Controller("v1/me")
+@UseGuards(JwtAuthGuard)
 export class EndgameController {
   constructor(private readonly endgame: EndgameService) {}
 

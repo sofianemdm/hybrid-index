@@ -1,13 +1,15 @@
-import { Body, Controller, Get, Param, Post, Query } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Query, UseGuards } from "@nestjs/common";
 import { z } from "zod";
 import { ZodValidationPipe } from "../../common/zod-validation.pipe";
 import { RateLimit } from "../../common/rate-limit.guard";
-import { CurrentUser, type AuthenticatedUser } from "../../common/current-user.decorator";
+import { CurrentUser } from "../auth/current-user.decorator";
+import { JwtAuthGuard, type AuthenticatedUser } from "../auth/jwt-auth.guard";
 import { MessagingService } from "./messaging.service";
 
 const SendBody = z.object({ toUserId: z.string().uuid(), body: z.string().min(1).max(2000) });
 
 @Controller("v1")
+@UseGuards(JwtAuthGuard)
 export class MessagingController {
   constructor(private readonly messaging: MessagingService) {}
 

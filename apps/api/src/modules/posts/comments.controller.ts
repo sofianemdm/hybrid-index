@@ -1,7 +1,8 @@
-import { Body, Controller, Delete, Get, Param, Post, Query } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Post, Query, UseGuards } from "@nestjs/common";
 import { z } from "zod";
 import { ZodValidationPipe } from "../../common/zod-validation.pipe";
-import { CurrentUser, type AuthenticatedUser } from "../../common/current-user.decorator";
+import { CurrentUser } from "../auth/current-user.decorator";
+import { JwtAuthGuard, type AuthenticatedUser } from "../auth/jwt-auth.guard";
 import { ModerationService } from "../moderation/moderation.service";
 import { CommentsService } from "./comments.service";
 
@@ -17,6 +18,7 @@ const ReportBody = z.object({
 });
 
 @Controller("v1")
+@UseGuards(JwtAuthGuard)
 export class CommentsController {
   constructor(
     private readonly comments: CommentsService,

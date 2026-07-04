@@ -7,7 +7,7 @@ import {
 } from "@nestjs/websockets";
 import type { IncomingMessage } from "node:http";
 import type { Server, WebSocket } from "ws";
-import { DEV_USER_ID } from "../../common/current-user.decorator";
+import { AuthTokenService } from "../auth/auth-token.service";
 import { RealtimeService } from "./realtime.service";
 
 /** Code de fermeture applicatif (espace 4xxx) : token absent / invalide / compte inactif. */
@@ -31,9 +31,8 @@ function allowedOrigins(): string[] | "*" {
 /**
  * Gateway WebSocket temps réel (raw `ws`, même port que l'API, chemin `/ws/messaging`).
  *
- * - TEMPORAIRE (auth-rebuild) : plus de validation JWT au handshake (auth retirée). Le token de
- *   la query `?token=` est pris tel quel comme userId de dev (sinon `DEV_USER_ID`). À REMPLACER
- *   par la nouvelle auth (revalider le token, close `4401` en cas d'échec comme avant).
+ * - Auth au handshake : token en query `?token=`, validé par `AuthTokenService` (MÊME secret et
+ *   MÊME contrôle « compte actif » que REST). Échec ⇒ close `4401`.
  * - Origine vérifiée manuellement contre `CORS_ORIGINS` (le handshake WS n'est pas soumis au CORS fetch).
  * - Registre `userId -> Set<socket>` délégué à `RealtimeService` ; heartbeat ping/pong.
  *
@@ -45,7 +44,10 @@ export class RealtimeGateway implements OnGatewayInit, OnGatewayConnection, OnGa
   private readonly logger = new Logger(RealtimeGateway.name);
   private heartbeat?: ReturnType<typeof setInterval>;
 
-  constructor(private readonly realtime: RealtimeService) {}
+  constructor(
+    private readonly authToken: AuthTokenService,
+    private readonly realtime: RealtimeService,
+  ) {}
 
   afterInit(server: Server): void {
     // Heartbeat : on ping toutes les sockets ; celles sans `pong` au cycle précédent sont terminées.
@@ -88,10 +90,15 @@ export class RealtimeGateway implements OnGatewayInit, OnGatewayConnection, OnGa
       token = null;
     }
 
-    // 3) TEMPORAIRE (auth-rebuild) : plus de validation JWT (auth retirée). On prend le token de
-    //    la query TEL QUEL comme userId de dev, sinon `DEV_USER_ID`. À REMPLACER par la nouvelle
-    //    auth (revalider le token et rejeter en close 4401 comme avant).
-    const userId: string = token && token.trim() ? token.trim() : DEV_USER_ID;
+    // 3) Validation (MÊME logique que REST). Échec ⇒ close 4401, on NE retient pas la socket.
+    let userId: string;
+    try {
+      const user = await this.authToken.verifyToken(token);
+      userId = user.userId;
+    } catch {
+      client.close(CLOSE_UNAUTHORIZED, "unauthorized");
+      return;
+    }
 
     // 4) Enregistrement + heartbeat.
     client.userId = userId;
