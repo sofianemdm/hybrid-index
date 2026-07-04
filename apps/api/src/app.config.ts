@@ -16,9 +16,14 @@ export function configureApp(app: INestApplication): INestApplication {
     Logger.warn(`Adaptateur WebSocket non installé (REST reste opérationnel) : ${(err as Error).message}`, "Bootstrap");
   }
   app.useGlobalFilters(new HttpExceptionFilter());
-  // Headers de sécurité (HSTS, X-Content-Type-Options, X-Frame-Options, etc.). API JSON pure :
-  // les défauts de helmet conviennent (la CSP ne concerne que des réponses HTML, inoffensive ici).
-  app.use(helmet());
+  // Headers de sécurité (HSTS, X-Content-Type-Options, X-Frame-Options, etc.).
+  // CRUCIAL : `crossOriginResourcePolicy: cross-origin`. Le défaut de helmet est `same-origin`,
+  // qui pose `Cross-Origin-Resource-Policy: same-origin` → le NAVIGATEUR REFUSE que l'app Flutter
+  // Web (servie sur un AUTRE domaine, athlete-league.fr / netlify) LISE les réponses de l'API,
+  // même quand le CORS est correct. Résultat vécu (04/07) : toutes les requêtes navigateur
+  // remontaient en « serveur injoignable » (ClientException / XHR statut 0) alors que la réponse
+  // arrivait bien. L'API est publique et cross-origin par conception → policy cross-origin.
+  app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
   // Photo d'avatar (data URL base64) → relever la limite du body parser (défaut Express 100 kb).
   (app as NestExpressApplication).useBodyParser("json", { limit: "800kb" });
   // CORS : nécessaire pour l'app Flutter Web (navigateur). `*` en dev ; restreindre en prod.
