@@ -119,7 +119,10 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
         'sex': _sex,
         'equipmentPref': _equipment,
       });
-      // AuthGate enchaîne l'onboarding avatar.
+      // Succès : cet écran est PUSHÉ par-dessus l'AuthGate — on revient à la racine pour
+      // révéler ce que l'AuthGate affiche désormais (onboarding avatar). Sans ce pop,
+      // l'inscription réussit mais l'écran reste figé (vécu 04/07).
+      if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
     } on ApiException catch (e) {
       setState(() => _banner = _messageFor(e, t));
       HapticFeedback.lightImpact();
@@ -143,6 +146,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     final t = AppLocalizations.of(context);
     try {
       await ref.read(sessionProvider.notifier).loginWithGoogle(idToken);
+      // Succès (compte Google connu) : retour à la racine → l'AuthGate affiche la suite.
+      if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
     } on ApiException catch (e) {
       final needsProfile = e.details?['needsProfile'] == true ||
           (e.code == 'VALIDATION_ERROR' && e.status == 400);
@@ -163,6 +168,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     final t = AppLocalizations.of(context);
     try {
       await ref.read(sessionProvider.notifier).loginWithApple(identityToken);
+      // Succès (compte Apple connu) : retour à la racine → l'AuthGate affiche la suite.
+      if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
     } on ApiException catch (e) {
       if (e.details?['needsProfile'] == true) {
         if (!mounted) return;
