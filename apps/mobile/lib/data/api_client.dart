@@ -97,6 +97,23 @@ class ApiClient {
   /// rester bloqué INDÉFINIMENT (squelette de chargement éternel sur réseau mobile instable).
   static const Duration _timeout = Duration(seconds: 20); // 20s : tolère un réveil à froid Railway
 
+  /// Petit délai entre 2 tentatives, ISOLÉ dans sa propre méthode À DESSEIN.
+  ///
+  /// En build web release (dart2js minifié), garder `Future<void>.delayed(...)` DANS le corps de
+  /// `_send` déclenchait une miscompilation de la machine à états async : l'objet `Uri` local était
+  /// réutilisé comme paramètre de type du Future, d'où un `NoSuchMethodError: 'b' (b.b is not a
+  /// function)` à CHAQUE réponse d'erreur (404/400…) — ce qui bloquait TOUTE création de compte.
+  /// En sortant le délai ici (aucun `Uri` en portée), l'aliasing devient impossible. Le pragma
+  /// `noInline` est INDISPENSABLE : sans lui dart2js réinline le corps dans `_send` et le bug revient.
+  @pragma('dart2js:noInline')
+  Future<void> _retryDelay() {
+    // Timer + Completer plutôt que `Future.delayed` : on évite complètement le `typeAcceptsNull<T>()`
+    // interne de `Future.delayed` (c'est LUI qui plantait, `b.b(null)` sur un type mal résolu).
+    final c = Completer<void>();
+    Timer(const Duration(milliseconds: 300), c.complete);
+    return c.future;
+  }
+
   Future<dynamic> _send(String method, String path, [Map<String, dynamic>? body]) async {
     final uri = Uri.parse('$_baseUrl$path');
     // Corps JSON : un POST/PATCH SANS body envoyait `jsonEncode(null)` = la chaîne "null" avec
@@ -114,7 +131,7 @@ class ApiClient {
         break;
       } on TimeoutException {
         if (attempt < attempts) {
-          await Future<void>.delayed(const Duration(milliseconds: 300));
+          await _retryDelay();
           continue;
         }
         final cached = await _readCache(method, path);
@@ -122,7 +139,7 @@ class ApiClient {
         throw ApiException('TIMEOUT', 'Connexion trop lente. Vérifie ton réseau et réessaie.', 0);
       } catch (_) {
         if (attempt < attempts) {
-          await Future<void>.delayed(const Duration(milliseconds: 300));
+          await _retryDelay();
           continue;
         }
         final cached = await _readCache(method, path);
