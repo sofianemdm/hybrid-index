@@ -493,21 +493,23 @@
       });
     })();
 
-    // Count-up de l'OVR 40 → 84 quand la carte entre à l'écran (dopamine du reveal).
+    // Count-up de l'OVR 40 → 95 quand la carte entre à l'écran (dopamine du reveal).
     (function () {
       if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
       var el = document.getElementById('hi-ovr');
-      if (!el || !('IntersectionObserver' in window)) return; // OVR reste affiché à 84
+      if (!el || !('IntersectionObserver' in window)) return; // OVR reste affiché à 95
+      var FROM = 40, TO = 95, DUR = 1500; // easeOutCubic : montée RÉGULIÈRE, sans palier final qui traîne
       var io = new IntersectionObserver(function (es) {
         if (!es[0].isIntersecting) return;
         io.disconnect();
-        var t0 = null;
+        var t0 = null, last = -1;
         function tick(ts) {
-          if (!t0) t0 = ts;
-          var p = Math.min(1, (ts - t0) / 1200);
-          var ease = 1 - Math.pow(2, -10 * p); // easeOutExpo
-          el.textContent = Math.round(40 + (95 - 40) * ease);
-          if (p < 1) requestAnimationFrame(tick); else el.textContent = '95';
+          if (t0 === null) t0 = ts;
+          var p = Math.min(1, (ts - t0) / DUR);
+          var ease = 1 - Math.pow(1 - p, 3); // easeOutCubic — deltas par image petits et homogènes
+          var v = Math.round(FROM + (TO - FROM) * ease);
+          if (v !== last) { el.textContent = v; last = v; } // n'écrit dans le DOM que si le chiffre change (moins de reflow)
+          if (p < 1) requestAnimationFrame(tick); else el.textContent = TO;
         }
         requestAnimationFrame(tick);
       }, { threshold: 0.4 });
