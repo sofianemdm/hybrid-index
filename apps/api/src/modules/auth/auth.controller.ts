@@ -9,14 +9,16 @@ export class AuthController {
   constructor(private readonly auth: AuthService) {}
 
   // Anti-abus : création de comptes en masse limitée par IP.
-  @RateLimit({ limit: 10, windowSec: 3600 })
+  // 30/h (relevé de 10 le 04/07) : une IP partagée (foyer, salle, école) ou une phase
+  // de test dépassait 10 inscriptions/h → 429 injustes. 30 reste anti-spam.
+  @RateLimit({ limit: 30, windowSec: 3600 })
   @Post("register")
   register(@Body(new ZodValidationPipe(RegisterRequest)) body: RegisterRequest): Promise<AuthResponse> {
     return this.auth.register(body);
   }
 
   // Anti brute-force : 10 tentatives / 15 min / IP.
-  @RateLimit({ limit: 10, windowSec: 900 })
+  @RateLimit({ limit: 20, windowSec: 900 })
   @Post("login")
   login(@Body(new ZodValidationPipe(LoginRequest)) body: LoginRequest): Promise<AuthResponse> {
     return this.auth.login(body);
