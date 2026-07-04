@@ -1,9 +1,11 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app.dart';
 import '../../data/models.dart';
 import '../../data/projection.dart';
+import '../../data/web_install.dart';
 import '../../data/session.dart';
 import '../../data/ui_state.dart';
 import '../../l10n/app_localizations.dart';
@@ -165,6 +167,7 @@ class HomeScreen extends ConsumerWidget {
             ),
             const SizedBox(height: HiSpace.md),
             _betaBanner(context),
+            _installBanner(context),
             const SizedBox(height: HiSpace.md),
             profileAsync.when(
               loading: () => const HomeSkeleton(),
@@ -480,6 +483,48 @@ class HomeScreen extends ConsumerWidget {
                     style: HiType.bodyStrong.copyWith(color: HiColors.textPrimary)),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Bandeau « Installer l'application » — Web PWA uniquement. Masqué si déjà installée ou non
+  /// installable. Tap → prompt natif d'installation (Android/Chrome) ou instructions (iOS).
+  Widget _installBanner(BuildContext context) {
+    if (!kIsWeb || webInstallState() == 'none') return const SizedBox.shrink();
+    final t = AppLocalizations.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(top: HiSpace.md),
+      child: Semantics(
+        button: true,
+        label: t.homeInstallApp,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(HiRadius.md),
+            onTap: webPromptInstall,
+            child: ExcludeSemantics(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: HiSpace.md, vertical: 10),
+                decoration: BoxDecoration(
+                  color: HiColors.brandPrimary.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(HiRadius.md),
+                  border: Border.all(color: HiColors.brandPrimary.withValues(alpha: 0.35)),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.download_rounded, size: 18, color: HiColors.brandPrimary),
+                    const SizedBox(width: HiSpace.sm),
+                    Expanded(
+                      child: Text(t.homeInstallApp,
+                          style: HiType.caption.copyWith(color: HiColors.textPrimary, fontWeight: FontWeight.w700)),
+                    ),
+                    Icon(Icons.chevron_right_rounded, size: 18, color: HiColors.textTertiary),
+                  ],
+                ),
+              ),
+            ),
           ),
         ),
       ),

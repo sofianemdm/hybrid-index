@@ -178,6 +178,9 @@ class AppLocalizationsFr extends AppLocalizations {
       'Version bêta — un bug ? Touche pour en savoir plus';
 
   @override
+  String get homeInstallApp => 'Installer l\'application';
+
+  @override
   String get homeBetaTitle => 'Application en version bêta';
 
   @override
@@ -2394,6 +2397,12 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get shareCardShareCta => 'Partager ma carte';
+
+  @override
+  String get shareCardShareCtaOther => 'Partager la carte';
+
+  @override
+  String get shareCardTitleOther => 'Carte de l\'athlète';
 
   @override
   String get shareCardDownload => 'Télécharger';

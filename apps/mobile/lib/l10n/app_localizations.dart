@@ -368,6 +368,12 @@ abstract class AppLocalizations {
   /// **'Beta version — found a bug? Tap to learn more'**
   String get homeBetaBanner;
 
+  /// No description provided for @homeInstallApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Install the app'**
+  String get homeInstallApp;
+
   /// No description provided for @homeBetaTitle.
   ///
   /// In en, this message translates to:
@@ -4081,6 +4087,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Share my card'**
   String get shareCardShareCta;
+
+  /// No description provided for @shareCardShareCtaOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Share the card'**
+  String get shareCardShareCtaOther;
+
+  /// No description provided for @shareCardTitleOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Athlete\'s card'**
+  String get shareCardTitleOther;
 
   /// No description provided for @shareCardDownload.
   ///

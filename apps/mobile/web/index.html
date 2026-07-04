@@ -551,6 +551,15 @@
       var isIOS = /iphone|ipad|ipod/i.test(ua) || (/macintosh/i.test(ua) && 'ontouchend' in document);
       var deferred = null;
 
+      // Exposé à l'app Flutter (même document) : sait s'il faut proposer l'installation, et laquelle.
+      // 'ready' = prompt natif dispo (Android/Chrome) · 'ios' = instructions manuelles · 'none' = rien.
+      window.hiInstallState = function () {
+        if (standalone) return 'none';
+        if (deferred) return 'ready';
+        if (isIOS) return 'ios';
+        return 'none';
+      };
+
       // Enregistre le SW minimal (nécessaire au prompt d'installation Android + purge les vieux SW).
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('pwa-sw.js').catch(function () {});

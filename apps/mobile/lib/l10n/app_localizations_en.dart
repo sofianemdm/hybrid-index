@@ -175,6 +175,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeBetaBanner => 'Beta version — found a bug? Tap to learn more';
 
   @override
+  String get homeInstallApp => 'Install the app';
+
+  @override
   String get homeBetaTitle => 'App in beta';
 
   @override
@@ -2379,6 +2382,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shareCardShareCta => 'Share my card';
+
+  @override
+  String get shareCardShareCtaOther => 'Share the card';
+
+  @override
+  String get shareCardTitleOther => 'Athlete\'s card';
 
   @override
   String get shareCardDownload => 'Download';

@@ -20,7 +20,19 @@ import '../../widgets/hi_button.dart';
 
 /// Carte partageable : un visuel « trophée » de ton Athlete Index, téléchargeable en image (Web).
 class ShareCardScreen extends ConsumerStatefulWidget {
-  const ShareCardScreen({super.key});
+  /// Si non-null : on affiche/partage la carte de CET utilisateur (un autre athlète, depuis son
+  /// profil public) au lieu de la sienne. Quand null → sa propre carte (via `myProfileProvider`).
+  final Profile? otherProfile;
+  final String? otherName;
+  final String? otherSex;
+  final AvatarConfig? otherAvatar;
+  const ShareCardScreen({
+    super.key,
+    this.otherProfile,
+    this.otherName,
+    this.otherSex,
+    this.otherAvatar,
+  });
 
   @override
   ConsumerState<ShareCardScreen> createState() => _ShareCardScreenState();
@@ -80,22 +92,29 @@ class _ShareCardScreenState extends ConsumerState<ShareCardScreen> {
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
-    final profileAsync = ref.watch(myProfileProvider);
+    final other = widget.otherProfile;
 
     return Scaffold(
-      appBar: AppBar(title: Text(t.shareCardTitle), backgroundColor: Colors.transparent, elevation: 0),
+      appBar: AppBar(
+        title: Text(other != null ? t.shareCardTitleOther : t.shareCardTitle),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(HiSpace.lg),
-            child: profileAsync.when(
-              loading: () => const Padding(
-                padding: EdgeInsets.symmetric(vertical: HiSpace.xxl),
-                child: HiSkeleton(height: 480, width: 300, radius: HiRadius.xl),
-              ),
-              error: (_, __) => _errorRetry(t),
-              data: (profile) => profile == null ? _noIndex(t) : _cardAndActions(context, t, profile),
-            ),
+            // Carte d'un autre athlète (profil public) → on la rend directement, sans myProfileProvider.
+            child: other != null
+                ? _cardAndActions(context, t, other)
+                : ref.watch(myProfileProvider).when(
+                    loading: () => const Padding(
+                      padding: EdgeInsets.symmetric(vertical: HiSpace.xxl),
+                      child: HiSkeleton(height: 480, width: 300, radius: HiRadius.xl),
+                    ),
+                    error: (_, __) => _errorRetry(t),
+                    data: (profile) => profile == null ? _noIndex(t) : _cardAndActions(context, t, profile),
+                  ),
           ),
         ),
       ),
@@ -129,7 +148,13 @@ class _ShareCardScreenState extends ConsumerState<ShareCardScreen> {
   }
 
   Widget _cardAndActions(BuildContext context, AppLocalizations t, Profile profile) {
-    final name = ref.watch(sessionProvider).user?.displayName ?? '';
+    final isOther = widget.otherProfile != null;
+    final name = isOther
+        ? (widget.otherName ?? '')
+        : (ref.watch(sessionProvider).user?.displayName ?? '');
+    final sex = isOther ? widget.otherSex : ref.watch(sessionProvider).sex;
+    final avatar = isOther ? widget.otherAvatar : ref.watch(avatarProvider).value;
+    final badges = isOther ? const <CardBadge>[] : (ref.watch(cardBadgesProvider).value ?? const []);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -143,9 +168,9 @@ class _ShareCardScreenState extends ConsumerState<ShareCardScreen> {
             child: PlayerCard(
               profile: profile,
               name: name,
-              sex: ref.watch(sessionProvider).sex,
-              avatar: ref.watch(avatarProvider).value,
-              badges: ref.watch(cardBadgesProvider).value ?? const [],
+              sex: sex,
+              avatar: avatar,
+              badges: badges,
               exporting: _exporting,
             ),
           ),
@@ -157,7 +182,7 @@ class _ShareCardScreenState extends ConsumerState<ShareCardScreen> {
         SizedBox(
           width: 300,
           child: HiButton(
-            label: t.shareCardShareCta,
+            label: isOther ? t.shareCardShareCtaOther : t.shareCardShareCta,
             icon: Icons.ios_share_rounded,
             loading: _exporting,
             onPressed: _exporting ? null : _share,

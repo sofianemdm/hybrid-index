@@ -342,8 +342,9 @@ class PublicProfileScreen extends ConsumerWidget {
                       icon: Icon(Icons.share_rounded, size: 18, color: HiColors.textSecondary),
                       label: Text(t.shareTooltip, style: HiType.caption.copyWith(color: HiColors.textSecondary)),
                     ),
-                    // Sur SA propre carte : partage de la carte joueur (image type FIFA) via l'écran dédié.
-                    if (p.isMe) ...[
+                    // Partage de la carte joueur (image type FIFA) — sa propre carte OU celle de
+                    // l'athlète consulté (dès qu'il a un Index), via l'écran dédié.
+                    if (p.index != null) ...[
                       const SizedBox(height: HiSpace.xs),
                       OutlinedButton.icon(
                         style: OutlinedButton.styleFrom(
@@ -352,9 +353,18 @@ class PublicProfileScreen extends ConsumerWidget {
                           foregroundColor: HiColors.brandPrimary,
                         ),
                         icon: const Icon(Icons.share_rounded, size: 18),
-                        label: Text(t.homeShareCard),
+                        label: Text(p.isMe ? t.homeShareCard : t.shareCardShareCtaOther),
                         onPressed: () => Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => const ShareCardScreen()),
+                          MaterialPageRoute(
+                            builder: (_) => p.isMe
+                                ? const ShareCardScreen()
+                                : ShareCardScreen(
+                                    otherProfile: Profile(index: p.index!, radar: p.radar),
+                                    otherName: p.displayName,
+                                    otherSex: p.sex,
+                                    otherAvatar: p.avatar,
+                                  ),
+                          ),
                         ),
                       ),
                     ],
