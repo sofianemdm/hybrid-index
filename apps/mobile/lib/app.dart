@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'data/models.dart';
 import 'data/realtime_service.dart';
 import 'data/session.dart';
-import 'features/auth/auth_screen.dart';
+import 'features/auth/login_screen.dart';
 import 'features/home/home_shell.dart';
 import 'features/onboarding/onboarding_screen.dart';
 import 'l10n/app_localizations.dart';
@@ -184,7 +184,7 @@ class AuthGate extends ConsumerWidget {
       case AuthStatus.loading:
         return const _Splash();
       case AuthStatus.loggedOut:
-        return const AuthScreen();
+        return const LoginScreen();
       case AuthStatus.loggedIn:
         final profile = ref.watch(myProfileProvider);
         return profile.when(

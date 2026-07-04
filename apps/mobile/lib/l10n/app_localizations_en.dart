@@ -242,6 +242,61 @@ class AppLocalizationsEn extends AppLocalizations {
       'Invalid or expired code. Request a new one if needed.';
 
   @override
+  String get authLoginTitle => 'Welcome back';
+
+  @override
+  String get authLoginSubtitle => 'Sign in to get back to your Index.';
+
+  @override
+  String get authSignupTitle => 'Join the League';
+
+  @override
+  String get authSignupSubtitle => 'Create your account and find your Index.';
+
+  @override
+  String get authEmailHint => 'you@example.com';
+
+  @override
+  String get authUsernameHint => 'e.g. IronWolf';
+
+  @override
+  String get authPasswordHint => '8 characters minimum';
+
+  @override
+  String get authShowPassword => 'Show password';
+
+  @override
+  String get authHidePassword => 'Hide password';
+
+  @override
+  String get authInvalidEmail => 'Enter a valid email.';
+
+  @override
+  String get authPasswordTooShort => '8 characters minimum.';
+
+  @override
+  String get authUsernameInvalid => '3 to 20 characters, no spaces.';
+
+  @override
+  String get authInvalidCredentials => 'Incorrect email or password.';
+
+  @override
+  String get authNetworkError =>
+      'Can\'t connect. Check your connection and try again.';
+
+  @override
+  String get authNoAccountSwitch => 'No account yet? Sign up';
+
+  @override
+  String get authHaveAccountSwitch => 'Already have an account? Sign in';
+
+  @override
+  String get authBirthdateRequired => 'Enter your date of birth.';
+
+  @override
+  String get gpUsernameLabel => 'Complete your profile';
+
+  @override
   String get updateRequiredTitle => 'Update required';
 
   @override

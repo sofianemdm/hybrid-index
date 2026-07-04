@@ -494,6 +494,114 @@ abstract class AppLocalizations {
   /// **'Invalid or expired code. Request a new one if needed.'**
   String get authForgotInvalid;
 
+  /// No description provided for @authLoginTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome back'**
+  String get authLoginTitle;
+
+  /// No description provided for @authLoginSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to get back to your Index.'**
+  String get authLoginSubtitle;
+
+  /// No description provided for @authSignupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Join the League'**
+  String get authSignupTitle;
+
+  /// No description provided for @authSignupSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create your account and find your Index.'**
+  String get authSignupSubtitle;
+
+  /// No description provided for @authEmailHint.
+  ///
+  /// In en, this message translates to:
+  /// **'you@example.com'**
+  String get authEmailHint;
+
+  /// No description provided for @authUsernameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. IronWolf'**
+  String get authUsernameHint;
+
+  /// No description provided for @authPasswordHint.
+  ///
+  /// In en, this message translates to:
+  /// **'8 characters minimum'**
+  String get authPasswordHint;
+
+  /// No description provided for @authShowPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Show password'**
+  String get authShowPassword;
+
+  /// No description provided for @authHidePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide password'**
+  String get authHidePassword;
+
+  /// No description provided for @authInvalidEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid email.'**
+  String get authInvalidEmail;
+
+  /// No description provided for @authPasswordTooShort.
+  ///
+  /// In en, this message translates to:
+  /// **'8 characters minimum.'**
+  String get authPasswordTooShort;
+
+  /// No description provided for @authUsernameInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'3 to 20 characters, no spaces.'**
+  String get authUsernameInvalid;
+
+  /// No description provided for @authInvalidCredentials.
+  ///
+  /// In en, this message translates to:
+  /// **'Incorrect email or password.'**
+  String get authInvalidCredentials;
+
+  /// No description provided for @authNetworkError.
+  ///
+  /// In en, this message translates to:
+  /// **'Can\'t connect. Check your connection and try again.'**
+  String get authNetworkError;
+
+  /// No description provided for @authNoAccountSwitch.
+  ///
+  /// In en, this message translates to:
+  /// **'No account yet? Sign up'**
+  String get authNoAccountSwitch;
+
+  /// No description provided for @authHaveAccountSwitch.
+  ///
+  /// In en, this message translates to:
+  /// **'Already have an account? Sign in'**
+  String get authHaveAccountSwitch;
+
+  /// No description provided for @authBirthdateRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your date of birth.'**
+  String get authBirthdateRequired;
+
+  /// No description provided for @gpUsernameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete your profile'**
+  String get gpUsernameLabel;
+
   /// No description provided for @updateRequiredTitle.
   ///
   /// In en, this message translates to:
