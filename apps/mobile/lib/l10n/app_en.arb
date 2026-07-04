@@ -162,6 +162,8 @@
   "authDateOfBirth": "Date of birth",
   "authChoose": "Choose…",
   "authOr": "or",
+  "authConflict": "This email or username is already taken.",
+  "authGenericFail": "Sign-in failed for now. Please try again in a moment.",
   "ageRestricted": "You must be at least 15.",
   "homeProjection": "At this rate: {grade}+ in ~{weeks} wk.",
   "@homeProjection": {

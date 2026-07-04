@@ -127,7 +127,7 @@ class ApiClient {
         }
         final cached = await _readCache(method, path);
         if (cached != null) return cached; // hors ligne → dernières données connues
-        throw ApiException('NETWORK', 'Serveur injoignable. L\'API tourne-t-elle sur $_baseUrl ?', 0);
+        throw ApiException('NETWORK', 'Connexion au serveur impossible. Vérifie ta connexion et réessaie.', 0);
       }
     }
     apiOffline.value = false; // le réseau répond → fin de l'état hors ligne

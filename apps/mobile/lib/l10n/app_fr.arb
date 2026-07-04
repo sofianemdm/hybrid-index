@@ -155,6 +155,8 @@
   "authDateOfBirth": "Date de naissance",
   "authChoose": "Choisir…",
   "authOr": "ou",
+  "authConflict": "Cet email ou ce pseudo est déjà utilisé.",
+  "authGenericFail": "Connexion impossible pour le moment. Réessaie dans un instant.",
   "ageRestricted": "Tu dois avoir au moins 15 ans.",
   "homeProjection": "À ce rythme : {grade}+ dans ~{weeks} sem.",
   "commonContinue": "Continuer",

@@ -67,12 +67,14 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     } on ApiException catch (e) {
       if (e.code == 'AGE_RESTRICTED') {
         _toast(t.ageRestricted);
+      } else if (e.status == 409 || e.code == 'CONFLICT') {
+        _toast(t.authConflict);
       } else {
-        // Diagnostic précis (temporaire) : code + statut + URL réelle + message serveur.
-        _toast('Inscription KO — code=${e.code} statut=${e.status} base=${ref.read(apiClientProvider).baseUrl} · ${e.message}');
+        // Message serveur si présent et lisible, sinon générique.
+        _toast(e.message.isNotEmpty ? e.message : t.authGenericFail);
       }
-    } catch (e) {
-      _toast('Inscription exception : $e');
+    } catch (_) {
+      _toast(t.authGenericFail);
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -98,12 +100,13 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         Navigator.of(context).push(MaterialPageRoute(builder: (_) => GoogleProfileScreen(idToken: idToken)));
       } else if (e.code == 'AGE_RESTRICTED') {
         _toast(t.ageRestricted);
+      } else if (e.status == 409 || e.code == 'CONFLICT') {
+        _toast(t.authConflict);
       } else {
-        // Diagnostic précis (temporaire) : on affiche code + statut + message réel du serveur.
-        _toast('Google KO — code=${e.code} statut=${e.status} base=${ref.read(apiClientProvider).baseUrl} · ${e.message}');
+        _toast(t.authGenericFail);
       }
-    } catch (e) {
-      _toast('Google exception : $e');
+    } catch (_) {
+      _toast(t.authGenericFail);
     }
   }
 

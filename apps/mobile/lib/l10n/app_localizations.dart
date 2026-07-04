@@ -704,6 +704,18 @@ abstract class AppLocalizations {
   /// **'or'**
   String get authOr;
 
+  /// No description provided for @authConflict.
+  ///
+  /// In en, this message translates to:
+  /// **'This email or username is already taken.'**
+  String get authConflict;
+
+  /// No description provided for @authGenericFail.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign-in failed for now. Please try again in a moment.'**
+  String get authGenericFail;
+
   /// No description provided for @ageRestricted.
   ///
   /// In en, this message translates to:

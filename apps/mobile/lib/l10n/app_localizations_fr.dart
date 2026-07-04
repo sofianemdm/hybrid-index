@@ -356,6 +356,13 @@ class AppLocalizationsFr extends AppLocalizations {
   String get authOr => 'ou';
 
   @override
+  String get authConflict => 'Cet email ou ce pseudo est déjà utilisé.';
+
+  @override
+  String get authGenericFail =>
+      'Connexion impossible pour le moment. Réessaie dans un instant.';
+
+  @override
   String get ageRestricted => 'Tu dois avoir au moins 15 ans.';
 
   @override

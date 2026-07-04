@@ -353,6 +353,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authOr => 'or';
 
   @override
+  String get authConflict => 'This email or username is already taken.';
+
+  @override
+  String get authGenericFail =>
+      'Sign-in failed for now. Please try again in a moment.';
+
+  @override
   String get ageRestricted => 'You must be at least 15.';
 
   @override
