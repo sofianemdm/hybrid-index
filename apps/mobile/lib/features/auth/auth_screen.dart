@@ -95,7 +95,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         _toast(t.ageRestricted);
       } else {
         // Diagnostic précis (temporaire) : on affiche code + statut + message réel du serveur.
-        _toast('Google KO — code=${e.code} statut=${e.status} : ${e.message}');
+        _toast('Google KO — code=${e.code} statut=${e.status} base=${ref.read(apiClientProvider).baseUrl} · ${e.message}');
       }
     } catch (e) {
       _toast('Google exception : $e');
