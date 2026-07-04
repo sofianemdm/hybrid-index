@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../core/env.dart';
+import 'diag_beacon.dart'; // TEMPORAIRE DIAG (04/07) : à retirer avant merge
 import 'models.dart';
 
 /// Vrai quand la dernière lecture a été servie depuis le CACHE (réseau indisponible) → l'UI
@@ -37,6 +38,12 @@ class ApiException implements Exception {
   ApiException(this.code, this.message, this.status, {this.details});
   @override
   String toString() => message;
+}
+
+/// Marqueur interne : données servies depuis le cache hors-ligne (voir `ApiClient._fetchWithRetry`).
+class _CachedPayload {
+  const _CachedPayload(this.data);
+  final dynamic data;
 }
 
 /// Client HTTP vers l'`api` publique. Gère le bearer token.
@@ -120,41 +127,78 @@ class ApiClient {
     // Content-Type application/json → le serveur rejette (400). On envoie `{}` par défaut pour les
     // endpoints sans corps (ex. suivre un utilisateur) qui échouaient tous en « une erreur est survenue ».
     final jsonBody = jsonEncode(body ?? const <String, dynamic>{});
+    final fetched = await _fetchWithRetry(method, uri, jsonBody, path);
+    if (fetched is _CachedPayload) return fetched.data; // hors ligne → dernières données connues
+    final res = fetched as http.Response;
+    apiOffline.value = false; // le réseau répond → fin de l'état hors ligne
+    return _decodeResponse(method, path, res);
+  }
+
+  /// Émission réseau + retry, ISOLÉS hors de `_send` À DESSEIN (avec `_decodeResponse`).
+  ///
+  /// BUG VÉCU (04/07, build web release dart2js UNIQUEMENT) : quand la boucle « for + try/catch +
+  /// continue » et le traitement de la réponse cohabitaient dans LA MÊME fonction async, la machine
+  /// à états générée donnait au `catch` une portée qui DÉBORDAIT sur le code post-boucle.
+  /// L'ApiException LÉGITIME levée après la boucle (ex. 404 « pas d'Index », 409 « email pris »)
+  /// était re-capturée par ce catch → retry (2 requêtes visibles dans la console) → re-capturée →
+  /// « NETWORK / connexion impossible ». Inscription et onboarding totalement bloqués.
+  /// Preuve par beacons : `send-http-error 404` suivi de `send-network` portant le MESSAGE du 404.
+  /// Le découpage en fonctions séparées + `noInline` (sinon dart2js réinline et le bug revient)
+  /// rend ce débordement impossible : ici, AUCUN code ne suit la boucle.
+  @pragma('dart2js:noInline')
+  Future<dynamic> _fetchWithRetry(String method, Uri uri, String jsonBody, String path) async {
     // 1 retry SILENCIEUX sur les lectures uniquement (GET = sans effet de bord) : une micro-coupure
     // réseau se répare toute seule. Jamais de retry automatique sur écriture (POST/PATCH/DELETE) —
     // on ne risque aucun doublon, même si les endpoints critiques sont déjà idempotents.
     final attempts = method == 'GET' ? 2 : 1;
-    http.Response res;
     for (var attempt = 1; ; attempt++) {
       try {
-        res = await _request(method, uri, jsonBody).timeout(_timeout);
-        break;
+        return await _request(method, uri, jsonBody).timeout(_timeout);
       } on TimeoutException {
         if (attempt < attempts) {
           await _retryDelay();
           continue;
         }
         final cached = await _readCache(method, path);
-        if (cached != null) return cached; // hors ligne → dernières données connues
+        if (cached != null) return _CachedPayload(cached); // hors ligne → dernières données connues
+        diagBeacon('send-timeout', {'method': method, 'path': path}); // TEMPORAIRE DIAG
         throw ApiException('TIMEOUT', 'Connexion trop lente. Vérifie ton réseau et réessaie.', 0);
-      } catch (_) {
+      } catch (e) {
+        // Garde-fou : une erreur déjà typée ne doit JAMAIS être re-emballée en NETWORK.
+        if (e is ApiException) rethrow;
         if (attempt < attempts) {
           await _retryDelay();
           continue;
         }
         final cached = await _readCache(method, path);
-        if (cached != null) return cached; // hors ligne → dernières données connues
-        throw ApiException('NETWORK', 'Connexion au serveur impossible. Vérifie ta connexion et réessaie.', 0);
+        if (cached != null) return _CachedPayload(cached); // hors ligne → dernières données connues
+        // TEMPORAIRE DIAG : expose la cause réelle (type + message) dans le bandeau + beacon.
+        final cause = '$e';
+        diagBeacon('send-network', {
+          'method': method,
+          'path': path,
+          'errorType': e.runtimeType.toString(),
+          'error': cause.length > 300 ? cause.substring(0, 300) : cause,
+        });
+        throw ApiException(
+            'NETWORK',
+            'Connexion au serveur impossible. Vérifie ta connexion et réessaie. '
+            '[diag ${e.runtimeType}: ${cause.length > 140 ? cause.substring(0, 140) : cause}]',
+            0);
       }
     }
-    apiOffline.value = false; // le réseau répond → fin de l'état hors ligne
+  }
 
+  /// Décodage de la réponse + enveloppe d'erreur, isolés hors de `_send` et SYNCHRONES
+  /// (aucune machine à états async ici, donc aucun débordement de catch possible).
+  dynamic _decodeResponse(String method, String path, http.Response res) {
     final text = res.body.isEmpty ? '{}' : res.body;
     // Réponse non-JSON (ex. page HTML d'un proxy/504) → erreur normalisée plutôt qu'un crash de parsing.
     dynamic decoded;
     try {
       decoded = jsonDecode(text);
     } on FormatException {
+      diagBeacon('send-bad-response', {'method': method, 'path': path, 'status': res.statusCode}); // TEMPORAIRE DIAG
       throw ApiException('BAD_RESPONSE', 'Réponse serveur illisible (${res.statusCode}).', res.statusCode);
     }
     // Cache hors-ligne : mémorise la dernière réponse RÉUSSIE des lectures whitelistées.
@@ -188,6 +232,8 @@ class ApiClient {
         if (d is Map) details = Map<String, dynamic>.from(d);
       }
     } catch (_) {/* on garde code/message génériques + le vrai statut */}
+    // TEMPORAIRE DIAG : trace chaque réponse HTTP d'erreur correctement parsée (ex. 404 attendu).
+    diagBeacon('send-http-error', {'method': method, 'path': path, 'status': res.statusCode, 'code': code});
     throw ApiException(code, message, res.statusCode, details: details);
   }
 
