@@ -342,6 +342,22 @@ class PublicProfileScreen extends ConsumerWidget {
                       icon: Icon(Icons.share_rounded, size: 18, color: HiColors.textSecondary),
                       label: Text(t.shareTooltip, style: HiType.caption.copyWith(color: HiColors.textSecondary)),
                     ),
+                    // Sur SA propre carte : partage de la carte joueur (image type FIFA) via l'écran dédié.
+                    if (p.isMe) ...[
+                      const SizedBox(height: HiSpace.xs),
+                      OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          minimumSize: const Size.fromHeight(48),
+                          side: BorderSide(color: HiColors.brandPrimary.withValues(alpha: 0.5)),
+                          foregroundColor: HiColors.brandPrimary,
+                        ),
+                        icon: const Icon(Icons.share_rounded, size: 18),
+                        label: Text(t.homeShareCard),
+                        onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const ShareCardScreen()),
+                        ),
+                      ),
+                    ],
                     if (!p.isMe) ...[
                       const SizedBox(height: HiSpace.md),
                       _FollowButton(userId: p.userId, initial: p.isFollowing),

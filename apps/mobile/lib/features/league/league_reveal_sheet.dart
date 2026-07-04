@@ -98,10 +98,15 @@ class _LeagueRevealSheetState extends State<LeagueRevealSheet> {
             child: Container(
               padding: const EdgeInsets.all(HiSpace.lg),
               decoration: BoxDecoration(
+                // Fond OPAQUE : la teinte violette est pré-mélangée sur le fond élevé (au lieu d'un
+                // violet à 30 % d'alpha qui laissait transparaître le contenu de l'écran derrière).
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [violet.withValues(alpha: 0.30), HiColors.bgElevated2],
+                  colors: [
+                    Color.alphaBlend(violet.withValues(alpha: 0.30), HiColors.bgElevated2),
+                    HiColors.bgElevated2,
+                  ],
                 ),
                 borderRadius: BorderRadius.circular(HiRadius.md),
                 border: Border.all(color: violet.withValues(alpha: 0.5)),

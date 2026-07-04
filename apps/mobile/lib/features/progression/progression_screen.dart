@@ -9,6 +9,7 @@ import '../../widgets/error_retry.dart';
 import '../../widgets/hi_skeleton.dart';
 import '../endgame/endgame_screen.dart';
 import '../history/history_screen.dart';
+import '../share/share_card_screen.dart';
 
 /// Progression : défi de la semaine + Grand Chelem + badges débloqués.
 class ProgressionScreen extends ConsumerStatefulWidget {
@@ -60,6 +61,19 @@ class _ProgressionScreenState extends ConsumerState<ProgressionScreen> {
               padding: const EdgeInsets.fromLTRB(HiSpace.lg, HiSpace.lg, HiSpace.lg, 96),
               children: [
                 Text(t.progressionTitle, style: HiType.titleL.copyWith(color: HiColors.textPrimary)),
+                const SizedBox(height: HiSpace.md),
+                OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(48),
+                    side: BorderSide(color: HiColors.brandPrimary.withValues(alpha: 0.5)),
+                    foregroundColor: HiColors.brandPrimary,
+                  ),
+                  icon: const Icon(Icons.share_rounded),
+                  label: Text(t.homeShareCard),
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const ShareCardScreen()),
+                  ),
+                ),
                 const SizedBox(height: HiSpace.md),
                 OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(
