@@ -149,13 +149,29 @@ class ApiClient {
     if (res.statusCode >= 200 && res.statusCode < 300) {
       return decoded;
     }
-    final err = (decoded is Map && decoded['error'] is Map) ? decoded['error'] as Map : null;
-    throw ApiException(
-      err?['code']?.toString() ?? 'ERROR',
-      err?['message']?.toString() ?? 'Une erreur est survenue (${res.statusCode}).',
-      res.statusCode,
-      details: err?['details'] is Map ? Map<String, dynamic>.from(err!['details'] as Map) : null,
-    );
+    // Extraction DÉFENSIVE de l'enveloppe { error: { code, message, details } }.
+    // BUG VÉCU (04/07) : sous le build web MINIFIÉ (release dart2js), l'ancienne écriture
+    // `err?['code']?.toString()` levait un NoSuchMethodError (`c.b is not a function`) AU LIEU
+    // de construire l'ApiException → un 404 « pas d'Index » (attendu) remontait comme un vrai
+    // crash → écran d'erreur au lieu de l'onboarding, bloquant TOUTE création de compte.
+    // On n'appelle plus aucune méthode dynamique, on teste les types, et on enveloppe le tout :
+    // quoi qu'il arrive, on lève une ApiException typée avec le VRAI statut (donc myProfile
+    // reconnaît le 404 et renvoie null).
+    var code = 'ERROR';
+    var message = 'Une erreur est survenue (${res.statusCode}).';
+    Map<String, dynamic>? details;
+    try {
+      final err = decoded is Map ? decoded['error'] : null;
+      if (err is Map) {
+        final c = err['code'];
+        if (c is String) code = c;
+        final m = err['message'];
+        if (m is String) message = m;
+        final d = err['details'];
+        if (d is Map) details = Map<String, dynamic>.from(d);
+      }
+    } catch (_) {/* on garde code/message génériques + le vrai statut */}
+    throw ApiException(code, message, res.statusCode, details: details);
   }
 
   // --- Auth ---
@@ -223,14 +239,7 @@ class ApiClient {
       final j = await _send('GET', '/v1/me/profile') as Map<String, dynamic>;
       return Profile.fromJson(j);
     } on ApiException catch (e) {
-      // DIAG TEMP : trace l'exception exacte de /me/profile (console navigateur).
-      // ignore: avoid_print
-      print('DIAG myProfile ApiException: status=${e.status} code=${e.code} msg=${e.message}');
       if (e.status == 404) return null; // pas encore d'Index
-      rethrow;
-    } catch (e) {
-      // ignore: avoid_print
-      print('DIAG myProfile NON-Api: ${e.runtimeType} : $e');
       rethrow;
     }
   }

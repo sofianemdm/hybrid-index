@@ -191,10 +191,7 @@ class AuthGate extends ConsumerWidget {
           loading: () => const _Splash(),
           // Erreur de chargement du profil : Réessayer + PORTE DE SORTIE « Se déconnecter »
           // (sinon un jeton bloquant enferme l'utilisateur dans l'écran d'erreur à chaque visite).
-          error: (e, _) {
-            // ignore: avoid_print
-            print('DIAG AuthGate ErrorRetry cause: ${e.runtimeType} : $e');
-            return Scaffold(
+          error: (e, _) => Scaffold(
             body: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -212,8 +209,7 @@ class AuthGate extends ConsumerWidget {
                 ),
               ],
             ),
-          );
-          },
+          ),
           data: (p) => p == null ? const OnboardingScreen() : const HomeShell(),
         );
     }
