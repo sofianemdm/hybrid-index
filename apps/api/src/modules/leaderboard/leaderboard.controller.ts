@@ -1,8 +1,6 @@
-import { BadRequestException, Controller, Get, Query, UseGuards } from "@nestjs/common";
+import { BadRequestException, Controller, Get, Query } from "@nestjs/common";
 import { Sex } from "@hybrid-index/contracts";
-import { CurrentUser } from "../auth/current-user.decorator";
-import { type AuthenticatedUser } from "../auth/jwt-auth.guard";
-import { OptionalJwtAuthGuard } from "../auth/optional-jwt-auth.guard";
+import { CurrentUser, type AuthenticatedUser } from "../../common/current-user.decorator";
 import { ClubsService } from "../clubs/clubs.service";
 import { LeaderboardService, type LeaderboardResponse } from "./leaderboard.service";
 
@@ -15,7 +13,6 @@ export class LeaderboardController {
 
   /** Classement d'une ligue (Hommes / Femmes), ou filtré « Mon club » via `clubId`. */
   @Get("leaderboard")
-  @UseGuards(OptionalJwtAuthGuard)
   async leaderboardFor(
     @Query("sex") sexParam: string,
     @Query("limit") limitParam: string | undefined,

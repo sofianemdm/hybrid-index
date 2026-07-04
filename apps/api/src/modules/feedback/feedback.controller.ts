@@ -1,12 +1,10 @@
-import { Body, Controller, Post, UseGuards } from "@nestjs/common";
-import { CurrentUser } from "../auth/current-user.decorator";
-import { JwtAuthGuard, type AuthenticatedUser } from "../auth/jwt-auth.guard";
+import { Body, Controller, Post } from "@nestjs/common";
+import { CurrentUser, type AuthenticatedUser } from "../../common/current-user.decorator";
 import { ZodValidationPipe } from "../../common/zod-validation.pipe";
 import { CreateFeedbackRequest } from "./feedback.dto";
 import { FeedbackService } from "./feedback.service";
 
 @Controller("v1/feedback")
-@UseGuards(JwtAuthGuard)
 export class FeedbackController {
   constructor(private readonly feedback: FeedbackService) {}
 

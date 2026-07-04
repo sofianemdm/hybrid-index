@@ -1,15 +1,13 @@
-import { Body, Controller, Delete, Get, Param, Post, Query, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Post, Query } from "@nestjs/common";
 import { z } from "zod";
 import { ZodValidationPipe } from "../../common/zod-validation.pipe";
-import { CurrentUser } from "../auth/current-user.decorator";
-import { JwtAuthGuard, type AuthenticatedUser } from "../auth/jwt-auth.guard";
+import { CurrentUser, type AuthenticatedUser } from "../../common/current-user.decorator";
 import { SocialService, type FeedScope } from "./social.service";
 
 // L'emoji est optionnel et ignoré : le kudos est toujours 👏 (compat anciens clients).
 const ReactionRequest = z.object({ feedEventId: z.string().uuid(), emoji: z.string().optional() });
 
 @Controller("v1")
-@UseGuards(JwtAuthGuard)
 export class SocialController {
   constructor(private readonly social: SocialService) {}
 

@@ -1,7 +1,5 @@
-import { BadRequestException, Controller, Get, Post, Query, UseGuards } from "@nestjs/common";
-import { JwtAuthGuard, type AuthenticatedUser } from "../auth/jwt-auth.guard";
-import { OptionalJwtAuthGuard } from "../auth/optional-jwt-auth.guard";
-import { CurrentUser } from "../auth/current-user.decorator";
+import { BadRequestException, Controller, Get, Post, Query } from "@nestjs/common";
+import { CurrentUser, type AuthenticatedUser } from "../../common/current-user.decorator";
 import { LeagueService } from "./league.service";
 import { LeagueEnrollmentService } from "./league-enrollment.service";
 import type {
@@ -27,28 +25,24 @@ export class LeagueController {
 
   /** Saison active + WOD de la semaine + si l'appelant est inscrit. */
   @Get("season/current")
-  @UseGuards(OptionalJwtAuthGuard)
   async season(@CurrentUser() user: AuthenticatedUser | undefined): Promise<LeagueSeasonView | null> {
     return this.league.seasonView(user?.userId);
   }
 
   /** WOD imposé de la semaine en cours. */
   @Get("week/current")
-  @UseGuards(OptionalJwtAuthGuard)
   async week(): Promise<LeagueWeekView | null> {
     return this.league.currentWeek();
   }
 
   /** Inscription OPT-IN à la saison active. */
   @Post("enroll")
-  @UseGuards(JwtAuthGuard)
   async enroll(@CurrentUser() user: AuthenticatedUser): Promise<EnrollResponse> {
     return this.enrollment.enroll(user.userId);
   }
 
   /** Classement mensuel d'une ligue (par sexe) + ma position. */
   @Get("standings")
-  @UseGuards(OptionalJwtAuthGuard)
   async standings(
     @Query("sex") sex: string | undefined,
     @CurrentUser() user: AuthenticatedUser | undefined,
@@ -61,14 +55,12 @@ export class LeagueController {
    * + sa ligne s'il a participé. Renvoie `null` s'il n'existe aucune saison close.
    */
   @Get("last-result")
-  @UseGuards(OptionalJwtAuthGuard)
   async lastResult(@CurrentUser() user: AuthenticatedUser | undefined): Promise<LeagueLastResultView | null> {
     return this.league.lastResult(user?.userId);
   }
 
   /** Mon résumé Ligue (points du mois, position, semaines jouées). */
   @Get("me")
-  @UseGuards(JwtAuthGuard)
   async me(@CurrentUser() user: AuthenticatedUser): Promise<LeagueMeView> {
     return this.league.me(user.userId);
   }

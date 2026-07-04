@@ -1,12 +1,10 @@
-import { BadRequestException, Controller, Get, Param, Post, Query, UseGuards } from "@nestjs/common";
+import { BadRequestException, Controller, Get, Param, Post, Query } from "@nestjs/common";
 import { AttributeKey } from "@hybrid-index/contracts";
-import { CurrentUser } from "../auth/current-user.decorator";
-import { JwtAuthGuard, type AuthenticatedUser } from "../auth/jwt-auth.guard";
+import { CurrentUser, type AuthenticatedUser } from "../../common/current-user.decorator";
 import type { Session } from "./sessions.data";
 import { CoachService, type CoachResponse, type CompleteSessionResponse, type LibraryResponse } from "./coach.service";
 
 @Controller("v1/coach")
-@UseGuards(JwtAuthGuard)
 export class CoachController {
   constructor(private readonly coach: CoachService) {}
 

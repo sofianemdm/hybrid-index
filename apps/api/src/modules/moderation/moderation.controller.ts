@@ -1,8 +1,7 @@
-import { Body, Controller, Delete, Param, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Param, Post } from "@nestjs/common";
 import { z } from "zod";
 import { ZodValidationPipe } from "../../common/zod-validation.pipe";
-import { CurrentUser } from "../auth/current-user.decorator";
-import { JwtAuthGuard, type AuthenticatedUser } from "../auth/jwt-auth.guard";
+import { CurrentUser, type AuthenticatedUser } from "../../common/current-user.decorator";
 import { ModerationService } from "./moderation.service";
 
 const ReportRequest = z.object({
@@ -13,7 +12,6 @@ const ReportRequest = z.object({
 });
 
 @Controller("v1")
-@UseGuards(JwtAuthGuard)
 export class ModerationController {
   constructor(private readonly moderation: ModerationService) {}
 

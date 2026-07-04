@@ -192,37 +192,8 @@ class ApiClient {
   }
 
   // --- Auth ---
-  Future<({String token, AuthUser user})> register(Map<String, dynamic> payload) async {
-    final j = await _send('POST', '/v1/auth/register', payload) as Map<String, dynamic>;
-    return (token: j['token'] as String, user: AuthUser.fromJson(j['user'] as Map<String, dynamic>));
-  }
-
-  Future<({String token, AuthUser user})> login(String email, String password) async {
-    final j = await _send('POST', '/v1/auth/login', {'email': email, 'password': password}) as Map<String, dynamic>;
-    return (token: j['token'] as String, user: AuthUser.fromJson(j['user'] as Map<String, dynamic>));
-  }
-
-  /// « Mot de passe oublié » : envoie un code par email (réponse toujours ok, anti-énumération).
-  Future<void> forgotPassword(String email) async =>
-      _send('POST', '/v1/auth/forgot', {'email': email});
-
-  /// Réinitialise le mot de passe avec le code à 6 chiffres reçu par email.
-  Future<void> resetPassword(String email, String code, String newPassword) async =>
-      _send('POST', '/v1/auth/reset', {'email': email, 'code': code, 'newPassword': newPassword});
-
-  /// Connexion Google : `profile` requis seulement à la première connexion.
-  Future<({String token, AuthUser user})> googleAuth(String idToken, Map<String, dynamic>? profile) async {
-    final body = <String, dynamic>{'idToken': idToken, if (profile != null) 'profile': profile};
-    final j = await _send('POST', '/v1/auth/google', body) as Map<String, dynamic>;
-    return (token: j['token'] as String, user: AuthUser.fromJson(j['user'] as Map<String, dynamic>));
-  }
-
-  /// Connexion Apple : `profile` requis seulement à la première connexion.
-  Future<({String token, AuthUser user})> appleAuth(String identityToken, Map<String, dynamic>? profile) async {
-    final body = <String, dynamic>{'identityToken': identityToken, if (profile != null) 'profile': profile};
-    final j = await _send('POST', '/v1/auth/apple', body) as Map<String, dynamic>;
-    return (token: j['token'] as String, user: AuthUser.fromJson(j['user'] as Map<String, dynamic>));
-  }
+  // TEMPORAIRE (auth-rebuild) : les endpoints d'auth (register/login/google/apple/forgot/reset)
+  // ont été retirés avec l'écran de connexion. À reconstruire avec la nouvelle interface d'auth.
 
   /// Métadonnées app (mise à jour forcée) : build minimum supporté + URL du store.
   Future<({int minBuild, String storeUrl})> appMeta() async {
@@ -235,20 +206,8 @@ class ApiClient {
   Future<void> updateMe(Map<String, dynamic> payload) async => await _send('PATCH', '/v1/me', payload);
 
   // --- Onboarding ---
-  Future<Profile> onboardingEstimate(Map<String, dynamic> payload) async {
-    final j = await _send('POST', '/v1/onboarding/estimate', payload) as Map<String, dynamic>;
-    return Profile.fromJson(j);
-  }
-
-  Future<Profile> onboardingComplete(Map<String, dynamic> payload) async {
-    final j = await _send('POST', '/v1/onboarding/complete', payload) as Map<String, dynamic>;
-    return Profile.fromJson(j);
-  }
-
-  /// « Je n'ai aucune de ces infos » : entre dans l'app sans Index (onboarding marqué fait).
-  Future<void> onboardingSkip() async {
-    await _send('POST', '/v1/onboarding/skip');
-  }
+  // TEMPORAIRE (auth-rebuild) : les endpoints d'onboarding (estimate/complete/skip) ont été
+  // retirés avec l'écran d'onboarding. À reconstruire avec le nouveau parcours d'entrée.
 
   // --- Profil / résultats ---
   Future<Profile?> myProfile() async {

@@ -5,7 +5,6 @@ import { RateLimitGuard } from "./common/rate-limit.guard";
 import { HealthController } from "./health/health.controller";
 import { PrismaModule } from "./infra/prisma/prisma.module";
 import { RedisModule } from "./infra/redis/redis.module";
-import { AuthModule } from "./modules/auth/auth.module";
 import { ProfileModule } from "./modules/profile/profile.module";
 import { MeModule } from "./modules/me/me.module";
 import { OnboardingModule } from "./modules/onboarding/onboarding.module";
@@ -40,7 +39,6 @@ import { RealtimeModule } from "./modules/realtime/realtime.module";
     MessagingModule,
     ChallengeModule,
     LeagueModule,
-    AuthModule,
     ProfileModule,
     MeModule,
     OnboardingModule,
