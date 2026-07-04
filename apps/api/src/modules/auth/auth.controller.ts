@@ -17,7 +17,7 @@ export class AuthController {
     return this.auth.register(body);
   }
 
-  // Anti brute-force : 10 tentatives / 15 min / IP.
+  // Anti brute-force : 20 tentatives / 15 min / IP.
   @RateLimit({ limit: 20, windowSec: 900 })
   @Post("login")
   login(@Body(new ZodValidationPipe(LoginRequest)) body: LoginRequest): Promise<AuthResponse> {

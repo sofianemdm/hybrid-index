@@ -245,6 +245,61 @@ class AppLocalizationsFr extends AppLocalizations {
       'Code invalide ou expiré. Redemande un code si besoin.';
 
   @override
+  String get authLoginTitle => 'Content de te revoir';
+
+  @override
+  String get authLoginSubtitle => 'Connecte-toi pour retrouver ton Index.';
+
+  @override
+  String get authSignupTitle => 'Rejoins la Ligue';
+
+  @override
+  String get authSignupSubtitle => 'Crée ton compte et trouve ton Index.';
+
+  @override
+  String get authEmailHint => 'toi@exemple.com';
+
+  @override
+  String get authUsernameHint => 'ex. IronWolf';
+
+  @override
+  String get authPasswordHint => '8 caractères minimum';
+
+  @override
+  String get authShowPassword => 'Afficher le mot de passe';
+
+  @override
+  String get authHidePassword => 'Masquer le mot de passe';
+
+  @override
+  String get authInvalidEmail => 'Entre un email valide.';
+
+  @override
+  String get authPasswordTooShort => '8 caractères minimum.';
+
+  @override
+  String get authUsernameInvalid => '3 à 20 caractères, sans espace.';
+
+  @override
+  String get authInvalidCredentials => 'Email ou mot de passe incorrect.';
+
+  @override
+  String get authNetworkError =>
+      'Connexion impossible. Vérifie ta connexion et réessaie.';
+
+  @override
+  String get authNoAccountSwitch => 'Pas encore de compte ? Inscris-toi';
+
+  @override
+  String get authHaveAccountSwitch => 'Déjà un compte ? Connecte-toi';
+
+  @override
+  String get authBirthdateRequired => 'Renseigne ta date de naissance.';
+
+  @override
+  String get gpUsernameLabel => 'Complète ton profil';
+
+  @override
   String get updateRequiredTitle => 'Mise à jour nécessaire';
 
   @override
