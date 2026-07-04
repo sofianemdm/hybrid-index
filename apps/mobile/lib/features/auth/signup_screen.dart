@@ -6,7 +6,6 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../core/env.dart';
 import '../../core/share_links.dart';
 import '../../data/api_client.dart';
-import '../../data/diag_beacon.dart'; // TEMPORAIRE DIAG (04/07) : à retirer avant merge
 import '../../data/session.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
@@ -126,8 +125,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     } on ApiException catch (e) {
       setState(() => _banner = _messageFor(e, t));
       HapticFeedback.lightImpact();
-    } catch (e) {
-      diagBeacon('signup-generic-catch', {'errorType': e.runtimeType.toString(), 'error': '$e'}); // TEMPORAIRE DIAG
+    } catch (_) {
       setState(() => _banner = t.authGenericFail);
       HapticFeedback.lightImpact();
     } finally {
@@ -158,8 +156,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
       } else {
         setState(() => _banner = _messageFor(e, t));
       }
-    } catch (e) {
-      diagBeacon('signup-generic-catch', {'errorType': e.runtimeType.toString(), 'error': '$e'}); // TEMPORAIRE DIAG
+    } catch (_) {
       setState(() => _banner = t.authGenericFail);
     }
   }
@@ -178,8 +175,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
       } else {
         setState(() => _banner = _messageFor(e, t));
       }
-    } catch (e) {
-      diagBeacon('signup-generic-catch', {'errorType': e.runtimeType.toString(), 'error': '$e'}); // TEMPORAIRE DIAG
+    } catch (_) {
       setState(() => _banner = t.authGenericFail);
     }
   }

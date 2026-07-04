@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/env.dart';
 import '../../data/api_client.dart';
-import '../../data/diag_beacon.dart'; // TEMPORAIRE DIAG (04/07) : à retirer avant merge
 import '../../data/session.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/tokens.dart';
@@ -71,8 +70,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     } on ApiException catch (e) {
       setState(() => _banner = _messageFor(e, t));
       HapticFeedback.lightImpact();
-    } catch (e) {
-      diagBeacon('login-generic-catch', {'errorType': e.runtimeType.toString(), 'error': '$e'}); // TEMPORAIRE DIAG
+    } catch (_) {
       setState(() => _banner = t.authGenericFail);
       HapticFeedback.lightImpact();
     } finally {
@@ -104,8 +102,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       } else {
         setState(() => _banner = _messageFor(e, t));
       }
-    } catch (e) {
-      diagBeacon('login-generic-catch', {'errorType': e.runtimeType.toString(), 'error': '$e'}); // TEMPORAIRE DIAG
+    } catch (_) {
       setState(() => _banner = t.authGenericFail);
     }
   }
@@ -124,8 +121,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       } else {
         setState(() => _banner = _messageFor(e, t));
       }
-    } catch (e) {
-      diagBeacon('login-generic-catch', {'errorType': e.runtimeType.toString(), 'error': '$e'}); // TEMPORAIRE DIAG
+    } catch (_) {
       setState(() => _banner = t.authGenericFail);
     }
   }

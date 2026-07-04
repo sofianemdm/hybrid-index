@@ -5,7 +5,6 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../core/env.dart';
-import 'diag_beacon.dart'; // TEMPORAIRE DIAG (04/07) : à retirer avant merge
 import 'models.dart';
 
 /// Vrai quand la dernière lecture a été servie depuis le CACHE (réseau indisponible) → l'UI
@@ -142,7 +141,8 @@ class ApiClient {
   /// L'ApiException LÉGITIME levée après la boucle (ex. 404 « pas d'Index », 409 « email pris »)
   /// était re-capturée par ce catch → retry (2 requêtes visibles dans la console) → re-capturée →
   /// « NETWORK / connexion impossible ». Inscription et onboarding totalement bloqués.
-  /// Preuve par beacons : `send-http-error 404` suivi de `send-network` portant le MESSAGE du 404.
+  /// Signature du bug : 2 requêtes identiques dans la console + « connexion impossible » alors
+  /// que la réponse (404/409) arrivait bien.
   /// Le découpage en fonctions séparées + `noInline` (sinon dart2js réinline et le bug revient)
   /// rend ce débordement impossible : ici, AUCUN code ne suit la boucle.
   @pragma('dart2js:noInline')
@@ -161,10 +161,10 @@ class ApiClient {
         }
         final cached = await _readCache(method, path);
         if (cached != null) return _CachedPayload(cached); // hors ligne → dernières données connues
-        diagBeacon('send-timeout', {'method': method, 'path': path}); // TEMPORAIRE DIAG
         throw ApiException('TIMEOUT', 'Connexion trop lente. Vérifie ton réseau et réessaie.', 0);
       } catch (e) {
-        // Garde-fou : une erreur déjà typée ne doit JAMAIS être re-emballée en NETWORK.
+        // Garde-fou : une erreur déjà typée (ApiException levée par le décodage) ne doit JAMAIS
+        // être re-emballée en NETWORK par ce catch.
         if (e is ApiException) rethrow;
         if (attempt < attempts) {
           await _retryDelay();
@@ -172,19 +172,7 @@ class ApiClient {
         }
         final cached = await _readCache(method, path);
         if (cached != null) return _CachedPayload(cached); // hors ligne → dernières données connues
-        // TEMPORAIRE DIAG : expose la cause réelle (type + message) dans le bandeau + beacon.
-        final cause = '$e';
-        diagBeacon('send-network', {
-          'method': method,
-          'path': path,
-          'errorType': e.runtimeType.toString(),
-          'error': cause.length > 300 ? cause.substring(0, 300) : cause,
-        });
-        throw ApiException(
-            'NETWORK',
-            'Connexion au serveur impossible. Vérifie ta connexion et réessaie. '
-            '[diag ${e.runtimeType}: ${cause.length > 140 ? cause.substring(0, 140) : cause}]',
-            0);
+        throw ApiException('NETWORK', 'Connexion au serveur impossible. Vérifie ta connexion et réessaie.', 0);
       }
     }
   }
@@ -198,7 +186,6 @@ class ApiClient {
     try {
       decoded = jsonDecode(text);
     } on FormatException {
-      diagBeacon('send-bad-response', {'method': method, 'path': path, 'status': res.statusCode}); // TEMPORAIRE DIAG
       throw ApiException('BAD_RESPONSE', 'Réponse serveur illisible (${res.statusCode}).', res.statusCode);
     }
     // Cache hors-ligne : mémorise la dernière réponse RÉUSSIE des lectures whitelistées.
@@ -232,8 +219,6 @@ class ApiClient {
         if (d is Map) details = Map<String, dynamic>.from(d);
       }
     } catch (_) {/* on garde code/message génériques + le vrai statut */}
-    // TEMPORAIRE DIAG : trace chaque réponse HTTP d'erreur correctement parsée (ex. 404 attendu).
-    diagBeacon('send-http-error', {'method': method, 'path': path, 'status': res.statusCode, 'code': code});
     throw ApiException(code, message, res.statusCode, details: details);
   }
 

@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'data/diag_beacon.dart'; // TEMPORAIRE DIAG (04/07) : à retirer avant merge
 import 'data/models.dart';
 import 'data/realtime_service.dart';
 import 'data/session.dart';
@@ -192,10 +191,7 @@ class AuthGate extends ConsumerWidget {
           loading: () => const _Splash(),
           // Erreur de chargement du profil : Réessayer + PORTE DE SORTIE « Se déconnecter »
           // (sinon un jeton bloquant enferme l'utilisateur dans l'écran d'erreur à chaque visite).
-          error: (e, _) {
-            // TEMPORAIRE DIAG : rapporte la cause réelle de l'écran « une erreur est survenue ».
-            diagBeacon('authgate-error', {'errorType': e.runtimeType.toString(), 'error': '$e'});
-            return Scaffold(
+          error: (e, _) => Scaffold(
             body: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -213,8 +209,7 @@ class AuthGate extends ConsumerWidget {
                 ),
               ],
             ),
-          );
-          },
+          ),
           data: (p) => p == null ? const OnboardingScreen() : const HomeShell(),
         );
     }
