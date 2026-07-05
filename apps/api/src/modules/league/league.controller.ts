@@ -51,9 +51,11 @@ export class LeagueController {
   @UseGuards(OptionalJwtAuthGuard)
   async standings(
     @Query("sex") sex: string | undefined,
+    @Query("clubId") clubId: string | undefined,
     @CurrentUser() user: AuthenticatedUser | undefined,
   ): Promise<LeagueStandingsView> {
-    return this.league.standings(parseSex(sex), user?.userId);
+    const club = typeof clubId === "string" && clubId.trim() !== "" ? clubId.trim() : undefined;
+    return this.league.standings(parseSex(sex), user?.userId, club);
   }
 
   /**

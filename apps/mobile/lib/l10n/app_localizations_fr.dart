@@ -526,6 +526,13 @@ class AppLocalizationsFr extends AppLocalizations {
   String get wreSave => 'Enregistrer';
 
   @override
+  String get wreHonestyNote =>
+      'Reste vrai : ton Index ne vaut que s\'il est honnête. Un faux score ne trompe que toi et fausse ta vraie progression. 💙';
+
+  @override
+  String get wreHonestyConfirm => 'Je confirme que ce résultat est réel.';
+
+  @override
   String get commonLogout => 'Déconnexion';
 
   @override
@@ -700,6 +707,10 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get logWodIntro =>
       'Choisis une séance pour voir en quoi elle consiste, les temps de référence et le classement — puis enregistre ton résultat.';
+
+  @override
+  String get logWodFairPlay =>
+      'Joue franc jeu : note ton vrai résultat. C\'est ta progression qui compte.';
 
   @override
   String get logWodNoEquipment => 'Sans matériel';
@@ -2649,6 +2660,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String leagueRowYou(String name) {
     return '$name (moi)';
   }
+
+  @override
+  String get leagueScopeWorld => 'Ligue Mondiale';
 
   @override
   String get leagueSegmentMen => 'Hommes';

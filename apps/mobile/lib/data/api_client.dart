@@ -509,8 +509,9 @@ class ApiClient {
     return LeagueSeason.fromJson(Map<String, dynamic>.from(j));
   }
 
-  Future<LeagueStandings> leagueStandings(String sex) async {
-    final j = await _send('GET', '/v1/league/standings?sex=$sex') as Map<String, dynamic>;
+  Future<LeagueStandings> leagueStandings(String sex, {String? clubId}) async {
+    final club = (clubId != null && clubId.isNotEmpty) ? '&clubId=$clubId' : '';
+    final j = await _send('GET', '/v1/league/standings?sex=$sex$club') as Map<String, dynamic>;
     return LeagueStandings.fromJson(j);
   }
 

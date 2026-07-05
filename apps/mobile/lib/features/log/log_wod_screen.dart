@@ -55,6 +55,18 @@ class _LogWodScreenState extends ConsumerState<LogWodScreen> {
           children: [
             Text(t.logWodIntro,
                 style: HiType.body.copyWith(color: HiColors.textSecondary)),
+            const SizedBox(height: HiSpace.sm),
+            // Rappel fair-play discret, avant l'effort (touchpoint calme, non culpabilisant).
+            Row(
+              children: [
+                Icon(Icons.favorite_outline_rounded, size: 14, color: HiColors.textTertiary),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(t.logWodFairPlay,
+                      style: HiType.caption.copyWith(color: HiColors.textTertiary)),
+                ),
+              ],
+            ),
             const SizedBox(height: HiSpace.lg),
             _sectionTitle(t.logWodNoEquipment),
             ...bodyweight.map((w) => _tile(context, w)),

@@ -259,6 +259,8 @@
   "wreSeparatedPro": "Pro and Open leaderboards are separate.",
   "wreSeparatedRx": "Rx and Scaled leaderboards are separate.",
   "wreSave": "Save",
+  "wreHonestyNote": "Keep it real: your Index only counts if it's honest. A fake score only fools you — and skews your real progress. 💙",
+  "wreHonestyConfirm": "I confirm this result is real.",
   "commonLogout": "Log out",
   "onbAvatarTitle": "Create your avatar",
   "onbAvatarSubtitle": "Personalize it (you can change it anytime in settings).",
@@ -313,6 +315,7 @@
   "otherWorkoutsCommunityEmpty": "No workouts created by users yet. Create yours via \"Build a workout\".",
   "logWodTitle": "Pick a workout",
   "logWodIntro": "Pick a workout to see what it involves, the reference times and the leaderboard — then log your result.",
+  "logWodFairPlay": "Play fair: log your real result. It's your progress that counts.",
   "logWodNoEquipment": "No equipment",
   "logWodWithEquipment": "With equipment",
   "wodDetailReferenceTimes": "Reference times",
@@ -1557,6 +1560,7 @@
       }
     }
   },
+  "leagueScopeWorld": "Global League",
   "leagueSegmentMen": "Men",
   "leagueSegmentWomen": "Women",
   "leagueHowItWorksTitle": "How does it work?",

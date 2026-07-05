@@ -54,6 +54,9 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
   final _sec = TextEditingController();
   bool _rx = true;
   bool _loading = false;
+  // Anti-triche : rappel d'honnêteté au moment de la saisie (case à cocher qui déverrouille
+  // l'enregistrement). Friction légère, prouvée dissuasive, sans gêner les honnêtes.
+  bool _confirmedReal = false;
   // Clé d'idempotence STABLE pour cette saisie : un double-tap ou un retry réseau réutilise la même
   // clé → le serveur dédoublonne (pas de double comptage, audit BUG-014).
   final String _idempotencyKey = 'log-${DateTime.now().microsecondsSinceEpoch}-${UniqueKey()}';
@@ -343,8 +346,59 @@ class _WodResultEntryScreenState extends ConsumerState<WodResultEntryScreen> {
                         style: HiType.caption.copyWith(color: HiColors.textTertiary)),
                   ],
                 ],
-                const SizedBox(height: HiSpace.xl),
-                HiButton(label: t.wreSave, loading: _loading, onPressed: _submit),
+                const SizedBox(height: HiSpace.lg),
+                // Rappel anti-triche, bienveillant, AU MOMENT de la saisie (le levier le plus efficace).
+                Container(
+                  padding: const EdgeInsets.all(HiSpace.md),
+                  decoration: BoxDecoration(
+                    color: HiColors.bgElevated2,
+                    borderRadius: BorderRadius.circular(HiRadius.md),
+                    border: Border.all(color: HiColors.strokeSubtle),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(Icons.favorite_outline_rounded, size: 18, color: HiColors.brandPrimary),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(t.wreHonestyNote,
+                                style: HiType.caption.copyWith(color: HiColors.textSecondary)),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: HiSpace.sm),
+                      InkWell(
+                        onTap: () => setState(() => _confirmedReal = !_confirmedReal),
+                        borderRadius: BorderRadius.circular(HiRadius.md),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          child: Row(
+                            children: [
+                              Checkbox(
+                                value: _confirmedReal,
+                                onChanged: (v) => setState(() => _confirmedReal = v ?? false),
+                                activeColor: HiColors.brandPrimary,
+                                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                visualDensity: VisualDensity.compact,
+                              ),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(t.wreHonestyConfirm,
+                                    style: HiType.caption.copyWith(
+                                        color: HiColors.textPrimary, fontWeight: FontWeight.w600)),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: HiSpace.lg),
+                HiButton(label: t.wreSave, loading: _loading, onPressed: _confirmedReal ? _submit : null),
               ],
             ),
           ),

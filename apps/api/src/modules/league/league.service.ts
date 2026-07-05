@@ -100,15 +100,31 @@ export class LeagueService {
     return this.currentWeekView(season.id, now);
   }
 
-  async standings(sex: "male" | "female", viewerUserId?: string): Promise<LeagueStandingsView> {
+  async standings(
+    sex: "male" | "female",
+    viewerUserId?: string,
+    clubId?: string,
+  ): Promise<LeagueStandingsView> {
     const season = await this.ensureActiveSeason();
     if (!season) return { monthKey: null, sex, total: 0, entries: [], me: null };
+
+    // Filtre « Club » : ne garder que les membres du club demandé. Club vide (aucun membre) →
+    // classement vide cohérent (set vide), pas de crash.
+    let clubMemberIds: Set<string> | null = null;
+    if (clubId) {
+      const members = await this.prisma.clubMember.findMany({
+        where: { clubId },
+        select: { userId: true },
+      });
+      clubMemberIds = new Set(members.map((m) => m.userId));
+    }
 
     const rows = await this.prisma.leaguePoints.findMany({
       where: { seasonId: season.id, sex, review: "ok" },
       select: { userId: true, weekId: true, points: true },
     });
-    const ranked = rankTotals(totalsBestPerWeek(rows));
+    const scoped = clubMemberIds ? rows.filter((r) => clubMemberIds!.has(r.userId)) : rows;
+    const ranked = rankTotals(totalsBestPerWeek(scoped));
 
     const topIds = ranked.slice(0, DEFAULT_TOP).map((t) => t.userId);
     const viewerNeedsName = viewerUserId && !topIds.includes(viewerUserId) ? [viewerUserId] : [];

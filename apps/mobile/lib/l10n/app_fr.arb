@@ -242,6 +242,8 @@
   "wreSeparatedPro": "Les classements Pro et Open sont séparés.",
   "wreSeparatedRx": "Les classements Rx et Scaled sont séparés.",
   "wreSave": "Enregistrer",
+  "wreHonestyNote": "Reste vrai : ton Index ne vaut que s'il est honnête. Un faux score ne trompe que toi et fausse ta vraie progression. 💙",
+  "wreHonestyConfirm": "Je confirme que ce résultat est réel.",
   "commonLogout": "Déconnexion",
   "onbAvatarTitle": "Crée ton avatar",
   "onbAvatarSubtitle": "Personnalise-le (modifiable à tout moment dans les paramètres).",
@@ -296,6 +298,7 @@
   "otherWorkoutsCommunityEmpty": "Aucune séance créée par les utilisateurs pour l'instant. Crée la tienne via « Construire une séance ».",
   "logWodTitle": "Choisir une séance",
   "logWodIntro": "Choisis une séance pour voir en quoi elle consiste, les temps de référence et le classement — puis enregistre ton résultat.",
+  "logWodFairPlay": "Joue franc jeu : note ton vrai résultat. C'est ta progression qui compte.",
   "logWodNoEquipment": "Sans matériel",
   "logWodWithEquipment": "Avec matériel",
   "wodDetailReferenceTimes": "Temps de référence",
@@ -1106,6 +1109,7 @@
       }
     }
   },
+  "leagueScopeWorld": "Ligue Mondiale",
   "leagueSegmentMen": "Hommes",
   "leagueSegmentWomen": "Femmes",
   "leagueHowItWorksTitle": "Comment ça marche ?",

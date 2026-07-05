@@ -1016,6 +1016,18 @@ abstract class AppLocalizations {
   /// **'Save'**
   String get wreSave;
 
+  /// No description provided for @wreHonestyNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep it real: your Index only counts if it\'s honest. A fake score only fools you — and skews your real progress. 💙'**
+  String get wreHonestyNote;
+
+  /// No description provided for @wreHonestyConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'I confirm this result is real.'**
+  String get wreHonestyConfirm;
+
   /// No description provided for @commonLogout.
   ///
   /// In en, this message translates to:
@@ -1339,6 +1351,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Pick a workout to see what it involves, the reference times and the leaderboard — then log your result.'**
   String get logWodIntro;
+
+  /// No description provided for @logWodFairPlay.
+  ///
+  /// In en, this message translates to:
+  /// **'Play fair: log your real result. It\'s your progress that counts.'**
+  String get logWodFairPlay;
 
   /// No description provided for @logWodNoEquipment.
   ///
@@ -4484,6 +4502,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{name} (me)'**
   String leagueRowYou(String name);
+
+  /// No description provided for @leagueScopeWorld.
+  ///
+  /// In en, this message translates to:
+  /// **'Global League'**
+  String get leagueScopeWorld;
 
   /// No description provided for @leagueSegmentMen.
   ///
