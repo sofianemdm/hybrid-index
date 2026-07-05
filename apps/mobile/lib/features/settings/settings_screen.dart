@@ -155,17 +155,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Widget _languageSelector() {
     final locale = ref.watch(localeProvider);
     final t = AppLocalizations.of(context);
-    final sel = locale?.languageCode ?? 'system';
+    // Plus d'option « Système » : 2 choix seulement (FR/EN). Si aucun choix explicite, on
+    // présélectionne la langue actuellement active.
+    final sel = locale?.languageCode ?? Localizations.localeOf(context).languageCode;
     return SegmentedButton<String>(
       segments: [
-        ButtonSegment(value: 'system', icon: const Icon(Icons.translate), label: Text(t.languageSystem)),
         ButtonSegment(value: 'fr', label: Text(t.languageFrench)),
         ButtonSegment(value: 'en', label: Text(t.languageEnglish)),
       ],
-      selected: {sel},
+      selected: {sel == 'en' ? 'en' : 'fr'},
       showSelectedIcon: false,
-      onSelectionChanged: (s) =>
-          ref.read(localeProvider.notifier).set(s.first == 'system' ? null : Locale(s.first)),
+      onSelectionChanged: (s) => ref.read(localeProvider.notifier).set(Locale(s.first)),
     );
   }
 

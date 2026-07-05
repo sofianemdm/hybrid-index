@@ -117,6 +117,18 @@
       justify-content:center;background:rgba(43,212,245,.14);color:var(--brand);font:700 13px Inter,system-ui,sans-serif}
     .hi-sheet .close{margin-top:18px;width:100%;padding:13px;border-radius:12px;border:0;cursor:pointer;
       background:var(--brand);color:#041019;font:700 14px Inter,system-ui,sans-serif}
+    /* Étapes d'installation « 10/10 » : cartes avec numéro + icône exacte à toucher */
+    .hi-sheet .stepc{display:flex;align-items:center;gap:13px;margin:11px 0;padding:12px 14px;
+      background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.09);border-radius:14px}
+    .hi-sheet .stepc .n{flex:0 0 26px;width:26px;height:26px;border-radius:50%;display:inline-flex;
+      align-items:center;justify-content:center;background:var(--brand);color:#041019;font:800 14px Inter,sans-serif}
+    .hi-sheet .stepc .ic{flex:0 0 auto;width:38px;height:38px;display:inline-flex;align-items:center;
+      justify-content:center;background:rgba(43,212,245,.12);border:1px solid rgba(43,212,245,.30);border-radius:10px}
+    .hi-sheet .stepc .tx{flex:1;font:500 15px/1.4 Inter,system-ui,sans-serif;color:var(--txt)}
+    .hi-sheet .stepc .tx b{color:var(--brand);font-weight:700}
+    .hi-sheet .warn{background:rgba(243,193,58,.10);border:1px solid rgba(243,193,58,.38);border-radius:12px;
+      padding:13px 15px;font:500 14.5px/1.55 Inter,system-ui,sans-serif;color:var(--txt);margin:2px 0 4px}
+    .hi-sheet .warn b{color:#F3C13A}
     .hi-scrollhint{margin-top:22px;color:var(--txt3);font-size:12px;display:flex;flex-direction:column;align-items:center;gap:4px}
     .hi-scrollhint svg{width:16px;height:16px;animation:hi-bob 2s ease-in-out infinite}
     @keyframes hi-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
@@ -582,28 +594,50 @@
       };
 
       function openSheet(ios) {
-        var sheet = document.getElementById('hi-sheet');
-        if (!sheet) {
-          var steps = ios
-            ? '<div class="step"><span class="num">1</span>Appuie sur <b style="margin:0 4px">Partager</b> (l\'icône carrée avec une flèche ↑, en bas de Safari)</div>'
-              + '<div class="step"><span class="num">2</span>Fais défiler et choisis <b style="margin:0 4px">« Sur l\'écran d\'accueil »</b></div>'
-              + '<div class="step"><span class="num">3</span>Appuie sur <b style="margin:0 4px">Ajouter</b></div>'
-            : '<div class="step"><span class="num">1</span>Ouvre le menu <b style="margin:0 4px">⋮</b> de ton navigateur</div>'
-              + '<div class="step"><span class="num">2</span>Choisis <b style="margin:0 4px">« Installer l\'application »</b> (ou « Ajouter à l\'écran d\'accueil »)</div>';
-          sheet = document.createElement('div');
-          sheet.id = 'hi-sheet'; sheet.className = 'hi-sheet';
-          sheet.innerHTML = '<div class="hi-sheet-in">'
-            + '<h3>Installer Athlete League</h3>'
-            + '<p>Ajoute l\'app à ton écran d\'accueil : accès plein écran, comme une vraie appli, en un tap.</p>'
-            + steps
-            + '<button class="close" type="button">J\'ai compris</button>'
-            + '</div>';
-          document.body.appendChild(sheet);
-          sheet.addEventListener('click', function (e) {
-            if (e.target === sheet || e.target.classList.contains('close')) sheet.classList.remove('on');
-          });
+        var old = document.getElementById('hi-sheet');
+        if (old) old.remove(); // on reconstruit à chaque ouverture (état frais)
+
+        // Icône EXACTE « Partager » d'iOS (flèche vers le haut sortant d'un carré) + icône « + ».
+        var shareIcon = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#2BD4F5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 14V4"/><path d="M8 8l4-4 4 4"/><path d="M7 11H6a2 2 0 00-2 2v5a2 2 0 002 2h12a2 2 0 002-2v-5a2 2 0 00-2-2h-1"/></svg>';
+        var plusIcon = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#2BD4F5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="5"/><path d="M12 9v6M9 12h6"/></svg>';
+
+        function step(n, icon, txt) {
+          return '<div class="stepc"><span class="n">' + n + '</span>'
+            + (icon ? '<span class="ic">' + icon + '</span>' : '')
+            + '<span class="tx">' + txt + '</span></div>';
         }
-        sheet.classList.add('on');
+
+        var ua = navigator.userAgent || '';
+        var iosOtherBrowser = ios && /(crios|fxios|edgios|opios|mercury)/i.test(ua); // Chrome/Firefox/Edge… sur iOS
+        var body;
+        if (iosOtherBrowser) {
+          // Sur iPhone, « Sur l'écran d'accueil » n'existe QUE dans Safari.
+          body = '<h3>Installer sur ton iPhone</h3>'
+            + '<div class="warn">⚠️ Sur iPhone, l\'installation ne fonctionne que dans <b>Safari</b>.<br><br>'
+            + 'Ouvre <b>athlete-league.fr</b> dans <b>Safari</b>, puis reviens toucher « Installer l\'application ». '
+            + 'Ça prend 10 secondes, je te guide juste après.</div>';
+        } else if (ios) {
+          body = '<h3>Installer sur ton iPhone</h3>'
+            + '<p>3 étapes, environ 10 secondes 👇</p>'
+            + step('1', shareIcon, 'Touche le bouton <b>Partager</b> tout en bas de l\'écran — c\'est cette icône.')
+            + step('2', null, 'Fais glisser la liste vers le bas, puis touche <b>« Sur l\'écran d\'accueil »</b>.')
+            + step('3', plusIcon, 'En haut à droite, touche <b>« Ajouter »</b>. Terminé ! 🎉')
+            + '<p style="margin-top:14px;color:var(--txt3);font-size:13px">L\'icône Athlete League apparaîtra sur ton écran d\'accueil, comme une vraie appli.</p>';
+        } else {
+          body = '<h3>Installer l\'application</h3>'
+            + step('1', null, 'Ouvre le menu <b>⋮</b> de ton navigateur (en haut à droite).')
+            + step('2', null, 'Choisis <b>« Installer l\'application »</b> (ou « Ajouter à l\'écran d\'accueil »).');
+        }
+
+        var sheet = document.createElement('div');
+        sheet.id = 'hi-sheet'; sheet.className = 'hi-sheet';
+        sheet.innerHTML = '<div class="hi-sheet-in">' + body
+          + '<button class="close" type="button">J\'ai compris</button></div>';
+        document.body.appendChild(sheet);
+        sheet.addEventListener('click', function (e) {
+          if (e.target === sheet || e.target.classList.contains('close')) sheet.remove();
+        });
+        requestAnimationFrame(function () { sheet.classList.add('on'); });
       }
     })();
 
