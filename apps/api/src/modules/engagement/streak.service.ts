@@ -13,6 +13,11 @@ export interface StreakState {
 
 const MAX_CATCHUP_WEEKS = 12;
 
+/// Objectif hebdo pour valider la série : UNE seule séance par semaine suffit (décision produit
+/// 05/07). On ignore volontairement le champ `weeklyGoal` stocké (obsolète) pour rester cohérent
+/// pour tous les utilisateurs, existants comme nouveaux, sans migration de données.
+const WEEKLY_ACTIVITY_GOAL = 1;
+
 /**
  * Streak hebdomadaire (spec gamification 20 juin) : une semaine est validée si ≥ weeklyGoal
  * WODs loggés (ou repos planifié). Jetons de gel : protègent une semaine ratée (pas deux de
@@ -69,7 +74,7 @@ export class StreakService {
 
     let { current, best, freezeTokens, validatedActiveWeeks } = streak;
     let lastOutcome = streak.lastOutcome;
-    const weeklyGoal = streak.weeklyGoal;
+    const weeklyGoal = WEEKLY_ACTIVITY_GOAL; // 1 séance/semaine suffit (champ stocké ignoré)
 
     // Point de départ : la semaine suivant la dernière évaluée.
     let pointer = streak.lastWeekEvaluated
@@ -130,10 +135,10 @@ export class StreakService {
     return {
       current: persisted.current,
       best: persisted.best,
-      weeklyGoal: persisted.weeklyGoal,
+      weeklyGoal: WEEKLY_ACTIVITY_GOAL,
       freezeTokens: persisted.freezeTokens,
       thisWeekCount,
-      weekValidated: thisWeekCount >= persisted.weeklyGoal,
+      weekValidated: thisWeekCount >= WEEKLY_ACTIVITY_GOAL,
     };
   }
 }

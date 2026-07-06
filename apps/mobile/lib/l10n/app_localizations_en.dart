@@ -699,6 +699,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'No workouts created by users yet. Create yours via \"Build a workout\".';
 
   @override
+  String get otherWeeklyPastTitle => 'Past weekly sessions';
+
+  @override
   String get logWodTitle => 'Pick a workout';
 
   @override

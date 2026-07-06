@@ -11,19 +11,19 @@ import { WOD_PRESCRIPTIONS } from "../wods/wod-prescriptions.data";
  * (cardio / force / hybride / HYROX / sans matériel). Tout le monde se mesure dessus ;
  * le classement du défi ne compte QUE les résultats loggés pendant la semaine en cours.
  */
+// IMPORTANT : on EXCLUT les WODs « flagship » (permanents, toujours dispo dans l'app :
+// hyrox_sprint, grace, benchmark_zero, ergo_skill « Machine & Mur »). Les annoncer comme
+// « nouvelle séance de la semaine » était trompeur (l'utilisateur y a toujours accès → ça semble
+// « ancien »). La rotation ne contient donc que des benchmarks non-permanents.
 const ROTATION: ReadonlyArray<{ wodId: string; theme: string }> = [
   { wodId: "fran", theme: "Force & cardio" },
   { wodId: "run_5k", theme: "Cardio pur" },
-  { wodId: "grace", theme: "Force" },
-  { wodId: "benchmark_zero", theme: "Sans matériel" },
   { wodId: "helen", theme: "Hybride" },
-  { wodId: "hyrox_sprint", theme: "HYROX" },
   { wodId: "karen", theme: "Mental & cardio" },
   { wodId: "row_2k", theme: "Cardio · rameur" },
   { wodId: "cindy", theme: "Endurance" },
   { wodId: "jackie", theme: "Hybride" },
   { wodId: "burpees_7min", theme: "Cardio · sans matériel" },
-  { wodId: "ergo_skill", theme: "Machine & gym" },
 ];
 
 const WEEK_MS = 7 * 86_400_000;

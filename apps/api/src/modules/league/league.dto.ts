@@ -11,6 +11,17 @@ export interface LeagueWeekView {
   closesAt: string;
 }
 
+/**
+ * Une séance de la semaine PASSÉE (ancien WOD hebdo de la Ligue), pour la section
+ * « Anciennes séances de la semaine » de l'écran « Autres épreuves ». Dédoublonnée par `wodId`.
+ */
+export interface PastWeeklySessionView {
+  weekKey: string;
+  wodId: string;
+  wodName: string;
+  scoreType: string;
+}
+
 export interface LeagueSeasonView {
   monthKey: string;
   status: string;

@@ -11,6 +11,7 @@ import type {
   LeagueSeasonView,
   LeagueStandingsView,
   LeagueWeekView,
+  PastWeeklySessionView,
 } from "./league.dto";
 
 function parseSex(sex: string | undefined): "male" | "female" {
@@ -37,6 +38,13 @@ export class LeagueController {
   @UseGuards(OptionalJwtAuthGuard)
   async week(): Promise<LeagueWeekView | null> {
     return this.league.currentWeek();
+  }
+
+  /** Anciennes séances de la semaine (WODs hebdo passés), dédoublonnées, plus récentes d'abord. */
+  @Get("past-weeks")
+  @UseGuards(OptionalJwtAuthGuard)
+  async pastWeeks(): Promise<PastWeeklySessionView[]> {
+    return this.league.pastWeeks();
   }
 
   /** Inscription OPT-IN à la saison active. */

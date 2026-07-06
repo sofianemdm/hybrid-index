@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../data/league_scope.dart';
 import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../l10n/app_localizations.dart';
@@ -30,17 +31,12 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
   late String _sex;
   late Future<LeagueSeason?> _season;
   Future<LeagueStandings>? _standings;
-  // Périmètre du classement : null = 🌍 Ligue Mondiale (tous) ; sinon id d'un club auquel
-  // l'utilisateur appartient (classement restreint à ses membres). La saison/WOD restent globaux.
-  String? _clubId;
-  List<ClubSummary> _clubs = const [];
 
   @override
   void initState() {
     super.initState();
     _sex = ref.read(sessionProvider).sex ?? 'male';
     _load();
-    _loadClubs();
     // REVEAL de fin de saison : déclenché APRÈS le 1er frame (contexte prêt), une seule fois par
     // saison close (mémorisé via shared_preferences). N'affiche rien s'il n'y a aucune saison close.
     WidgetsBinding.instance.addPostFrameCallback((_) => _maybeShowReveal());
@@ -48,35 +44,11 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
 
   void _load() {
     final api = ref.read(apiClientProvider);
+    // Périmètre PARTAGÉ (leagueScopeClubIdProvider) : null = 🌍 Ligue Mondiale ; sinon un club.
+    // Le sélecteur vit tout en haut de l'onglet Ligue (LeaderboardScreen) et filtre ici aussi.
+    final clubId = ref.read(leagueScopeClubIdProvider);
     _season = api.leagueSeason();
-    _standings = api.leagueStandings(_sex, clubId: _clubId);
-  }
-
-  /// Charge les clubs de l'utilisateur pour le sélecteur de périmètre (best-effort : liste vide
-  /// si déconnecté ou erreur réseau — l'écran reste en Ligue Mondiale, comportement actuel).
-  Future<void> _loadClubs() async {
-    try {
-      final clubs = await ref.read(apiClientProvider).myClubs();
-      if (!mounted) return;
-      setState(() {
-        _clubs = clubs;
-        // Si le club actuellement sélectionné n'existe plus (quitté), on retombe sur Mondiale.
-        if (_clubId != null && !clubs.any((c) => c.id == _clubId)) _clubId = null;
-      });
-    } catch (_) {
-      // best-effort : pas de clubs => pas de sélecteur.
-    }
-  }
-
-  /// Change le périmètre du classement (🌍 Mondiale = null, ou un club). Re-fetch UNIQUEMENT le
-  /// classement (saison/WOD communs). Conserve le sexe courant. No-op si périmètre inchangé.
-  void _selectScope(String? clubId) {
-    if (clubId == _clubId) return;
-    HiHaptics.tap();
-    setState(() {
-      _clubId = clubId;
-      _standings = ref.read(apiClientProvider).leagueStandings(_sex, clubId: _clubId);
-    });
+    _standings = api.leagueStandings(_sex, clubId: clubId);
   }
 
   /// Clé « déjà vu » par saison close (monthKey). Ne montrer le reveal qu'UNE fois par saison.
@@ -112,7 +84,7 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
     HiHaptics.tap();
     setState(() {
       _sex = sex;
-      _standings = ref.read(apiClientProvider).leagueStandings(_sex, clubId: _clubId);
+      _standings = ref.read(apiClientProvider).leagueStandings(_sex, clubId: ref.read(leagueScopeClubIdProvider));
     });
   }
 
@@ -127,6 +99,11 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
+    // Le périmètre est choisi tout en haut de l'onglet Ligue (LeaderboardScreen). S'il change
+    // pendant que cet écran est monté, on recharge le classement pour rester synchronisé.
+    ref.listen<String?>(leagueScopeClubIdProvider, (prev, next) {
+      if (prev != next && mounted) setState(_load);
+    });
     return Scaffold(
       appBar: AppBar(
         title: Text(t.leagueScreenTitle),
@@ -175,10 +152,6 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
                   const SizedBox(height: HiSpace.md),
                   if (season.currentWeek != null) ...[
                     _wodCard(season.currentWeek!),
-                    const SizedBox(height: HiSpace.md),
-                  ],
-                  if (_clubs.isNotEmpty) ...[
-                    _scopeSelector(),
                     const SizedBox(height: HiSpace.md),
                   ],
                   _sexSegmented(),
@@ -323,54 +296,6 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
           child: Text(text, style: HiType.caption.copyWith(color: HiColors.textSecondary, height: 1.4)),
         ),
       ],
-    );
-  }
-
-  // A — Sélecteur de PÉRIMÈTRE du classement : 🌍 Ligue Mondiale (tous) + une puce par club de
-  // l'utilisateur. N'apparaît que s'il a ≥1 club. Rangée défilante horizontale (propre même avec
-  // beaucoup de clubs). La saison/WOD imposé restent GLOBAUX : seul le classement est filtré.
-  Widget _scopeSelector() {
-    final t = AppLocalizations.of(context);
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
-          _scopeChip(label: '🌍 ${t.leagueScopeWorld}', selected: _clubId == null, onTap: () => _selectScope(null)),
-          for (final club in _clubs) ...[
-            const SizedBox(width: HiSpace.sm),
-            _scopeChip(label: '🛡️ ${club.name}', selected: _clubId == club.id, onTap: () => _selectScope(club.id)),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _scopeChip({required String label, required bool selected, required VoidCallback onTap}) {
-    final violet = HiColors.brandSecondary;
-    return Semantics(
-      button: true,
-      selected: selected,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(HiRadius.pill),
-        onTap: onTap,
-        child: Container(
-          constraints: const BoxConstraints(minHeight: 40), // cible tactile a11y
-          padding: const EdgeInsets.symmetric(horizontal: HiSpace.md, vertical: 8),
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: selected ? violet.withValues(alpha: 0.22) : Colors.transparent,
-            borderRadius: BorderRadius.circular(HiRadius.pill),
-            border: Border.all(color: violet.withValues(alpha: selected ? 0.6 : 0.35)),
-          ),
-          child: Text(
-            label,
-            style: HiType.caption.copyWith(
-              color: selected ? HiColors.textPrimary : HiColors.textSecondary,
-              fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
-            ),
-          ),
-        ),
-      ),
     );
   }
 

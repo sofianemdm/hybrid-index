@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../data/league_scope.dart';
 import '../../data/models.dart';
 import '../../data/session.dart';
 import '../../l10n/app_localizations.dart';
@@ -36,7 +37,22 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
   }
 
   void _load() {
-    _future = ref.read(apiClientProvider).leaderboard(_sex, limit: 100);
+    // Périmètre PARTAGÉ (leagueScopeClubIdProvider) : null = 🌍 Ligue Mondiale ; sinon un club.
+    // Sélectionné tout en haut de cet onglet et relu par la ligue du mois (LeagueScreen).
+    _future = ref.read(apiClientProvider).leaderboard(
+      _sex,
+      limit: 100,
+      clubId: ref.read(leagueScopeClubIdProvider),
+    );
+  }
+
+  /// Change le périmètre partagé (🌍 Mondiale = null, ou un club) puis recharge le classement Index.
+  /// La ligue du mois lira le même provider et se re-synchronisera à sa prochaine ouverture/build.
+  void _selectScope(String? clubId) {
+    if (clubId == ref.read(leagueScopeClubIdProvider)) return;
+    HiHaptics.tap();
+    ref.read(leagueScopeClubIdProvider.notifier).state = clubId;
+    setState(_load);
   }
 
   void _switch(String sex) {
@@ -77,6 +93,10 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
               child: Text(t.leaderboardTitle, style: HiType.titleL.copyWith(color: HiColors.textPrimary)),
             ),
           ),
+          // Sélecteur de PÉRIMÈTRE partagé, tout en haut : 🌍 Ligue Mondiale + une puce par club.
+          // N'apparaît que si l'utilisateur a ≥1 club. Filtre à la fois ce classement Index ET la
+          // ligue du mois (via leagueScopeClubIdProvider).
+          _scopeSelector(),
           // Explication claire de ce qu'est la Ligue dès l'arrivée sur la page.
           Padding(
             padding: const EdgeInsets.fromLTRB(HiSpace.lg, 0, HiSpace.lg, HiSpace.md),
@@ -184,6 +204,59 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // Sélecteur de périmètre partagé (Ligue Mondiale + clubs de l'utilisateur). Clubs chargés via
+  // myLeagueClubsProvider (best-effort). Masqué s'il n'a aucun club. Rangée défilante horizontale.
+  Widget _scopeSelector() {
+    final t = AppLocalizations.of(context);
+    final clubs = ref.watch(myLeagueClubsProvider).asData?.value ?? const <ClubSummary>[];
+    if (clubs.isEmpty) return const SizedBox.shrink();
+    final current = ref.watch(leagueScopeClubIdProvider);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(HiSpace.lg, 0, HiSpace.lg, HiSpace.sm),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            _scopeChip(label: '🌍 ${t.leagueScopeWorld}', selected: current == null, onTap: () => _selectScope(null)),
+            for (final club in clubs) ...[
+              const SizedBox(width: HiSpace.sm),
+              _scopeChip(label: '🛡️ ${club.name}', selected: current == club.id, onTap: () => _selectScope(club.id)),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _scopeChip({required String label, required bool selected, required VoidCallback onTap}) {
+    final brand = HiColors.brandPrimary;
+    return Semantics(
+      button: true,
+      selected: selected,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(HiRadius.pill),
+        onTap: onTap,
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 40), // cible tactile a11y
+          padding: const EdgeInsets.symmetric(horizontal: HiSpace.md, vertical: 8),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: selected ? brand.withValues(alpha: 0.22) : Colors.transparent,
+            borderRadius: BorderRadius.circular(HiRadius.pill),
+            border: Border.all(color: brand.withValues(alpha: selected ? 0.6 : 0.35)),
+          ),
+          child: Text(
+            label,
+            style: HiType.caption.copyWith(
+              color: selected ? HiColors.textPrimary : HiColors.textSecondary,
+              fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
+            ),
+          ),
+        ),
       ),
     );
   }

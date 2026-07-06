@@ -115,7 +115,8 @@ export class EngagementService {
     // Série hebdomadaire.
     const streak = await this.streak.evaluateAndGet(userId).catch(() => null);
     if (streak) {
-      if (enabled("week-almost-complete") && streak.thisWeekCount === streak.weeklyGoal - 1) {
+      // Obsolète depuis l'objectif à 1 séance/semaine (weeklyGoal>1 requis pour un « presque fini »).
+      if (enabled("week-almost-complete") && streak.weeklyGoal > 1 && streak.thisWeekCount === streak.weeklyGoal - 1) {
         items.push({
           key: "week-almost-complete",
           params: { count: streak.thisWeekCount, goal: streak.weeklyGoal },

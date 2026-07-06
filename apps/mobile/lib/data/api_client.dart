@@ -315,8 +315,9 @@ class ApiClient {
   }
 
   // --- Classement ---
-  Future<Leaderboard> leaderboard(String sex, {int limit = 50}) async {
-    final j = await _send('GET', '/v1/leaderboard?sex=$sex&limit=$limit') as Map<String, dynamic>;
+  Future<Leaderboard> leaderboard(String sex, {int limit = 50, String? clubId}) async {
+    final club = (clubId != null && clubId.isNotEmpty) ? '&clubId=$clubId' : '';
+    final j = await _send('GET', '/v1/leaderboard?sex=$sex&limit=$limit$club') as Map<String, dynamic>;
     return Leaderboard.fromJson(j);
   }
 
@@ -513,6 +514,12 @@ class ApiClient {
     final club = (clubId != null && clubId.isNotEmpty) ? '&clubId=$clubId' : '';
     final j = await _send('GET', '/v1/league/standings?sex=$sex$club') as Map<String, dynamic>;
     return LeagueStandings.fromJson(j);
+  }
+
+  /// Anciennes séances de la semaine (WODs hebdo passés), dédoublonnées, plus récentes d'abord.
+  Future<List<PastWeeklySession>> leaguePastWeeks() async {
+    final j = await _send('GET', '/v1/league/past-weeks') as List<dynamic>;
+    return j.map((e) => PastWeeklySession.fromJson(Map<String, dynamic>.from(e as Map))).toList();
   }
 
   /// Résultat de la dernière saison CLOSE (reveal de fin de saison) ; null si aucune saison close.

@@ -11,6 +11,7 @@ import type {
   LeagueMeView,
   LeagueLastResultView,
   LeaguePodiumRow,
+  PastWeeklySessionView,
 } from "./league.dto";
 import { avatarMapByUserId } from "../../common/avatar.serializer";
 import { primaryClubNameByUserId } from "../../common/club-lookup";
@@ -92,6 +93,44 @@ export class LeagueService {
       currentWeek: await this.currentWeekView(season.id, now),
       enrolled,
     };
+  }
+
+  /**
+   * Séances de la semaine PASSÉES (filière "bodyweight"), toutes saisons confondues, triées du plus
+   * récent au plus ancien (`closesAt` DÉCROISSANT). Dédoublonnées par `wodId` (on ne garde que
+   * l'occurrence la plus récente d'un même WOD), limitées à ~12. Le nom + type de score du WOD sont
+   * joints en UNE requête batch (pas de N+1). Alimente la section « Anciennes séances de la semaine ».
+   */
+  async pastWeeks(now = new Date()): Promise<PastWeeklySessionView[]> {
+    const weeks = await this.prisma.leagueWeek.findMany({
+      where: { filiere: "bodyweight", closesAt: { lt: now } },
+      orderBy: { closesAt: "desc" },
+      select: { weekKey: true, wodId: true },
+    });
+    // Dédoublonnage par wodId : la 1re occurrence rencontrée est la plus récente (liste déjà triée).
+    const seen = new Set<string>();
+    const unique: { weekKey: string; wodId: string }[] = [];
+    for (const w of weeks) {
+      if (seen.has(w.wodId)) continue;
+      seen.add(w.wodId);
+      unique.push(w);
+      if (unique.length >= 12) break;
+    }
+    if (unique.length === 0) return [];
+    const wods = await this.prisma.wod.findMany({
+      where: { id: { in: unique.map((w) => w.wodId) } },
+      select: { id: true, name: true, scoreType: true },
+    });
+    const wodOf = new Map(wods.map((w) => [w.id, w]));
+    return unique.map((w) => {
+      const wod = wodOf.get(w.wodId);
+      return {
+        weekKey: w.weekKey,
+        wodId: w.wodId,
+        wodName: wod?.name ?? w.wodId,
+        scoreType: wod?.scoreType ?? "time",
+      };
+    });
   }
 
   async currentWeek(now = new Date()): Promise<LeagueWeekView | null> {

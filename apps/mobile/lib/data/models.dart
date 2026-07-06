@@ -1963,6 +1963,21 @@ class LeagueSeason {
       );
 }
 
+/// Une ancienne séance de la semaine (WOD hebdo passé de la Ligue). Sert la section
+/// « Anciennes séances de la semaine » de l'écran « Autres épreuves ».
+class PastWeeklySession {
+  final String wodId;
+  final String wodName;
+  final String weekKey;
+  const PastWeeklySession({required this.wodId, required this.wodName, required this.weekKey});
+
+  factory PastWeeklySession.fromJson(Map<String, dynamic> j) => PastWeeklySession(
+        wodId: j['wodId'] as String,
+        wodName: j['wodName'] as String? ?? j['wodId'] as String,
+        weekKey: j['weekKey'] as String? ?? '',
+      );
+}
+
 class LeagueStandingEntry {
   final int position;
   final String userId;

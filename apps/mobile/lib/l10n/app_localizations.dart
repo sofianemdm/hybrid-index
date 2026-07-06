@@ -1340,6 +1340,12 @@ abstract class AppLocalizations {
   /// **'No workouts created by users yet. Create yours via \"Build a workout\".'**
   String get otherWorkoutsCommunityEmpty;
 
+  /// No description provided for @otherWeeklyPastTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Past weekly sessions'**
+  String get otherWeeklyPastTitle;
+
   /// No description provided for @logWodTitle.
   ///
   /// In en, this message translates to:

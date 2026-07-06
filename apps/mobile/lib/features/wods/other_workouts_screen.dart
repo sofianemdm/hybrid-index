@@ -20,11 +20,13 @@ class OtherWorkoutsScreen extends ConsumerStatefulWidget {
 
 class _OtherWorkoutsScreenState extends ConsumerState<OtherWorkoutsScreen> {
   late Future<List<WodCatalogEntry>> _future;
+  late Future<List<PastWeeklySession>> _pastWeeks;
 
   @override
   void initState() {
     super.initState();
     _future = ref.read(apiClientProvider).wodsCatalog();
+    _pastWeeks = ref.read(apiClientProvider).leaguePastWeeks();
   }
 
   @override
@@ -73,6 +75,7 @@ class _OtherWorkoutsScreenState extends ConsumerState<OtherWorkoutsScreen> {
                   )
                 else
                   ...community.map((w) => _tile(context, w)),
+                _pastWeeksSection(context),
               ],
             );
           },
@@ -80,6 +83,40 @@ class _OtherWorkoutsScreenState extends ConsumerState<OtherWorkoutsScreen> {
       ),
     );
   }
+
+  /// Section « Anciennes séances de la semaine » : WODs qui ont été le défi hebdo des semaines
+  /// écoulées. On n'affiche RIEN si la liste est vide ou en cas d'erreur (jamais bloquant) :
+  /// c'est un bonus, pas une info critique de l'écran.
+  Widget _pastWeeksSection(BuildContext context) {
+    final t = AppLocalizations.of(context);
+    return FutureBuilder<List<PastWeeklySession>>(
+      future: _pastWeeks,
+      builder: (context, snap) {
+        if (snap.connectionState == ConnectionState.waiting) return const SizedBox.shrink();
+        final items = snap.data ?? const <PastWeeklySession>[];
+        if (snap.hasError || items.isEmpty) return const SizedBox.shrink();
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const SizedBox(height: HiSpace.lg),
+            _section(t.otherWeeklyPastTitle),
+            ...items.map((s) => _pastWeekTile(context, s)),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _pastWeekTile(BuildContext context, PastWeeklySession s) => Card(
+        color: HiColors.bgElevated,
+        child: ListTile(
+          title: Text(s.wodName, style: HiType.titleM.copyWith(color: HiColors.textPrimary)),
+          trailing: Icon(Icons.chevron_right_rounded, color: HiColors.textTertiary),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => WodDetailScreen(wodId: s.wodId, wodName: s.wodName)),
+          ),
+        ),
+      );
 
   Widget _section(String t) => Padding(
         padding: const EdgeInsets.only(bottom: HiSpace.sm),

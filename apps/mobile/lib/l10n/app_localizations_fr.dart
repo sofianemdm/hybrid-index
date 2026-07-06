@@ -702,6 +702,9 @@ class AppLocalizationsFr extends AppLocalizations {
       'Aucune séance créée par les utilisateurs pour l\'instant. Crée la tienne via « Construire une séance ».';
 
   @override
+  String get otherWeeklyPastTitle => 'Anciennes séances de la semaine';
+
+  @override
   String get logWodTitle => 'Choisir une séance';
 
   @override

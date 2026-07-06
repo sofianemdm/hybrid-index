@@ -174,7 +174,15 @@ export class ResultsService {
     if (!res || res.userId !== userId) {
       throw new NotFoundException({ code: "NOT_FOUND", message: "Résultat introuvable." });
     }
-    await this.prisma.wodResult.delete({ where: { id } });
+    // Suppression EN CASCADE MÉTIER (atomique) : supprimer un résultat retire aussi
+    //  - le post de la communauté qui en découle (sinon un post fantôme reste au feed ;
+    //    supprimer le post efface aussi ses commentaires/réactions via la cascade DB) ;
+    //  - les points de Ligue gagnés grâce à ce résultat (sinon le score reste au classement du mois).
+    await this.prisma.$transaction([
+      this.prisma.post.deleteMany({ where: { wodResultId: id } }),
+      this.prisma.leaguePoints.deleteMany({ where: { wodResultId: id } }),
+      this.prisma.wodResult.delete({ where: { id } }),
+    ]);
     // Le recalcul de l'Index (2 appels HTTP au score-service) est best-effort : la suppression a
     // déjà réussi, on ne doit JAMAIS renvoyer une erreur à l'utilisateur si le recalcul blip.
     let profile: PersistedProfile | null = null;
