@@ -23,6 +23,7 @@ import { PrismaClient, type AttributeKey, type Goal, type Sex } from "@prisma/cl
 import Redis from "ioredis";
 import { rankFromIndex } from "@hybrid-index/contracts";
 import { ratingFromInternal, percentileFromInternal } from "@hybrid-index/scoring-core";
+import { avataaarsDefaultsFor } from "./avataaars-defaults";
 
 const SCORING_VERSION_UUID = "11111111-1111-1111-1111-111111111111";
 const prisma = new PrismaClient();
@@ -56,14 +57,15 @@ const SEED_PERF: Record<
 };
 const WOD_KEYS = Object.keys(SEED_PERF);
 
-/** Les 6 personas (pseudos crédibles validés par l'humain le 07/07). target = Index /100 visé. */
-const FILL_USERS: Array<{ name: string; sex: Sex; goal: Goal; target: number }> = [
-  { name: "maxlift92", sex: "male", goal: "crossfit_strength", target: 56 },
-  { name: "lea_move", sex: "female", goal: "all_round", target: 60 },
-  { name: "Tom_frx", sex: "male", goal: "hyrox", target: 63 },
-  { name: "camille.wod", sex: "female", goal: "crossfit_strength", target: 66 },
-  { name: "kevin.hyrox", sex: "male", goal: "hyrox", target: 69 },
-  { name: "manon_fit31", sex: "female", goal: "all_round", target: 71 },
+/** Les 6 personas (pseudos crédibles validés par l'humain le 07/07). target = Index /100 visé.
+ *  `look` = variations avataaars (valeurs du catalogue de l'éditeur mobile) → 6 visages distincts. */
+const FILL_USERS: Array<{ name: string; sex: Sex; goal: Goal; target: number; look: Record<string, string> }> = [
+  { name: "maxlift92", sex: "male", goal: "crossfit_strength", target: 56, look: { skinColor: "d08b5b", top: "shortCurly", hairColor: "2c1b18", facialHair: "beardMedium" } },
+  { name: "lea_move", sex: "female", goal: "all_round", target: 60, look: { skinColor: "ffdbb4", top: "longButNotTooLong", hairColor: "b58143", eyes: "happy" } },
+  { name: "Tom_frx", sex: "male", goal: "hyrox", target: 63, look: { skinColor: "edb98a", top: "shortWaved", hairColor: "4a312c", facialHair: "beardLight" } },
+  { name: "camille.wod", sex: "female", goal: "crossfit_strength", target: 66, look: { skinColor: "fd9841", top: "straight01", hairColor: "2c1b18", mouth: "twinkle" } },
+  { name: "kevin.hyrox", sex: "male", goal: "hyrox", target: 69, look: { skinColor: "ae5d29", top: "shortFlat", hairColor: "2c1b18", eyebrows: "defaultNatural" } },
+  { name: "manon_fit31", sex: "female", goal: "all_round", target: 71, look: { skinColor: "edb98a", top: "curly", hairColor: "a55728", eyes: "default" } },
 ];
 
 function rand(min: number, max: number): number {
@@ -168,14 +170,12 @@ async function main(): Promise<void> {
         ageVerified: true,
         consents: { seed: true },
         profile: { create: { displayName: p.name, sex: p.sex, goal: p.goal, equipmentPref: "both", rank } },
-        // Avatar DiceBear (rendu par HiAvatar dès que diceSeed est présent) — seed = pseudo, stable.
+        // Avatar avataaars (système actuel) : défauts par sexe + variations par persona → 6 visages distincts.
         avatar: {
           create: {
-            skinTone: 0,
-            hairStyle: 0,
-            hairColor: 0,
-            diceStyle: "adventurer",
+            diceStyle: "avataaars",
             diceSeed: p.name,
+            diceOptions: JSON.stringify({ ...avataaarsDefaultsFor(p.sex === "female" ? "female" : "male"), ...p.look }),
             equippedCosmetics: {},
             unlockedCosmetics: {},
           },

@@ -88,12 +88,6 @@ describe("api — mode Ligue (e2e réel)", () => {
     await prisma.avatar.create({
       data: {
         userId,
-        skinTone: 2,
-        hairStyle: 1,
-        hairColor: 3,
-        beardStyle: null,
-        accessory: 0,
-        background: 4,
         diceStyle: "bottts",
         diceSeed: "league-seed",
         diceOptions: JSON.stringify({ baseColor: "00897b" }),
@@ -171,12 +165,6 @@ describe("api — mode Ligue (e2e réel)", () => {
     expect(me!.points).toBe(row!.points);
     // La ligne de classement porte l'avatar (même forme JSON que le profil public) → mini-vignette mobile.
     expect(me!.avatar).toEqual({
-      skinTone: 2,
-      hairStyle: 1,
-      hairColor: 3,
-      beardStyle: null,
-      accessory: 0,
-      background: 4,
       photoData: null,
       diceStyle: "bottts",
       diceSeed: "league-seed",

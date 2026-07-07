@@ -286,8 +286,8 @@ class DiceAvatarScreen extends ConsumerStatefulWidget {
 }
 
 class _DiceAvatarScreenState extends ConsumerState<DiceAvatarScreen> {
-  AvatarConfig _base = const AvatarConfig(skinTone: 2, hairStyle: 1, hairColor: 1);
-  AvatarConfig _current = const AvatarConfig(skinTone: 2, hairStyle: 1, hairColor: 1);
+  AvatarConfig _base = const AvatarConfig();
+  AvatarConfig _current = const AvatarConfig();
   String _sex = 'male';
   bool _loading = true;
   bool _saving = false;

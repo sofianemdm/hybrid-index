@@ -4,15 +4,11 @@ import { ProfileScoringService } from "../profile/profile-scoring.service";
 import type { UpdateAvatarRequest, UpdateMeRequest } from "./me.dto";
 import { serializeAvatar } from "../../common/avatar.serializer";
 
+/** Défaut renvoyé à l'éditeur quand l'utilisateur n'a pas encore d'avatar : avataaars neutre
+ *  (l'éditeur ré-émet immédiatement un avatar complet avec seed + options par sexe). */
 const DEFAULT_AVATAR = {
-  skinTone: 2,
-  hairStyle: 1,
-  hairColor: 1,
-  beardStyle: null as number | null,
-  accessory: 0,
-  background: 0,
   photoData: null as string | null,
-  diceStyle: null as string | null,
+  diceStyle: "avataaars" as string | null,
   diceSeed: null as string | null,
   diceOptions: null as Record<string, string> | null,
 };
@@ -65,12 +61,6 @@ export class MeService {
 
   async updateAvatar(userId: string, req: UpdateAvatarRequest): Promise<unknown> {
     const data = {
-      skinTone: req.skinTone,
-      hairStyle: req.hairStyle,
-      hairColor: req.hairColor,
-      beardStyle: req.beardStyle ?? null,
-      accessory: req.accessory ?? 0,
-      background: req.background ?? 0,
       photoData: req.photoData ?? null,
       diceStyle: req.diceStyle ?? null,
       diceSeed: req.diceSeed ?? null,

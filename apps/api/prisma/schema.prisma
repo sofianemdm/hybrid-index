@@ -597,12 +597,6 @@ model AuthIdentity {
 
 model Avatar {
   userId            String   @id @map("user_id") @db.Uuid
-  skinTone          Int      @map("skin_tone") @db.SmallInt
-  hairStyle         Int      @map("hair_style") @db.SmallInt
-  hairColor         Int      @map("hair_color") @db.SmallInt
-  beardStyle        Int?     @map("beard_style") @db.SmallInt
-  accessory         Int      @default(0) @map("accessory") @db.SmallInt
-  background        Int      @default(0) @map("background") @db.SmallInt
   photoData         String?  @map("photo_data") // image de profil (data URL base64, optionnelle)
   diceStyle         String?  @map("dice_style") // avatar DiceBear : style (ex. "adventurer")
   diceSeed          String?  @map("dice_seed") // avatar DiceBear : seed (détermine le visage)

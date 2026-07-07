@@ -541,7 +541,7 @@ class _LeagueScreenState extends ConsumerState<LeagueScreen> {
                   : Text('#${e.position}', style: HiType.numericM.copyWith(color: posColor, fontSize: 16)),
             ),
             HiAvatar(
-                config: e.avatar ?? const AvatarConfig(skinTone: 2, hairStyle: 1, hairColor: 1),
+                config: e.avatar ?? const AvatarConfig(),
                 rank: 'rookie',
                 size: 26,
                 showRing: false),

@@ -65,13 +65,7 @@ describe("api — classement tie-break déterministe (e2e réel)", () => {
     await prisma.avatar.create({
       data: {
         userId: ids[1],
-        skinTone: 3,
-        hairStyle: 2,
-        hairColor: 4,
-        beardStyle: 1,
-        accessory: 0,
-        background: 5,
-        diceStyle: "adventurer",
+        diceStyle: "avataaars",
         diceSeed: "lb-seed",
         diceOptions: JSON.stringify({ skinColor: "f2d3b1" }),
         equippedCosmetics: {},
@@ -132,14 +126,8 @@ describe("api — classement tie-break déterministe (e2e réel)", () => {
 
     // ids[1] a un avatar → même forme JSON que le profil public (diceStyle/diceSeed/diceOptions…).
     expect(withAvatar!.avatar).toEqual({
-      skinTone: 3,
-      hairStyle: 2,
-      hairColor: 4,
-      beardStyle: 1,
-      accessory: 0,
-      background: 5,
       photoData: null,
-      diceStyle: "adventurer",
+      diceStyle: "avataaars",
       diceSeed: "lb-seed",
       diceOptions: { skinColor: "f2d3b1" },
     });

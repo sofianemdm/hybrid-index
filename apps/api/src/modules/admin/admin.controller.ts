@@ -20,6 +20,15 @@ export class AdminController {
     return this.admin.timeseries(days ?? 30);
   }
 
+  /** Visiteurs uniques par IP (nb visites, 1re/dernière visite, dernier user) sur N jours (défaut : aujourd'hui). */
+  @Get("visitors")
+  visitors(
+    @Query("days", new ParseIntPipe({ optional: true })) days?: number,
+    @Query("limit", new ParseIntPipe({ optional: true })) limit?: number,
+  ): Promise<Record<string, unknown>> {
+    return this.admin.visitors(days ?? 1, limit ?? 100);
+  }
+
   /** Journal des visites (IP, page, user), paginé, filtrable par ip/userId. */
   @Get("visits")
   visits(

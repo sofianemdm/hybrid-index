@@ -884,26 +884,15 @@ class BadgeModel {
   }
 }
 
+/// Avatar : DiceBear avataaars uniquement (l'ancien avatar « dessiné » a été supprimé le 07/07).
+/// `fromJson` ignore silencieusement les champs legacy (skinTone…) qu'un vieux backend renverrait.
 class AvatarConfig {
-  final int skinTone;
-  final int hairStyle;
-  final int hairColor;
-  final int? beardStyle;
-  final int accessory;
-  final int background;
-
-  /// Photo de profil (data URL base64). Si présente, elle remplace l'avatar dessiné.
+  /// Photo de profil (data URL base64). Si présente, elle remplace l'avatar généré.
   final String? photoData;
-  final String? diceStyle; // DiceBear : style (null = avatar dessiné)
+  final String? diceStyle; // DiceBear : style ('avataaars')
   final String? diceSeed; // DiceBear : seed
   final Map<String, String>? diceOptions; // DiceBear : options (peau, coupe, barbe…)
   const AvatarConfig({
-    required this.skinTone,
-    required this.hairStyle,
-    required this.hairColor,
-    this.beardStyle,
-    this.accessory = 0,
-    this.background = 0,
     this.photoData,
     this.diceStyle,
     this.diceSeed,
@@ -911,12 +900,6 @@ class AvatarConfig {
   });
 
   factory AvatarConfig.fromJson(Map<String, dynamic> j) => AvatarConfig(
-        skinTone: (j['skinTone'] as num).toInt(),
-        hairStyle: (j['hairStyle'] as num).toInt(),
-        hairColor: (j['hairColor'] as num).toInt(),
-        beardStyle: (j['beardStyle'] as num?)?.toInt(),
-        accessory: (j['accessory'] as num?)?.toInt() ?? 0,
-        background: (j['background'] as num?)?.toInt() ?? 0,
         photoData: j['photoData'] as String?,
         diceStyle: j['diceStyle'] as String?,
         diceSeed: j['diceSeed'] as String?,
@@ -924,13 +907,6 @@ class AvatarConfig {
       );
 
   AvatarConfig copyWith({
-    int? skinTone,
-    int? hairStyle,
-    int? hairColor,
-    int? beardStyle,
-    bool clearBeard = false,
-    int? accessory,
-    int? background,
     String? photoData,
     bool clearPhoto = false,
     String? diceStyle,
@@ -938,12 +914,6 @@ class AvatarConfig {
     Map<String, String>? diceOptions,
   }) =>
       AvatarConfig(
-        skinTone: skinTone ?? this.skinTone,
-        hairStyle: hairStyle ?? this.hairStyle,
-        hairColor: hairColor ?? this.hairColor,
-        beardStyle: clearBeard ? null : (beardStyle ?? this.beardStyle),
-        accessory: accessory ?? this.accessory,
-        background: background ?? this.background,
         photoData: clearPhoto ? null : (photoData ?? this.photoData),
         diceStyle: diceStyle ?? this.diceStyle,
         diceSeed: diceSeed ?? this.diceSeed,
@@ -951,12 +921,6 @@ class AvatarConfig {
       );
 
   Map<String, dynamic> toJson() => {
-        'skinTone': skinTone,
-        'hairStyle': hairStyle,
-        'hairColor': hairColor,
-        'beardStyle': beardStyle,
-        'accessory': accessory,
-        'background': background,
         'photoData': photoData,
         'diceStyle': diceStyle,
         'diceSeed': diceSeed,

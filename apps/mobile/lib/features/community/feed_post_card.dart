@@ -105,7 +105,7 @@ class _FeedPostCardState extends State<FeedPostCard> {
   }
 
   Widget _avatar() => HiAvatar(
-        config: a.actorAvatar ?? const AvatarConfig(skinTone: 2, hairStyle: 1, hairColor: 1),
+        config: a.actorAvatar ?? const AvatarConfig(),
         rank: a.actorRank,
         size: 34,
       );

@@ -100,7 +100,7 @@ class MentionSuggestionStrip extends StatelessWidget {
             ListTile(
               dense: true,
               leading: HiAvatar(
-                config: const AvatarConfig(skinTone: 2, hairStyle: 1, hairColor: 1),
+                config: const AvatarConfig(),
                 rank: a.rank,
                 size: 28,
               ),

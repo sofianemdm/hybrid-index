@@ -111,6 +111,20 @@
     </div>
 
     <div class="card">
+      <h2>Visiteurs uniques (par adresse IP)</h2>
+      <div class="row">
+        <button class="perva" data-days="1">Aujourd'hui</button>
+        <button class="perva" data-days="7">7 jours</button>
+        <button class="perva" data-days="30">30 jours</button>
+        <span id="vTotal" class="mut" style="margin-left:8px"></span>
+      </div>
+      <div class="tblbox"><table id="tblVisitors"><thead><tr>
+        <th>IP</th><th>Visites</th><th>Première visite</th><th>Dernière visite</th><th>Utilisateur (dernier vu)</th>
+      </tr></thead><tbody></tbody></table></div>
+      <div class="state hidden" id="visitorsEmpty">Aucun visiteur sur la période.</div>
+    </div>
+
+    <div class="card">
       <h2>Visites récentes</h2>
       <div class="row">
         <input id="fIp" placeholder="Filtrer par IP exacte…">
@@ -209,7 +223,7 @@ async function boot() {
     visitsCursor = null; usersCursor = null;
     $("tblVisits").querySelector("tbody").innerHTML = "";
     $("tblUsers").querySelector("tbody").innerHTML = "";
-    await Promise.all([loadVisits(), loadUsers(), loadFeedbacks()]);
+    await Promise.all([loadVisitors(), loadVisits(), loadUsers(), loadFeedbacks()]);
   } catch (e) {
     if (e.auth === 403) return showLogin("Accès refusé : ce compte n'est pas administrateur.");
     if (e.auth === 401) return showLogin("Session expirée, reconnecte-toi.");
@@ -287,6 +301,27 @@ function renderChart(series) {
     tip.style.left = left + "px"; tip.style.top = "10px";
   };
   svg.onmouseleave = () => { tip.style.display = "none"; cross.setAttribute("opacity", "0"); };
+}
+
+/* ————— Visiteurs uniques (par IP) ————— */
+let visitorsDays = 1;
+async function loadVisitors() {
+  const data = await api(`/v1/admin/visitors?days=${visitorsDays}&limit=200`);
+  $("vTotal").textContent = `${num(data.totalUniqueIps)} visiteur${data.totalUniqueIps > 1 ? "s" : ""} unique${data.totalUniqueIps > 1 ? "s" : ""} sur la période`;
+  document.querySelectorAll(".perva").forEach((b) => {
+    b.style.borderColor = Number(b.dataset.days) === visitorsDays ? "var(--accent)" : "var(--border)";
+  });
+  const tb = $("tblVisitors").querySelector("tbody");
+  tb.innerHTML = "";
+  for (const v of data.entries) {
+    const who = v.lastUserName
+      ? `${esc(v.lastUserName)} <span class="mut">${esc(v.lastUserEmail || "")}</span>${v.knownUsers > 1 ? ` <span class="pill">+${v.knownUsers - 1}</span>` : ""}`
+      : '<span class="mut">anonyme</span>';
+    tb.insertAdjacentHTML("beforeend",
+      `<tr><td><span class="pill">${esc(v.ip)}</span></td><td><b>${num(v.hits)}</b></td>` +
+      `<td class="mut">${fmtDate(v.firstSeen)}</td><td class="mut">${fmtDate(v.lastSeen)}</td><td>${who}</td></tr>`);
+  }
+  $("visitorsEmpty").classList.toggle("hidden", tb.children.length > 0);
 }
 
 /* ————— Visites ————— */
@@ -384,6 +419,7 @@ $("btnLogout").onclick = logout;
 $("btnRefresh").onclick = boot;
 $("btnMoreVisits").onclick = () => loadVisits();
 $("btnMoreUsers").onclick = () => loadUsers();
+document.querySelectorAll(".perva").forEach((b) => { b.onclick = () => { visitorsDays = Number(b.dataset.days); loadVisitors(); }; });
 $("btnFilterIp").onclick = () => { visitIpFilter = $("fIp").value.trim(); loadVisits(true); };
 $("btnClearIp").onclick = () => { visitIpFilter = ""; $("fIp").value = ""; loadVisits(true); };
 $("btnSearchUser").onclick = () => { userQuery = $("fUser").value.trim(); loadUsers(true); };

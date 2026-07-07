@@ -2,7 +2,6 @@
 // Doc : https://www.dicebear.com — format `https://api.dicebear.com/{v}/{style}/png?...`.
 
 const String kDiceBearVersion = '9.x';
-const String kDiceBearDefaultStyle = 'adventurer';
 
 /// Style fixe de l'éditeur complet : le seul qui gère peau + coupe + barbe + lunettes + yeux + visage.
 const String kAvataaarsStyle = 'avataaars';

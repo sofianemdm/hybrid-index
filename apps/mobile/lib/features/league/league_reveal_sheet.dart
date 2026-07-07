@@ -276,7 +276,7 @@ class _Podium extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         HiAvatar(
-          config: row.avatar ?? const AvatarConfig(skinTone: 2, hairStyle: 1, hairColor: 1),
+          config: row.avatar ?? const AvatarConfig(),
           rank: 'rookie',
           size: row.finalRank == 1 ? 56 : 44,
           showRing: true,

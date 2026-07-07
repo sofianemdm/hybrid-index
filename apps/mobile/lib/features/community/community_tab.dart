@@ -449,7 +449,7 @@ class _CommunityTabState extends ConsumerState<CommunityTab> {
 
   /// Mini-avatar de l'acteur (repli neutre si aucun avatar).
   Widget _avatar(FeedActivity a) => HiAvatar(
-        config: a.actorAvatar ?? const AvatarConfig(skinTone: 2, hairStyle: 1, hairColor: 1),
+        config: a.actorAvatar ?? const AvatarConfig(),
         rank: a.actorRank,
         size: 34,
       );

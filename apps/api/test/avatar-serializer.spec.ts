@@ -9,14 +9,8 @@ import type { Avatar } from "@prisma/client";
 function makeAvatar(over: Partial<Avatar> = {}): Avatar {
   return {
     userId: "u1",
-    skinTone: 3,
-    hairStyle: 2,
-    hairColor: 4,
-    beardStyle: 1,
-    accessory: 0,
-    background: 5,
     photoData: null,
-    diceStyle: "adventurer",
+    diceStyle: "avataaars",
     diceSeed: "seed-xyz",
     diceOptions: JSON.stringify({ skinColor: "f2d3b1", hair: "long01" }),
     equippedCosmetics: {},
@@ -30,14 +24,8 @@ describe("avatar.serializer — forme JSON publique stable", () => {
   it("mappe tous les champs et décode diceOptions (JSON string → objet)", () => {
     const view = serializeAvatar(makeAvatar());
     const expected: AvatarView = {
-      skinTone: 3,
-      hairStyle: 2,
-      hairColor: 4,
-      beardStyle: 1,
-      accessory: 0,
-      background: 5,
       photoData: null,
-      diceStyle: "adventurer",
+      diceStyle: "avataaars",
       diceSeed: "seed-xyz",
       diceOptions: { skinColor: "f2d3b1", hair: "long01" },
     };
@@ -47,11 +35,6 @@ describe("avatar.serializer — forme JSON publique stable", () => {
   it("diceOptions null en base → null en sortie", () => {
     const view = serializeAvatar(makeAvatar({ diceOptions: null }));
     expect(view?.diceOptions).toBeNull();
-  });
-
-  it("beardStyle nullable préservé", () => {
-    const view = serializeAvatar(makeAvatar({ beardStyle: null }));
-    expect(view?.beardStyle).toBeNull();
   });
 
   it("avatar absent (null/undefined) → null (repli mobile)", () => {

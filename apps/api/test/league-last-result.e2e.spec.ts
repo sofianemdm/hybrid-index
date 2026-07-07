@@ -61,11 +61,8 @@ describe("LeagueService.lastResult (e2e DB réel)", () => {
     await prisma.avatar.create({
       data: {
         userId: m1,
-        skinTone: 2,
-        hairStyle: 1,
-        hairColor: 1,
-        accessory: 0,
-        background: 0,
+        diceStyle: "avataaars",
+        diceSeed: "e2e-league",
         equippedCosmetics: {},
         unlockedCosmetics: {},
       },

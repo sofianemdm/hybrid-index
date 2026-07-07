@@ -91,6 +91,22 @@ describe("api — panneau admin (e2e réel)", () => {
     expect(admin?.lastLoginAt).not.toBeNull();
   });
 
+  it("visitors : visiteurs uniques par IP du jour — notre IP de test présente avec compteur et dernier user", async () => {
+    const res = await request(api.getHttpServer())
+      .get("/v1/admin/visitors?days=1&limit=200")
+      .set("authorization", `Bearer ${adminToken}`)
+      .expect(200);
+    expect(res.body.totalUniqueIps).toBeGreaterThanOrEqual(1);
+    expect(res.body.entries.length).toBeGreaterThanOrEqual(1);
+    const e = res.body.entries[0];
+    expect(e.ip).toBeTruthy();
+    expect(e.hits).toBeGreaterThanOrEqual(1);
+    expect(e.firstSeen).toBeTruthy();
+    expect(e.lastSeen).toBeTruthy();
+    // Nos requêtes authentifiées viennent de la même IP → le dernier user connu est renseigné.
+    expect(e.lastUserEmail).toBeTruthy();
+  });
+
   it("filtre visits par IP inexistante → liste vide (pas d'erreur)", async () => {
     const res = await request(api.getHttpServer())
       .get("/v1/admin/visits?ip=203.0.113.99")

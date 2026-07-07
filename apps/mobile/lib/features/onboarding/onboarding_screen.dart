@@ -24,7 +24,7 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   int _step = 0; // 0 = avatar, 1 = efforts
-  AvatarConfig _avatar = const AvatarConfig(skinTone: 2, hairStyle: 1, hairColor: 1);
+  AvatarConfig _avatar = const AvatarConfig();
 
   bool _withCourse = false; // OFF par défaut : les pompes (ON) suffisent au 1er reveal (UX-01)
   final _km = TextEditingController(text: '3');

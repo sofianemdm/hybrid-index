@@ -157,6 +157,58 @@ export class AdminService {
     return { days: clamped, series };
   }
 
+  /** Visiteurs uniques par IP sur `days` jours : nb de visites, 1re/dernière visite, dernier user vu.
+   *  Répond à « combien de visiteurs différents aujourd'hui, et qui ? ». Tri : dernière visite desc. */
+  async visitors(days: number, limit: number): Promise<Record<string, unknown>> {
+    const clampedDays = Math.min(90, Math.max(1, days));
+    const take = Math.min(500, Math.max(1, limit));
+    const since = daysAgo(clampedDays);
+    const rows = await this.prisma.$queryRaw<
+      Array<{ ip: string; hits: bigint; first_seen: Date; last_seen: Date; last_user_id: string | null; users: bigint }>
+    >(Prisma.sql`
+      SELECT v.ip,
+             COUNT(*)                                                        AS hits,
+             MIN(v.created_at)                                               AS first_seen,
+             MAX(v.created_at)                                               AS last_seen,
+             (ARRAY_REMOVE(ARRAY_AGG(v.user_id ORDER BY v.created_at DESC), NULL))[1] AS last_user_id,
+             COUNT(DISTINCT v.user_id)                                       AS users
+      FROM app.visit_log v
+      WHERE v.created_at >= ${since}
+      GROUP BY v.ip
+      ORDER BY MAX(v.created_at) DESC
+      LIMIT ${take}
+    `);
+
+    const total = await this.prisma.$queryRaw<Array<{ n: bigint }>>(
+      Prisma.sql`SELECT COUNT(DISTINCT ip) AS n FROM app.visit_log WHERE created_at >= ${since}`,
+    );
+
+    // Résolution du dernier user connu par IP (sans FK dure → lookup séparé).
+    const userIds = [...new Set(rows.map((r) => r.last_user_id).filter((x): x is string => Boolean(x)))];
+    const users = userIds.length
+      ? await this.prisma.user.findMany({
+          where: { id: { in: userIds } },
+          select: { id: true, email: true, profile: { select: { displayName: true } } },
+        })
+      : [];
+    const byId = new Map(users.map((u) => [u.id, u]));
+
+    return {
+      days: clampedDays,
+      totalUniqueIps: Number(total[0]?.n ?? 0),
+      entries: rows.map((r) => ({
+        ip: r.ip,
+        hits: Number(r.hits),
+        firstSeen: r.first_seen,
+        lastSeen: r.last_seen,
+        knownUsers: Number(r.users),
+        lastUserId: r.last_user_id,
+        lastUserName: r.last_user_id ? (byId.get(r.last_user_id)?.profile?.displayName ?? null) : null,
+        lastUserEmail: r.last_user_id ? (byId.get(r.last_user_id)?.email ?? null) : null,
+      })),
+    };
+  }
+
   /** Journal des visites, paginé (cursor = id), filtrable par IP exacte ou userId. */
   async visits(opts: { limit: number; cursor?: string; ip?: string; userId?: string }): Promise<Record<string, unknown>> {
     const take = Math.min(200, Math.max(1, opts.limit));

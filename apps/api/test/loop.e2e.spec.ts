@@ -280,13 +280,13 @@ describe("api — boucle complète persistée (e2e réel)", () => {
     await request(api.getHttpServer())
       .patch("/v1/me/avatar")
       .set("authorization", `Bearer ${token}`)
-      .send({ skinTone: 4, hairStyle: 3, hairColor: 2, beardStyle: 1 })
+      .send({ diceStyle: "avataaars", diceSeed: "loop-seed", diceOptions: { skinColor: "edb98a", top: "shortFlat" } })
       .expect(200);
     const res = await request(api.getHttpServer())
       .get("/v1/me/avatar")
       .set("authorization", `Bearer ${token}`)
       .expect(200);
-    expect(res.body).toMatchObject({ skinTone: 4, hairStyle: 3, hairColor: 2, beardStyle: 1 });
+    expect(res.body).toMatchObject({ diceStyle: "avataaars", diceSeed: "loop-seed", diceOptions: { skinColor: "edb98a", top: "shortFlat" } });
   });
 
   it("flux de notifications : tableau d'items cohérents", async () => {

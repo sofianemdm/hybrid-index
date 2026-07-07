@@ -328,7 +328,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                   : Text('#${e.position}', style: HiType.numericM.copyWith(color: posColor, fontSize: 16)),
             ),
             HiAvatar(
-                config: e.avatar ?? const AvatarConfig(skinTone: 2, hairStyle: 1, hairColor: 1),
+                config: e.avatar ?? const AvatarConfig(),
                 rank: e.rank,
                 size: 26),
             const SizedBox(width: 10),

@@ -464,7 +464,7 @@ class _CommentsSheetState extends ConsumerState<_CommentsSheet> {
                       MaterialPageRoute(builder: (_) => PublicProfileScreen(userId: c.authorUserId)),
                     ),
             child: HiAvatar(
-              config: c.authorAvatar ?? const AvatarConfig(skinTone: 2, hairStyle: 1, hairColor: 1),
+              config: c.authorAvatar ?? const AvatarConfig(),
               rank: c.authorRank,
               size: avatarSize,
             ),

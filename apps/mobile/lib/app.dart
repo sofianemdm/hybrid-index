@@ -34,7 +34,7 @@ final myProfileProvider = FutureProvider<Profile?>((ref) async {
 final avatarProvider = FutureProvider<AvatarConfig>((ref) async {
   final session = ref.watch(sessionProvider);
   if (session.status != AuthStatus.loggedIn) {
-    return const AvatarConfig(skinTone: 2, hairStyle: 1, hairColor: 1);
+    return const AvatarConfig();
   }
   return ref.read(apiClientProvider).getAvatar();
 });

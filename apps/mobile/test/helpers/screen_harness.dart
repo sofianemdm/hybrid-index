@@ -190,7 +190,7 @@ ApiClient fakeApi({Map<String, Object?>? overrides}) {
   const exactOnly = {'/v1/me'}; // préfixe de /v1/me/streak, /v1/me/history… → jamais en préfixe
   final routes = <String, Object?>{
     '/v1/me/profile': kProfileJson,
-    '/v1/me/avatar': {'skinTone': 2, 'hairStyle': 1, 'hairColor': 1, 'background': 0},
+    '/v1/me/avatar': {'diceStyle': 'avataaars'},
     '/v1/me/history': <Object?>[],
     '/v1/me': kMeJson,
     '/v1/conversations': <Object?>[],

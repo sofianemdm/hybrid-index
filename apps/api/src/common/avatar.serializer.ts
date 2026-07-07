@@ -8,12 +8,6 @@ import type { Avatar } from "@prisma/client";
  * objet. `diceOptions` est stocké en base comme chaîne JSON et exposé ici comme objet décodé.
  */
 export interface AvatarView {
-  skinTone: number;
-  hairStyle: number;
-  hairColor: number;
-  beardStyle: number | null;
-  accessory: number;
-  background: number;
   /** Photo de profil (data URL base64) ou null. */
   photoData: string | null;
   /** Avatar DiceBear : style (ex. "adventurer") ou null. */
@@ -28,12 +22,6 @@ export interface AvatarView {
 export function serializeAvatar(avatar: Avatar | null | undefined): AvatarView | null {
   if (!avatar) return null;
   return {
-    skinTone: avatar.skinTone,
-    hairStyle: avatar.hairStyle,
-    hairColor: avatar.hairColor,
-    beardStyle: avatar.beardStyle,
-    accessory: avatar.accessory,
-    background: avatar.background,
     photoData: avatar.photoData,
     diceStyle: avatar.diceStyle,
     diceSeed: avatar.diceSeed,
