@@ -168,6 +168,18 @@ async function main(): Promise<void> {
         ageVerified: true,
         consents: { seed: true },
         profile: { create: { displayName: p.name, sex: p.sex, goal: p.goal, equipmentPref: "both", rank } },
+        // Avatar DiceBear (rendu par HiAvatar dès que diceSeed est présent) — seed = pseudo, stable.
+        avatar: {
+          create: {
+            skinTone: 0,
+            hairStyle: 0,
+            hairColor: 0,
+            diceStyle: "adventurer",
+            diceSeed: p.name,
+            equippedCosmetics: {},
+            unlockedCosmetics: {},
+          },
+        },
         hybridIndex: {
           create: {
             value,
