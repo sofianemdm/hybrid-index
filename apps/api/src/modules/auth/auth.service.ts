@@ -316,6 +316,10 @@ export class AuthService {
 
   private sign(id: string, email: string, displayName: string): AuthResponse {
     const payload: JwtPayload = { sub: id, email };
+    // Trace de dernière connexion (panneau admin) — fire-and-forget, ne retarde jamais l'auth.
+    void this.prisma.user
+      .updateMany({ where: { id }, data: { lastLoginAt: new Date() } })
+      .catch(() => undefined);
     return { token: this.jwt.sign(payload), user: { id, email, displayName } };
   }
 }

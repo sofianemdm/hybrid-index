@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Athlete League — Admin</title>
+<style>
+  :root{
+    --bg:#0e0f12; --surface:#16181d; --surface-2:#1d2026; --border:#262a32;
+    --ink:#f2f3f5; --ink-2:#b6bac2; --ink-3:#7d828c;
+    --accent:#3987e5; --s1:#3987e5; --s2:#199e70; --s3:#c98500;
+    --bad:#e66767; --radius:12px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent)}
+  .wrap{max-width:1200px;margin:0 auto;padding:20px 16px 60px}
+  header.top{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+  header.top h1{font-size:18px;font-weight:700;letter-spacing:.02em}
+  header.top .spacer{flex:1}
+  button{background:var(--surface-2);border:1px solid var(--border);color:var(--ink);border-radius:8px;padding:7px 14px;font:inherit;cursor:pointer}
+  button:hover{border-color:var(--ink-3)}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+  input{background:var(--surface-2);border:1px solid var(--border);color:var(--ink);border-radius:8px;padding:8px 12px;font:inherit;width:100%}
+  input:focus{outline:none;border-color:var(--accent)}
+  /* Login */
+  .login{max-width:360px;margin:12vh auto 0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px}
+  .login h1{font-size:18px;margin-bottom:4px}
+  .login p{color:var(--ink-3);font-size:13px;margin-bottom:18px}
+  .login label{display:block;font-size:12px;color:var(--ink-2);margin:12px 0 4px}
+  .login button{width:100%;margin-top:18px;padding:10px}
+  .err{color:var(--bad);font-size:13px;margin-top:12px;min-height:18px}
+  /* KPI tiles */
+  .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin-bottom:20px}
+  .tile{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px}
+  .tile .k{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums}
+  .tile .l{font-size:12px;color:var(--ink-2);margin-top:2px}
+  .tile .s{font-size:11px;color:var(--ink-3);margin-top:4px}
+  /* Cards / sections */
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:20px}
+  .card h2{font-size:14px;font-weight:600;margin-bottom:12px;color:var(--ink)}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+  .row input{max-width:280px}
+  /* Chart */
+  .legend{display:flex;gap:16px;font-size:12px;color:var(--ink-2);margin-bottom:8px;flex-wrap:wrap}
+  .legend .sw{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+  #chartBox{position:relative}
+  #tip{position:absolute;pointer-events:none;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:12px;display:none;z-index:5;white-space:nowrap;box-shadow:0 4px 14px rgba(0,0,0,.4)}
+  #tip b{font-variant-numeric:tabular-nums}
+  /* Tables */
+  .tblbox{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-3);text-align:left;padding:6px 10px;border-bottom:1px solid var(--border);white-space:nowrap}
+  td{padding:7px 10px;border-bottom:1px solid var(--border);white-space:nowrap;vertical-align:top}
+  tr.click{cursor:pointer} tr.click:hover td{background:var(--surface-2)}
+  .mut{color:var(--ink-3)} .ok{color:var(--s2)}
+  .pill{display:inline-block;background:var(--surface-2);border:1px solid var(--border);border-radius:20px;padding:1px 9px;font-size:11px}
+  .state{color:var(--ink-3);font-size:13px;padding:14px 4px}
+  /* Detail panel */
+  #detail{position:fixed;top:0;right:-520px;width:min(500px,92vw);height:100vh;background:var(--surface);border-left:1px solid var(--border);transition:right .2s ease;z-index:20;overflow-y:auto;padding:22px}
+  #detail.open{right:0}
+  #detail h3{font-size:16px;margin-bottom:2px}
+  #detail .sub{color:var(--ink-3);font-size:12px;margin-bottom:14px}
+  #detail h4{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-3);margin:18px 0 6px}
+  #detail .kv{display:grid;grid-template-columns:130px 1fr;gap:3px 10px;font-size:13px}
+  #detail .kv .k{color:var(--ink-2)}
+  #overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;z-index:15}
+  #overlay.open{display:block}
+  .close{position:absolute;top:14px;right:14px}
+  .hidden{display:none!important}
+  footer{color:var(--ink-3);font-size:11px;margin-top:30px;text-align:center}
+</style>
+</head>
+<body>
+
+<!-- ————— LOGIN ————— -->
+<div id="viewLogin" class="login hidden">
+  <h1>Athlete League — Admin</h1>
+  <p>Réservé à l'équipe. Connexion avec ton compte habituel.</p>
+  <label for="inEmail">Email</label>
+  <input id="inEmail" type="email" autocomplete="username">
+  <label for="inPass">Mot de passe</label>
+  <input id="inPass" type="password" autocomplete="current-password">
+  <button class="primary" id="btnLogin">Se connecter</button>
+  <div class="err" id="loginErr"></div>
+</div>
+
+<!-- ————— DASHBOARD ————— -->
+<div id="viewDash" class="wrap hidden">
+  <header class="top">
+    <h1>📊 Athlete League — Admin</h1>
+    <span class="spacer"></span>
+    <button id="btnRefresh">Actualiser</button>
+    <button id="btnLogout">Déconnexion</button>
+  </header>
+
+  <div id="dashState" class="state">Chargement…</div>
+
+  <div id="dashBody" class="hidden">
+    <div class="tiles" id="tiles"></div>
+
+    <div class="card">
+      <h2>Activité — 30 derniers jours</h2>
+      <div class="legend">
+        <span><span class="sw" style="background:var(--s1)"></span>Visiteurs uniques (IP)</span>
+        <span><span class="sw" style="background:var(--s2)"></span>Inscriptions</span>
+        <span><span class="sw" style="background:var(--s3)"></span>Séances</span>
+      </div>
+      <div id="chartBox"><div id="tip"></div><svg id="chart" width="100%" height="220" role="img" aria-label="Courbes des 30 derniers jours : visiteurs uniques, inscriptions, séances"></svg></div>
+    </div>
+
+    <div class="card">
+      <h2>Visites récentes</h2>
+      <div class="row">
+        <input id="fIp" placeholder="Filtrer par IP exacte…">
+        <button id="btnFilterIp">Filtrer</button>
+        <button id="btnClearIp">Tout</button>
+      </div>
+      <div class="tblbox"><table id="tblVisits"><thead><tr>
+        <th>Date</th><th>IP</th><th>Utilisateur</th><th>Méthode</th><th>Page</th><th>Appareil</th>
+      </tr></thead><tbody></tbody></table></div>
+      <div class="state hidden" id="visitsEmpty">Aucune visite enregistrée pour l'instant.</div>
+      <div class="row" style="margin-top:10px"><button id="btnMoreVisits" class="hidden">Charger plus</button></div>
+    </div>
+
+    <div class="card">
+      <h2>Utilisateurs</h2>
+      <div class="row">
+        <input id="fUser" placeholder="Rechercher email ou pseudo…">
+        <button id="btnSearchUser">Rechercher</button>
+      </div>
+      <div class="tblbox"><table id="tblUsers"><thead><tr>
+        <th>Créé le</th><th>Pseudo</th><th>Email</th><th>Sexe</th><th>Index</th><th>Séances</th><th>Posts</th><th>Dernière connexion</th><th>Statut</th>
+      </tr></thead><tbody></tbody></table></div>
+      <div class="state hidden" id="usersEmpty">Aucun utilisateur trouvé.</div>
+      <div class="row" style="margin-top:10px"><button id="btnMoreUsers" class="hidden">Charger plus</button></div>
+    </div>
+
+    <div class="card">
+      <h2>Feedbacks / bugs signalés</h2>
+      <div class="tblbox"><table id="tblFeedbacks"><thead><tr>
+        <th>Date</th><th>Utilisateur</th><th>Contexte</th><th>Message</th>
+      </tr></thead><tbody></tbody></table></div>
+      <div class="state hidden" id="fbEmpty">Aucun feedback.</div>
+    </div>
+
+    <footer>Journal des visites conservé 90 jours (purge automatique). Données réservées à l'administration.</footer>
+  </div>
+</div>
+
+<!-- ————— DETAIL PANEL ————— -->
+<div id="overlay"></div>
+<aside id="detail"><button class="close" id="btnCloseDetail">✕</button><div id="detailBody"></div></aside>
+
+<script>
+"use strict";
+/* Base API : locale en dev, Railway en prod. */
+const API = (location.hostname === "localhost" || location.hostname === "127.0.0.1")
+  ? "http://localhost:3000" : "https://api-production-9a50.up.railway.app";
+const TOKEN_KEY = "al_admin_token";
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmtDate = (s) => s ? new Date(s).toLocaleString("fr-FR", {day:"2-digit",month:"2-digit",year:"2-digit",hour:"2-digit",minute:"2-digit"}) : "—";
+const num = (n) => Number(n ?? 0).toLocaleString("fr-FR");
+
+let token = localStorage.getItem(TOKEN_KEY) || "";
+let visitsCursor = null, usersCursor = null, visitIpFilter = "", userQuery = "";
+
+async function api(path) {
+  const res = await fetch(API + path, { headers: token ? { authorization: "Bearer " + token } : {} });
+  if (res.status === 401 || res.status === 403) { throw Object.assign(new Error("auth"), { auth: res.status }); }
+  if (!res.ok) throw new Error("HTTP " + res.status);
+  return res.json();
+}
+
+/* ————— Auth ————— */
+function showLogin(msg) {
+  $("viewDash").classList.add("hidden");
+  $("viewLogin").classList.remove("hidden");
+  $("loginErr").textContent = msg || "";
+}
+async function login() {
+  $("loginErr").textContent = "";
+  try {
+    const res = await fetch(API + "/v1/auth/login", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ email: $("inEmail").value.trim(), password: $("inPass").value }),
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) { $("loginErr").textContent = body?.error?.message || "Identifiants invalides."; return; }
+    token = body.token; localStorage.setItem(TOKEN_KEY, token);
+    boot();
+  } catch { $("loginErr").textContent = "Serveur injoignable."; }
+}
+function logout() { token = ""; localStorage.removeItem(TOKEN_KEY); showLogin(); }
+
+/* ————— Dashboard ————— */
+async function boot() {
+  if (!token) return showLogin();
+  $("viewLogin").classList.add("hidden");
+  $("viewDash").classList.remove("hidden");
+  $("dashState").textContent = "Chargement…"; $("dashState").classList.remove("hidden");
+  $("dashBody").classList.add("hidden");
+  try {
+    const [ov, ts] = await Promise.all([api("/v1/admin/overview"), api("/v1/admin/timeseries?days=30")]);
+    renderTiles(ov); renderChart(ts.series);
+    $("dashState").classList.add("hidden"); $("dashBody").classList.remove("hidden");
+    visitsCursor = null; usersCursor = null;
+    $("tblVisits").querySelector("tbody").innerHTML = "";
+    $("tblUsers").querySelector("tbody").innerHTML = "";
+    await Promise.all([loadVisits(), loadUsers(), loadFeedbacks()]);
+  } catch (e) {
+    if (e.auth === 403) return showLogin("Accès refusé : ce compte n'est pas administrateur.");
+    if (e.auth === 401) return showLogin("Session expirée, reconnecte-toi.");
+    $("dashState").textContent = "Erreur de chargement (" + esc(e.message) + "). Réessaie.";
+  }
+}
+
+function tile(k, l, s) { return `<div class="tile"><div class="k">${k}</div><div class="l">${l}</div>${s ? `<div class="s">${s}</div>` : ""}</div>`; }
+function renderTiles(ov) {
+  const v = ov.visits || {};
+  const push = Object.entries(ov.push || {}).map(([p, n]) => `${esc(p)} ${num(n)}`).join(" · ") || "0";
+  $("tiles").innerHTML =
+    tile(num(v["24h"]?.uniqueIps), "Visiteurs uniques (24 h)", `${num(v["24h"]?.hits)} requêtes`) +
+    tile(num(v["7d"]?.uniqueIps), "Visiteurs uniques (7 j)", `${num(v["7d"]?.hits)} requêtes`) +
+    tile(num(v["30d"]?.uniqueIps), "Visiteurs uniques (30 j)", `${num(v["30d"]?.uniqueUsers)} connectés`) +
+    tile(num(ov.users?.total), "Comptes au total", `${num(ov.users?.active)} actifs`) +
+    tile("+" + num(ov.users?.new7d), "Inscriptions (7 j)", `+${num(ov.users?.new30d)} sur 30 j`) +
+    tile(num((ov.sessions?.wod7d ?? 0) + (ov.sessions?.coach7d ?? 0)), "Séances (7 j)", `${num((ov.sessions?.wodTotal ?? 0) + (ov.sessions?.coachTotal ?? 0))} au total`) +
+    tile(num(ov.posts?.new7d), "Posts (7 j)", `${num(ov.posts?.total)} au total`) +
+    tile(num(ov.notifications?.sent7d), "Notifs push (7 j)", `Appareils : ${push}`) +
+    tile(num(ov.clubs?.total), "Clubs", "") +
+    tile(num(ov.feedbacks?.total), "Feedbacks", "");
+}
+
+/* ————— Chart (SVG maison, séries fines, grille discrète, tooltip crosshair) ————— */
+let chartData = [];
+function renderChart(series) {
+  chartData = series || [];
+  const svg = $("chart");
+  const W = svg.clientWidth || 900, H = 220, padL = 36, padR = 10, padT = 10, padB = 22;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  const keys = ["visitors", "signups", "sessions"];
+  const colors = ["var(--s1)", "var(--s2)", "var(--s3)"];
+  const maxY = Math.max(1, ...chartData.flatMap((d) => keys.map((k) => d[k] || 0)));
+  const x = (i) => padL + (chartData.length <= 1 ? 0 : (i * (W - padL - padR)) / (chartData.length - 1));
+  const y = (v) => padT + (H - padT - padB) * (1 - v / maxY);
+  let out = "";
+  // Grille horizontale discrète (4 lignes) + labels d'axe en encre atténuée.
+  for (let g = 0; g <= 4; g++) {
+    const gy = padT + ((H - padT - padB) * g) / 4;
+    const val = Math.round(maxY * (1 - g / 4));
+    out += `<line x1="${padL}" y1="${gy}" x2="${W - padR}" y2="${gy}" stroke="var(--border)" stroke-width="1"/>`;
+    out += `<text x="${padL - 6}" y="${gy + 4}" text-anchor="end" font-size="10" fill="var(--ink-3)">${val}</text>`;
+  }
+  // Labels x : 1er, milieu, dernier jour.
+  const lbl = (i) => (chartData[i]?.day ?? "").slice(5).replace("-", "/");
+  for (const i of [0, Math.floor((chartData.length - 1) / 2), chartData.length - 1].filter((v, ix, a) => chartData.length && a.indexOf(v) === ix)) {
+    out += `<text x="${x(i)}" y="${H - 6}" text-anchor="middle" font-size="10" fill="var(--ink-3)">${esc(lbl(i))}</text>`;
+  }
+  // Séries : lignes 2px.
+  keys.forEach((k, ki) => {
+    const pts = chartData.map((d, i) => `${x(i).toFixed(1)},${y(d[k] || 0).toFixed(1)}`).join(" ");
+    out += `<polyline points="${pts}" fill="none" stroke="${colors[ki]}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+  });
+  out += `<line id="cross" x1="0" y1="${padT}" x2="0" y2="${H - padB}" stroke="var(--ink-3)" stroke-width="1" opacity="0"/>`;
+  svg.innerHTML = out;
+
+  // Hover : crosshair + tooltip.
+  const tip = $("tip"), cross = svg.querySelector("#cross");
+  svg.onmousemove = (ev) => {
+    if (!chartData.length) return;
+    const r = svg.getBoundingClientRect();
+    const mx = ((ev.clientX - r.left) / r.width) * W;
+    const i = Math.max(0, Math.min(chartData.length - 1, Math.round(((mx - padL) / (W - padL - padR)) * (chartData.length - 1))));
+    const d = chartData[i];
+    cross.setAttribute("x1", x(i)); cross.setAttribute("x2", x(i)); cross.setAttribute("opacity", "0.5");
+    tip.style.display = "block";
+    tip.innerHTML = `<div class="mut">${esc(d.day)}</div>` +
+      `<div><span class="sw" style="background:var(--s1);display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px"></span>Visiteurs : <b>${num(d.visitors)}</b> <span class="mut">(${num(d.hits)} req.)</span></div>` +
+      `<div><span style="background:var(--s2);display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px"></span>Inscriptions : <b>${num(d.signups)}</b></div>` +
+      `<div><span style="background:var(--s3);display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px"></span>Séances : <b>${num(d.sessions)}</b> <span class="mut">· posts ${num(d.posts)}</span></div>`;
+    const bx = $("chartBox").getBoundingClientRect();
+    let left = ev.clientX - bx.left + 14;
+    if (left + tip.offsetWidth > bx.width - 8) left = ev.clientX - bx.left - tip.offsetWidth - 14;
+    tip.style.left = left + "px"; tip.style.top = "10px";
+  };
+  svg.onmouseleave = () => { tip.style.display = "none"; cross.setAttribute("opacity", "0"); };
+}
+
+/* ————— Visites ————— */
+async function loadVisits(reset) {
+  if (reset) { visitsCursor = null; $("tblVisits").querySelector("tbody").innerHTML = ""; }
+  const qs = new URLSearchParams({ limit: "50" });
+  if (visitsCursor) qs.set("cursor", visitsCursor);
+  if (visitIpFilter) qs.set("ip", visitIpFilter);
+  const data = await api("/v1/admin/visits?" + qs);
+  const tb = $("tblVisits").querySelector("tbody");
+  for (const v of data.entries) {
+    const who = v.userName ? `${esc(v.userName)} <span class="mut">${esc(v.userEmail || "")}</span>` : '<span class="mut">anonyme</span>';
+    tb.insertAdjacentHTML("beforeend",
+      `<tr><td class="mut">${fmtDate(v.createdAt)}</td><td><span class="pill">${esc(v.ip)}</span></td><td>${who}</td>` +
+      `<td class="mut">${esc(v.method)}</td><td>${esc(v.path)}</td><td class="mut" title="${esc(v.userAgent || "")}">${esc((v.userAgent || "—").slice(0, 40))}</td></tr>`);
+  }
+  visitsCursor = data.nextCursor;
+  $("btnMoreVisits").classList.toggle("hidden", !visitsCursor);
+  $("visitsEmpty").classList.toggle("hidden", tb.children.length > 0);
+}
+
+/* ————— Utilisateurs ————— */
+async function loadUsers(reset) {
+  if (reset) { usersCursor = null; $("tblUsers").querySelector("tbody").innerHTML = ""; }
+  const qs = new URLSearchParams({ limit: "50" });
+  if (usersCursor) qs.set("cursor", usersCursor);
+  if (userQuery) qs.set("q", userQuery);
+  const data = await api("/v1/admin/users?" + qs);
+  const tb = $("tblUsers").querySelector("tbody");
+  for (const u of data.entries) {
+    tb.insertAdjacentHTML("beforeend",
+      `<tr class="click" data-uid="${esc(u.userId)}"><td class="mut">${fmtDate(u.createdAt)}</td><td>${esc(u.displayName || "—")}</td>` +
+      `<td class="mut">${esc(u.email || "—")}</td><td class="mut">${u.sex === "male" ? "H" : u.sex === "female" ? "F" : "—"}</td>` +
+      `<td><b>${u.index ?? "—"}</b></td><td>${num(u.sessions)}</td><td>${num(u.posts)}</td>` +
+      `<td class="mut">${fmtDate(u.lastLoginAt)}</td><td>${u.status === "active" ? '<span class="ok">actif</span>' : esc(u.status)}</td></tr>`);
+  }
+  usersCursor = data.nextCursor;
+  $("btnMoreUsers").classList.toggle("hidden", !usersCursor);
+  $("usersEmpty").classList.toggle("hidden", tb.children.length > 0);
+}
+
+/* ————— Fiche utilisateur ————— */
+async function openDetail(uid) {
+  $("overlay").classList.add("open"); $("detail").classList.add("open");
+  $("detailBody").innerHTML = '<div class="state">Chargement…</div>';
+  try {
+    const d = await api("/v1/admin/users/" + encodeURIComponent(uid));
+    const kv = (k, v) => `<div class="k">${k}</div><div>${v}</div>`;
+    const attrs = (d.attributes || []).map((a) => `${esc(a.attribute)} <b>${a.score}</b>`).join(" · ") || "—";
+    const sessions = (d.recentSessions || []).map((s) =>
+      `<tr><td class="mut">${fmtDate(s.performedAt)}</td><td>${esc(s.wodName)}</td><td>${esc(String(s.rawResult))}</td><td>${s.subScore ?? "—"}</td></tr>`).join("");
+    const visits = (d.recentVisits || []).map((v) =>
+      `<tr><td class="mut">${fmtDate(v.createdAt)}</td><td><span class="pill">${esc(v.ip)}</span></td><td>${esc(v.path)}</td></tr>`).join("");
+    $("detailBody").innerHTML =
+      `<h3>${esc(d.profile?.displayName || "—")}</h3><div class="sub">${esc(d.email || "—")} · ${esc(d.userId)}</div>` +
+      `<div class="kv">` +
+      kv("Statut", d.status === "active" ? '<span class="ok">actif</span>' : esc(d.status)) +
+      kv("Créé le", fmtDate(d.createdAt)) + kv("Dernière connexion", fmtDate(d.lastLoginAt)) +
+      kv("Sexe / objectif", `${esc(d.profile?.sex || "—")} / ${esc(d.profile?.goal || "—")}`) +
+      kv("Ville / langue", `${esc(d.profile?.city || "—")} / ${esc(d.profile?.locale || "—")}`) +
+      kv("Index", d.index ? `<b>${d.index.value}</b> /100 <span class="mut">(radar ${d.index.radarCoverage}/6)</span>` : "—") +
+      kv("Rang", esc(d.profile?.rank || "—")) +
+      kv("Streak", d.streak ? `${d.streak.current} (record ${d.streak.best})` : "—") +
+      kv("Séances / posts", `${num(d.counts?.sessions)} / ${num(d.counts?.posts)}`) +
+      kv("Abonnés / suivis", `${num(d.counts?.followers)} / ${num(d.counts?.following)}`) +
+      kv("Clubs", (d.clubs || []).map((c) => `${esc(c.name)} <span class="mut">(${esc(c.role)})</span>`).join(", ") || "—") +
+      kv("Appareils push", (d.devices || []).map((p) => esc(p.platform)).join(", ") || "—") +
+      `</div>` +
+      `<h4>Attributs (/100)</h4><div style="font-size:13px">${attrs}</div>` +
+      `<h4>Dernières séances</h4><div class="tblbox"><table><thead><tr><th>Date</th><th>Séance</th><th>Perf</th><th>Score</th></tr></thead><tbody>${sessions || '<tr><td colspan="4" class="mut">Aucune</td></tr>'}</tbody></table></div>` +
+      `<h4>Dernières visites</h4><div class="tblbox"><table><thead><tr><th>Date</th><th>IP</th><th>Page</th></tr></thead><tbody>${visits || '<tr><td colspan="3" class="mut">Aucune</td></tr>'}</tbody></table></div>`;
+  } catch (e) {
+    $("detailBody").innerHTML = `<div class="state">Erreur : ${esc(e.message)}</div>`;
+  }
+}
+function closeDetail() { $("overlay").classList.remove("open"); $("detail").classList.remove("open"); }
+
+/* ————— Feedbacks ————— */
+async function loadFeedbacks() {
+  const data = await api("/v1/admin/feedbacks?limit=100");
+  const tb = $("tblFeedbacks").querySelector("tbody");
+  tb.innerHTML = "";
+  for (const f of data.entries) {
+    const who = f.userName ? `${esc(f.userName)} <span class="mut">${esc(f.userEmail || "")}</span>` : '<span class="mut">' + esc(f.userId) + "</span>";
+    tb.insertAdjacentHTML("beforeend",
+      `<tr><td class="mut">${fmtDate(f.createdAt)}</td><td>${who}</td><td class="mut">${esc(f.context || "—")}</td><td style="white-space:normal;max-width:520px">${esc(f.message)}</td></tr>`);
+  }
+  $("fbEmpty").classList.toggle("hidden", tb.children.length > 0);
+}
+
+/* ————— Wiring ————— */
+$("btnLogin").onclick = login;
+$("inPass").addEventListener("keydown", (e) => { if (e.key === "Enter") login(); });
+$("btnLogout").onclick = logout;
+$("btnRefresh").onclick = boot;
+$("btnMoreVisits").onclick = () => loadVisits();
+$("btnMoreUsers").onclick = () => loadUsers();
+$("btnFilterIp").onclick = () => { visitIpFilter = $("fIp").value.trim(); loadVisits(true); };
+$("btnClearIp").onclick = () => { visitIpFilter = ""; $("fIp").value = ""; loadVisits(true); };
+$("btnSearchUser").onclick = () => { userQuery = $("fUser").value.trim(); loadUsers(true); };
+$("fUser").addEventListener("keydown", (e) => { if (e.key === "Enter") { userQuery = e.target.value.trim(); loadUsers(true); } });
+$("fIp").addEventListener("keydown", (e) => { if (e.key === "Enter") { visitIpFilter = e.target.value.trim(); loadVisits(true); } });
+$("tblUsers").addEventListener("click", (e) => { const tr = e.target.closest("tr[data-uid]"); if (tr) openDetail(tr.dataset.uid); });
+$("btnCloseDetail").onclick = closeDetail;
+$("overlay").onclick = closeDetail;
+window.addEventListener("resize", () => renderChart(chartData));
+
+boot();
+</script>
+</body>
+</html>

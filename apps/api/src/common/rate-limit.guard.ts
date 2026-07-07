@@ -2,6 +2,7 @@ import { type CanActivate, type ExecutionContext, HttpException, HttpStatus, Inj
 import { Reflector } from "@nestjs/core";
 import { JwtService } from "@nestjs/jwt";
 import { RedisService } from "../infra/redis/redis.service";
+import { clientIp } from "./client-ip";
 
 /** Sous-ensemble de la requête HTTP dont le guard a besoin (évite la dépendance aux types express). */
 interface HttpReq {
@@ -103,9 +104,7 @@ export class RateLimitGuard implements CanActivate {
   }
 
   private ip(req: HttpReq): string {
-    // Derrière le proxy Railway/Netlify : on prend la 1re IP de x-forwarded-for si présente.
-    const fwd = req.headers["x-forwarded-for"];
-    const first = Array.isArray(fwd) ? fwd[0] : (fwd ?? "").split(",")[0].trim();
-    return first || req.ip || "unknown";
+    // Derrière le proxy Railway/Netlify : logique partagée avec le visit-log (common/client-ip.ts).
+    return clientIp(req);
   }
 }

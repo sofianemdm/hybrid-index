@@ -162,6 +162,8 @@ model User {
   consents            Json
   status              String    @default("active")
   deletionRequestedAt DateTime? @map("deletion_requested_at") @db.Timestamptz(6)
+  // Dernière connexion (login/register/OAuth) — posée par AuthService.sign, pour le panneau admin.
+  lastLoginAt         DateTime? @map("last_login_at") @db.Timestamptz(6)
   createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt           DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
 
@@ -198,6 +200,25 @@ model User {
   coachCompletions  CoachSessionCompletion[]
 
   @@map("user")
+  @@schema("app")
+}
+
+// Journal des visites / requêtes API (panneau admin). userId SANS FK dure : on garde la trace
+// même si le compte est supprimé (l'IP reste utile pour l'analyse). Rétention 90 jours (purge cron).
+model VisitLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  ip        String
+  userId    String?  @map("user_id") @db.Uuid
+  path      String
+  method    String
+  userAgent String?  @map("user_agent")
+  country   String?
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([createdAt])
+  @@index([ip, createdAt])
+  @@index([userId, createdAt])
+  @@map("visit_log")
   @@schema("app")
 }
 

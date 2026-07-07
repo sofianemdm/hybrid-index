@@ -219,7 +219,8 @@ describe("api — boucle complète persistée (e2e réel)", () => {
       .get("/v1/me/streak")
       .set("authorization", `Bearer ${token}`)
       .expect(200);
-    expect(res.body.weeklyGoal).toBe(3);
+    // Décision 06/07 : 1 séance/semaine suffit (WEEKLY_ACTIVITY_GOAL, champ stocké ignoré).
+    expect(res.body.weeklyGoal).toBe(1);
     expect(res.body.thisWeekCount).toBeGreaterThanOrEqual(1);
     expect(typeof res.body.current).toBe("number");
   });
@@ -302,13 +303,14 @@ describe("api — boucle complète persistée (e2e réel)", () => {
     }
   });
 
-  it("streak : réglage de l'objectif hebdo", async () => {
+  it("streak : le réglage d'objectif hebdo est accepté mais l'objectif effectif reste 1", async () => {
     const res = await request(api.getHttpServer())
       .patch("/v1/me/streak")
       .set("authorization", `Bearer ${token}`)
       .send({ weeklyGoal: 4 })
       .expect(200);
-    expect(res.body.weeklyGoal).toBe(4);
+    // Décision 06/07 : l'objectif effectif est verrouillé à 1 (le champ stocké est ignoré).
+    expect(res.body.weeklyGoal).toBe(1);
   });
 
   it("endgame : Grand Chelem + rang mondial cohérents", async () => {

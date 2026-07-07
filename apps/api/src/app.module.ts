@@ -1,7 +1,8 @@
-import { Module } from "@nestjs/common";
+import { Module, type MiddlewareConsumer, type NestModule } from "@nestjs/common";
 import { APP_GUARD } from "@nestjs/core";
 import { ScheduleModule } from "@nestjs/schedule";
 import { RateLimitGuard } from "./common/rate-limit.guard";
+import { VisitLogMiddleware } from "./common/visit-log.middleware";
 import { HealthController } from "./health/health.controller";
 import { PrismaModule } from "./infra/prisma/prisma.module";
 import { RedisModule } from "./infra/redis/redis.module";
@@ -26,6 +27,7 @@ import { ChallengeModule } from "./modules/challenge/challenge.module";
 import { LeagueModule } from "./modules/league/league.module";
 import { FeedbackModule } from "./modules/feedback/feedback.module";
 import { RealtimeModule } from "./modules/realtime/realtime.module";
+import { AdminModule } from "./modules/admin/admin.module";
 
 @Module({
   imports: [
@@ -53,8 +55,14 @@ import { RealtimeModule } from "./modules/realtime/realtime.module";
     FeedbackModule,
     RealtimeModule,
     MetaModule,
+    AdminModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_GUARD, useClass: RateLimitGuard }],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): void {
+    // Journal des visites (panneau admin) sur TOUTES les routes — best-effort, jamais bloquant.
+    consumer.apply(VisitLogMiddleware).forRoutes("*");
+  }
+}
